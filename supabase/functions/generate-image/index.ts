@@ -8,6 +8,30 @@ const corsHeaders = {
 
 const FAL_ENDPOINT = "https://queue.fal.run/fal-ai/nano-banana-pro";
 
+async function pollForResult(requestId: string, apiKey: string): Promise<any> {
+  for (let i = 0; i < 90; i++) {
+    await new Promise((r) => setTimeout(r, 2000));
+
+    const statusResp = await fetch(`${FAL_ENDPOINT}/requests/${requestId}/status`, {
+      headers: { Authorization: `Key ${apiKey}` },
+    });
+    const statusData = await statusResp.json();
+    console.log("Poll attempt", i + 1, "status:", statusData.status);
+
+    if (statusData.status === "COMPLETED") {
+      const resultResp = await fetch(`${FAL_ENDPOINT}/requests/${requestId}`, {
+        headers: { Authorization: `Key ${apiKey}` },
+      });
+      return await resultResp.json();
+    }
+
+    if (statusData.status === "FAILED") {
+      throw new Error("Image generation failed on Fal AI");
+    }
+  }
+  throw new Error("Generation timed out");
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -19,7 +43,15 @@ serve(async (req) => {
       throw new Error("FAL_API_KEY is not configured");
     }
 
-    const { prompt, aspect_ratio } = await req.json();
+    const body = await req.json();
+    const {
+      prompt,
+      aspect_ratio = "1:1",
+      resolution = "1K",
+      output_format = "png",
+      num_images = 1,
+      image_url, // for image-to-image
+    } = body;
 
     if (!prompt || typeof prompt !== "string") {
       return new Response(
@@ -28,44 +60,58 @@ serve(async (req) => {
       );
     }
 
-    console.log("Submitting to Fal AI Nano Banana Pro:", prompt);
+    // Build the payload
+    const payload: Record<string, any> = {
+      prompt,
+      num_images: Math.min(num_images, 4),
+      aspect_ratio,
+      output_format,
+      resolution,
+    };
 
-    // Submit request
+    // If image_url provided, include as image reference for image-to-image
+    if (image_url) {
+      payload.image_url = image_url;
+    }
+
+    console.log("Submitting to Fal AI Nano Banana Pro:", JSON.stringify(payload));
+
     const submitResp = await fetch(FAL_ENDPOINT, {
       method: "POST",
       headers: {
         Authorization: `Key ${FAL_API_KEY}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        prompt,
-        num_images: 1,
-        aspect_ratio: aspect_ratio || "4:3",
-        output_format: "png",
-        resolution: "1K",
-      }),
+      body: JSON.stringify(payload),
     });
 
     if (!submitResp.ok) {
       const errText = await submitResp.text();
       console.error("Fal submit error:", submitResp.status, errText);
       return new Response(
-        JSON.stringify({ error: `Fal AI error (${submitResp.status})` }),
+        JSON.stringify({ error: `Fal AI error (${submitResp.status}): ${errText}` }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
     const submitData = await submitResp.json();
 
-    // If we got images directly (sync response)
+    // Direct sync response
     if (submitData.images?.length) {
       return new Response(
-        JSON.stringify({ image_url: submitData.images[0].url }),
+        JSON.stringify({
+          images: submitData.images.map((img: any) => ({
+            url: img.url,
+            width: img.width,
+            height: img.height,
+          })),
+          description: submitData.description || "",
+        }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // Queue-based: poll for result
+    // Queue-based
     const requestId = submitData.request_id;
     if (!requestId) {
       console.error("No request_id or images:", JSON.stringify(submitData));
@@ -75,45 +121,25 @@ serve(async (req) => {
       );
     }
 
-    console.log("Queued, request_id:", requestId);
+    const result = await pollForResult(requestId, FAL_API_KEY);
 
-    for (let i = 0; i < 60; i++) {
-      await new Promise((r) => setTimeout(r, 2000));
-
-      const statusResp = await fetch(`${FAL_ENDPOINT}/requests/${requestId}/status`, {
-        headers: { Authorization: `Key ${FAL_API_KEY}` },
-      });
-      const statusData = await statusResp.json();
-
-      if (statusData.status === "COMPLETED") {
-        const resultResp = await fetch(`${FAL_ENDPOINT}/requests/${requestId}`, {
-          headers: { Authorization: `Key ${FAL_API_KEY}` },
-        });
-        const resultData = await resultResp.json();
-
-        if (resultData.images?.length) {
-          return new Response(
-            JSON.stringify({ image_url: resultData.images[0].url }),
-            { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-          );
-        }
-        return new Response(
-          JSON.stringify({ error: "No image in result" }),
-          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-
-      if (statusData.status === "FAILED") {
-        return new Response(
-          JSON.stringify({ error: "Image generation failed" }),
-          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
+    if (result.images?.length) {
+      return new Response(
+        JSON.stringify({
+          images: result.images.map((img: any) => ({
+            url: img.url,
+            width: img.width,
+            height: img.height,
+          })),
+          description: result.description || "",
+        }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
     return new Response(
-      JSON.stringify({ error: "Generation timed out" }),
-      { status: 504, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      JSON.stringify({ error: "No images generated" }),
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (e) {
     console.error("generate-image error:", e);
