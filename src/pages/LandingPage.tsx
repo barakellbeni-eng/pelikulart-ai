@@ -1,6 +1,8 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
+import heroVideo1 from "@/assets/hero-video.mp4";
+import heroVideo2 from "@/assets/hero-video-2.mp4";
 import {
   Sparkles,
   Zap,
@@ -98,8 +100,12 @@ const fadeUp = {
   }),
 };
 
+const heroVideos = [heroVideo1, heroVideo2];
+
 const LandingPage = () => {
   const [hoveredPlan, setHoveredPlan] = useState<number | null>(null);
+  const [currentVideo, setCurrentVideo] = useState(0);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
@@ -207,7 +213,7 @@ const LandingPage = () => {
           </motion.div>
         </div>
 
-        {/* Preview mockup */}
+        {/* Hero Video Showcase */}
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
@@ -215,20 +221,31 @@ const LandingPage = () => {
           className="max-w-5xl mx-auto mt-16 md:mt-24"
         >
           <div className="glass-card p-2 md:p-3 glow-orange">
-            <div className="w-full aspect-video rounded-xl bg-gradient-to-br from-primary/10 via-card to-accent/5 flex items-center justify-center relative overflow-hidden">
-              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_hsl(32_100%_50%_/_0.08)_0%,_transparent_70%)]" />
-              <div className="text-center space-y-4 relative z-10">
-                <div className="flex items-center justify-center gap-3">
-                  <div className="w-12 h-12 rounded-2xl bg-primary/20 flex items-center justify-center">
-                    <Image className="w-6 h-6 text-primary" />
-                  </div>
-                  <div className="w-12 h-12 rounded-2xl bg-accent/20 flex items-center justify-center">
-                    <Video className="w-6 h-6 text-accent" />
-                  </div>
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  Interface du Studio — Générez en un clic
+            <div className="w-full aspect-video rounded-xl overflow-hidden relative">
+              <video
+                ref={videoRef}
+                src={heroVideos[currentVideo]}
+                autoPlay
+                muted
+                playsInline
+                className="w-full h-full object-cover"
+                onEnded={() => setCurrentVideo((prev) => (prev + 1) % heroVideos.length)}
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-background/60 via-transparent to-transparent pointer-events-none" />
+              <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between pointer-events-none">
+                <p className="text-sm text-white/80 font-medium">
+                  Généré par IA — AFRIKA DRIVE
                 </p>
+                <div className="flex gap-1.5">
+                  {heroVideos.map((_, i) => (
+                    <div
+                      key={i}
+                      className={`w-2 h-2 rounded-full transition-all ${
+                        i === currentVideo ? "bg-primary w-6" : "bg-white/40"
+                      }`}
+                    />
+                  ))}
+                </div>
               </div>
             </div>
           </div>
