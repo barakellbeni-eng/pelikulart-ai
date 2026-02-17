@@ -182,13 +182,13 @@ const LandingPage = () => {
 
           <div className="flex items-center gap-3">
             <Link
-              to="/studio"
+              to="/auth"
               className="hidden sm:inline-flex text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
               Se connecter
             </Link>
             <Link
-              to="/studio"
+              to="/auth"
               className="btn-generate !px-5 !py-2.5 !text-sm !rounded-xl !animate-none"
             >
               Commencer

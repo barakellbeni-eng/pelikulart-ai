@@ -1,7 +1,17 @@
 import { User, Zap, Image, Video, LogOut, Shield } from "lucide-react";
 import { motion } from "framer-motion";
+import { useAuth } from "@/hooks/useAuth";
+import { useNavigate } from "react-router-dom";
 
 const Profile = () => {
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/");
+  };
+
   return (
     <div className="min-h-screen pb-24 md:pb-8">
       <header className="sticky top-0 z-50 glass border-b border-white/[0.06] px-4 py-3">
@@ -23,17 +33,17 @@ const Profile = () => {
             <User className="w-8 h-8 text-primary-foreground" />
           </div>
           <div>
-            <h2 className="font-bold text-lg text-foreground">Utilisateur AD</h2>
-            <p className="text-sm text-muted-foreground">user@afrikadrive.com</p>
+            <h2 className="font-bold text-lg text-foreground">{user?.email?.split("@")[0] ?? "Utilisateur"}</h2>
+            <p className="text-sm text-muted-foreground">{user?.email}</p>
           </div>
         </motion.div>
 
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
           {[
-            { icon: Zap, label: "Crédits AD", value: "250", color: "text-primary" },
-            { icon: Image, label: "Images créées", value: "47", color: "text-accent" },
-            { icon: Video, label: "Vidéos créées", value: "12", color: "text-primary" },
+            { icon: Zap, label: "Crédits AD", value: "50", color: "text-primary" },
+            { icon: Image, label: "Images créées", value: "0", color: "text-accent" },
+            { icon: Video, label: "Vidéos créées", value: "0", color: "text-primary" },
           ].map((stat, i) => (
             <motion.div
               key={stat.label}
@@ -60,7 +70,10 @@ const Profile = () => {
             <Shield className="w-4 h-4 text-muted-foreground" />
             Sécurité du compte
           </button>
-          <button className="w-full flex items-center gap-3 p-4 text-left text-sm text-destructive hover:bg-white/[0.03] transition-colors">
+          <button
+            onClick={handleSignOut}
+            className="w-full flex items-center gap-3 p-4 text-left text-sm text-destructive hover:bg-white/[0.03] transition-colors"
+          >
             <LogOut className="w-4 h-4" />
             Déconnexion
           </button>
