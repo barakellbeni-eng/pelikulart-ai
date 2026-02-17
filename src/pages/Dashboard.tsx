@@ -467,37 +467,7 @@ const Dashboard = () => {
             )}
           </button>
 
-          {/* Progress Bar */}
-          <AnimatePresence>
-            {progress > 0 && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                exit={{ opacity: 0, height: 0 }}
-                className="space-y-1.5"
-              >
-                <div className="flex items-center justify-between">
-                  <span className="text-[11px] text-muted-foreground font-medium">
-                    {progressStage}
-                  </span>
-                  <span className="text-[11px] text-primary font-bold">
-                    {Math.round(progress)}%
-                  </span>
-                </div>
-                <div className="w-full h-1.5 rounded-full bg-white/[0.06] overflow-hidden">
-                  <motion.div
-                    className="h-full rounded-full"
-                    style={{
-                      background: "linear-gradient(90deg, hsl(32 100% 50%), hsl(43 56% 52%))",
-                    }}
-                    initial={{ width: "0%" }}
-                    animate={{ width: `${progress}%` }}
-                    transition={{ duration: 0.4, ease: "easeOut" }}
-                  />
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+          {/* Progress removed from sidebar — shown on gallery cards instead */}
         </div>
       </div>
 
@@ -546,13 +516,51 @@ const Dashboard = () => {
             </div>
           ) : (
             <div className="columns-2 md:columns-3 lg:columns-4 xl:columns-5 gap-3 space-y-3">
-              {/* Loading placeholders */}
+              {/* Loading cards with progress */}
               {isGenerating &&
                 Array.from({ length: numImages }).map((_, i) => (
-                  <div
+                  <motion.div
                     key={`loading-${i}`}
-                    className="break-inside-avoid skeleton-ad rounded-xl aspect-[4/5]"
-                  />
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="break-inside-avoid rounded-xl aspect-[4/5] bg-white/[0.04] border border-white/[0.06] flex flex-col items-center justify-center p-4 space-y-4 relative overflow-hidden"
+                  >
+                    {/* Animated shimmer background */}
+                    <div className="absolute inset-0 overflow-hidden">
+                      <div
+                        className="absolute inset-0 animate-pulse"
+                        style={{
+                          background: `linear-gradient(135deg, transparent 30%, hsl(32 100% 50% / 0.04) 50%, transparent 70%)`,
+                        }}
+                      />
+                    </div>
+
+                    {/* Spinner */}
+                    <div className="relative">
+                      <div className="w-12 h-12 rounded-full border-2 border-white/[0.08] border-t-primary animate-spin" />
+                    </div>
+
+                    {/* Progress info */}
+                    <div className="relative w-full space-y-2 px-2">
+                      <p className="text-xs text-muted-foreground text-center font-medium">
+                        {progressStage}
+                      </p>
+                      <div className="w-full h-1.5 rounded-full bg-white/[0.06] overflow-hidden">
+                        <motion.div
+                          className="h-full rounded-full"
+                          style={{
+                            background: "linear-gradient(90deg, hsl(32 100% 50%), hsl(43 56% 52%))",
+                          }}
+                          initial={{ width: "0%" }}
+                          animate={{ width: `${progress}%` }}
+                          transition={{ duration: 0.4, ease: "easeOut" }}
+                        />
+                      </div>
+                      <p className="text-[10px] text-primary font-bold text-center">
+                        {Math.round(progress)}%
+                      </p>
+                    </div>
+                  </motion.div>
                 ))}
 
               {/* Generated Images */}
