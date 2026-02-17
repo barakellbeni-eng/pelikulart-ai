@@ -1,5 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Textarea } from "@/components/ui/textarea";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 import {
   Image,
   Video,
@@ -68,6 +70,7 @@ interface GeneratedImage {
 }
 
 const Dashboard = () => {
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<"image" | "video" | "audio">("image");
   const [prompt, setPrompt] = useState("");
   const [aspectRatio, setAspectRatio] = useState<AspectRatio>("4:5");
@@ -80,6 +83,29 @@ const Dashboard = () => {
   const [referenceImage, setReferenceImage] = useState<string | null>(null);
   const [referencePreview, setReferencePreview] = useState<string | null>(null);
   const [showAspectDropdown, setShowAspectDropdown] = useState(false);
+
+  // Load history from DB
+  useEffect(() => {
+    if (!user) return;
+    const loadHistory = async () => {
+      const { data, error } = await supabase
+        .from("generations")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(50);
+      if (!error && data) {
+        setGalleryImages(
+          data.map((g: any) => ({
+            url: g.image_url,
+            prompt: g.prompt,
+            resolution: g.resolution,
+            timestamp: new Date(g.created_at).getTime(),
+          }))
+        );
+      }
+    };
+    loadHistory();
+  }, [user]);
   const progressInterval = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Simulated progress bar
