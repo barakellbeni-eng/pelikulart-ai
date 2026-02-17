@@ -6,18 +6,20 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+const FAL_ENDPOINT = "https://queue.fal.run/fal-ai/nano-banana-pro";
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) {
-      throw new Error("LOVABLE_API_KEY is not configured");
+    const FAL_API_KEY = Deno.env.get("FAL_API_KEY");
+    if (!FAL_API_KEY) {
+      throw new Error("FAL_API_KEY is not configured");
     }
 
-    const { prompt } = await req.json();
+    const { prompt, aspect_ratio } = await req.json();
 
     if (!prompt || typeof prompt !== "string") {
       return new Response(
@@ -26,66 +28,97 @@ serve(async (req) => {
       );
     }
 
-    console.log("Generating image with Nano Banana Pro, prompt:", prompt);
+    console.log("Submitting to Fal AI Nano Banana Pro:", prompt);
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    // Submit request
+    const submitResp = await fetch(FAL_ENDPOINT, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        Authorization: `Key ${FAL_API_KEY}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-3-pro-image-preview",
-        messages: [
-          {
-            role: "user",
-            content: prompt,
-          },
-        ],
-        modalities: ["image", "text"],
+        prompt,
+        num_images: 1,
+        aspect_ratio: aspect_ratio || "4:3",
+        output_format: "png",
+        resolution: "1K",
       }),
     });
 
-    if (!response.ok) {
-      if (response.status === 429) {
-        return new Response(
-          JSON.stringify({ error: "Trop de requêtes, réessayez dans quelques instants." }),
-          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-      if (response.status === 402) {
-        return new Response(
-          JSON.stringify({ error: "Crédits insuffisants, veuillez recharger votre compte." }),
-          { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-      const errorText = await response.text();
-      console.error("AI gateway error:", response.status, errorText);
+    if (!submitResp.ok) {
+      const errText = await submitResp.text();
+      console.error("Fal submit error:", submitResp.status, errText);
       return new Response(
-        JSON.stringify({ error: "Erreur lors de la génération" }),
+        JSON.stringify({ error: `Fal AI error (${submitResp.status})` }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    const data = await response.json();
-    const imageUrl = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+    const submitData = await submitResp.json();
 
-    if (!imageUrl) {
-      console.error("No image in response:", JSON.stringify(data));
+    // If we got images directly (sync response)
+    if (submitData.images?.length) {
       return new Response(
-        JSON.stringify({ error: "Aucune image générée" }),
+        JSON.stringify({ image_url: submitData.images[0].url }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Queue-based: poll for result
+    const requestId = submitData.request_id;
+    if (!requestId) {
+      console.error("No request_id or images:", JSON.stringify(submitData));
+      return new Response(
+        JSON.stringify({ error: "Unexpected response from Fal AI" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
+    }
+
+    console.log("Queued, request_id:", requestId);
+
+    for (let i = 0; i < 60; i++) {
+      await new Promise((r) => setTimeout(r, 2000));
+
+      const statusResp = await fetch(`${FAL_ENDPOINT}/requests/${requestId}/status`, {
+        headers: { Authorization: `Key ${FAL_API_KEY}` },
+      });
+      const statusData = await statusResp.json();
+
+      if (statusData.status === "COMPLETED") {
+        const resultResp = await fetch(`${FAL_ENDPOINT}/requests/${requestId}`, {
+          headers: { Authorization: `Key ${FAL_API_KEY}` },
+        });
+        const resultData = await resultResp.json();
+
+        if (resultData.images?.length) {
+          return new Response(
+            JSON.stringify({ image_url: resultData.images[0].url }),
+            { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+        return new Response(
+          JSON.stringify({ error: "No image in result" }),
+          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      if (statusData.status === "FAILED") {
+        return new Response(
+          JSON.stringify({ error: "Image generation failed" }),
+          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
     }
 
     return new Response(
-      JSON.stringify({ image_url: imageUrl }),
-      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      JSON.stringify({ error: "Generation timed out" }),
+      { status: 504, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (e) {
     console.error("generate-image error:", e);
     return new Response(
-      JSON.stringify({ error: e instanceof Error ? e.message : "Erreur inconnue" }),
+      JSON.stringify({ error: e instanceof Error ? e.message : "Unknown error" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
