@@ -26,7 +26,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
-import { FAL_MODELS, getModelById, getDefaultSettings, getModelsByType, type FalModel } from "@/lib/fal-models";
+import { FAL_MODELS, getModelById, getDefaultSettings, getModelsByType, getModelsByTypeGrouped, type FalModel } from "@/lib/fal-models";
 
 const GENERATE_IMAGE_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-image`;
 const GENERATE_VIDEO_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-video`;
@@ -502,7 +502,7 @@ const Dashboard = () => {
                 </div>
                 <div className="flex-1 text-left">
                   <span className="text-sm font-medium text-foreground block leading-tight">
-                    {selectedModel.name}
+                    {selectedModel.brand} — {selectedModel.name}
                   </span>
                   <span className="text-[10px] text-muted-foreground leading-tight">
                     {selectedModel.description}
@@ -521,35 +521,42 @@ const Dashboard = () => {
                     initial={{ opacity: 0, y: -4 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -4 }}
-                    className="absolute left-0 right-0 top-full mt-1 glass-card p-1.5 z-50 max-h-[360px] overflow-y-auto"
+                    className="absolute left-0 right-0 top-full mt-1 glass-card p-1.5 z-50 max-h-[400px] overflow-y-auto"
                   >
-                    {currentModels.map((model) => (
-                      <button
-                        key={model.id}
-                        onClick={() => handleSelectModel(model)}
-                        className={`w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-left transition-colors ${
-                          selectedModel.id === model.id
-                            ? "bg-primary/10"
-                            : "hover:bg-white/[0.04]"
-                        }`}
-                      >
-                        <div
-                          className={`w-5 h-5 rounded bg-gradient-to-br ${model.color} flex items-center justify-center text-[10px] shrink-0`}
-                        >
-                          {model.icon}
+                    {getModelsByTypeGrouped(activeTab === "video" ? "video" : "image").map((group) => (
+                      <div key={group.brand} className="mb-1.5">
+                        <div className="px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground/60 sticky top-0 bg-background/80 backdrop-blur-sm z-10">
+                          {group.brand}
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <span className="text-xs font-medium text-foreground block truncate">
-                            {model.name}
-                          </span>
-                          <span className="text-[9px] text-muted-foreground block truncate">
-                            {model.description}
-                          </span>
-                        </div>
-                        {selectedModel.id === model.id && (
-                          <Check className="w-3.5 h-3.5 text-primary shrink-0" />
-                        )}
-                      </button>
+                        {group.models.map((model) => (
+                          <button
+                            key={model.id}
+                            onClick={() => handleSelectModel(model)}
+                            className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-left transition-colors ${
+                              selectedModel.id === model.id
+                                ? "bg-primary/10"
+                                : "hover:bg-white/[0.04]"
+                            }`}
+                          >
+                            <div
+                              className={`w-5 h-5 rounded bg-gradient-to-br ${model.color} flex items-center justify-center text-[10px] shrink-0`}
+                            >
+                              {model.icon}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <span className="text-xs font-medium text-foreground block truncate">
+                                {model.name}
+                              </span>
+                              <span className="text-[9px] text-muted-foreground block truncate">
+                                {model.description}
+                              </span>
+                            </div>
+                            {selectedModel.id === model.id && (
+                              <Check className="w-3.5 h-3.5 text-primary shrink-0" />
+                            )}
+                          </button>
+                        ))}
+                      </div>
                     ))}
                   </motion.div>
                 )}
@@ -560,7 +567,7 @@ const Dashboard = () => {
           {/* Model-Specific Settings */}
           <div className="space-y-3">
             <label className="text-[11px] text-muted-foreground font-semibold uppercase tracking-wider">
-              Réglages — {selectedModel.name}
+              Réglages — {selectedModel.brand} {selectedModel.name}
             </label>
             <div className="space-y-3">
               {selectedModel.settings.map((setting) => renderSetting(setting))}

@@ -1,5 +1,4 @@
 // Fal AI Models Configuration
-// Each model has its own endpoint and specific settings
 
 export interface ModelSetting {
   key: string;
@@ -18,810 +17,414 @@ export type ModelType = "image" | "video";
 export interface FalModel {
   id: string;
   name: string;
+  brand: string;
   endpoint: string;
   description: string;
-  icon: string; // emoji
-  color: string; // gradient from-to
+  icon: string;
+  color: string;
   type: ModelType;
   settings: ModelSetting[];
   supportsImageInput?: boolean;
   maxImages?: number;
 }
 
+// ─── Shared setting presets ───
+const ASPECT_RATIO_STANDARD: ModelSetting = {
+  key: "aspect_ratio", label: "Ratio", type: "select",
+  options: [
+    { value: "16:9", label: "16:9" }, { value: "9:16", label: "9:16" },
+    { value: "1:1", label: "1:1" }, { value: "4:3", label: "4:3" }, { value: "3:4", label: "3:4" },
+  ],
+  defaultValue: "16:9",
+};
+
+const DURATION_5_10: ModelSetting = {
+  key: "duration", label: "Durée", type: "select",
+  options: [{ value: "5", label: "5s" }, { value: "10", label: "10s" }],
+  defaultValue: "5",
+};
+
+const DURATION_5_10_15: ModelSetting = {
+  key: "duration", label: "Durée", type: "select",
+  options: [{ value: "5", label: "5s" }, { value: "10", label: "10s" }, { value: "15", label: "15s" }],
+  defaultValue: "5",
+};
+
+const IMAGE_SIZE_FLUX: ModelSetting = {
+  key: "image_size", label: "Taille", type: "select",
+  options: [
+    { value: "square_hd", label: "Carré HD" }, { value: "square", label: "Carré" },
+    { value: "portrait_4_3", label: "Portrait 4:3" }, { value: "portrait_16_9", label: "Portrait 16:9" },
+    { value: "landscape_4_3", label: "Paysage 4:3" }, { value: "landscape_16_9", label: "Paysage 16:9" },
+  ],
+  defaultValue: "square_hd",
+};
+
+const SEED_SETTING: ModelSetting = {
+  key: "seed", label: "Seed (0 = aléatoire)", type: "slider", min: 0, max: 9999999, step: 1, defaultValue: 0,
+};
+
+const GUIDANCE_SCALE: ModelSetting = {
+  key: "guidance_scale", label: "Guidance Scale", type: "slider", min: 1, max: 20, step: 0.5, defaultValue: 3.5,
+};
+
+const INFERENCE_STEPS = (def = 28, max = 50): ModelSetting => ({
+  key: "num_inference_steps", label: "Étapes d'inférence", type: "slider", min: 10, max, step: 1, defaultValue: def,
+});
+
+// ════════════════════════════════════════
+//  IMAGE MODELS
+// ════════════════════════════════════════
+
 export const FAL_MODELS: FalModel[] = [
+  // ── Nano Banana ──
   {
-    id: "nano-banana-pro",
-    type: "image",
-    name: "Nano Banana Pro",
+    id: "nano-banana-pro", type: "image", brand: "Nano Banana", name: "Pro",
     endpoint: "fal-ai/nano-banana-pro",
-    description: "Rapide et polyvalent, bon rapport qualité/vitesse",
-    icon: "🍌",
-    color: "from-yellow-500 to-orange-400",
-    maxImages: 4,
-    supportsImageInput: true,
+    description: "Rapide et polyvalent", icon: "🍌", color: "from-yellow-500 to-orange-400",
+    maxImages: 4, supportsImageInput: true,
     settings: [
-      {
-        key: "aspect_ratio",
-        label: "Ratio",
-        type: "select",
-        options: [
-          { value: "1:1", label: "1:1" },
-          { value: "4:5", label: "4:5" },
-          { value: "5:4", label: "5:4" },
-          { value: "4:3", label: "4:3" },
-          { value: "3:4", label: "3:4" },
-          { value: "16:9", label: "16:9" },
-          { value: "9:16", label: "9:16" },
-        ],
-        defaultValue: "4:5",
-      },
-      {
-        key: "resolution",
-        label: "Résolution",
-        type: "select",
-        options: [
-          { value: "1K", label: "1K" },
-          { value: "2K", label: "2K" },
-          { value: "4K", label: "4K" },
-        ],
-        defaultValue: "2K",
-      },
+      { key: "aspect_ratio", label: "Ratio", type: "select", options: [
+        { value: "1:1", label: "1:1" }, { value: "4:5", label: "4:5" }, { value: "5:4", label: "5:4" },
+        { value: "4:3", label: "4:3" }, { value: "3:4", label: "3:4" },
+        { value: "16:9", label: "16:9" }, { value: "9:16", label: "9:16" },
+      ], defaultValue: "4:5" },
+      { key: "resolution", label: "Résolution", type: "select", options: [
+        { value: "1K", label: "1K" }, { value: "2K", label: "2K" }, { value: "4K", label: "4K" },
+      ], defaultValue: "2K" },
     ],
   },
+
+  // ── FLUX ──
   {
-    id: "flux-dev",
-    type: "image",
-    name: "FLUX.1 [dev]",
+    id: "flux-dev", type: "image", brand: "FLUX", name: "[dev]",
     endpoint: "fal-ai/flux/dev",
-    description: "Haute qualité, meilleur rendu détaillé",
-    icon: "⚡",
-    color: "from-blue-500 to-cyan-400",
-    maxImages: 4,
-    supportsImageInput: false,
-    settings: [
-      {
-        key: "image_size",
-        label: "Taille",
-        type: "select",
-        options: [
-          { value: "square_hd", label: "Carré HD" },
-          { value: "square", label: "Carré" },
-          { value: "portrait_4_3", label: "Portrait 4:3" },
-          { value: "portrait_16_9", label: "Portrait 16:9" },
-          { value: "landscape_4_3", label: "Paysage 4:3" },
-          { value: "landscape_16_9", label: "Paysage 16:9" },
-        ],
-        defaultValue: "square_hd",
-      },
-      {
-        key: "num_inference_steps",
-        label: "Étapes d'inférence",
-        type: "slider",
-        min: 10,
-        max: 50,
-        step: 1,
-        defaultValue: 28,
-      },
-      {
-        key: "guidance_scale",
-        label: "Guidance Scale",
-        type: "slider",
-        min: 1,
-        max: 20,
-        step: 0.5,
-        defaultValue: 3.5,
-      },
-      {
-        key: "seed",
-        label: "Seed (0 = aléatoire)",
-        type: "slider",
-        min: 0,
-        max: 9999999,
-        step: 1,
-        defaultValue: 0,
-      },
-    ],
+    description: "Haute qualité, rendu détaillé", icon: "⚡", color: "from-blue-500 to-cyan-400",
+    maxImages: 4, supportsImageInput: false,
+    settings: [IMAGE_SIZE_FLUX, INFERENCE_STEPS(), GUIDANCE_SCALE, SEED_SETTING],
   },
   {
-    id: "flux-schnell",
-    type: "image",
-    name: "FLUX.1 [schnell]",
+    id: "flux-schnell", type: "image", brand: "FLUX", name: "[schnell]",
     endpoint: "fal-ai/flux/schnell",
-    description: "Ultra rapide, 4 étapes seulement",
-    icon: "🚀",
-    color: "from-green-500 to-emerald-400",
-    maxImages: 4,
-    supportsImageInput: false,
+    description: "Ultra rapide, 4 étapes", icon: "🚀", color: "from-green-500 to-emerald-400",
+    maxImages: 4, supportsImageInput: false,
     settings: [
-      {
-        key: "image_size",
-        label: "Taille",
-        type: "select",
-        options: [
-          { value: "square_hd", label: "Carré HD" },
-          { value: "square", label: "Carré" },
-          { value: "portrait_4_3", label: "Portrait 4:3" },
-          { value: "portrait_16_9", label: "Portrait 16:9" },
-          { value: "landscape_4_3", label: "Paysage 4:3" },
-          { value: "landscape_16_9", label: "Paysage 16:9" },
-        ],
-        defaultValue: "square_hd",
-      },
-      {
-        key: "num_inference_steps",
-        label: "Étapes",
-        type: "slider",
-        min: 1,
-        max: 12,
-        step: 1,
-        defaultValue: 4,
-      },
+      IMAGE_SIZE_FLUX,
+      { key: "num_inference_steps", label: "Étapes", type: "slider", min: 1, max: 12, step: 1, defaultValue: 4 },
     ],
   },
   {
-    id: "flux-pro-ultra",
-    type: "image",
-    name: "FLUX Pro v1.1 Ultra",
+    id: "flux-pro-ultra", type: "image", brand: "FLUX", name: "Pro v1.1 Ultra",
     endpoint: "fal-ai/flux-pro/v1.1-ultra",
-    description: "Pro 2K, qualité maximale",
-    icon: "💎",
-    color: "from-purple-500 to-pink-400",
-    maxImages: 1,
-    supportsImageInput: false,
+    description: "Pro 2K, qualité maximale", icon: "💎", color: "from-purple-500 to-pink-400",
+    maxImages: 1, supportsImageInput: false,
     settings: [
-      {
-        key: "aspect_ratio",
-        label: "Ratio",
-        type: "select",
-        options: [
-          { value: "1:1", label: "1:1" },
-          { value: "4:3", label: "4:3" },
-          { value: "3:4", label: "3:4" },
-          { value: "16:9", label: "16:9" },
-          { value: "9:16", label: "9:16" },
-          { value: "21:9", label: "21:9" },
-        ],
-        defaultValue: "1:1",
-      },
-      {
-        key: "raw",
-        label: "Mode Raw (moins stylisé)",
-        type: "toggle",
-        defaultValue: false,
-      },
-      {
-        key: "seed",
-        label: "Seed (0 = aléatoire)",
-        type: "slider",
-        min: 0,
-        max: 9999999,
-        step: 1,
-        defaultValue: 0,
-      },
+      { key: "aspect_ratio", label: "Ratio", type: "select", options: [
+        { value: "1:1", label: "1:1" }, { value: "4:3", label: "4:3" }, { value: "3:4", label: "3:4" },
+        { value: "16:9", label: "16:9" }, { value: "9:16", label: "9:16" }, { value: "21:9", label: "21:9" },
+      ], defaultValue: "1:1" },
+      { key: "raw", label: "Mode Raw (moins stylisé)", type: "toggle", defaultValue: false },
+      SEED_SETTING,
     ],
   },
   {
-    id: "flux-kontext",
-    type: "image",
-    name: "FLUX Kontext [pro]",
+    id: "flux-kontext", type: "image", brand: "FLUX", name: "Kontext [pro]",
     endpoint: "fal-ai/flux-pro/kontext",
-    description: "Édition contextuelle avec image de référence",
-    icon: "🎨",
-    color: "from-orange-500 to-red-400",
-    maxImages: 1,
-    supportsImageInput: true,
-    settings: [
-      {
-        key: "num_inference_steps",
-        label: "Étapes d'inférence",
-        type: "slider",
-        min: 10,
-        max: 50,
-        step: 1,
-        defaultValue: 28,
-      },
-      {
-        key: "guidance_scale",
-        label: "Guidance Scale",
-        type: "slider",
-        min: 1,
-        max: 20,
-        step: 0.5,
-        defaultValue: 3.5,
-      },
-      {
-        key: "seed",
-        label: "Seed (0 = aléatoire)",
-        type: "slider",
-        min: 0,
-        max: 9999999,
-        step: 1,
-        defaultValue: 0,
-      },
-    ],
+    description: "Édition contextuelle avec image", icon: "🎨", color: "from-orange-500 to-red-400",
+    maxImages: 1, supportsImageInput: true,
+    settings: [INFERENCE_STEPS(), GUIDANCE_SCALE, SEED_SETTING],
   },
   {
-    id: "recraft-v3",
-    type: "image",
-    name: "Recraft V3",
-    endpoint: "fal-ai/recraft/v3",
-    description: "SOTA en génération, styles variés, texte dans l'image",
-    icon: "🖌️",
-    color: "from-rose-500 to-fuchsia-400",
-    maxImages: 2,
-    supportsImageInput: false,
-    settings: [
-      {
-        key: "style",
-        label: "Style",
-        type: "select",
-        options: [
-          { value: "realistic_image", label: "Réaliste" },
-          { value: "digital_illustration", label: "Illustration digitale" },
-          { value: "vector_illustration", label: "Illustration vectorielle" },
-          { value: "icon", label: "Icône" },
-        ],
-        defaultValue: "realistic_image",
-      },
-      {
-        key: "image_size",
-        label: "Taille",
-        type: "select",
-        options: [
-          { value: "1024x1024", label: "1024×1024" },
-          { value: "1365x1024", label: "1365×1024" },
-          { value: "1024x1365", label: "1024×1365" },
-          { value: "1536x1024", label: "1536×1024" },
-          { value: "1024x1536", label: "1024×1536" },
-        ],
-        defaultValue: "1024x1024",
-      },
-    ],
-  },
-  {
-    id: "ideogram-v2",
-    type: "image",
-    name: "Ideogram V2",
-    endpoint: "fal-ai/ideogram/v2",
-    description: "Excellent pour le texte dans les images",
-    icon: "✍️",
-    color: "from-indigo-500 to-blue-400",
-    maxImages: 1,
-    supportsImageInput: false,
-    settings: [
-      {
-        key: "aspect_ratio",
-        label: "Ratio",
-        type: "select",
-        options: [
-          { value: "1:1", label: "1:1" },
-          { value: "4:3", label: "4:3" },
-          { value: "3:4", label: "3:4" },
-          { value: "16:9", label: "16:9" },
-          { value: "9:16", label: "9:16" },
-          { value: "3:2", label: "3:2" },
-          { value: "2:3", label: "2:3" },
-        ],
-        defaultValue: "1:1",
-      },
-      {
-        key: "style_type",
-        label: "Type de style",
-        type: "select",
-        options: [
-          { value: "auto", label: "Auto" },
-          { value: "general", label: "Général" },
-          { value: "realistic", label: "Réaliste" },
-          { value: "design", label: "Design" },
-          { value: "render_3d", label: "Rendu 3D" },
-          { value: "anime", label: "Anime" },
-        ],
-        defaultValue: "auto",
-      },
-      {
-        key: "negative_prompt",
-        label: "Prompt négatif",
-        type: "text",
-        defaultValue: "",
-        description: "Ce que vous ne voulez PAS dans l'image",
-      },
-    ],
-  },
-  {
-    id: "imagen4",
-    type: "image",
-    name: "Google Imagen 4",
-    endpoint: "fal-ai/imagen4/preview",
-    description: "Modèle Google, images hyper-détaillées",
-    icon: "🔮",
-    color: "from-sky-500 to-blue-400",
-    maxImages: 4,
-    supportsImageInput: false,
-    settings: [
-      {
-        key: "aspect_ratio",
-        label: "Ratio",
-        type: "select",
-        options: [
-          { value: "1:1", label: "1:1" },
-          { value: "3:4", label: "3:4" },
-          { value: "4:3", label: "4:3" },
-          { value: "9:16", label: "9:16" },
-          { value: "16:9", label: "16:9" },
-        ],
-        defaultValue: "1:1",
-      },
-    ],
-  },
-  {
-    id: "fast-sdxl",
-    type: "image",
-    name: "Fast SDXL",
-    endpoint: "fal-ai/fast-sdxl",
-    description: "Stable Diffusion XL rapide, très personnalisable",
-    icon: "🎯",
-    color: "from-amber-500 to-yellow-400",
-    maxImages: 4,
-    supportsImageInput: false,
-    settings: [
-      {
-        key: "image_size",
-        label: "Taille",
-        type: "select",
-        options: [
-          { value: "square_hd", label: "Carré HD" },
-          { value: "square", label: "Carré" },
-          { value: "portrait_4_3", label: "Portrait 4:3" },
-          { value: "portrait_16_9", label: "Portrait 16:9" },
-          { value: "landscape_4_3", label: "Paysage 4:3" },
-          { value: "landscape_16_9", label: "Paysage 16:9" },
-        ],
-        defaultValue: "square_hd",
-      },
-      {
-        key: "num_inference_steps",
-        label: "Étapes d'inférence",
-        type: "slider",
-        min: 10,
-        max: 50,
-        step: 1,
-        defaultValue: 25,
-      },
-      {
-        key: "guidance_scale",
-        label: "Guidance Scale",
-        type: "slider",
-        min: 1,
-        max: 20,
-        step: 0.5,
-        defaultValue: 7.5,
-      },
-      {
-        key: "negative_prompt",
-        label: "Prompt négatif",
-        type: "text",
-        defaultValue: "",
-        description: "Ce que vous ne voulez PAS",
-      },
-      {
-        key: "seed",
-        label: "Seed (0 = aléatoire)",
-        type: "slider",
-        min: 0,
-        max: 9999999,
-        step: 1,
-        defaultValue: 0,
-      },
-    ],
-  },
-  {
-    id: "hidream-i1",
-    type: "image",
-    name: "HiDream I1 Full",
-    endpoint: "fal-ai/hidream-i1-full",
-    description: "Modèle open-source haute qualité",
-    icon: "🌈",
-    color: "from-teal-500 to-cyan-400",
-    maxImages: 1,
-    supportsImageInput: false,
-    settings: [
-      {
-        key: "image_size",
-        label: "Taille",
-        type: "select",
-        options: [
-          { value: "square_hd", label: "Carré HD" },
-          { value: "square", label: "Carré" },
-          { value: "portrait_4_3", label: "Portrait 4:3" },
-          { value: "portrait_16_9", label: "Portrait 16:9" },
-          { value: "landscape_4_3", label: "Paysage 4:3" },
-          { value: "landscape_16_9", label: "Paysage 16:9" },
-        ],
-        defaultValue: "square_hd",
-      },
-      {
-        key: "num_inference_steps",
-        label: "Étapes d'inférence",
-        type: "slider",
-        min: 10,
-        max: 50,
-        step: 1,
-        defaultValue: 28,
-      },
-      {
-        key: "guidance_scale",
-        label: "Guidance Scale",
-        type: "slider",
-        min: 1,
-        max: 15,
-        step: 0.5,
-        defaultValue: 5,
-      },
-      {
-        key: "seed",
-        label: "Seed (0 = aléatoire)",
-        type: "slider",
-        min: 0,
-        max: 9999999,
-        step: 1,
-        defaultValue: 0,
-      },
-    ],
-  },
-  {
-    id: "flux2-dev",
-    type: "image",
-    name: "FLUX.2 [dev]",
+    id: "flux2-dev", type: "image", brand: "FLUX", name: "2 [dev]",
     endpoint: "fal-ai/flux2/dev",
-    description: "Dernière génération FLUX, édition avancée",
-    icon: "⚡",
-    color: "from-violet-500 to-purple-400",
-    maxImages: 1,
-    supportsImageInput: true,
+    description: "Dernière génération, édition avancée", icon: "⚡", color: "from-violet-500 to-purple-400",
+    maxImages: 1, supportsImageInput: true,
+    settings: [IMAGE_SIZE_FLUX, INFERENCE_STEPS(), GUIDANCE_SCALE],
+  },
+
+  // ── Google ──
+  {
+    id: "imagen4", type: "image", brand: "Google", name: "Imagen 4",
+    endpoint: "fal-ai/imagen4/preview",
+    description: "Images hyper-détaillées", icon: "🔮", color: "from-sky-500 to-blue-400",
+    maxImages: 4, supportsImageInput: false,
     settings: [
-      {
-        key: "image_size",
-        label: "Taille",
-        type: "select",
-        options: [
-          { value: "square_hd", label: "Carré HD" },
-          { value: "square", label: "Carré" },
-          { value: "portrait_4_3", label: "Portrait 4:3" },
-          { value: "portrait_16_9", label: "Portrait 16:9" },
-          { value: "landscape_4_3", label: "Paysage 4:3" },
-          { value: "landscape_16_9", label: "Paysage 16:9" },
-        ],
-        defaultValue: "square_hd",
-      },
-      {
-        key: "num_inference_steps",
-        label: "Étapes d'inférence",
-        type: "slider",
-        min: 10,
-        max: 50,
-        step: 1,
-        defaultValue: 28,
-      },
-      {
-        key: "guidance_scale",
-        label: "Guidance Scale",
-        type: "slider",
-        min: 1,
-        max: 20,
-        step: 0.5,
-        defaultValue: 3.5,
-      },
+      { key: "aspect_ratio", label: "Ratio", type: "select", options: [
+        { value: "1:1", label: "1:1" }, { value: "3:4", label: "3:4" }, { value: "4:3", label: "4:3" },
+        { value: "9:16", label: "9:16" }, { value: "16:9", label: "16:9" },
+      ], defaultValue: "1:1" },
     ],
   },
-  // ===== VIDEO MODELS =====
+
+  // ── Recraft ──
   {
-    id: "veo3",
-    type: "video",
-    name: "Google Veo 3",
+    id: "recraft-v3", type: "image", brand: "Recraft", name: "V3",
+    endpoint: "fal-ai/recraft/v3",
+    description: "SOTA, styles variés, texte dans l'image", icon: "🖌️", color: "from-rose-500 to-fuchsia-400",
+    maxImages: 2, supportsImageInput: false,
+    settings: [
+      { key: "style", label: "Style", type: "select", options: [
+        { value: "realistic_image", label: "Réaliste" }, { value: "digital_illustration", label: "Illustration digitale" },
+        { value: "vector_illustration", label: "Illustration vectorielle" }, { value: "icon", label: "Icône" },
+      ], defaultValue: "realistic_image" },
+      { key: "image_size", label: "Taille", type: "select", options: [
+        { value: "1024x1024", label: "1024×1024" }, { value: "1365x1024", label: "1365×1024" },
+        { value: "1024x1365", label: "1024×1365" }, { value: "1536x1024", label: "1536×1024" }, { value: "1024x1536", label: "1024×1536" },
+      ], defaultValue: "1024x1024" },
+    ],
+  },
+
+  // ── Ideogram ──
+  {
+    id: "ideogram-v2", type: "image", brand: "Ideogram", name: "V2",
+    endpoint: "fal-ai/ideogram/v2",
+    description: "Excellent pour le texte dans les images", icon: "✍️", color: "from-indigo-500 to-blue-400",
+    maxImages: 1, supportsImageInput: false,
+    settings: [
+      { key: "aspect_ratio", label: "Ratio", type: "select", options: [
+        { value: "1:1", label: "1:1" }, { value: "4:3", label: "4:3" }, { value: "3:4", label: "3:4" },
+        { value: "16:9", label: "16:9" }, { value: "9:16", label: "9:16" }, { value: "3:2", label: "3:2" }, { value: "2:3", label: "2:3" },
+      ], defaultValue: "1:1" },
+      { key: "style_type", label: "Type de style", type: "select", options: [
+        { value: "auto", label: "Auto" }, { value: "general", label: "Général" }, { value: "realistic", label: "Réaliste" },
+        { value: "design", label: "Design" }, { value: "render_3d", label: "Rendu 3D" }, { value: "anime", label: "Anime" },
+      ], defaultValue: "auto" },
+      { key: "negative_prompt", label: "Prompt négatif", type: "text", defaultValue: "", description: "Ce que vous ne voulez PAS" },
+    ],
+  },
+
+  // ── Stable Diffusion ──
+  {
+    id: "fast-sdxl", type: "image", brand: "Stable Diffusion", name: "Fast SDXL",
+    endpoint: "fal-ai/fast-sdxl",
+    description: "Rapide, très personnalisable", icon: "🎯", color: "from-amber-500 to-yellow-400",
+    maxImages: 4, supportsImageInput: false,
+    settings: [
+      IMAGE_SIZE_FLUX, INFERENCE_STEPS(25), 
+      { key: "guidance_scale", label: "Guidance Scale", type: "slider", min: 1, max: 20, step: 0.5, defaultValue: 7.5 },
+      { key: "negative_prompt", label: "Prompt négatif", type: "text", defaultValue: "", description: "Ce que vous ne voulez PAS" },
+      SEED_SETTING,
+    ],
+  },
+
+  // ── HiDream ──
+  {
+    id: "hidream-i1", type: "image", brand: "HiDream", name: "I1 Full",
+    endpoint: "fal-ai/hidream-i1-full",
+    description: "Open-source haute qualité", icon: "🌈", color: "from-teal-500 to-cyan-400",
+    maxImages: 1, supportsImageInput: false,
+    settings: [
+      IMAGE_SIZE_FLUX, INFERENCE_STEPS(),
+      { key: "guidance_scale", label: "Guidance Scale", type: "slider", min: 1, max: 15, step: 0.5, defaultValue: 5 },
+      SEED_SETTING,
+    ],
+  },
+
+  // ════════════════════════════════════════
+  //  VIDEO MODELS
+  // ════════════════════════════════════════
+
+  // ── Google ──
+  {
+    id: "veo3", type: "video", brand: "Google", name: "Veo 3",
     endpoint: "fal-ai/veo3",
-    description: "Google, vidéo haute qualité avec audio",
-    icon: "🎬",
-    color: "from-red-500 to-rose-400",
-    maxImages: 1,
-    supportsImageInput: false,
+    description: "Vidéo haute qualité avec audio", icon: "🎬", color: "from-red-500 to-rose-400",
+    maxImages: 1, supportsImageInput: false,
     settings: [
-      {
-        key: "duration",
-        label: "Durée (secondes)",
-        type: "select",
-        options: [
-          { value: "5", label: "5s" },
-          { value: "8", label: "8s" },
-        ],
-        defaultValue: "8",
-      },
-      {
-        key: "aspect_ratio",
-        label: "Ratio",
-        type: "select",
-        options: [
-          { value: "16:9", label: "16:9" },
-          { value: "9:16", label: "9:16" },
-          { value: "1:1", label: "1:1" },
-        ],
-        defaultValue: "16:9",
-      },
-      {
-        key: "include_audio",
-        label: "Inclure l'audio",
-        type: "toggle",
-        defaultValue: true,
-      },
+      { key: "duration", label: "Durée", type: "select", options: [{ value: "5", label: "5s" }, { value: "8", label: "8s" }], defaultValue: "8" },
+      { ...ASPECT_RATIO_STANDARD },
+      { key: "include_audio", label: "Inclure l'audio", type: "toggle", defaultValue: true },
     ],
   },
+
+  // ── Kling ──
   {
-    id: "minimax-video",
-    type: "video",
-    name: "MiniMax Video",
-    endpoint: "fal-ai/minimax/video-01-live",
-    description: "Vidéo fluide et expressive",
-    icon: "🎥",
-    color: "from-cyan-500 to-teal-400",
-    maxImages: 1,
-    supportsImageInput: false,
-    settings: [
-      {
-        key: "prompt_optimizer",
-        label: "Optimiser le prompt",
-        type: "toggle",
-        defaultValue: true,
-      },
-    ],
-  },
-  {
-    id: "kling-v3-std-t2v",
-    type: "video",
-    name: "Kling 3.0 Standard",
+    id: "kling-v3-std-t2v", type: "video", brand: "Kling", name: "3.0 Standard (T2V)",
     endpoint: "fal-ai/kling-video/v3/standard/text-to-video",
-    description: "Dernière génération, cinématique avec audio natif",
-    icon: "🎬",
-    color: "from-emerald-500 to-green-400",
-    maxImages: 1,
-    supportsImageInput: false,
+    description: "Dernière génération, cinématique + audio", icon: "🎬", color: "from-emerald-500 to-green-400",
+    maxImages: 1, supportsImageInput: false,
     settings: [
-      {
-        key: "duration",
-        label: "Durée",
-        type: "select",
-        options: [
-          { value: "5", label: "5s" },
-          { value: "10", label: "10s" },
-        ],
-        defaultValue: "5",
-      },
-      {
-        key: "aspect_ratio",
-        label: "Ratio",
-        type: "select",
-        options: [
-          { value: "16:9", label: "16:9" },
-          { value: "9:16", label: "9:16" },
-          { value: "1:1", label: "1:1" },
-        ],
-        defaultValue: "16:9",
-      },
-      {
-        key: "generate_audio",
-        label: "Générer l'audio",
-        type: "toggle",
-        defaultValue: false,
-      },
+      DURATION_5_10, { ...ASPECT_RATIO_STANDARD },
+      { key: "generate_audio", label: "Générer l'audio", type: "toggle", defaultValue: false },
     ],
   },
   {
-    id: "kling-v3-pro-t2v",
-    type: "video",
-    name: "Kling 3.0 Pro",
+    id: "kling-v3-pro-t2v", type: "video", brand: "Kling", name: "3.0 Pro (T2V)",
     endpoint: "fal-ai/kling-video/o3/pro/text-to-video",
-    description: "Pro cinématique, qualité maximale",
-    icon: "💎",
-    color: "from-emerald-600 to-teal-400",
-    maxImages: 1,
-    supportsImageInput: false,
+    description: "Pro cinématique, qualité max", icon: "💎", color: "from-emerald-600 to-teal-400",
+    maxImages: 1, supportsImageInput: false,
     settings: [
-      {
-        key: "duration",
-        label: "Durée",
-        type: "select",
-        options: [
-          { value: "5", label: "5s" },
-          { value: "10", label: "10s" },
-        ],
-        defaultValue: "5",
-      },
-      {
-        key: "aspect_ratio",
-        label: "Ratio",
-        type: "select",
-        options: [
-          { value: "16:9", label: "16:9" },
-          { value: "9:16", label: "9:16" },
-          { value: "1:1", label: "1:1" },
-        ],
-        defaultValue: "16:9",
-      },
-      {
-        key: "generate_audio",
-        label: "Générer l'audio",
-        type: "toggle",
-        defaultValue: false,
-      },
+      DURATION_5_10, { ...ASPECT_RATIO_STANDARD },
+      { key: "generate_audio", label: "Générer l'audio", type: "toggle", defaultValue: false },
     ],
   },
   {
-    id: "kling-v25-turbo-i2v",
-    type: "video",
-    name: "Kling 2.5 Turbo Pro",
+    id: "kling-v25-turbo-i2v", type: "video", brand: "Kling", name: "2.5 Turbo Pro (I2V)",
     endpoint: "fal-ai/kling-video/v2.5-turbo/pro/image-to-video",
-    description: "Image vers vidéo, fluidité cinématique",
-    icon: "⚡",
-    color: "from-lime-500 to-emerald-400",
-    maxImages: 1,
-    supportsImageInput: true,
-    settings: [
-      {
-        key: "duration",
-        label: "Durée",
-        type: "select",
-        options: [
-          { value: "5", label: "5s" },
-          { value: "10", label: "10s" },
-        ],
-        defaultValue: "5",
-      },
-    ],
+    description: "Image vers vidéo, fluidité cinématique", icon: "⚡", color: "from-lime-500 to-emerald-400",
+    maxImages: 1, supportsImageInput: true,
+    settings: [DURATION_5_10],
   },
   {
-    id: "kling-v21-std-i2v",
-    type: "video",
-    name: "Kling 2.1 Standard",
+    id: "kling-v21-std-i2v", type: "video", brand: "Kling", name: "2.1 Standard (I2V)",
     endpoint: "fal-ai/kling-video/v2.1/standard/image-to-video",
-    description: "Image vers vidéo, bon rapport qualité/prix",
-    icon: "🎞️",
-    color: "from-green-500 to-lime-400",
-    maxImages: 1,
-    supportsImageInput: true,
-    settings: [
-      {
-        key: "duration",
-        label: "Durée",
-        type: "select",
-        options: [
-          { value: "5", label: "5s" },
-          { value: "10", label: "10s" },
-        ],
-        defaultValue: "5",
-      },
-    ],
+    description: "Image vers vidéo, bon rapport qualité/prix", icon: "🎞️", color: "from-green-500 to-lime-400",
+    maxImages: 1, supportsImageInput: true,
+    settings: [DURATION_5_10],
   },
   {
-    id: "kling-v2-master-t2v",
-    type: "video",
-    name: "Kling 2.0 Master",
+    id: "kling-v2-master-t2v", type: "video", brand: "Kling", name: "2.0 Master (T2V)",
     endpoint: "fal-ai/kling-video/v2/master/text-to-video",
-    description: "Text-to-video haute qualité",
-    icon: "🏆",
-    color: "from-teal-500 to-green-400",
-    maxImages: 1,
-    supportsImageInput: false,
-    settings: [
-      {
-        key: "duration",
-        label: "Durée",
-        type: "select",
-        options: [
-          { value: "5", label: "5s" },
-          { value: "10", label: "10s" },
-        ],
-        defaultValue: "5",
-      },
-      {
-        key: "aspect_ratio",
-        label: "Ratio",
-        type: "select",
-        options: [
-          { value: "16:9", label: "16:9" },
-          { value: "9:16", label: "9:16" },
-          { value: "1:1", label: "1:1" },
-        ],
-        defaultValue: "16:9",
-      },
-    ],
+    description: "Text-to-video haute qualité", icon: "🏆", color: "from-teal-500 to-green-400",
+    maxImages: 1, supportsImageInput: false,
+    settings: [DURATION_5_10, { ...ASPECT_RATIO_STANDARD }],
   },
   {
-    id: "kling-v16-std-t2v",
-    type: "video",
-    name: "Kling 1.6 Standard",
+    id: "kling-v16-std-t2v", type: "video", brand: "Kling", name: "1.6 Standard (T2V)",
     endpoint: "fal-ai/kling-video/v1.6/standard/text-to-video",
-    description: "Vidéos réalistes, mouvements naturels",
-    icon: "🎥",
-    color: "from-green-400 to-emerald-300",
-    maxImages: 1,
-    supportsImageInput: false,
-    settings: [
-      {
-        key: "duration",
-        label: "Durée",
-        type: "select",
-        options: [
-          { value: "5", label: "5s" },
-          { value: "10", label: "10s" },
-        ],
-        defaultValue: "5",
-      },
-      {
-        key: "aspect_ratio",
-        label: "Ratio",
-        type: "select",
-        options: [
-          { value: "16:9", label: "16:9" },
-          { value: "9:16", label: "9:16" },
-          { value: "1:1", label: "1:1" },
-        ],
-        defaultValue: "16:9",
-      },
-    ],
+    description: "Vidéos réalistes, mouvements naturels", icon: "🎥", color: "from-green-400 to-emerald-300",
+    maxImages: 1, supportsImageInput: false,
+    settings: [DURATION_5_10, { ...ASPECT_RATIO_STANDARD }],
   },
   {
-    id: "kling-v16-elements",
-    type: "video",
-    name: "Kling 1.6 Elements",
+    id: "kling-v16-elements", type: "video", brand: "Kling", name: "1.6 Elements (Multi-I2V)",
     endpoint: "fal-ai/kling-video/v1.6/standard/elements",
-    description: "Multi-images vers vidéo (jusqu'à 4 images)",
-    icon: "🧩",
-    color: "from-emerald-400 to-cyan-400",
-    maxImages: 1,
-    supportsImageInput: true,
+    description: "Multi-images vers vidéo (jusqu'à 4)", icon: "🧩", color: "from-emerald-400 to-cyan-400",
+    maxImages: 1, supportsImageInput: true,
+    settings: [DURATION_5_10],
+  },
+
+  // ── Seedance (Bytedance) ──
+  {
+    id: "seedance-pro-t2v", type: "video", brand: "Seedance", name: "1.0 Pro (T2V)",
+    endpoint: "fal-ai/bytedance/seedance/v1/pro/text-to-video",
+    description: "Haute qualité, multi-ratios", icon: "🌱", color: "from-green-500 to-teal-400",
+    maxImages: 1, supportsImageInput: false,
     settings: [
-      {
-        key: "duration",
-        label: "Durée",
-        type: "select",
-        options: [
-          { value: "5", label: "5s" },
-          { value: "10", label: "10s" },
-        ],
-        defaultValue: "5",
-      },
+      DURATION_5_10,
+      { ...ASPECT_RATIO_STANDARD },
+      { key: "resolution", label: "Résolution", type: "select", options: [
+        { value: "720p", label: "720p" }, { value: "1080p", label: "1080p" },
+      ], defaultValue: "720p" },
     ],
   },
   {
-    id: "framepack-f1",
-    type: "video",
-    name: "Framepack F1",
-    endpoint: "fal-ai/framepack/f1",
-    description: "Image vers vidéo, animation réaliste",
-    icon: "🖼️",
-    color: "from-fuchsia-500 to-pink-400",
-    maxImages: 1,
-    supportsImageInput: true,
+    id: "seedance-pro-i2v", type: "video", brand: "Seedance", name: "1.0 Pro (I2V)",
+    endpoint: "fal-ai/bytedance/seedance/v1/pro/image-to-video",
+    description: "Image vers vidéo haute qualité", icon: "🌿", color: "from-teal-500 to-emerald-400",
+    maxImages: 1, supportsImageInput: true,
+    settings: [DURATION_5_10],
+  },
+  {
+    id: "seedance-pro-fast-t2v", type: "video", brand: "Seedance", name: "1.0 Pro Fast (T2V)",
+    endpoint: "fal-ai/bytedance/seedance/v1/pro/fast/text-to-video",
+    description: "Rapide et efficace", icon: "⚡", color: "from-lime-500 to-green-400",
+    maxImages: 1, supportsImageInput: false,
     settings: [
-      {
-        key: "num_inference_steps",
-        label: "Étapes d'inférence",
-        type: "slider",
-        min: 10,
-        max: 50,
-        step: 1,
-        defaultValue: 25,
-      },
-      {
-        key: "seed",
-        label: "Seed (0 = aléatoire)",
-        type: "slider",
-        min: 0,
-        max: 9999999,
-        step: 1,
-        defaultValue: 0,
-      },
+      DURATION_5_10,
+      { ...ASPECT_RATIO_STANDARD },
+      { key: "resolution", label: "Résolution", type: "select", options: [
+        { value: "720p", label: "720p" }, { value: "1080p", label: "1080p" },
+      ], defaultValue: "720p" },
     ],
+  },
+  {
+    id: "seedance-pro-fast-i2v", type: "video", brand: "Seedance", name: "1.0 Pro Fast (I2V)",
+    endpoint: "fal-ai/bytedance/seedance/v1/pro/fast/image-to-video",
+    description: "Image vers vidéo rapide", icon: "🚀", color: "from-cyan-500 to-green-400",
+    maxImages: 1, supportsImageInput: true,
+    settings: [DURATION_5_10],
+  },
+  {
+    id: "seedance-15-pro-i2v", type: "video", brand: "Seedance", name: "1.5 Pro (I2V + Audio)",
+    endpoint: "fal-ai/bytedance/seedance/v1.5/pro/image-to-video",
+    description: "Image vers vidéo avec audio", icon: "🔊", color: "from-teal-600 to-cyan-400",
+    maxImages: 1, supportsImageInput: true,
+    settings: [
+      DURATION_5_10,
+      { key: "generate_audio", label: "Générer l'audio", type: "toggle", defaultValue: true },
+    ],
+  },
+  {
+    id: "seedance-lite-i2v", type: "video", brand: "Seedance", name: "1.0 Lite (I2V)",
+    endpoint: "fal-ai/bytedance/seedance/v1/lite/image-to-video",
+    description: "Léger, animation d'image", icon: "🍃", color: "from-green-400 to-lime-300",
+    maxImages: 1, supportsImageInput: true,
+    settings: [DURATION_5_10],
+  },
+  {
+    id: "seedance-lite-ref", type: "video", brand: "Seedance", name: "1.0 Lite Référence (R2V)",
+    endpoint: "fal-ai/bytedance/seedance/v1/lite/reference-to-video",
+    description: "1-4 images de référence vers vidéo", icon: "🎭", color: "from-emerald-400 to-teal-300",
+    maxImages: 1, supportsImageInput: true,
+    settings: [DURATION_5_10],
+  },
+
+  // ── Luma (Ray2) ──
+  {
+    id: "luma-ray2-t2v", type: "video", brand: "Luma", name: "Ray 2 (T2V)",
+    endpoint: "fal-ai/luma-dream-machine/ray-2",
+    description: "Visuals réalistes, mouvement cohérent", icon: "🌟", color: "from-violet-500 to-purple-400",
+    maxImages: 1, supportsImageInput: false,
+    settings: [{ ...ASPECT_RATIO_STANDARD }],
+  },
+  {
+    id: "luma-ray2-i2v", type: "video", brand: "Luma", name: "Ray 2 (I2V)",
+    endpoint: "fal-ai/luma-dream-machine/ray-2/image-to-video",
+    description: "Image vers vidéo cinématique", icon: "✨", color: "from-purple-500 to-violet-400",
+    maxImages: 1, supportsImageInput: true,
+    settings: [{ ...ASPECT_RATIO_STANDARD }],
+  },
+
+  // ── Wan ──
+  {
+    id: "wan-26-t2v", type: "video", brand: "Wan", name: "2.6 (T2V)",
+    endpoint: "wan/v2.6/text-to-video",
+    description: "Multi-shot, jusqu'à 15s, 1080p", icon: "🎭", color: "from-orange-500 to-amber-400",
+    maxImages: 1, supportsImageInput: false,
+    settings: [
+      DURATION_5_10_15,
+      { ...ASPECT_RATIO_STANDARD },
+      { key: "resolution", label: "Résolution", type: "select", options: [
+        { value: "720p", label: "720p" }, { value: "1080p", label: "1080p" },
+      ], defaultValue: "720p" },
+    ],
+  },
+  {
+    id: "wan-26-i2v", type: "video", brand: "Wan", name: "2.6 (I2V)",
+    endpoint: "wan/v2.6/image-to-video",
+    description: "Image vers vidéo, multi-shot", icon: "🖼️", color: "from-amber-500 to-orange-400",
+    maxImages: 1, supportsImageInput: true,
+    settings: [
+      DURATION_5_10_15,
+      { key: "resolution", label: "Résolution", type: "select", options: [
+        { value: "720p", label: "720p" }, { value: "1080p", label: "1080p" },
+      ], defaultValue: "720p" },
+    ],
+  },
+
+  // ── MiniMax ──
+  {
+    id: "minimax-video", type: "video", brand: "MiniMax", name: "Video 01 Live",
+    endpoint: "fal-ai/minimax/video-01-live",
+    description: "Vidéo fluide et expressive", icon: "🎥", color: "from-cyan-500 to-teal-400",
+    maxImages: 1, supportsImageInput: false,
+    settings: [
+      { key: "prompt_optimizer", label: "Optimiser le prompt", type: "toggle", defaultValue: true },
+    ],
+  },
+
+  // ── Framepack ──
+  {
+    id: "framepack-f1", type: "video", brand: "Framepack", name: "F1",
+    endpoint: "fal-ai/framepack/f1",
+    description: "Image vers vidéo, animation réaliste", icon: "🖼️", color: "from-fuchsia-500 to-pink-400",
+    maxImages: 1, supportsImageInput: true,
+    settings: [INFERENCE_STEPS(25), SEED_SETTING],
   },
 ];
+
+// ─── Helpers ───
 
 export function getModelById(id: string): FalModel | undefined {
   return FAL_MODELS.find((m) => m.id === id);
@@ -829,12 +432,25 @@ export function getModelById(id: string): FalModel | undefined {
 
 export function getDefaultSettings(model: FalModel): Record<string, any> {
   const defaults: Record<string, any> = {};
-  model.settings.forEach((s) => {
-    defaults[s.key] = s.defaultValue;
-  });
+  model.settings.forEach((s) => { defaults[s.key] = s.defaultValue; });
   return defaults;
 }
 
 export function getModelsByType(type: ModelType): FalModel[] {
   return FAL_MODELS.filter((m) => m.type === type);
+}
+
+export interface BrandGroup {
+  brand: string;
+  models: FalModel[];
+}
+
+export function getModelsByTypeGrouped(type: ModelType): BrandGroup[] {
+  const models = getModelsByType(type);
+  const map = new Map<string, FalModel[]>();
+  models.forEach((m) => {
+    if (!map.has(m.brand)) map.set(m.brand, []);
+    map.get(m.brand)!.push(m);
+  });
+  return Array.from(map.entries()).map(([brand, models]) => ({ brand, models }));
 }

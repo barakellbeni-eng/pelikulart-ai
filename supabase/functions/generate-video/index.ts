@@ -1,5 +1,4 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -8,8 +7,9 @@ const corsHeaders = {
 };
 
 const MODEL_ENDPOINTS: Record<string, string> = {
+  // Google
   "veo3": "https://queue.fal.run/fal-ai/veo3",
-  "minimax-video": "https://queue.fal.run/fal-ai/minimax/video-01-live",
+  // Kling
   "kling-v3-std-t2v": "https://queue.fal.run/fal-ai/kling-video/v3/standard/text-to-video",
   "kling-v3-pro-t2v": "https://queue.fal.run/fal-ai/kling-video/o3/pro/text-to-video",
   "kling-v25-turbo-i2v": "https://queue.fal.run/fal-ai/kling-video/v2.5-turbo/pro/image-to-video",
@@ -17,6 +17,23 @@ const MODEL_ENDPOINTS: Record<string, string> = {
   "kling-v2-master-t2v": "https://queue.fal.run/fal-ai/kling-video/v2/master/text-to-video",
   "kling-v16-std-t2v": "https://queue.fal.run/fal-ai/kling-video/v1.6/standard/text-to-video",
   "kling-v16-elements": "https://queue.fal.run/fal-ai/kling-video/v1.6/standard/elements",
+  // Seedance
+  "seedance-pro-t2v": "https://queue.fal.run/fal-ai/bytedance/seedance/v1/pro/text-to-video",
+  "seedance-pro-i2v": "https://queue.fal.run/fal-ai/bytedance/seedance/v1/pro/image-to-video",
+  "seedance-pro-fast-t2v": "https://queue.fal.run/fal-ai/bytedance/seedance/v1/pro/fast/text-to-video",
+  "seedance-pro-fast-i2v": "https://queue.fal.run/fal-ai/bytedance/seedance/v1/pro/fast/image-to-video",
+  "seedance-15-pro-i2v": "https://queue.fal.run/fal-ai/bytedance/seedance/v1.5/pro/image-to-video",
+  "seedance-lite-i2v": "https://queue.fal.run/fal-ai/bytedance/seedance/v1/lite/image-to-video",
+  "seedance-lite-ref": "https://queue.fal.run/fal-ai/bytedance/seedance/v1/lite/reference-to-video",
+  // Luma
+  "luma-ray2-t2v": "https://queue.fal.run/fal-ai/luma-dream-machine/ray-2",
+  "luma-ray2-i2v": "https://queue.fal.run/fal-ai/luma-dream-machine/ray-2/image-to-video",
+  // Wan
+  "wan-26-t2v": "https://queue.fal.run/wan/v2.6/text-to-video",
+  "wan-26-i2v": "https://queue.fal.run/wan/v2.6/image-to-video",
+  // MiniMax
+  "minimax-video": "https://queue.fal.run/fal-ai/minimax/video-01-live",
+  // Framepack
   "framepack-f1": "https://queue.fal.run/fal-ai/framepack/f1",
 };
 
@@ -64,12 +81,7 @@ serve(async (req) => {
     if (!FAL_API_KEY) throw new Error("FAL_API_KEY is not configured");
 
     const body = await req.json();
-    const {
-      prompt,
-      model_id = "veo3",
-      image_url,
-      ...modelSettings
-    } = body;
+    const { prompt, model_id = "veo3", image_url, ...modelSettings } = body;
 
     if (!prompt || typeof prompt !== "string") {
       return new Response(
@@ -87,13 +99,10 @@ serve(async (req) => {
     }
 
     const payload: Record<string, any> = { prompt, ...modelSettings };
-
-    // Clean empty/null/seed=0
     for (const key of Object.keys(payload)) {
       if (payload[key] === "" || payload[key] === null || payload[key] === undefined) delete payload[key];
       if (key === "seed" && payload[key] === 0) delete payload[key];
     }
-
     if (image_url) payload.image_url = image_url;
 
     console.log(`Submitting video to ${model_id} (${endpoint}):`, JSON.stringify(payload));
