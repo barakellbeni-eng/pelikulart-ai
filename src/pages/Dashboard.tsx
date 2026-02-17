@@ -27,6 +27,8 @@ import {
   Check,
   Trash2,
   Film,
+  RefreshCw,
+  Info,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
@@ -55,6 +57,10 @@ interface GeneratedImage {
   prompt?: string;
   resolution?: string;
   timestamp?: number;
+  modelId?: string;
+  modelSettings?: Record<string, any>;
+  caurisCost?: number;
+  numImages?: number;
 }
 
 interface GeneratedVideo {
@@ -280,6 +286,7 @@ const Dashboard = () => {
 
       const data = await resp.json();
       const newImages: GeneratedImage[] = [];
+      const cost = calculateCaurisCost(selectedModel, modelSettings, numImages);
 
       if (data.images?.length) {
         data.images.forEach((img: any) => {
@@ -290,10 +297,14 @@ const Dashboard = () => {
             prompt,
             resolution: modelSettings.resolution || modelSettings.image_size || "",
             timestamp: Date.now(),
+            modelId: selectedModel.id,
+            modelSettings: { ...modelSettings },
+            caurisCost: cost,
+            numImages,
           });
         });
       } else if (data.image_url) {
-        newImages.push({ url: data.image_url, prompt, timestamp: Date.now() });
+        newImages.push({ url: data.image_url, prompt, timestamp: Date.now(), modelId: selectedModel.id, modelSettings: { ...modelSettings }, caurisCost: cost, numImages });
       } else {
         throw new Error("Aucune image retournée");
       }
@@ -407,7 +418,6 @@ const Dashboard = () => {
   };
 
   const handleImageToVideo = (img: GeneratedImage) => {
-    // Switch to video tab with the image as reference
     const i2vModels = getModelsByType("video").filter((m) => m.supportsImageInput);
     if (i2vModels.length === 0) return;
     setActiveTab("video");
@@ -418,6 +428,20 @@ const Dashboard = () => {
     if (img.prompt) setPrompt(img.prompt);
     setPreviewImage(null);
     toast.success("Image chargée dans le générateur vidéo !");
+  };
+
+  const handleRecreateImage = (img: GeneratedImage) => {
+    if (img.prompt) setPrompt(img.prompt);
+    if (img.modelId) {
+      const model = getModelById(img.modelId);
+      if (model) {
+        setActiveTab("image");
+        setSelectedModel(model);
+        setModelSettings(img.modelSettings || getDefaultSettings(model));
+      }
+    }
+    setPreviewImage(null);
+    toast.success("Paramètres restaurés, prêt à recréer !");
   };
 
   // Render a single setting control
@@ -917,17 +941,30 @@ const Dashboard = () => {
                   >
                     <img src={img.url} alt={img.prompt || "Generated"} className="w-full h-full object-cover rounded-xl" loading="lazy" />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                      <div className="absolute top-1.5 right-1.5 flex items-center gap-1">
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handleImageToVideo(img); }}
+                          className="w-6 h-6 rounded-md bg-white/10 backdrop-blur-sm flex items-center justify-center hover:bg-white/25 transition-colors"
+                          title="Animer en vidéo"
+                        >
+                          <Film className="w-3 h-3 text-white" />
+                        </button>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handleRecreateImage(img); }}
+                          className="w-6 h-6 rounded-md bg-white/10 backdrop-blur-sm flex items-center justify-center hover:bg-white/25 transition-colors"
+                          title="Recréer"
+                        >
+                          <RefreshCw className="w-3 h-3 text-white" />
+                        </button>
+                      </div>
                       <div className="absolute bottom-0 left-0 right-0 p-2.5 flex items-end justify-between">
                         <span className="text-[10px] text-white/80 font-medium">{img.resolution || ""}</span>
                         <div className="flex items-center gap-1.5">
                           <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDeleteImage(img);
-                            }}
-                            className="w-7 h-7 rounded-lg bg-red-500/20 backdrop-blur-sm flex items-center justify-center hover:bg-red-500/40 transition-colors"
+                            onClick={(e) => { e.stopPropagation(); handleDeleteImage(img); }}
+                            className="w-7 h-7 rounded-lg bg-destructive/20 backdrop-blur-sm flex items-center justify-center hover:bg-destructive/40 transition-colors"
                           >
-                            <Trash2 className="w-3.5 h-3.5 text-red-400" />
+                            <Trash2 className="w-3.5 h-3.5 text-destructive" />
                           </button>
                           <button
                             onClick={(e) => { e.stopPropagation(); handleDownload(img.url, i); }}
@@ -966,12 +1003,45 @@ const Dashboard = () => {
               <img
                 src={previewImage.url}
                 alt={previewImage.prompt || "Preview"}
-                className="max-w-full max-h-[75vh] object-contain rounded-xl"
+                className="max-w-full max-h-[65vh] object-contain rounded-xl"
               />
+
+              {/* Model details */}
+              {previewImage.modelId && (() => {
+                const model = getModelById(previewImage.modelId);
+                return model ? (
+                  <div className="w-full max-w-md glass rounded-xl p-3 space-y-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-base">{model.icon}</span>
+                      <span className="text-sm font-bold text-foreground">{model.brand} {model.name}</span>
+                      {previewImage.caurisCost && (
+                        <span className="ml-auto text-xs font-bold text-primary">{previewImage.caurisCost} cauris</span>
+                      )}
+                    </div>
+                    {previewImage.modelSettings && (
+                      <div className="flex flex-wrap gap-1.5">
+                        {Object.entries(previewImage.modelSettings).map(([key, val]) => {
+                          if (val === "" || val === undefined || val === null || val === false) return null;
+                          const setting = model.settings.find(s => s.key === key);
+                          const label = setting?.label || key;
+                          const displayVal = val === true ? "Oui" : String(val);
+                          return (
+                            <span key={key} className="text-[10px] px-2 py-0.5 rounded-md bg-white/[0.06] text-muted-foreground">
+                              {label}: <span className="text-foreground font-medium">{displayVal}</span>
+                            </span>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                ) : null;
+              })()}
+
+              {previewImage.prompt && (
+                <p className="text-sm text-white/70 max-w-md truncate">{previewImage.prompt}</p>
+              )}
+
               <div className="flex items-center gap-3 flex-wrap justify-center">
-                {previewImage.prompt && (
-                  <p className="text-sm text-white/70 max-w-md truncate">{previewImage.prompt}</p>
-                )}
                 <button
                   onClick={() => handleDownload(previewImage.url, 0)}
                   className="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-primary-foreground text-sm font-semibold hover:opacity-90 transition-opacity"
@@ -981,10 +1051,17 @@ const Dashboard = () => {
                 </button>
                 <button
                   onClick={() => handleImageToVideo(previewImage)}
-                  className="flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-500/20 text-emerald-400 text-sm font-semibold hover:bg-emerald-500/30 transition-colors"
+                  className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/[0.08] text-foreground text-sm font-semibold hover:bg-white/[0.12] transition-colors"
                 >
                   <Film className="w-4 h-4" />
-                  Animer en vidéo
+                  Animer
+                </button>
+                <button
+                  onClick={() => handleRecreateImage(previewImage)}
+                  className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/[0.08] text-foreground text-sm font-semibold hover:bg-white/[0.12] transition-colors"
+                >
+                  <RefreshCw className="w-4 h-4" />
+                  Recréer
                 </button>
                 <button
                   onClick={async () => {
@@ -997,18 +1074,18 @@ const Dashboard = () => {
                         .eq("image_url", previewImage.url);
                       if (error) throw error;
                       toast.success("Image partagée avec la communauté !");
-                    } catch (e: any) {
+                    } catch {
                       toast.error("Erreur lors du partage");
                     }
                   }}
-                  className="flex items-center gap-2 px-4 py-2 rounded-xl bg-accent/20 text-accent text-sm font-semibold hover:bg-accent/30 transition-colors"
+                  className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/[0.08] text-foreground text-sm font-semibold hover:bg-white/[0.12] transition-colors"
                 >
                   <Share2 className="w-4 h-4" />
                   Partager
                 </button>
                 <button
                   onClick={() => handleDeleteImage(previewImage)}
-                  className="flex items-center gap-2 px-4 py-2 rounded-xl bg-red-500/20 text-red-400 text-sm font-semibold hover:bg-red-500/30 transition-colors"
+                  className="flex items-center gap-2 px-3 py-2 rounded-xl bg-destructive/20 text-destructive text-sm font-semibold hover:bg-destructive/30 transition-colors"
                 >
                   <Trash2 className="w-4 h-4" />
                   Supprimer
