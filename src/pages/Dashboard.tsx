@@ -36,6 +36,7 @@ import { FAL_MODELS, getModelById, getDefaultSettings, getModelsByType, getModel
 
 const GENERATE_IMAGE_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-image`;
 const GENERATE_VIDEO_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-video`;
+const GENERATE_AUDIO_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-audio`;
 
 const afrikaBoostKeywords = [
   "Lumière du Sahel",
@@ -69,6 +70,13 @@ interface GeneratedVideo {
   timestamp?: number;
 }
 
+interface GeneratedAudio {
+  url: string;
+  prompt?: string;
+  timestamp?: number;
+  modelId?: string;
+}
+
 const Dashboard = () => {
   const { user } = useAuth();
   const { balance, deduct, refetch: refetchCauris } = useCauris();
@@ -77,7 +85,8 @@ const Dashboard = () => {
 
   const imageModels = getModelsByType("image");
   const videoModels = getModelsByType("video");
-  const currentModels = activeTab === "video" ? videoModels : imageModels;
+  const audioModels = getModelsByType("audio");
+  const currentModels = activeTab === "video" ? videoModels : activeTab === "audio" ? audioModels : imageModels;
 
   const [selectedModel, setSelectedModel] = useState<FalModel>(imageModels[0]);
   const [modelSettings, setModelSettings] = useState<Record<string, any>>(getDefaultSettings(imageModels[0]));
@@ -87,6 +96,7 @@ const Dashboard = () => {
   const [progressStage, setProgressStage] = useState("");
   const [galleryImages, setGalleryImages] = useState<GeneratedImage[]>([]);
   const [galleryVideos, setGalleryVideos] = useState<GeneratedVideo[]>([]);
+  const [galleryAudios, setGalleryAudios] = useState<GeneratedAudio[]>([]);
   const [referenceImage, setReferenceImage] = useState<string | null>(null);
   const [referencePreview, setReferencePreview] = useState<string | null>(null);
   const [showModelDropdown, setShowModelDropdown] = useState(false);
@@ -105,6 +115,9 @@ const Dashboard = () => {
     if (tab === "video") {
       setSelectedModel(videoModels[0]);
       setModelSettings(getDefaultSettings(videoModels[0]));
+    } else if (tab === "audio") {
+      setSelectedModel(audioModels[0]);
+      setModelSettings(getDefaultSettings(audioModels[0]));
     } else if (tab === "image") {
       setSelectedModel(imageModels[0]);
       setModelSettings(getDefaultSettings(imageModels[0]));
@@ -383,6 +396,67 @@ const Dashboard = () => {
     }
   };
 
+  const handleGenerateAudio = async () => {
+    if (!prompt.trim()) return;
+    const cost = calculateCaurisCost(selectedModel, modelSettings);
+    if (balance < cost) {
+      toast.error(`Solde insuffisant ! Il vous faut ${cost} cauris.`);
+      return;
+    }
+    setIsGenerating(true);
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const accessToken = sessionData?.session?.access_token;
+
+      const cleanSettings: Record<string, any> = {};
+      for (const [key, value] of Object.entries(modelSettings)) {
+        if (value === "" || value === undefined || value === null) continue;
+        cleanSettings[key] = value;
+      }
+
+      const payload: Record<string, any> = {
+        prompt,
+        model_id: selectedModel.id,
+        ...cleanSettings,
+      };
+      if (referenceImage && selectedModel.supportsImageInput) {
+        payload.image_url = referenceImage;
+      }
+
+      const resp = await fetch(GENERATE_AUDIO_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!resp.ok) {
+        const err = await resp.json().catch(() => ({ error: "Erreur inconnue" }));
+        throw new Error(err.error || `Erreur ${resp.status}`);
+      }
+
+      const data = await resp.json();
+      if (data.audio_url) {
+        setGalleryAudios((prev) => [
+          { url: data.audio_url, prompt, timestamp: Date.now(), modelId: selectedModel.id },
+          ...prev,
+        ]);
+        toast.success("Audio généré !");
+        await deduct(cost);
+        refetchCauris();
+      } else {
+        throw new Error("Aucun audio retourné");
+      }
+    } catch (e: any) {
+      console.error("Audio generation error:", e);
+      toast.error(e.message || "Erreur lors de la génération audio");
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
   const handleDownload = async (url: string, index: number) => {
     try {
       const response = await fetch(url);
@@ -597,7 +671,7 @@ const Dashboard = () => {
                     exit={{ opacity: 0, y: -4 }}
                     className="absolute left-0 right-0 top-full mt-1 bg-card border border-white/[0.08] rounded-xl p-1 z-50 max-h-[400px] overflow-y-auto shadow-xl"
                   >
-                    {getModelsByTypeGrouped(activeTab === "video" ? "video" : "image").map((group) => (
+                    {getModelsByTypeGrouped(activeTab === "video" ? "video" : activeTab === "audio" ? "audio" : "image").map((group) => (
                       <div key={group.brand}>
                         <div className="px-2.5 py-1.5 text-[9px] font-bold uppercase tracking-widest text-muted-foreground/50 sticky top-0 bg-card z-10">
                           {group.brand}
@@ -765,7 +839,7 @@ const Dashboard = () => {
 
           {/* Generate Button */}
           <button
-            onClick={activeTab === "video" ? handleGenerateVideo : handleGenerate}
+            onClick={activeTab === "video" ? handleGenerateVideo : activeTab === "audio" ? handleGenerateAudio : handleGenerate}
             disabled={isGenerating || !prompt.trim()}
             className="btn-generate w-full flex items-center justify-between text-sm disabled:opacity-50 disabled:animate-none"
           >
@@ -826,7 +900,74 @@ const Dashboard = () => {
         </div>
 
         <div className="flex-1 overflow-y-auto p-4">
-          {activeTab === "video" ? (
+          {activeTab === "audio" ? (
+            /* ===== AUDIO GALLERY ===== */
+            galleryAudios.length === 0 && !isGenerating ? (
+              <div className="flex flex-col items-center justify-center h-full text-center space-y-4">
+                <div className="w-20 h-20 rounded-2xl bg-white/[0.04] flex items-center justify-center">
+                  <Music className="w-10 h-10 text-muted-foreground/30" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Vos audios apparaîtront ici</p>
+                  <p className="text-xs text-muted-foreground/60 mt-1">Choisissez un modèle audio, entrez un prompt et cliquez sur Générer</p>
+                </div>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {isGenerating && (
+                  <motion.div
+                    key="audio-loading"
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="rounded-xl bg-white/[0.04] border border-white/[0.06] flex flex-col items-center justify-center p-6 space-y-4 relative overflow-hidden"
+                  >
+                    <div className="absolute inset-0 overflow-hidden">
+                      <div className="absolute inset-0 animate-pulse" style={{ background: `linear-gradient(135deg, transparent 30%, hsl(var(--primary) / 0.04) 50%, transparent 70%)` }} />
+                    </div>
+                    <div className="relative">
+                      <div className="w-12 h-12 rounded-full border-2 border-white/[0.08] border-t-primary animate-spin" />
+                    </div>
+                    <div className="relative w-full space-y-2 px-2">
+                      <p className="text-xs text-muted-foreground text-center font-medium">{progressStage}</p>
+                      <div className="w-full h-1.5 rounded-full bg-white/[0.06] overflow-hidden">
+                        <motion.div className="h-full rounded-full bg-primary" initial={{ width: "0%" }} animate={{ width: `${progress}%` }} transition={{ duration: 0.4, ease: "easeOut" }} />
+                      </div>
+                      <p className="text-[10px] text-primary font-bold text-center">{Math.round(progress)}%</p>
+                    </div>
+                  </motion.div>
+                )}
+                {galleryAudios.map((aud, i) => {
+                  const model = aud.modelId ? getModelById(aud.modelId) : null;
+                  return (
+                    <motion.div
+                      key={`aud-${i}-${aud.timestamp}`}
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className="glass rounded-xl p-4 space-y-3"
+                    >
+                      <div className="flex items-center gap-2">
+                        {model && (
+                          <span className="w-5 h-5 rounded bg-white/[0.06] flex items-center justify-center text-[9px] font-bold text-muted-foreground uppercase">
+                            {model.brand.slice(0, 2)}
+                          </span>
+                        )}
+                        <span className="text-xs font-medium text-foreground truncate flex-1">
+                          {aud.prompt}
+                        </span>
+                        <button
+                          onClick={() => handleDownload(aud.url, i)}
+                          className="w-7 h-7 rounded-lg bg-white/[0.06] flex items-center justify-center hover:bg-white/[0.1] transition-colors shrink-0"
+                        >
+                          <Download className="w-3.5 h-3.5 text-muted-foreground" />
+                        </button>
+                      </div>
+                      <audio src={aud.url} controls className="w-full h-8" />
+                    </motion.div>
+                  );
+                })}
+              </div>
+            )
+          ) : activeTab === "video" ? (
             /* ===== VIDEO GALLERY ===== */
             galleryVideos.length === 0 && !isGenerating ? (
               <div className="flex flex-col items-center justify-center h-full text-center space-y-4">
@@ -869,11 +1010,7 @@ const Dashboard = () => {
                     animate={{ opacity: 1, scale: 1 }}
                     className="aspect-video relative group rounded-xl overflow-hidden"
                   >
-                    <video
-                      src={vid.url}
-                      controls
-                      className="w-full h-full object-cover rounded-xl"
-                    />
+                    <video src={vid.url} controls className="w-full h-full object-cover rounded-xl" />
                     <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
                       <button
                         onClick={() => handleDownload(vid.url, i)}
