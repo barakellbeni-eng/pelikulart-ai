@@ -12,12 +12,12 @@ serve(async (req) => {
   }
 
   try {
-    const FAL_API_KEY = Deno.env.get("FAL_API_KEY");
-    if (!FAL_API_KEY) {
-      throw new Error("FAL_API_KEY is not configured");
+    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    if (!LOVABLE_API_KEY) {
+      throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-    const { prompt, image_size } = await req.json();
+    const { prompt } = await req.json();
 
     if (!prompt || typeof prompt !== "string") {
       return new Response(
@@ -26,99 +26,66 @@ serve(async (req) => {
       );
     }
 
-    console.log("Generating image with prompt:", prompt);
+    console.log("Generating image with Nano Banana Pro, prompt:", prompt);
 
-    // Submit request to Fal AI
-    const submitResponse = await fetch("https://queue.fal.run/fal-ai/flux/schnell", {
+    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
-        Authorization: `Key ${FAL_API_KEY}`,
+        Authorization: `Bearer ${LOVABLE_API_KEY}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        prompt,
-        image_size: image_size || "landscape_4_3",
-        num_images: 1,
-        enable_safety_checker: true,
+        model: "google/gemini-3-pro-image-preview",
+        messages: [
+          {
+            role: "user",
+            content: prompt,
+          },
+        ],
+        modalities: ["image", "text"],
       }),
     });
 
-    if (!submitResponse.ok) {
-      const errorText = await submitResponse.text();
-      console.error("Fal AI error:", submitResponse.status, errorText);
+    if (!response.ok) {
+      if (response.status === 429) {
+        return new Response(
+          JSON.stringify({ error: "Trop de requêtes, réessayez dans quelques instants." }),
+          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      if (response.status === 402) {
+        return new Response(
+          JSON.stringify({ error: "Crédits insuffisants, veuillez recharger votre compte." }),
+          { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      const errorText = await response.text();
+      console.error("AI gateway error:", response.status, errorText);
       return new Response(
-        JSON.stringify({ error: `Fal AI error: ${submitResponse.status}` }),
+        JSON.stringify({ error: "Erreur lors de la génération" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    const result = await submitResponse.json();
-    console.log("Fal AI result:", JSON.stringify(result));
+    const data = await response.json();
+    const imageUrl = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
 
-    // Handle queue-based response
-    if (result.request_id && !result.images) {
-      // Poll for result
-      const requestId = result.request_id;
-      let attempts = 0;
-      const maxAttempts = 60;
-
-      while (attempts < maxAttempts) {
-        await new Promise((r) => setTimeout(r, 2000));
-        attempts++;
-
-        const statusResponse = await fetch(
-          `https://queue.fal.run/fal-ai/flux/schnell/requests/${requestId}/status`,
-          {
-            headers: { Authorization: `Key ${FAL_API_KEY}` },
-          }
-        );
-
-        const statusData = await statusResponse.json();
-        console.log("Poll attempt", attempts, "status:", statusData.status);
-
-        if (statusData.status === "COMPLETED") {
-          const resultResponse = await fetch(
-            `https://queue.fal.run/fal-ai/flux/schnell/requests/${requestId}`,
-            {
-              headers: { Authorization: `Key ${FAL_API_KEY}` },
-            }
-          );
-          const finalResult = await resultResponse.json();
-          return new Response(
-            JSON.stringify({
-              image_url: finalResult.images?.[0]?.url,
-              seed: finalResult.seed,
-            }),
-            { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-          );
-        }
-
-        if (statusData.status === "FAILED") {
-          return new Response(
-            JSON.stringify({ error: "Image generation failed" }),
-            { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-          );
-        }
-      }
-
+    if (!imageUrl) {
+      console.error("No image in response:", JSON.stringify(data));
       return new Response(
-        JSON.stringify({ error: "Generation timed out" }),
-        { status: 504, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        JSON.stringify({ error: "Aucune image générée" }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // Direct response (synchronous)
     return new Response(
-      JSON.stringify({
-        image_url: result.images?.[0]?.url,
-        seed: result.seed,
-      }),
+      JSON.stringify({ image_url: imageUrl }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (e) {
     console.error("generate-image error:", e);
     return new Response(
-      JSON.stringify({ error: e instanceof Error ? e.message : "Unknown error" }),
+      JSON.stringify({ error: e instanceof Error ? e.message : "Erreur inconnue" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
