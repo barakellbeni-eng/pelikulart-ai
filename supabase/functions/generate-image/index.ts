@@ -28,13 +28,26 @@ async function pollForResult(endpoint: string, requestId: string, apiKey: string
     const statusResp = await fetch(`${endpoint}/requests/${requestId}/status`, {
       headers: { Authorization: `Key ${apiKey}` },
     });
-    const statusData = await statusResp.json();
+    const statusText = await statusResp.text();
+    let statusData: any;
+    try {
+      statusData = JSON.parse(statusText);
+    } catch {
+      console.error("Non-JSON status response:", statusText.slice(0, 200));
+      continue; // retry
+    }
     console.log("Poll attempt", i + 1, "status:", statusData.status);
     if (statusData.status === "COMPLETED") {
       const resultResp = await fetch(`${endpoint}/requests/${requestId}`, {
         headers: { Authorization: `Key ${apiKey}` },
       });
-      return await resultResp.json();
+      const resultText = await resultResp.text();
+      try {
+        return JSON.parse(resultText);
+      } catch {
+        console.error("Non-JSON result response:", resultText.slice(0, 200));
+        throw new Error("Invalid response from Fal AI");
+      }
     }
     if (statusData.status === "FAILED") {
       throw new Error("Image generation failed on Fal AI");
