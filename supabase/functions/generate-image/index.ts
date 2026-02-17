@@ -78,13 +78,20 @@ serve(async (req) => {
       throw new Error("Supabase config missing");
     }
 
-    // Get user from auth header
+    // Get user from auth header using getClaims
     const authHeader = req.headers.get("authorization") || "";
-    const anonKey = Deno.env.get("SUPABASE_PUBLISHABLE_KEY") || "";
-    const userClient = createClient(SUPABASE_URL, anonKey, {
+    const userClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
       global: { headers: { Authorization: authHeader } },
     });
-    const { data: { user } } = await userClient.auth.getUser();
+
+    let user: { id: string } | null = null;
+    if (authHeader.startsWith("Bearer ")) {
+      const token = authHeader.replace("Bearer ", "");
+      const { data, error } = await userClient.auth.getClaims(token);
+      if (!error && data?.claims?.sub) {
+        user = { id: data.claims.sub as string };
+      }
+    }
 
     // Service role client for storage upload
     const adminClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
