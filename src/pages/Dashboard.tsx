@@ -568,21 +568,20 @@ const Dashboard = () => {
             <div className="relative">
               <button
                 onClick={() => setShowModelDropdown(!showModelDropdown)}
-                className="w-full flex items-center gap-2 glass glass-hover rounded-xl px-3 py-2.5"
+                className="w-full flex items-center gap-2.5 glass glass-hover rounded-xl px-3 py-2.5"
               >
-                <div
-                  className={`w-6 h-6 rounded-lg bg-gradient-to-br ${selectedModel.color} flex items-center justify-center text-xs`}
-                >
-                  {selectedModel.icon}
-                </div>
+                <span className="w-6 h-6 rounded-md bg-white/[0.06] flex items-center justify-center text-[10px] font-bold text-muted-foreground shrink-0 uppercase">
+                  {selectedModel.brand.slice(0, 2)}
+                </span>
                 <div className="flex-1 text-left">
                   <span className="text-sm font-medium text-foreground block leading-tight">
-                    {selectedModel.brand} — {selectedModel.name}
+                    {selectedModel.brand} {selectedModel.name}
                   </span>
                   <span className="text-[10px] text-muted-foreground leading-tight">
                     {selectedModel.description}
                   </span>
                 </div>
+                <span className="text-[10px] font-bold text-primary mr-1">{calculateCaurisCost(selectedModel, modelSettings, numImages)} c</span>
                 <ChevronDown
                   className={`w-4 h-4 text-muted-foreground transition-transform ${
                     showModelDropdown ? "rotate-180" : ""
@@ -596,36 +595,34 @@ const Dashboard = () => {
                     initial={{ opacity: 0, y: -4 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -4 }}
-                    className="absolute left-0 right-0 top-full mt-1 glass-card p-1.5 z-50 max-h-[400px] overflow-y-auto"
+                    className="absolute left-0 right-0 top-full mt-1 bg-card border border-white/[0.08] rounded-xl p-1 z-50 max-h-[400px] overflow-y-auto shadow-xl"
                   >
                     {getModelsByTypeGrouped(activeTab === "video" ? "video" : "image").map((group) => (
-                      <div key={group.brand} className="mb-1.5">
-                        <div className="px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground/60 sticky top-0 bg-background/80 backdrop-blur-sm z-10">
+                      <div key={group.brand}>
+                        <div className="px-2.5 py-1.5 text-[9px] font-bold uppercase tracking-widest text-muted-foreground/50 sticky top-0 bg-card z-10">
                           {group.brand}
                         </div>
                         {group.models.map((model) => (
                           <button
                             key={model.id}
                             onClick={() => handleSelectModel(model)}
-                            className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-left transition-colors ${
+                            className={`w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-left transition-colors ${
                               selectedModel.id === model.id
                                 ? "bg-primary/10"
                                 : "hover:bg-white/[0.04]"
                             }`}
                           >
-                            <div
-                              className={`w-5 h-5 rounded bg-gradient-to-br ${model.color} flex items-center justify-center text-[10px] shrink-0`}
-                            >
-                              {model.icon}
-                            </div>
+                            <span className="w-5 h-5 rounded bg-white/[0.06] flex items-center justify-center text-[9px] font-bold text-muted-foreground shrink-0 uppercase">
+                              {model.brand.slice(0, 2)}
+                            </span>
                             <div className="flex-1 min-w-0">
                               <span className="text-xs font-medium text-foreground block truncate">
                                 {model.name}
                               </span>
-                              <span className="text-[9px] text-muted-foreground block truncate">
-                                {model.description}
-                              </span>
                             </div>
+                            <span className="text-[10px] text-muted-foreground font-medium shrink-0">
+                              {model.caurisCost}c
+                            </span>
                             {selectedModel.id === model.id && (
                               <Check className="w-3.5 h-3.5 text-primary shrink-0" />
                             )}
