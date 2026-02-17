@@ -1,7 +1,8 @@
 import { NavLink } from "react-router-dom";
-import { Wand2, Grid3X3, CreditCard, UserCircle } from "lucide-react";
+import { Wand2, Grid3X3, CreditCard, UserCircle, Home } from "lucide-react";
 
 const navItems = [
+  { to: "/", icon: Home, label: "Accueil" },
   { to: "/studio", icon: Wand2, label: "Studio" },
   { to: "/gallery", icon: Grid3X3, label: "Galerie" },
   { to: "/pricing", icon: CreditCard, label: "Recharge" },
