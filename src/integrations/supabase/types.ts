@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      generations: {
+        Row: {
+          aspect_ratio: string | null
+          created_at: string
+          id: string
+          image_url: string
+          output_format: string | null
+          prompt: string
+          resolution: string | null
+          user_id: string
+        }
+        Insert: {
+          aspect_ratio?: string | null
+          created_at?: string
+          id?: string
+          image_url: string
+          output_format?: string | null
+          prompt: string
+          resolution?: string | null
+          user_id: string
+        }
+        Update: {
+          aspect_ratio?: string | null
+          created_at?: string
+          id?: string
+          image_url?: string
+          output_format?: string | null
+          prompt?: string
+          resolution?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
