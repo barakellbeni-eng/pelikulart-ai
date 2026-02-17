@@ -83,6 +83,7 @@ const Dashboard = () => {
   const [referenceImage, setReferenceImage] = useState<string | null>(null);
   const [referencePreview, setReferencePreview] = useState<string | null>(null);
   const [showAspectDropdown, setShowAspectDropdown] = useState(false);
+  const [previewImage, setPreviewImage] = useState<GeneratedImage | null>(null);
 
   // Load history from DB
   useEffect(() => {
@@ -515,7 +516,7 @@ const Dashboard = () => {
               </div>
             </div>
           ) : (
-            <div className="columns-2 md:columns-3 lg:columns-4 xl:columns-5 gap-3 space-y-3">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
               {/* Loading cards with progress */}
               {isGenerating &&
                 Array.from({ length: numImages }).map((_, i) => (
@@ -523,76 +524,39 @@ const Dashboard = () => {
                     key={`loading-${i}`}
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    className="break-inside-avoid rounded-xl aspect-[4/5] bg-white/[0.04] border border-white/[0.06] flex flex-col items-center justify-center p-4 space-y-4 relative overflow-hidden"
+                    className="aspect-square rounded-xl bg-white/[0.04] border border-white/[0.06] flex flex-col items-center justify-center p-4 space-y-4 relative overflow-hidden"
                   >
-                    {/* Animated shimmer background */}
                     <div className="absolute inset-0 overflow-hidden">
-                      <div
-                        className="absolute inset-0 animate-pulse"
-                        style={{
-                          background: `linear-gradient(135deg, transparent 30%, hsl(32 100% 50% / 0.04) 50%, transparent 70%)`,
-                        }}
-                      />
+                      <div className="absolute inset-0 animate-pulse" style={{ background: `linear-gradient(135deg, transparent 30%, hsl(var(--primary) / 0.04) 50%, transparent 70%)` }} />
                     </div>
-
-                    {/* Spinner */}
                     <div className="relative">
                       <div className="w-12 h-12 rounded-full border-2 border-white/[0.08] border-t-primary animate-spin" />
                     </div>
-
-                    {/* Progress info */}
                     <div className="relative w-full space-y-2 px-2">
-                      <p className="text-xs text-muted-foreground text-center font-medium">
-                        {progressStage}
-                      </p>
+                      <p className="text-xs text-muted-foreground text-center font-medium">{progressStage}</p>
                       <div className="w-full h-1.5 rounded-full bg-white/[0.06] overflow-hidden">
-                        <motion.div
-                          className="h-full rounded-full"
-                          style={{
-                            background: "linear-gradient(90deg, hsl(32 100% 50%), hsl(43 56% 52%))",
-                          }}
-                          initial={{ width: "0%" }}
-                          animate={{ width: `${progress}%` }}
-                          transition={{ duration: 0.4, ease: "easeOut" }}
-                        />
+                        <motion.div className="h-full rounded-full bg-primary" initial={{ width: "0%" }} animate={{ width: `${progress}%` }} transition={{ duration: 0.4, ease: "easeOut" }} />
                       </div>
-                      <p className="text-[10px] text-primary font-bold text-center">
-                        {Math.round(progress)}%
-                      </p>
+                      <p className="text-[10px] text-primary font-bold text-center">{Math.round(progress)}%</p>
                     </div>
                   </motion.div>
                 ))}
 
-              {/* Generated Images */}
+              {/* Generated Images — square thumbnails */}
               {galleryImages.map((img, i) => (
                 <motion.div
                   key={`img-${i}-${img.timestamp}`}
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  className="break-inside-avoid relative group rounded-xl overflow-hidden cursor-pointer"
+                  onClick={() => setPreviewImage(img)}
+                  className="aspect-square relative group rounded-xl overflow-hidden cursor-pointer"
                 >
-                  <img
-                    src={img.url}
-                    alt={img.prompt || "Generated"}
-                    className="w-full rounded-xl"
-                    loading="lazy"
-                  />
-                  {/* Overlay */}
+                  <img src={img.url} alt={img.prompt || "Generated"} className="w-full h-full object-cover rounded-xl" loading="lazy" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                     <div className="absolute bottom-0 left-0 right-0 p-2.5 flex items-end justify-between">
-                      <div className="flex items-center gap-1.5">
-                        <div className="w-4 h-4 rounded bg-gradient-to-br from-blue-500 to-green-400 flex items-center justify-center text-[8px] font-bold text-white">
-                          G
-                        </div>
-                        <span className="text-[10px] text-white/80 font-medium">
-                          {img.resolution || "2K"}
-                        </span>
-                      </div>
+                      <span className="text-[10px] text-white/80 font-medium">{img.resolution || "2K"}</span>
                       <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDownload(img.url, i);
-                        }}
+                        onClick={(e) => { e.stopPropagation(); handleDownload(img.url, i); }}
                         className="w-7 h-7 rounded-lg bg-white/10 backdrop-blur-sm flex items-center justify-center hover:bg-white/20 transition-colors"
                       >
                         <Download className="w-3.5 h-3.5 text-white" />
@@ -605,6 +569,53 @@ const Dashboard = () => {
           )}
         </div>
       </div>
+
+      {/* ===== IMAGE PREVIEW MODAL ===== */}
+      <AnimatePresence>
+        {previewImage && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
+            onClick={() => setPreviewImage(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="relative max-w-4xl max-h-[90vh] flex flex-col items-center gap-4"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <img
+                src={previewImage.url}
+                alt={previewImage.prompt || "Preview"}
+                className="max-w-full max-h-[75vh] object-contain rounded-xl"
+              />
+              <div className="flex items-center gap-3">
+                {previewImage.prompt && (
+                  <p className="text-sm text-white/70 max-w-md truncate">{previewImage.prompt}</p>
+                )}
+                <button
+                  onClick={() => {
+                    handleDownload(previewImage.url, 0);
+                  }}
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-primary-foreground text-sm font-semibold hover:opacity-90 transition-opacity"
+                >
+                  <Download className="w-4 h-4" />
+                  Télécharger
+                </button>
+              </div>
+              <button
+                onClick={() => setPreviewImage(null)}
+                className="absolute top-2 right-2 w-8 h-8 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center hover:bg-black/80 transition-colors"
+              >
+                <X className="w-4 h-4 text-white" />
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
