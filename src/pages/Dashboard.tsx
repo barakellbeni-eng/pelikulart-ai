@@ -3,6 +3,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Slider } from "@/components/ui/slider";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useCauris } from "@/hooks/useCauris";
 import {
   Image,
   Video,
@@ -23,10 +24,11 @@ import {
   Heart,
   SlidersHorizontal,
   Check,
+  Coins,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
-import { FAL_MODELS, getModelById, getDefaultSettings, getModelsByType, getModelsByTypeGrouped, type FalModel } from "@/lib/fal-models";
+import { FAL_MODELS, getModelById, getDefaultSettings, getModelsByType, getModelsByTypeGrouped, calculateCaurisCost, type FalModel } from "@/lib/fal-models";
 
 const GENERATE_IMAGE_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-image`;
 const GENERATE_VIDEO_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-video`;
@@ -61,6 +63,7 @@ interface GeneratedVideo {
 
 const Dashboard = () => {
   const { user } = useAuth();
+  const { balance, deduct, refetch: refetchCauris } = useCauris();
   const [activeTab, setActiveTab] = useState<"image" | "video" | "audio">("image");
   const [prompt, setPrompt] = useState("");
 
@@ -228,6 +231,11 @@ const Dashboard = () => {
 
   const handleGenerate = async () => {
     if (!prompt.trim()) return;
+    const cost = calculateCaurisCost(selectedModel, modelSettings, numImages);
+    if (balance < cost) {
+      toast.error(`Solde insuffisant ! Il vous faut ${cost} Cauris 🐚. Rechargez votre compte.`);
+      return;
+    }
     setIsGenerating(true);
 
     try {
@@ -289,6 +297,9 @@ const Dashboard = () => {
       }
 
       setGalleryImages((prev) => [...newImages, ...prev]);
+      // Deduct cauris after success
+      await deduct(cost);
+      refetchCauris();
     } catch (e: any) {
       console.error("Generation error:", e);
       toast.error(e.message || "Erreur lors de la génération");
@@ -299,6 +310,11 @@ const Dashboard = () => {
 
   const handleGenerateVideo = async () => {
     if (!prompt.trim()) return;
+    const cost = calculateCaurisCost(selectedModel, modelSettings);
+    if (balance < cost) {
+      toast.error(`Solde insuffisant ! Il vous faut ${cost} Cauris 🐚. Rechargez votre compte.`);
+      return;
+    }
     setIsGenerating(true);
     try {
       const { data: sessionData } = await supabase.auth.getSession();
@@ -341,6 +357,8 @@ const Dashboard = () => {
           ...prev,
         ]);
         toast.success("Vidéo générée !");
+        await deduct(cost);
+        refetchCauris();
       } else {
         throw new Error("Aucune vidéo retournée");
       }
@@ -691,6 +709,19 @@ const Dashboard = () => {
             </div>
           )}
 
+          {/* Cauris Cost & Balance */}
+          <div className="flex items-center justify-between text-[11px]">
+            <span className="text-muted-foreground flex items-center gap-1">
+              <Coins className="w-3 h-3" /> Coût :
+              <span className="font-bold text-accent">
+                {calculateCaurisCost(selectedModel, modelSettings, numImages)} 🐚
+              </span>
+            </span>
+            <span className="text-muted-foreground">
+              Solde : <span className="font-bold text-foreground">{balance}</span> Cauris
+            </span>
+          </div>
+
           {/* Generate Button */}
           <button
             onClick={activeTab === "video" ? handleGenerateVideo : handleGenerate}
@@ -704,7 +735,7 @@ const Dashboard = () => {
               </>
             ) : (
               <>
-                Générer
+                Générer — {calculateCaurisCost(selectedModel, modelSettings, numImages)} 🐚
                 <Wand2 className="w-4 h-4" />
               </>
             )}
