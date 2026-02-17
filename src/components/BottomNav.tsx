@@ -2,7 +2,7 @@ import { NavLink } from "react-router-dom";
 import { Wand2, Grid3X3, CreditCard, UserCircle } from "lucide-react";
 
 const navItems = [
-  { to: "/", icon: Wand2, label: "Studio" },
+  { to: "/studio", icon: Wand2, label: "Studio" },
   { to: "/gallery", icon: Grid3X3, label: "Galerie" },
   { to: "/pricing", icon: CreditCard, label: "Recharge" },
   { to: "/profile", icon: UserCircle, label: "Profil" },
@@ -16,7 +16,7 @@ const BottomNav = () => {
           <NavLink
             key={item.to}
             to={item.to}
-            end={item.to === "/"}
+            end={item.to === "/studio"}
             className={({ isActive }) =>
               `flex flex-col md:flex-row items-center gap-1 md:gap-2 px-3 py-2 md:py-3 rounded-xl text-xs md:text-sm font-medium transition-all duration-200 ${
                 isActive
