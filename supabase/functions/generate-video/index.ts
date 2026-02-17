@@ -10,7 +10,13 @@ const corsHeaders = {
 const MODEL_ENDPOINTS: Record<string, string> = {
   "veo3": "https://queue.fal.run/fal-ai/veo3",
   "minimax-video": "https://queue.fal.run/fal-ai/minimax/video-01-live",
-  "kling-video": "https://queue.fal.run/fal-ai/kling-video/v1.6/standard/text-to-video",
+  "kling-v3-std-t2v": "https://queue.fal.run/fal-ai/kling-video/v3/standard/text-to-video",
+  "kling-v3-pro-t2v": "https://queue.fal.run/fal-ai/kling-video/o3/pro/text-to-video",
+  "kling-v25-turbo-i2v": "https://queue.fal.run/fal-ai/kling-video/v2.5-turbo/pro/image-to-video",
+  "kling-v21-std-i2v": "https://queue.fal.run/fal-ai/kling-video/v2.1/standard/image-to-video",
+  "kling-v2-master-t2v": "https://queue.fal.run/fal-ai/kling-video/v2/master/text-to-video",
+  "kling-v16-std-t2v": "https://queue.fal.run/fal-ai/kling-video/v1.6/standard/text-to-video",
+  "kling-v16-elements": "https://queue.fal.run/fal-ai/kling-video/v1.6/standard/elements",
   "framepack-f1": "https://queue.fal.run/fal-ai/framepack/f1",
 };
 
