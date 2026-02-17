@@ -74,7 +74,7 @@ const Pricing = () => {
       window.openKkiapayWidget({
         amount: plan.priceNum,
         key: KKIAPAY_KEY,
-        sandbox: true,
+        sandbox: false,
         callback: window.location.origin + "/pricing",
         name: `AFRIKA DRIVE - ${plan.name}`,
         theme: "#e67e00",
