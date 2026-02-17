@@ -2,11 +2,34 @@ import { useState } from "react";
 import { Check, X, Smartphone } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
+declare global {
+  // eslint-disable-next-line @typescript-eslint/no-namespace
+  namespace JSX {
+    interface IntrinsicElements {
+      "kkiapay-widget": React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement> & {
+        amount?: string;
+        key?: string;
+        callback?: string;
+        position?: string;
+        sandbox?: string;
+        theme?: string;
+        name?: string;
+      };
+    }
+  }
+  interface Window {
+    openKkiapayWidget: (config: Record<string, any>) => void;
+    addKkiapayListener: (event: string, cb: (response: any) => void) => void;
+    removeKkiapayListener: (event: string, cb: (response: any) => void) => void;
+  }
+}
+
 const plans = [
   {
     id: "starter",
     name: "Starter",
     price: "1 500",
+    priceNum: 1500,
     credits: 50,
     features: ["50 générations Image", "10 générations Vidéo", "Résolution Standard", "Support communautaire"],
   },
@@ -14,6 +37,7 @@ const plans = [
     id: "creator",
     name: "Créateur",
     price: "5 000",
+    priceNum: 5000,
     credits: 200,
     popular: true,
     features: ["200 générations Image", "50 générations Vidéo", "Résolution HD", "AFRIKA BOOST illimité", "Support prioritaire"],
@@ -22,6 +46,7 @@ const plans = [
     id: "studio",
     name: "Studio",
     price: "15 000",
+    priceNum: 15000,
     credits: 1000,
     features: ["1000 générations Image", "250 générations Vidéo", "Résolution 4K", "AFRIKA BOOST illimité", "API Access", "Support dédié 24/7"],
   },
@@ -33,13 +58,45 @@ const paymentMethods = [
   { name: "Orange Money", color: "#ff6600" },
 ];
 
+const KKIAPAY_KEY = "046751a99c664c3a1caf83a22a1f8068c568f24b";
+
 const Pricing = () => {
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
-  const [showPayment, setShowPayment] = useState(false);
+  const [paymentStatus, setPaymentStatus] = useState<"idle" | "success" | "failed">("idle");
 
-  const handleSelect = (planId: string) => {
+  const handlePay = (planId: string) => {
+    const plan = plans.find((p) => p.id === planId);
+    if (!plan) return;
+
     setSelectedPlan(planId);
-    setShowPayment(true);
+
+    if (typeof window.openKkiapayWidget === "function") {
+      window.openKkiapayWidget({
+        amount: plan.priceNum,
+        key: KKIAPAY_KEY,
+        sandbox: true,
+        callback: window.location.origin + "/pricing",
+        name: `AFRIKA DRIVE - ${plan.name}`,
+        theme: "#e67e00",
+      });
+
+      const onSuccess = (response: any) => {
+        console.log("KkiaPay success:", response);
+        setPaymentStatus("success");
+        window.removeKkiapayListener("success", onSuccess);
+      };
+
+      const onFailed = (response: any) => {
+        console.log("KkiaPay failed:", response);
+        setPaymentStatus("failed");
+        window.removeKkiapayListener("failed", onFailed);
+      };
+
+      if (typeof window.addKkiapayListener === "function") {
+        window.addKkiapayListener("success", onSuccess);
+        window.addKkiapayListener("failed", onFailed);
+      }
+    }
   };
 
   return (
@@ -54,6 +111,32 @@ const Pricing = () => {
       </header>
 
       <main className="max-w-4xl mx-auto px-4 pt-6 space-y-6">
+        {/* Success / Failed Banner */}
+        <AnimatePresence>
+          {paymentStatus !== "idle" && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              className={`glass-card p-4 text-center text-sm font-medium ${
+                paymentStatus === "success"
+                  ? "text-green-400 border-green-400/20"
+                  : "text-destructive border-destructive/20"
+              }`}
+            >
+              {paymentStatus === "success"
+                ? "✅ Paiement réussi ! Vos crédits ont été ajoutés."
+                : "❌ Paiement échoué. Veuillez réessayer."}
+              <button
+                onClick={() => setPaymentStatus("idle")}
+                className="ml-3 text-muted-foreground hover:text-foreground"
+              >
+                <X className="w-4 h-4 inline" />
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         <div className="grid gap-4 md:grid-cols-3">
           {plans.map((plan, i) => (
             <motion.div
@@ -90,14 +173,14 @@ const Pricing = () => {
               </ul>
 
               <button
-                onClick={() => handleSelect(plan.id)}
+                onClick={() => handlePay(plan.id)}
                 className={`w-full py-2.5 rounded-xl text-sm font-semibold transition-all duration-300 ${
                   plan.popular
                     ? "btn-generate"
                     : "glass glass-hover text-foreground"
                 }`}
               >
-                Choisir
+                Payer Maintenant
               </button>
             </motion.div>
           ))}
@@ -125,60 +208,11 @@ const Pricing = () => {
               </div>
             ))}
           </div>
+          <p className="text-[10px] text-muted-foreground text-center">
+            Paiement sécurisé via KkiaPay • Crédits activés instantanément
+          </p>
         </div>
       </main>
-
-      {/* Payment Modal */}
-      <AnimatePresence>
-        {showPayment && selectedPlan && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] bg-background/80 backdrop-blur-xl flex items-end md:items-center justify-center"
-            onClick={() => setShowPayment(false)}
-          >
-            <motion.div
-              initial={{ y: 100 }}
-              animate={{ y: 0 }}
-              exit={{ y: 100 }}
-              onClick={(e) => e.stopPropagation()}
-              className="glass-card w-full max-w-md rounded-t-3xl md:rounded-3xl p-6 space-y-5"
-            >
-              <div className="flex items-center justify-between">
-                <h2 className="font-bold text-foreground">Confirmer le paiement</h2>
-                <button onClick={() => setShowPayment(false)} className="text-muted-foreground">
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-
-              <div className="glass rounded-xl p-4 text-center">
-                <p className="text-sm text-muted-foreground">Montant total</p>
-                <p className="text-3xl font-bold text-gradient-primary mt-1">
-                  {plans.find((p) => p.id === selectedPlan)?.price} FCFA
-                </p>
-              </div>
-
-              <div className="space-y-2">
-                <p className="text-sm text-muted-foreground">Numéro Mobile Money</p>
-                <input
-                  type="tel"
-                  placeholder="+225 XX XX XX XX XX"
-                  className="w-full glass rounded-xl px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
-                />
-              </div>
-
-              <button className="btn-generate w-full py-3 text-sm">
-                Payer maintenant
-              </button>
-
-              <p className="text-[10px] text-muted-foreground text-center">
-                Paiement sécurisé • Crédits activés instantanément
-              </p>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </div>
   );
 };
