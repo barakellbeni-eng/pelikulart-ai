@@ -2,6 +2,9 @@ import { useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { Image, Video, Sparkles, Download, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { toast } from "sonner";
+
+const GENERATE_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-image`;
 
 const afrikaBoostKeywords = [
   "Lumière du Sahel",
@@ -20,21 +23,63 @@ const Dashboard = () => {
   const [mode, setMode] = useState<"image" | "video">("image");
   const [prompt, setPrompt] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
-  const [generated, setGenerated] = useState(false);
+  const [generatedUrl, setGeneratedUrl] = useState<string | null>(null);
 
   const handleBoost = () => {
     const keyword = afrikaBoostKeywords[Math.floor(Math.random() * afrikaBoostKeywords.length)];
     setPrompt((prev) => (prev ? `${prev}, ${keyword}` : keyword));
   };
 
-  const handleGenerate = () => {
+  const handleGenerate = async () => {
     if (!prompt.trim()) return;
     setIsGenerating(true);
-    setGenerated(false);
-    setTimeout(() => {
+    setGeneratedUrl(null);
+
+    try {
+      const resp = await fetch(GENERATE_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+        },
+        body: JSON.stringify({ prompt }),
+      });
+
+      if (!resp.ok) {
+        const err = await resp.json().catch(() => ({ error: "Erreur inconnue" }));
+        throw new Error(err.error || `Erreur ${resp.status}`);
+      }
+
+      const data = await resp.json();
+      if (data.image_url) {
+        setGeneratedUrl(data.image_url);
+      } else {
+        throw new Error("Aucune image retournée");
+      }
+    } catch (e: any) {
+      console.error("Generation error:", e);
+      toast.error(e.message || "Erreur lors de la génération");
+    } finally {
       setIsGenerating(false);
-      setGenerated(true);
-    }, 3000);
+    }
+  };
+
+  const handleDownload = async () => {
+    if (!generatedUrl) return;
+    try {
+      const response = await fetch(generatedUrl);
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `afrikaart-${Date.now()}.png`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch {
+      toast.error("Erreur lors du téléchargement");
+    }
   };
 
   return (
@@ -72,7 +117,7 @@ const Dashboard = () => {
 
         {/* Model info */}
         <p className="text-xs text-muted-foreground">
-          Modèle : <span className="text-accent font-medium">{mode === "image" ? "Nano Banana" : "Kling v2"}</span>
+          Modèle : <span className="text-accent font-medium">{mode === "image" ? "Nano Banana Pro" : "Kling v2"}</span>
         </p>
 
         {/* Prompt Area */}
@@ -118,7 +163,7 @@ const Dashboard = () => {
 
         {/* Render Zone */}
         <AnimatePresence>
-          {(isGenerating || generated) && (
+          {(isGenerating || generatedUrl) && (
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -135,23 +180,21 @@ const Dashboard = () => {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  <div className="relative w-full aspect-[4/3] rounded-xl overflow-hidden bg-gradient-to-br from-primary/20 via-accent/10 to-primary/5 flex items-center justify-center">
-                    <div className="text-center space-y-2">
-                      {mode === "image" ? (
-                        <Image className="w-16 h-16 text-primary/40 mx-auto" />
-                      ) : (
-                        <Video className="w-16 h-16 text-primary/40 mx-auto" />
-                      )}
-                      <p className="text-sm text-muted-foreground">
-                        Aperçu de votre {mode === "image" ? "image" : "vidéo"} générée
-                      </p>
-                    </div>
+                  <div className="relative w-full aspect-[4/3] rounded-xl overflow-hidden bg-black/20">
+                    <img
+                      src={generatedUrl!}
+                      alt="Image générée"
+                      className="w-full h-full object-contain"
+                    />
                   </div>
                   <div className="flex items-center justify-between">
                     <p className="text-xs text-muted-foreground truncate max-w-[60%]">
                       {prompt}
                     </p>
-                    <button className="flex items-center gap-2 glass glass-hover rounded-xl px-4 py-2 text-sm font-medium text-primary">
+                    <button
+                      onClick={handleDownload}
+                      className="flex items-center gap-2 glass glass-hover rounded-xl px-4 py-2 text-sm font-medium text-primary"
+                    >
                       <Download className="w-4 h-4" />
                       Télécharger
                     </button>
