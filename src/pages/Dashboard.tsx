@@ -10,6 +10,7 @@ import {
   Music,
   Sparkles,
   Download,
+  Share2,
   Loader2,
   Upload,
   X,
@@ -924,7 +925,7 @@ const Dashboard = () => {
                 alt={previewImage.prompt || "Preview"}
                 className="max-w-full max-h-[75vh] object-contain rounded-xl"
               />
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 flex-wrap justify-center">
                 {previewImage.prompt && (
                   <p className="text-sm text-white/70 max-w-md truncate">{previewImage.prompt}</p>
                 )}
@@ -934,6 +935,26 @@ const Dashboard = () => {
                 >
                   <Download className="w-4 h-4" />
                   Télécharger
+                </button>
+                <button
+                  onClick={async () => {
+                    if (!user || !previewImage) return;
+                    try {
+                      const { error } = await supabase
+                        .from("generations")
+                        .update({ is_public: true, creator_name: user.email?.split("@")[0] || "Artiste" })
+                        .eq("user_id", user.id)
+                        .eq("image_url", previewImage.url);
+                      if (error) throw error;
+                      toast.success("Image partagée avec la communauté !");
+                    } catch (e: any) {
+                      toast.error("Erreur lors du partage");
+                    }
+                  }}
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl bg-accent/20 text-accent text-sm font-semibold hover:bg-accent/30 transition-colors"
+                >
+                  <Share2 className="w-4 h-4" />
+                  Partager
                 </button>
               </div>
               <button
