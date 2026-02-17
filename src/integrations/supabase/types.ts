@@ -82,7 +82,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      add_cauris: {
+        Args: { p_amount: number; p_user_id: string }
+        Returns: number
+      }
+      deduct_cauris: {
+        Args: { p_amount: number; p_user_id: string }
+        Returns: number
+      }
     }
     Enums: {
       [_ in never]: never

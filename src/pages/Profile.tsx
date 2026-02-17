@@ -1,10 +1,12 @@
-import { User, Zap, Image, Video, LogOut, Shield } from "lucide-react";
+import { User, Zap, Image, Video, LogOut, Shield, Coins } from "lucide-react";
 import { motion } from "framer-motion";
 import { useAuth } from "@/hooks/useAuth";
+import { useCauris } from "@/hooks/useCauris";
 import { useNavigate } from "react-router-dom";
 
 const Profile = () => {
   const { user, signOut } = useAuth();
+  const { balance } = useCauris();
   const navigate = useNavigate();
 
   const handleSignOut = async () => {
@@ -41,7 +43,7 @@ const Profile = () => {
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
           {[
-            { icon: Zap, label: "Crédits AD", value: "50", color: "text-primary" },
+            { icon: Coins, label: "Cauris 🐚", value: String(balance), color: "text-primary" },
             { icon: Image, label: "Images créées", value: "0", color: "text-accent" },
             { icon: Video, label: "Vidéos créées", value: "0", color: "text-primary" },
           ].map((stat, i) => (
@@ -58,6 +60,21 @@ const Profile = () => {
             </motion.div>
           ))}
         </div>
+
+        {/* Recharge CTA */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+        >
+          <button
+            onClick={() => navigate("/pricing")}
+            className="w-full btn-generate flex items-center justify-center gap-2 py-3 text-sm"
+          >
+            <Coins className="w-4 h-4" />
+            Recharger mes Cauris
+          </button>
+        </motion.div>
 
         {/* Settings */}
         <motion.div
