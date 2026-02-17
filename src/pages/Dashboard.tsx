@@ -24,7 +24,7 @@ import {
   Heart,
   SlidersHorizontal,
   Check,
-  Coins,
+  
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
@@ -233,7 +233,7 @@ const Dashboard = () => {
     if (!prompt.trim()) return;
     const cost = calculateCaurisCost(selectedModel, modelSettings, numImages);
     if (balance < cost) {
-      toast.error(`Solde insuffisant ! Il vous faut ${cost} Cauris 🐚. Rechargez votre compte.`);
+      toast.error(`Solde insuffisant ! Il vous faut ${cost} cauris. Rechargez votre compte.`);
       return;
     }
     setIsGenerating(true);
@@ -312,7 +312,7 @@ const Dashboard = () => {
     if (!prompt.trim()) return;
     const cost = calculateCaurisCost(selectedModel, modelSettings);
     if (balance < cost) {
-      toast.error(`Solde insuffisant ! Il vous faut ${cost} Cauris 🐚. Rechargez votre compte.`);
+      toast.error(`Solde insuffisant ! Il vous faut ${cost} cauris. Rechargez votre compte.`);
       return;
     }
     setIsGenerating(true);
@@ -709,37 +709,39 @@ const Dashboard = () => {
             </div>
           )}
 
-          {/* Cauris Cost & Balance */}
-          <div className="flex items-center justify-between text-[11px]">
-            <span className="text-muted-foreground flex items-center gap-1">
-              <Coins className="w-3 h-3" /> Coût :
-              <span className="font-bold text-accent">
-                {calculateCaurisCost(selectedModel, modelSettings, numImages)} 🐚
-              </span>
-            </span>
-            <span className="text-muted-foreground">
-              Solde : <span className="font-bold text-foreground">{balance}</span> Cauris
-            </span>
-          </div>
-
           {/* Generate Button */}
           <button
             onClick={activeTab === "video" ? handleGenerateVideo : handleGenerate}
             disabled={isGenerating || !prompt.trim()}
-            className="btn-generate w-full flex items-center justify-center gap-2 text-sm disabled:opacity-50 disabled:animate-none"
+            className="btn-generate w-full flex items-center justify-between text-sm disabled:opacity-50 disabled:animate-none"
           >
             {isGenerating ? (
-              <>
+              <span className="flex items-center gap-2 mx-auto">
                 <Loader2 className="w-4 h-4 animate-spin" />
                 Génération...
-              </>
+              </span>
             ) : (
               <>
-                Générer — {calculateCaurisCost(selectedModel, modelSettings, numImages)} 🐚
-                <Wand2 className="w-4 h-4" />
+                <span className="flex items-center gap-2">
+                  <Wand2 className="w-4 h-4" />
+                  Générer
+                </span>
+                <span className="bg-black/20 px-2.5 py-1 rounded-lg text-xs font-bold">
+                  {calculateCaurisCost(selectedModel, modelSettings, numImages)} cauris
+                </span>
               </>
             )}
           </button>
+
+          {/* Balance indicator */}
+          <div className="text-center">
+            <span className="text-[11px] text-muted-foreground">
+              Il vous reste <span className="font-bold text-foreground">{balance}</span> cauris
+              {balance < calculateCaurisCost(selectedModel, modelSettings, numImages) && (
+                <> · <a href="/pricing" className="text-primary underline underline-offset-2 font-semibold">Recharger</a></>
+              )}
+            </span>
+          </div>
         </div>
       </div>
 

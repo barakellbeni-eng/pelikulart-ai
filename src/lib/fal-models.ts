@@ -445,14 +445,43 @@ export function getModelsByType(type: ModelType): FalModel[] {
 
 /** Calculate the actual cauris cost based on model and current settings */
 export function calculateCaurisCost(model: FalModel, settings: Record<string, any>, numImages: number = 1): number {
+  let cost = model.caurisCost;
+
   if (model.type === "video") {
     const duration = settings.duration ? parseInt(settings.duration) : 5;
-    if (duration >= 15 && model.caurisCost15s) return model.caurisCost15s;
-    if (duration >= 10 && model.caurisCost10s) return model.caurisCost10s;
-    return model.caurisCost;
+    if (duration >= 15 && model.caurisCost15s) cost = model.caurisCost15s;
+    else if (duration >= 10 && model.caurisCost10s) cost = model.caurisCost10s;
+
+    // Resolution surcharge
+    if (settings.resolution === "1080p") cost = Math.ceil(cost * 1.3);
+
+    // Audio generation surcharge
+    if (settings.generate_audio === true || settings.include_audio === true) cost = Math.ceil(cost * 1.2);
+
+    return cost;
   }
-  // Image: cost per image × number of images
-  return model.caurisCost * numImages;
+
+  // Image models
+  // Resolution surcharge
+  if (settings.resolution === "4K") cost = Math.ceil(cost * 1.8);
+  else if (settings.resolution === "2K") cost = Math.ceil(cost * 1.2);
+
+  // Higher inference steps surcharge (above default)
+  const stepsDefault = model.settings.find(s => s.key === "num_inference_steps")?.defaultValue;
+  if (stepsDefault && settings.num_inference_steps > stepsDefault) {
+    const ratio = settings.num_inference_steps / stepsDefault;
+    if (ratio > 1.3) cost = Math.ceil(cost * 1.3);
+  }
+
+  // Raw mode (FLUX Pro Ultra)
+  if (settings.raw === true) cost = Math.ceil(cost * 1.2);
+
+  // Larger image sizes
+  if (settings.image_size === "landscape_16_9" || settings.image_size === "portrait_16_9") {
+    cost = Math.ceil(cost * 1.15);
+  }
+
+  return cost * numImages;
 }
 
 export interface BrandGroup {
