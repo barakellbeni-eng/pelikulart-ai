@@ -67,6 +67,7 @@ const Dashboard = () => {
   const [referencePreview, setReferencePreview] = useState<string | null>(null);
   const [showModelDropdown, setShowModelDropdown] = useState(false);
   const [previewImage, setPreviewImage] = useState<GeneratedImage | null>(null);
+  const [isEnhancing, setIsEnhancing] = useState(false);
 
   const handleSelectModel = (model: FalModel) => {
     setSelectedModel(model);
@@ -168,6 +169,36 @@ const Dashboard = () => {
     setReferenceImage(null);
     setReferencePreview(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const handleEnhancePrompt = async () => {
+    if (!prompt.trim() || isEnhancing) return;
+    setIsEnhancing(true);
+    try {
+      const enhanceUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/enhance-prompt`;
+      const resp = await fetch(enhanceUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+        },
+        body: JSON.stringify({ prompt, model_id: selectedModel.id }),
+      });
+      if (!resp.ok) {
+        const err = await resp.json().catch(() => ({ error: "Erreur" }));
+        throw new Error(err.error || "Erreur");
+      }
+      const data = await resp.json();
+      if (data.enhanced_prompt) {
+        setPrompt(data.enhanced_prompt);
+        toast.success("Prompt amélioré ✨");
+      }
+    } catch (e: any) {
+      console.error("Enhance error:", e);
+      toast.error(e.message || "Erreur lors de l'amélioration");
+    } finally {
+      setIsEnhancing(false);
+    }
   };
 
   const handleGenerate = async () => {
@@ -518,9 +549,24 @@ const Dashboard = () => {
 
           {/* Prompt */}
           <div className="space-y-2">
-            <label className="text-[11px] text-muted-foreground font-semibold uppercase tracking-wider">
-              Prompt
-            </label>
+            <div className="flex items-center justify-between">
+              <label className="text-[11px] text-muted-foreground font-semibold uppercase tracking-wider">
+                Prompt
+              </label>
+              <button
+                onClick={handleEnhancePrompt}
+                disabled={!prompt.trim() || isEnhancing}
+                className="flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-semibold bg-gradient-to-r from-amber-500/20 to-orange-500/20 text-amber-400 hover:from-amber-500/30 hover:to-orange-500/30 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                title="Améliorer le prompt avec l'IA"
+              >
+                {isEnhancing ? (
+                  <Loader2 className="w-3 h-3 animate-spin" />
+                ) : (
+                  <Wand2 className="w-3 h-3" />
+                )}
+                {isEnhancing ? "Amélioration..." : "Améliorer"}
+              </button>
+            </div>
             <Textarea
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
