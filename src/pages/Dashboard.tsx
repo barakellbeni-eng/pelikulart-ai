@@ -25,7 +25,8 @@ import {
   Heart,
   SlidersHorizontal,
   Check,
-  
+  Trash2,
+  Film,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
@@ -386,6 +387,37 @@ const Dashboard = () => {
     } catch {
       toast.error("Erreur lors du téléchargement");
     }
+  };
+
+  const handleDeleteImage = async (img: GeneratedImage) => {
+    if (!user) return;
+    try {
+      const { error } = await supabase
+        .from("generations")
+        .delete()
+        .eq("user_id", user.id)
+        .eq("image_url", img.url);
+      if (error) throw error;
+      setGalleryImages((prev) => prev.filter((g) => g.url !== img.url));
+      setPreviewImage(null);
+      toast.success("Image supprimée");
+    } catch {
+      toast.error("Erreur lors de la suppression");
+    }
+  };
+
+  const handleImageToVideo = (img: GeneratedImage) => {
+    // Switch to video tab with the image as reference
+    const i2vModels = getModelsByType("video").filter((m) => m.supportsImageInput);
+    if (i2vModels.length === 0) return;
+    setActiveTab("video");
+    setSelectedModel(i2vModels[0]);
+    setModelSettings(getDefaultSettings(i2vModels[0]));
+    setReferenceImage(img.url);
+    setReferencePreview(img.url);
+    if (img.prompt) setPrompt(img.prompt);
+    setPreviewImage(null);
+    toast.success("Image chargée dans le générateur vidéo !");
   };
 
   // Render a single setting control
@@ -887,12 +919,23 @@ const Dashboard = () => {
                     <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                       <div className="absolute bottom-0 left-0 right-0 p-2.5 flex items-end justify-between">
                         <span className="text-[10px] text-white/80 font-medium">{img.resolution || ""}</span>
-                        <button
-                          onClick={(e) => { e.stopPropagation(); handleDownload(img.url, i); }}
-                          className="w-7 h-7 rounded-lg bg-white/10 backdrop-blur-sm flex items-center justify-center hover:bg-white/20 transition-colors"
-                        >
-                          <Download className="w-3.5 h-3.5 text-white" />
-                        </button>
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteImage(img);
+                            }}
+                            className="w-7 h-7 rounded-lg bg-red-500/20 backdrop-blur-sm flex items-center justify-center hover:bg-red-500/40 transition-colors"
+                          >
+                            <Trash2 className="w-3.5 h-3.5 text-red-400" />
+                          </button>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); handleDownload(img.url, i); }}
+                            className="w-7 h-7 rounded-lg bg-white/10 backdrop-blur-sm flex items-center justify-center hover:bg-white/20 transition-colors"
+                          >
+                            <Download className="w-3.5 h-3.5 text-white" />
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </motion.div>
@@ -937,6 +980,13 @@ const Dashboard = () => {
                   Télécharger
                 </button>
                 <button
+                  onClick={() => handleImageToVideo(previewImage)}
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-500/20 text-emerald-400 text-sm font-semibold hover:bg-emerald-500/30 transition-colors"
+                >
+                  <Film className="w-4 h-4" />
+                  Animer en vidéo
+                </button>
+                <button
                   onClick={async () => {
                     if (!user || !previewImage) return;
                     try {
@@ -955,6 +1005,13 @@ const Dashboard = () => {
                 >
                   <Share2 className="w-4 h-4" />
                   Partager
+                </button>
+                <button
+                  onClick={() => handleDeleteImage(previewImage)}
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl bg-red-500/20 text-red-400 text-sm font-semibold hover:bg-red-500/30 transition-colors"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  Supprimer
                 </button>
               </div>
               <button
