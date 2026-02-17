@@ -12,7 +12,7 @@ export interface ModelSetting {
   description?: string;
 }
 
-export type ModelType = "image" | "video";
+export type ModelType = "image" | "video" | "audio";
 
 export interface FalModel {
   id: string;
@@ -424,6 +424,71 @@ export const FAL_MODELS: FalModel[] = [
     description: "Image vers vidéo, animation réaliste", icon: "🖼️", color: "from-fuchsia-500 to-pink-400",
     maxImages: 1, supportsImageInput: true, caurisCost: 15,
     settings: [INFERENCE_STEPS(25), SEED_SETTING],
+  },
+
+  // ════════════════════════════════════════
+  //  AUDIO MODELS
+  // ════════════════════════════════════════
+
+  // ── Stable Audio ──
+  {
+    id: "stable-audio", type: "audio", brand: "Stability", name: "Stable Audio",
+    endpoint: "fal-ai/stable-audio",
+    description: "Musique et bruitages jusqu'à 47s", icon: "🎵", color: "from-violet-500 to-purple-400",
+    maxImages: 1, supportsImageInput: false, caurisCost: 5,
+    settings: [
+      { key: "audio_type", label: "Type", type: "select", options: [
+        { value: "music", label: "Musique" }, { value: "sfx", label: "Bruitage/SFX" },
+      ], defaultValue: "music" },
+      { key: "duration", label: "Durée (secondes)", type: "slider", min: 5, max: 47, step: 1, defaultValue: 15 },
+      { key: "num_inference_steps", label: "Étapes", type: "slider", min: 10, max: 50, step: 1, defaultValue: 25 },
+    ],
+  },
+
+  // ── Ace Step ──
+  {
+    id: "ace-step", type: "audio", brand: "Ace", name: "Ace Step",
+    endpoint: "fal-ai/ace-step",
+    description: "Chansons avec paroles", icon: "🎤", color: "from-pink-500 to-rose-400",
+    maxImages: 1, supportsImageInput: false, caurisCost: 12,
+    settings: [
+      { key: "duration", label: "Durée (secondes)", type: "slider", min: 15, max: 120, step: 5, defaultValue: 30 },
+      { key: "lyrics", label: "Paroles (optionnel)", type: "text", defaultValue: "", description: "Paroles de la chanson" },
+    ],
+  },
+
+  // ── Dia TTS ──
+  {
+    id: "dia-tts", type: "audio", brand: "Nari", name: "Dia TTS",
+    endpoint: "fal-ai/dia-tts",
+    description: "Text-to-speech multi-locuteurs", icon: "🗣️", color: "from-cyan-500 to-blue-400",
+    maxImages: 1, supportsImageInput: false, caurisCost: 3,
+    settings: [],
+  },
+
+  // ── Kokoro TTS ──
+  {
+    id: "kokoro-tts", type: "audio", brand: "Kokoro", name: "TTS",
+    endpoint: "fal-ai/kokoro/american-english",
+    description: "Voix rapide et naturelle", icon: "🔊", color: "from-emerald-500 to-green-400",
+    maxImages: 1, supportsImageInput: false, caurisCost: 2,
+    settings: [
+      { key: "voice", label: "Voix", type: "select", options: [
+        { value: "af_heart", label: "Heart (F)" }, { value: "af_bella", label: "Bella (F)" },
+        { value: "am_adam", label: "Adam (M)" }, { value: "am_michael", label: "Michael (M)" },
+      ], defaultValue: "af_heart" },
+    ],
+  },
+
+  // ── MMAudio ──
+  {
+    id: "mmaudio", type: "audio", brand: "MMAudio", name: "V2",
+    endpoint: "fal-ai/mmaudio/v2",
+    description: "Génère un audio synchronisé à une vidéo", icon: "🎬", color: "from-amber-500 to-orange-400",
+    maxImages: 1, supportsImageInput: true, caurisCost: 8,
+    settings: [
+      { key: "duration", label: "Durée (secondes)", type: "slider", min: 1, max: 15, step: 1, defaultValue: 5 },
+    ],
   },
 ];
 
