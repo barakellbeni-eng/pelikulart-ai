@@ -26,9 +26,10 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
-import { FAL_MODELS, getModelById, getDefaultSettings, type FalModel } from "@/lib/fal-models";
+import { FAL_MODELS, getModelById, getDefaultSettings, getModelsByType, type FalModel } from "@/lib/fal-models";
 
-const GENERATE_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-image`;
+const GENERATE_IMAGE_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-image`;
+const GENERATE_VIDEO_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-video`;
 
 const afrikaBoostKeywords = [
   "Lumière du Sahel",
@@ -52,17 +53,29 @@ interface GeneratedImage {
   timestamp?: number;
 }
 
+interface GeneratedVideo {
+  url: string;
+  prompt?: string;
+  timestamp?: number;
+}
+
 const Dashboard = () => {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<"image" | "video" | "audio">("image");
   const [prompt, setPrompt] = useState("");
-  const [selectedModel, setSelectedModel] = useState<FalModel>(FAL_MODELS[0]);
-  const [modelSettings, setModelSettings] = useState<Record<string, any>>(getDefaultSettings(FAL_MODELS[0]));
+
+  const imageModels = getModelsByType("image");
+  const videoModels = getModelsByType("video");
+  const currentModels = activeTab === "video" ? videoModels : imageModels;
+
+  const [selectedModel, setSelectedModel] = useState<FalModel>(imageModels[0]);
+  const [modelSettings, setModelSettings] = useState<Record<string, any>>(getDefaultSettings(imageModels[0]));
   const [numImages, setNumImages] = useState(1);
   const [isGenerating, setIsGenerating] = useState(false);
   const [progress, setProgress] = useState(0);
   const [progressStage, setProgressStage] = useState("");
   const [galleryImages, setGalleryImages] = useState<GeneratedImage[]>([]);
+  const [galleryVideos, setGalleryVideos] = useState<GeneratedVideo[]>([]);
   const [referenceImage, setReferenceImage] = useState<string | null>(null);
   const [referencePreview, setReferencePreview] = useState<string | null>(null);
   const [showModelDropdown, setShowModelDropdown] = useState(false);
@@ -74,6 +87,18 @@ const Dashboard = () => {
     setModelSettings(getDefaultSettings(model));
     setNumImages(1);
     setShowModelDropdown(false);
+  };
+
+  const handleSwitchTab = (tab: "image" | "video" | "audio") => {
+    setActiveTab(tab);
+    if (tab === "video") {
+      setSelectedModel(videoModels[0]);
+      setModelSettings(getDefaultSettings(videoModels[0]));
+    } else if (tab === "image") {
+      setSelectedModel(imageModels[0]);
+      setModelSettings(getDefaultSettings(imageModels[0]));
+    }
+    setNumImages(1);
   };
 
   const updateSetting = (key: string, value: any) => {
@@ -229,7 +254,7 @@ const Dashboard = () => {
         payload.image_url = referenceImage;
       }
 
-      const resp = await fetch(GENERATE_URL, {
+      const resp = await fetch(GENERATE_IMAGE_URL, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -267,6 +292,61 @@ const Dashboard = () => {
     } catch (e: any) {
       console.error("Generation error:", e);
       toast.error(e.message || "Erreur lors de la génération");
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const handleGenerateVideo = async () => {
+    if (!prompt.trim()) return;
+    setIsGenerating(true);
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const accessToken = sessionData?.session?.access_token;
+
+      const cleanSettings: Record<string, any> = {};
+      for (const [key, value] of Object.entries(modelSettings)) {
+        if (value === "" || value === undefined || value === null) continue;
+        if (key === "seed" && value === 0) continue;
+        cleanSettings[key] = value;
+      }
+
+      const payload: Record<string, any> = {
+        prompt,
+        model_id: selectedModel.id,
+        ...cleanSettings,
+      };
+      if (referenceImage && selectedModel.supportsImageInput) {
+        payload.image_url = referenceImage;
+      }
+
+      const resp = await fetch(GENERATE_VIDEO_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!resp.ok) {
+        const err = await resp.json().catch(() => ({ error: "Erreur inconnue" }));
+        throw new Error(err.error || `Erreur ${resp.status}`);
+      }
+
+      const data = await resp.json();
+      if (data.video_url) {
+        setGalleryVideos((prev) => [
+          { url: data.video_url, prompt, timestamp: Date.now() },
+          ...prev,
+        ]);
+        toast.success("Vidéo générée !");
+      } else {
+        throw new Error("Aucune vidéo retournée");
+      }
+    } catch (e: any) {
+      console.error("Video generation error:", e);
+      toast.error(e.message || "Erreur lors de la génération vidéo");
     } finally {
       setIsGenerating(false);
     }
@@ -387,10 +467,10 @@ const Dashboard = () => {
         <div className="p-4 space-y-4 flex-1">
           {/* Tabs: Image / Video / Audio */}
           <div className="flex rounded-xl bg-white/[0.04] p-1">
-            {(["image", "video", "audio"] as const).map((tab) => (
+           {(["image", "video", "audio"] as const).map((tab) => (
               <button
                 key={tab}
-                onClick={() => setActiveTab(tab)}
+                onClick={() => handleSwitchTab(tab)}
                 className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-semibold transition-all ${
                   activeTab === tab
                     ? "bg-primary text-primary-foreground shadow-md"
@@ -443,7 +523,7 @@ const Dashboard = () => {
                     exit={{ opacity: 0, y: -4 }}
                     className="absolute left-0 right-0 top-full mt-1 glass-card p-1.5 z-50 max-h-[360px] overflow-y-auto"
                   >
-                    {FAL_MODELS.map((model) => (
+                    {currentModels.map((model) => (
                       <button
                         key={model.id}
                         onClick={() => handleSelectModel(model)}
@@ -606,7 +686,7 @@ const Dashboard = () => {
 
           {/* Generate Button */}
           <button
-            onClick={handleGenerate}
+            onClick={activeTab === "video" ? handleGenerateVideo : handleGenerate}
             disabled={isGenerating || !prompt.trim()}
             className="btn-generate w-full flex items-center justify-center gap-2 text-sm disabled:opacity-50 disabled:animate-none"
           >
@@ -652,29 +732,26 @@ const Dashboard = () => {
         </div>
 
         <div className="flex-1 overflow-y-auto p-4">
-          {galleryImages.length === 0 && !isGenerating ? (
-            <div className="flex flex-col items-center justify-center h-full text-center space-y-4">
-              <div className="w-20 h-20 rounded-2xl bg-white/[0.04] flex items-center justify-center">
-                <Image className="w-10 h-10 text-muted-foreground/30" />
+          {activeTab === "video" ? (
+            /* ===== VIDEO GALLERY ===== */
+            galleryVideos.length === 0 && !isGenerating ? (
+              <div className="flex flex-col items-center justify-center h-full text-center space-y-4">
+                <div className="w-20 h-20 rounded-2xl bg-white/[0.04] flex items-center justify-center">
+                  <Video className="w-10 h-10 text-muted-foreground/30" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Vos vidéos apparaîtront ici</p>
+                  <p className="text-xs text-muted-foreground/60 mt-1">Choisissez un modèle vidéo, entrez un prompt et cliquez sur Générer</p>
+                </div>
               </div>
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">
-                  Vos créations apparaîtront ici
-                </p>
-                <p className="text-xs text-muted-foreground/60 mt-1">
-                  Choisissez un modèle, entrez un prompt et cliquez sur Générer
-                </p>
-              </div>
-            </div>
-          ) : (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
-              {isGenerating &&
-                Array.from({ length: numImages }).map((_, i) => (
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {isGenerating && (
                   <motion.div
-                    key={`loading-${i}`}
+                    key="video-loading"
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    className="aspect-square rounded-xl bg-white/[0.04] border border-white/[0.06] flex flex-col items-center justify-center p-4 space-y-4 relative overflow-hidden"
+                    className="aspect-video rounded-xl bg-white/[0.04] border border-white/[0.06] flex flex-col items-center justify-center p-4 space-y-4 relative overflow-hidden"
                   >
                     <div className="absolute inset-0 overflow-hidden">
                       <div className="absolute inset-0 animate-pulse" style={{ background: `linear-gradient(135deg, transparent 30%, hsl(var(--primary) / 0.04) 50%, transparent 70%)` }} />
@@ -690,31 +767,97 @@ const Dashboard = () => {
                       <p className="text-[10px] text-primary font-bold text-center">{Math.round(progress)}%</p>
                     </div>
                   </motion.div>
-                ))}
-
-              {galleryImages.map((img, i) => (
-                <motion.div
-                  key={`img-${i}-${img.timestamp}`}
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  onClick={() => setPreviewImage(img)}
-                  className="aspect-square relative group rounded-xl overflow-hidden cursor-pointer"
-                >
-                  <img src={img.url} alt={img.prompt || "Generated"} className="w-full h-full object-cover rounded-xl" loading="lazy" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                    <div className="absolute bottom-0 left-0 right-0 p-2.5 flex items-end justify-between">
-                      <span className="text-[10px] text-white/80 font-medium">{img.resolution || ""}</span>
+                )}
+                {galleryVideos.map((vid, i) => (
+                  <motion.div
+                    key={`vid-${i}-${vid.timestamp}`}
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="aspect-video relative group rounded-xl overflow-hidden"
+                  >
+                    <video
+                      src={vid.url}
+                      controls
+                      className="w-full h-full object-cover rounded-xl"
+                    />
+                    <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
                       <button
-                        onClick={(e) => { e.stopPropagation(); handleDownload(img.url, i); }}
-                        className="w-7 h-7 rounded-lg bg-white/10 backdrop-blur-sm flex items-center justify-center hover:bg-white/20 transition-colors"
+                        onClick={() => handleDownload(vid.url, i)}
+                        className="w-7 h-7 rounded-lg bg-black/60 backdrop-blur-sm flex items-center justify-center hover:bg-black/80 transition-colors"
                       >
                         <Download className="w-3.5 h-3.5 text-white" />
                       </button>
                     </div>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
+                    {vid.prompt && (
+                      <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
+                        <p className="text-[10px] text-white/80 truncate">{vid.prompt}</p>
+                      </div>
+                    )}
+                  </motion.div>
+                ))}
+              </div>
+            )
+          ) : (
+            /* ===== IMAGE GALLERY ===== */
+            galleryImages.length === 0 && !isGenerating ? (
+              <div className="flex flex-col items-center justify-center h-full text-center space-y-4">
+                <div className="w-20 h-20 rounded-2xl bg-white/[0.04] flex items-center justify-center">
+                  <Image className="w-10 h-10 text-muted-foreground/30" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Vos créations apparaîtront ici</p>
+                  <p className="text-xs text-muted-foreground/60 mt-1">Choisissez un modèle, entrez un prompt et cliquez sur Générer</p>
+                </div>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+                {isGenerating &&
+                  Array.from({ length: numImages }).map((_, i) => (
+                    <motion.div
+                      key={`loading-${i}`}
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className="aspect-square rounded-xl bg-white/[0.04] border border-white/[0.06] flex flex-col items-center justify-center p-4 space-y-4 relative overflow-hidden"
+                    >
+                      <div className="absolute inset-0 overflow-hidden">
+                        <div className="absolute inset-0 animate-pulse" style={{ background: `linear-gradient(135deg, transparent 30%, hsl(var(--primary) / 0.04) 50%, transparent 70%)` }} />
+                      </div>
+                      <div className="relative">
+                        <div className="w-12 h-12 rounded-full border-2 border-white/[0.08] border-t-primary animate-spin" />
+                      </div>
+                      <div className="relative w-full space-y-2 px-2">
+                        <p className="text-xs text-muted-foreground text-center font-medium">{progressStage}</p>
+                        <div className="w-full h-1.5 rounded-full bg-white/[0.06] overflow-hidden">
+                          <motion.div className="h-full rounded-full bg-primary" initial={{ width: "0%" }} animate={{ width: `${progress}%` }} transition={{ duration: 0.4, ease: "easeOut" }} />
+                        </div>
+                        <p className="text-[10px] text-primary font-bold text-center">{Math.round(progress)}%</p>
+                      </div>
+                    </motion.div>
+                  ))}
+                {galleryImages.map((img, i) => (
+                  <motion.div
+                    key={`img-${i}-${img.timestamp}`}
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    onClick={() => setPreviewImage(img)}
+                    className="aspect-square relative group rounded-xl overflow-hidden cursor-pointer"
+                  >
+                    <img src={img.url} alt={img.prompt || "Generated"} className="w-full h-full object-cover rounded-xl" loading="lazy" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                      <div className="absolute bottom-0 left-0 right-0 p-2.5 flex items-end justify-between">
+                        <span className="text-[10px] text-white/80 font-medium">{img.resolution || ""}</span>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handleDownload(img.url, i); }}
+                          className="w-7 h-7 rounded-lg bg-white/10 backdrop-blur-sm flex items-center justify-center hover:bg-white/20 transition-colors"
+                        >
+                          <Download className="w-3.5 h-3.5 text-white" />
+                        </button>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            )
           )}
         </div>
       </div>

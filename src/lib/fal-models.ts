@@ -13,6 +13,8 @@ export interface ModelSetting {
   description?: string;
 }
 
+export type ModelType = "image" | "video";
+
 export interface FalModel {
   id: string;
   name: string;
@@ -20,6 +22,7 @@ export interface FalModel {
   description: string;
   icon: string; // emoji
   color: string; // gradient from-to
+  type: ModelType;
   settings: ModelSetting[];
   supportsImageInput?: boolean;
   maxImages?: number;
@@ -28,6 +31,7 @@ export interface FalModel {
 export const FAL_MODELS: FalModel[] = [
   {
     id: "nano-banana-pro",
+    type: "image",
     name: "Nano Banana Pro",
     endpoint: "fal-ai/nano-banana-pro",
     description: "Rapide et polyvalent, bon rapport qualité/vitesse",
@@ -66,6 +70,7 @@ export const FAL_MODELS: FalModel[] = [
   },
   {
     id: "flux-dev",
+    type: "image",
     name: "FLUX.1 [dev]",
     endpoint: "fal-ai/flux/dev",
     description: "Haute qualité, meilleur rendu détaillé",
@@ -119,6 +124,7 @@ export const FAL_MODELS: FalModel[] = [
   },
   {
     id: "flux-schnell",
+    type: "image",
     name: "FLUX.1 [schnell]",
     endpoint: "fal-ai/flux/schnell",
     description: "Ultra rapide, 4 étapes seulement",
@@ -154,6 +160,7 @@ export const FAL_MODELS: FalModel[] = [
   },
   {
     id: "flux-pro-ultra",
+    type: "image",
     name: "FLUX Pro v1.1 Ultra",
     endpoint: "fal-ai/flux-pro/v1.1-ultra",
     description: "Pro 2K, qualité maximale",
@@ -195,6 +202,7 @@ export const FAL_MODELS: FalModel[] = [
   },
   {
     id: "flux-kontext",
+    type: "image",
     name: "FLUX Kontext [pro]",
     endpoint: "fal-ai/flux-pro/kontext",
     description: "Édition contextuelle avec image de référence",
@@ -234,6 +242,7 @@ export const FAL_MODELS: FalModel[] = [
   },
   {
     id: "recraft-v3",
+    type: "image",
     name: "Recraft V3",
     endpoint: "fal-ai/recraft/v3",
     description: "SOTA en génération, styles variés, texte dans l'image",
@@ -271,6 +280,7 @@ export const FAL_MODELS: FalModel[] = [
   },
   {
     id: "ideogram-v2",
+    type: "image",
     name: "Ideogram V2",
     endpoint: "fal-ai/ideogram/v2",
     description: "Excellent pour le texte dans les images",
@@ -319,6 +329,7 @@ export const FAL_MODELS: FalModel[] = [
   },
   {
     id: "imagen4",
+    type: "image",
     name: "Google Imagen 4",
     endpoint: "fal-ai/imagen4/preview",
     description: "Modèle Google, images hyper-détaillées",
@@ -344,6 +355,7 @@ export const FAL_MODELS: FalModel[] = [
   },
   {
     id: "fast-sdxl",
+    type: "image",
     name: "Fast SDXL",
     endpoint: "fal-ai/fast-sdxl",
     description: "Stable Diffusion XL rapide, très personnalisable",
@@ -404,6 +416,7 @@ export const FAL_MODELS: FalModel[] = [
   },
   {
     id: "hidream-i1",
+    type: "image",
     name: "HiDream I1 Full",
     endpoint: "fal-ai/hidream-i1-full",
     description: "Modèle open-source haute qualité",
@@ -457,6 +470,7 @@ export const FAL_MODELS: FalModel[] = [
   },
   {
     id: "flux2-dev",
+    type: "image",
     name: "FLUX.2 [dev]",
     endpoint: "fal-ai/flux2/dev",
     description: "Dernière génération FLUX, édition avancée",
@@ -499,6 +513,131 @@ export const FAL_MODELS: FalModel[] = [
       },
     ],
   },
+  // ===== VIDEO MODELS =====
+  {
+    id: "veo3",
+    type: "video",
+    name: "Google Veo 3",
+    endpoint: "fal-ai/veo3",
+    description: "Google, vidéo haute qualité avec audio",
+    icon: "🎬",
+    color: "from-red-500 to-rose-400",
+    maxImages: 1,
+    supportsImageInput: false,
+    settings: [
+      {
+        key: "duration",
+        label: "Durée (secondes)",
+        type: "select",
+        options: [
+          { value: "5", label: "5s" },
+          { value: "8", label: "8s" },
+        ],
+        defaultValue: "8",
+      },
+      {
+        key: "aspect_ratio",
+        label: "Ratio",
+        type: "select",
+        options: [
+          { value: "16:9", label: "16:9" },
+          { value: "9:16", label: "9:16" },
+          { value: "1:1", label: "1:1" },
+        ],
+        defaultValue: "16:9",
+      },
+      {
+        key: "include_audio",
+        label: "Inclure l'audio",
+        type: "toggle",
+        defaultValue: true,
+      },
+    ],
+  },
+  {
+    id: "minimax-video",
+    type: "video",
+    name: "MiniMax Video",
+    endpoint: "fal-ai/minimax/video-01-live",
+    description: "Vidéo fluide et expressive",
+    icon: "🎥",
+    color: "from-cyan-500 to-teal-400",
+    maxImages: 1,
+    supportsImageInput: false,
+    settings: [
+      {
+        key: "prompt_optimizer",
+        label: "Optimiser le prompt",
+        type: "toggle",
+        defaultValue: true,
+      },
+    ],
+  },
+  {
+    id: "kling-video",
+    type: "video",
+    name: "Kling 1.6",
+    endpoint: "fal-ai/kling-video/v1.6/standard/text-to-video",
+    description: "Vidéos réalistes, mouvements naturels",
+    icon: "🎞️",
+    color: "from-emerald-500 to-green-400",
+    maxImages: 1,
+    supportsImageInput: false,
+    settings: [
+      {
+        key: "duration",
+        label: "Durée",
+        type: "select",
+        options: [
+          { value: "5", label: "5s" },
+          { value: "10", label: "10s" },
+        ],
+        defaultValue: "5",
+      },
+      {
+        key: "aspect_ratio",
+        label: "Ratio",
+        type: "select",
+        options: [
+          { value: "16:9", label: "16:9" },
+          { value: "9:16", label: "9:16" },
+          { value: "1:1", label: "1:1" },
+        ],
+        defaultValue: "16:9",
+      },
+    ],
+  },
+  {
+    id: "framepack-f1",
+    type: "video",
+    name: "Framepack F1",
+    endpoint: "fal-ai/framepack/f1",
+    description: "Image vers vidéo, animation réaliste",
+    icon: "🖼️",
+    color: "from-fuchsia-500 to-pink-400",
+    maxImages: 1,
+    supportsImageInput: true,
+    settings: [
+      {
+        key: "num_inference_steps",
+        label: "Étapes d'inférence",
+        type: "slider",
+        min: 10,
+        max: 50,
+        step: 1,
+        defaultValue: 25,
+      },
+      {
+        key: "seed",
+        label: "Seed (0 = aléatoire)",
+        type: "slider",
+        min: 0,
+        max: 9999999,
+        step: 1,
+        defaultValue: 0,
+      },
+    ],
+  },
 ];
 
 export function getModelById(id: string): FalModel | undefined {
@@ -511,4 +650,8 @@ export function getDefaultSettings(model: FalModel): Record<string, any> {
     defaults[s.key] = s.defaultValue;
   });
   return defaults;
+}
+
+export function getModelsByType(type: ModelType): FalModel[] {
+  return FAL_MODELS.filter((m) => m.type === type);
 }
