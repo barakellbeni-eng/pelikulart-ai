@@ -4,7 +4,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
-import BottomNav from "./components/BottomNav";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import AppSidebar from "@/components/AppSidebar";
 import LandingPage from "./pages/LandingPage";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
@@ -12,7 +13,7 @@ import Gallery from "./pages/Gallery";
 import Pricing from "./pages/Pricing";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
-import { Loader2 } from "lucide-react";
+import { Loader2, PanelLeft } from "lucide-react";
 
 const queryClient = new QueryClient();
 
@@ -29,24 +30,76 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
+const AuthenticatedLayout = ({ children }: { children: React.ReactNode }) => {
+  return (
+    <SidebarProvider>
+      <div className="min-h-screen flex w-full">
+        <AppSidebar />
+        <main className="flex-1 flex flex-col min-h-screen overflow-auto">
+          {/* Top bar with sidebar trigger */}
+          <header className="sticky top-0 z-50 glass border-b border-sidebar-border px-4 py-2 flex items-center gap-3">
+            <SidebarTrigger />
+            <h1 className="text-sm font-bold tracking-tight">
+              <span className="text-gradient-primary">AFRIKA</span>{" "}
+              <span className="text-foreground">DRIVE</span>
+            </h1>
+          </header>
+          <div className="flex-1">{children}</div>
+        </main>
+      </div>
+    </SidebarProvider>
+  );
+};
+
 const AppContent = () => {
   const location = useLocation();
-  const isLanding = location.pathname === "/" || location.pathname === "/auth";
+  const isPublic = location.pathname === "/" || location.pathname === "/auth";
 
   return (
     <div className="dark min-h-screen bg-background">
-      {!isLanding && <BottomNav />}
-      <div className={!isLanding ? "md:pt-12" : ""}>
-        <Routes>
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/auth" element={<Auth />} />
-          <Route path="/studio" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-          <Route path="/gallery" element={<ProtectedRoute><Gallery /></ProtectedRoute>} />
-          <Route path="/pricing" element={<Pricing />} />
-          <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </div>
+      <Routes>
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/auth" element={<Auth />} />
+        <Route
+          path="/studio"
+          element={
+            <ProtectedRoute>
+              <AuthenticatedLayout>
+                <Dashboard />
+              </AuthenticatedLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/gallery"
+          element={
+            <ProtectedRoute>
+              <AuthenticatedLayout>
+                <Gallery />
+              </AuthenticatedLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/pricing"
+          element={
+            <AuthenticatedLayout>
+              <Pricing />
+            </AuthenticatedLayout>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <AuthenticatedLayout>
+                <Profile />
+              </AuthenticatedLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route path="*" element={<NotFound />} />
+      </Routes>
     </div>
   );
 };

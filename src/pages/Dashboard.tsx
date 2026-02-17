@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
-import { Image, Video, Sparkles, Download, Loader2, Zap } from "lucide-react";
+import { Image, Video, Sparkles, Download, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 const afrikaBoostKeywords = [
@@ -38,22 +38,8 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="min-h-screen pb-24 md:pb-8">
-      {/* Header */}
-      <header className="sticky top-0 z-50 glass border-b border-white/[0.06] px-4 py-3">
-        <div className="max-w-4xl mx-auto flex items-center justify-between">
-          <h1 className="text-xl font-bold tracking-tight">
-            <span className="text-gradient-primary">AFRIKA</span>{" "}
-            <span className="text-foreground">DRIVE</span>
-          </h1>
-          <div className="flex items-center gap-2 glass rounded-full px-4 py-2">
-            <Zap className="w-4 h-4 text-primary" />
-            <span className="text-sm font-semibold text-primary">250 AD</span>
-          </div>
-        </div>
-      </header>
-
-      <main className="max-w-4xl mx-auto px-4 pt-6 space-y-6">
+    <div className="h-full pb-4">
+      <div className="max-w-4xl mx-auto px-4 pt-6 space-y-6">
         {/* Mode Selector */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
@@ -175,7 +161,7 @@ const Dashboard = () => {
             </motion.div>
           )}
         </AnimatePresence>
-      </main>
+      </div>
     </div>
   );
 };
