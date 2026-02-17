@@ -175,10 +175,13 @@ const Dashboard = () => {
     setIsGenerating(true);
 
     try {
+      // Get user's auth token
+      const { data: sessionData } = await supabase.auth.getSession();
+      const accessToken = sessionData?.session?.access_token;
+
       // Build payload with model-specific settings
       const cleanSettings: Record<string, any> = {};
       for (const [key, value] of Object.entries(modelSettings)) {
-        // Skip empty strings and seed=0
         if (value === "" || value === undefined || value === null) continue;
         if (key === "seed" && value === 0) continue;
         cleanSettings[key] = value;
@@ -199,7 +202,7 @@ const Dashboard = () => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          Authorization: `Bearer ${accessToken || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
         },
         body: JSON.stringify(payload),
       });
