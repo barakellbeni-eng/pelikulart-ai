@@ -7,18 +7,31 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const FAL_ENDPOINT = "https://queue.fal.run/fal-ai/nano-banana-pro";
+// Model endpoint mapping
+const MODEL_ENDPOINTS: Record<string, string> = {
+  "nano-banana-pro": "https://queue.fal.run/fal-ai/nano-banana-pro",
+  "flux-dev": "https://queue.fal.run/fal-ai/flux/dev",
+  "flux-schnell": "https://queue.fal.run/fal-ai/flux/schnell",
+  "flux-pro-ultra": "https://queue.fal.run/fal-ai/flux-pro/v1.1-ultra",
+  "flux-kontext": "https://queue.fal.run/fal-ai/flux-pro/kontext",
+  "recraft-v3": "https://queue.fal.run/fal-ai/recraft/v3",
+  "ideogram-v2": "https://queue.fal.run/fal-ai/ideogram/v2",
+  "imagen4": "https://queue.fal.run/fal-ai/imagen4/preview",
+  "fast-sdxl": "https://queue.fal.run/fal-ai/fast-sdxl",
+  "hidream-i1": "https://queue.fal.run/fal-ai/hidream-i1-full",
+  "flux2-dev": "https://queue.fal.run/fal-ai/flux2/dev",
+};
 
-async function pollForResult(requestId: string, apiKey: string): Promise<any> {
+async function pollForResult(endpoint: string, requestId: string, apiKey: string): Promise<any> {
   for (let i = 0; i < 90; i++) {
     await new Promise((r) => setTimeout(r, 2000));
-    const statusResp = await fetch(`${FAL_ENDPOINT}/requests/${requestId}/status`, {
+    const statusResp = await fetch(`${endpoint}/requests/${requestId}/status`, {
       headers: { Authorization: `Key ${apiKey}` },
     });
     const statusData = await statusResp.json();
     console.log("Poll attempt", i + 1, "status:", statusData.status);
     if (statusData.status === "COMPLETED") {
-      const resultResp = await fetch(`${FAL_ENDPOINT}/requests/${requestId}`, {
+      const resultResp = await fetch(`${endpoint}/requests/${requestId}`, {
         headers: { Authorization: `Key ${apiKey}` },
       });
       return await resultResp.json();
@@ -78,7 +91,6 @@ serve(async (req) => {
       throw new Error("Supabase config missing");
     }
 
-    // Get user from auth header using getClaims
     const authHeader = req.headers.get("authorization") || "";
     const userClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
       global: { headers: { Authorization: authHeader } },
@@ -93,17 +105,17 @@ serve(async (req) => {
       }
     }
 
-    // Service role client for storage upload
     const adminClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
     const body = await req.json();
     const {
       prompt,
-      aspect_ratio = "1:1",
-      resolution = "1K",
+      model_id = "nano-banana-pro",
       output_format = "png",
       num_images = 1,
       image_url,
+      // All other settings are model-specific and passed through
+      ...modelSettings
     } = body;
 
     if (!prompt || typeof prompt !== "string") {
@@ -113,18 +125,37 @@ serve(async (req) => {
       );
     }
 
+    const endpoint = MODEL_ENDPOINTS[model_id];
+    if (!endpoint) {
+      return new Response(
+        JSON.stringify({ error: `Unknown model: ${model_id}` }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Build payload — always include prompt and num_images
     const payload: Record<string, any> = {
       prompt,
       num_images: Math.min(num_images, 4),
-      aspect_ratio,
       output_format,
-      resolution,
+      ...modelSettings,
     };
+
+    // Remove empty/null values and seed=0
+    for (const key of Object.keys(payload)) {
+      if (payload[key] === "" || payload[key] === null || payload[key] === undefined) {
+        delete payload[key];
+      }
+      if (key === "seed" && payload[key] === 0) {
+        delete payload[key];
+      }
+    }
+
     if (image_url) payload.image_url = image_url;
 
-    console.log("Submitting to Fal AI:", JSON.stringify(payload));
+    console.log(`Submitting to ${model_id} (${endpoint}):`, JSON.stringify(payload));
 
-    const submitResp = await fetch(FAL_ENDPOINT, {
+    const submitResp = await fetch(endpoint, {
       method: "POST",
       headers: {
         Authorization: `Key ${FAL_API_KEY}`,
@@ -137,7 +168,7 @@ serve(async (req) => {
       const errText = await submitResp.text();
       console.error("Fal submit error:", submitResp.status, errText);
       return new Response(
-        JSON.stringify({ error: `Fal AI error (${submitResp.status})` }),
+        JSON.stringify({ error: `Fal AI error (${submitResp.status}): ${errText}` }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -146,7 +177,7 @@ serve(async (req) => {
     let falImages = submitData.images;
 
     if (!falImages?.length && submitData.request_id) {
-      const result = await pollForResult(submitData.request_id, FAL_API_KEY);
+      const result = await pollForResult(endpoint, submitData.request_id, FAL_API_KEY);
       falImages = result.images;
     }
 
@@ -157,7 +188,6 @@ serve(async (req) => {
       );
     }
 
-    // Upload each image to storage and save to DB
     const savedImages = [];
     for (const img of falImages) {
       try {
@@ -168,14 +198,13 @@ serve(async (req) => {
           output_format,
         );
 
-        // Save to generations table if user is authenticated
         if (user) {
           await adminClient.from("generations").insert({
             user_id: user.id,
             prompt,
             image_url: storedUrl,
-            aspect_ratio,
-            resolution,
+            aspect_ratio: modelSettings.aspect_ratio || null,
+            resolution: modelSettings.resolution || modelSettings.image_size || null,
             output_format,
           });
         }
@@ -187,7 +216,6 @@ serve(async (req) => {
         });
       } catch (uploadErr) {
         console.error("Upload/save error:", uploadErr);
-        // Fallback: return the Fal URL directly
         savedImages.push({
           url: img.url,
           width: img.width,
