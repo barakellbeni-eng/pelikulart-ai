@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Image,
@@ -74,10 +74,52 @@ const Dashboard = () => {
   const [resolution, setResolution] = useState<Resolution>("2K");
   const [numImages, setNumImages] = useState(1);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [progressStage, setProgressStage] = useState("");
   const [galleryImages, setGalleryImages] = useState<GeneratedImage[]>([]);
   const [referenceImage, setReferenceImage] = useState<string | null>(null);
   const [referencePreview, setReferencePreview] = useState<string | null>(null);
   const [showAspectDropdown, setShowAspectDropdown] = useState(false);
+  const progressInterval = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Simulated progress bar
+  useEffect(() => {
+    if (isGenerating) {
+      setProgress(0);
+      setProgressStage("Initialisation...");
+      const stages = [
+        { at: 10, label: "Analyse du prompt..." },
+        { at: 25, label: "Préparation du modèle..." },
+        { at: 40, label: "Génération en cours..." },
+        { at: 60, label: "Rendu des détails..." },
+        { at: 75, label: "Finalisation..." },
+        { at: 88, label: "Presque terminé..." },
+      ];
+
+      let current = 0;
+      progressInterval.current = setInterval(() => {
+        current += Math.random() * 3 + 0.5;
+        if (current > 92) current = 92; // Never reach 100 until done
+        setProgress(current);
+        const stage = [...stages].reverse().find((s) => current >= s.at);
+        if (stage) setProgressStage(stage.label);
+      }, 500);
+    } else {
+      if (progressInterval.current) {
+        clearInterval(progressInterval.current);
+        progressInterval.current = null;
+      }
+      if (progress > 0) {
+        setProgress(100);
+        setProgressStage("Terminé !");
+        const t = setTimeout(() => setProgress(0), 1000);
+        return () => clearTimeout(t);
+      }
+    }
+    return () => {
+      if (progressInterval.current) clearInterval(progressInterval.current);
+    };
+  }, [isGenerating]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleBoost = () => {
@@ -398,6 +440,38 @@ const Dashboard = () => {
               </>
             )}
           </button>
+
+          {/* Progress Bar */}
+          <AnimatePresence>
+            {progress > 0 && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                className="space-y-1.5"
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] text-muted-foreground font-medium">
+                    {progressStage}
+                  </span>
+                  <span className="text-[11px] text-primary font-bold">
+                    {Math.round(progress)}%
+                  </span>
+                </div>
+                <div className="w-full h-1.5 rounded-full bg-white/[0.06] overflow-hidden">
+                  <motion.div
+                    className="h-full rounded-full"
+                    style={{
+                      background: "linear-gradient(90deg, hsl(32 100% 50%), hsl(43 56% 52%))",
+                    }}
+                    initial={{ width: "0%" }}
+                    animate={{ width: `${progress}%` }}
+                    transition={{ duration: 0.4, ease: "easeOut" }}
+                  />
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
 
