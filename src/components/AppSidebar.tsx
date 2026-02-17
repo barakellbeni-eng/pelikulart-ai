@@ -2,7 +2,7 @@ import { useLocation } from "react-router-dom";
 import { NavLink } from "react-router-dom";
 import {
   Wand2,
-  Grid3X3,
+  Users,
   CreditCard,
   UserCircle,
   Image,
@@ -32,7 +32,7 @@ import {
 
 const mainNav = [
   { title: "Studio", url: "/studio", icon: Wand2 },
-  { title: "Galerie", url: "/gallery", icon: Grid3X3 },
+  { title: "Communauté", url: "/community", icon: Users },
   { title: "Recharge", url: "/pricing", icon: CreditCard },
   { title: "Profil", url: "/profile", icon: UserCircle },
 ];

@@ -9,7 +9,7 @@ import AppSidebar from "@/components/AppSidebar";
 import LandingPage from "./pages/LandingPage";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
-import Gallery from "./pages/Gallery";
+import Community from "./pages/Community";
 import Pricing from "./pages/Pricing";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
@@ -71,11 +71,11 @@ const AppContent = () => {
           }
         />
         <Route
-          path="/gallery"
+          path="/community"
           element={
             <ProtectedRoute>
               <AuthenticatedLayout>
-                <Gallery />
+                <Community />
               </AuthenticatedLayout>
             </ProtectedRoute>
           }

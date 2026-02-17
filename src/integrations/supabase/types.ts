@@ -18,8 +18,10 @@ export type Database = {
         Row: {
           aspect_ratio: string | null
           created_at: string
+          creator_name: string | null
           id: string
           image_url: string
+          is_public: boolean
           output_format: string | null
           prompt: string
           resolution: string | null
@@ -28,8 +30,10 @@ export type Database = {
         Insert: {
           aspect_ratio?: string | null
           created_at?: string
+          creator_name?: string | null
           id?: string
           image_url: string
+          is_public?: boolean
           output_format?: string | null
           prompt: string
           resolution?: string | null
@@ -38,8 +42,10 @@ export type Database = {
         Update: {
           aspect_ratio?: string | null
           created_at?: string
+          creator_name?: string | null
           id?: string
           image_url?: string
+          is_public?: boolean
           output_format?: string | null
           prompt?: string
           resolution?: string | null
