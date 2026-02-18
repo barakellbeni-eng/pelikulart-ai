@@ -883,20 +883,6 @@ const Dashboard = () => {
                 : "Gallery"}
             </span>
           </div>
-          <div className="flex items-center gap-2">
-            <button className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-white/[0.04] transition-colors">
-              <Heart className="w-4 h-4" />
-            </button>
-            <button className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-white/[0.04] transition-colors">
-              <SlidersHorizontal className="w-4 h-4" />
-            </button>
-            <button className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-white/[0.04] transition-colors">
-              <LayoutGrid className="w-4 h-4" />
-            </button>
-            <button className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-white/[0.04] transition-colors">
-              <Search className="w-4 h-4" />
-            </button>
-          </div>
         </div>
 
         <div className="flex-1 overflow-y-auto p-4">
