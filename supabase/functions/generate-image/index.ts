@@ -27,18 +27,32 @@ const MODEL_ENDPOINTS: Record<string, string> = {
 };
 
 async function pollForResult(endpoint: string, requestId: string, apiKey: string): Promise<any> {
+  let consecutiveErrors = 0;
   for (let i = 0; i < 90; i++) {
     await new Promise((r) => setTimeout(r, 2000));
     const statusResp = await fetch(`${endpoint}/requests/${requestId}/status`, {
       headers: { Authorization: `Key ${apiKey}` },
     });
+
+    // Fail fast on HTTP errors (405, 404, etc.)
+    if (!statusResp.ok && statusResp.status !== 200) {
+      const errText = await statusResp.text();
+      console.error(`Poll HTTP error ${statusResp.status}:`, errText.slice(0, 200));
+      consecutiveErrors++;
+      if (consecutiveErrors >= 3) {
+        throw new Error(`Polling failed: HTTP ${statusResp.status} after ${consecutiveErrors} retries`);
+      }
+      continue;
+    }
+    consecutiveErrors = 0;
+
     const statusText = await statusResp.text();
     let statusData: any;
     try {
       statusData = JSON.parse(statusText);
     } catch {
       console.error("Non-JSON status response:", statusText.slice(0, 200));
-      continue; // retry
+      continue;
     }
     console.log("Poll attempt", i + 1, "status:", statusData.status);
     if (statusData.status === "COMPLETED") {
