@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
-import { Link } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
+import { useAuth } from "@/hooks/useAuth";
 import {
   Zap,
   Image,
@@ -133,6 +134,7 @@ const plans = [
 /* ─── Component ─── */
 
 const LandingPage = () => {
+  const { user, loading } = useAuth();
   const [currentSlide, setCurrentSlide] = useState(0);
   const [hoveredPlan, setHoveredPlan] = useState<number | null>(null);
   const [promptText, setPromptText] = useState("");
@@ -150,6 +152,9 @@ const LandingPage = () => {
     const timer = setInterval(nextSlide, 6000);
     return () => clearInterval(timer);
   }, [nextSlide]);
+
+  // Redirect logged-in users to studio
+  if (!loading && user) return <Navigate to="/studio" replace />;
 
   const slide = heroSlides[currentSlide];
 

@@ -31,25 +31,26 @@ import {
 } from "@/components/ui/sidebar";
 
 const mainNav = [
-  { title: "Studio", url: "/studio", icon: Wand2 },
+  { title: "Accueil", url: "/studio", icon: Wand2 },
+  { title: "Créer", url: "/studio/create", icon: Sparkles },
   { title: "Communauté", url: "/community", icon: Users },
   { title: "Recharge", url: "/pricing", icon: CreditCard },
   { title: "Profil", url: "/profile", icon: UserCircle },
 ];
 
 const creationTools = [
-  { title: "Générer Image", url: "/studio?mode=image", icon: Image },
-  { title: "Générer Vidéo", url: "/studio?mode=video", icon: Video },
-  { title: "Cauris Boost", url: "/studio?boost=true", icon: Sparkles },
+  { title: "Générer Image", url: "/studio/create?mode=image", icon: Image },
+  { title: "Générer Vidéo", url: "/studio/create?mode=video", icon: Video },
+  { title: "Cauris Boost", url: "/studio/create?boost=true", icon: Sparkles },
 ];
 
 const editingTools = [
-  { title: "Supprimer fond", url: "/studio?tool=removebg", icon: Eraser },
-  { title: "Améliorer", url: "/studio?tool=enhance", icon: Paintbrush },
-  { title: "Style Transfer", url: "/studio?tool=style", icon: Palette },
-  { title: "Ajouter texte", url: "/studio?tool=text", icon: Type },
-  { title: "Face Swap", url: "/studio?tool=faceswap", icon: ScanFace },
-  { title: "Calques", url: "/studio?tool=layers", icon: Layers },
+  { title: "Supprimer fond", url: "/studio/create?tool=removebg", icon: Eraser },
+  { title: "Améliorer", url: "/studio/create?tool=enhance", icon: Paintbrush },
+  { title: "Style Transfer", url: "/studio/create?tool=style", icon: Palette },
+  { title: "Ajouter texte", url: "/studio/create?tool=text", icon: Type },
+  { title: "Face Swap", url: "/studio/create?tool=faceswap", icon: ScanFace },
+  { title: "Calques", url: "/studio/create?tool=layers", icon: Layers },
 ];
 
 const AppSidebar = () => {

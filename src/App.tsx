@@ -8,6 +8,7 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import AppSidebar from "@/components/AppSidebar";
 import LandingPage from "./pages/LandingPage";
 import Auth from "./pages/Auth";
+import StudioHome from "./pages/StudioHome";
 import Dashboard from "./pages/Dashboard";
 import Community from "./pages/Community";
 import Pricing from "./pages/Pricing";
@@ -62,6 +63,16 @@ const AppContent = () => {
         <Route path="/auth" element={<Auth />} />
         <Route
           path="/studio"
+          element={
+            <ProtectedRoute>
+              <AuthenticatedLayout>
+                <StudioHome />
+              </AuthenticatedLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/studio/create"
           element={
             <ProtectedRoute>
               <AuthenticatedLayout>
