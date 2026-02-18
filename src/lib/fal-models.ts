@@ -80,11 +80,14 @@ const INFERENCE_STEPS = (def = 28, max = 50): ModelSetting => ({
 // ════════════════════════════════════════
 
 export const FAL_MODELS: FalModel[] = [
-  // ── Nano Banana ──
+  // ════════════════════════════════════════
+  //  IMAGE MODELS
+  // ════════════════════════════════════════
+
   {
-    id: "nano-banana-pro", type: "image", brand: "Nano Banana", name: "Pro",
+    id: "nano-banana-pro", type: "image", brand: "Nano", name: "Rapide",
     endpoint: "fal-ai/nano-banana-pro",
-    description: "Rapide et polyvalent", icon: "🍌", color: "from-yellow-500 to-orange-400",
+    description: "Génération rapide et polyvalente", icon: "◆", color: "from-white/20 to-white/5",
     maxImages: 4, supportsImageInput: true, caurisCost: 3,
     settings: [
       { key: "aspect_ratio", label: "Ratio", type: "select", options: [
@@ -97,19 +100,17 @@ export const FAL_MODELS: FalModel[] = [
       ], defaultValue: "2K" },
     ],
   },
-
-  // ── FLUX ──
   {
-    id: "flux-dev", type: "image", brand: "FLUX", name: "[dev]",
+    id: "flux-dev", type: "image", brand: "Flux", name: "Précis",
     endpoint: "fal-ai/flux/dev",
-    description: "Haute qualité, rendu détaillé", icon: "⚡", color: "from-blue-500 to-cyan-400",
+    description: "Haute qualité, rendu détaillé", icon: "◇", color: "from-white/20 to-white/5",
     maxImages: 4, supportsImageInput: false, caurisCost: 5,
     settings: [IMAGE_SIZE_FLUX, INFERENCE_STEPS(), GUIDANCE_SCALE, SEED_SETTING],
   },
   {
-    id: "flux-schnell", type: "image", brand: "FLUX", name: "[schnell]",
+    id: "flux-schnell", type: "image", brand: "Flux", name: "Éclair",
     endpoint: "fal-ai/flux/schnell",
-    description: "Ultra rapide, 4 étapes", icon: "🚀", color: "from-green-500 to-emerald-400",
+    description: "Ultra rapide, 4 étapes", icon: "▹", color: "from-white/20 to-white/5",
     maxImages: 4, supportsImageInput: false, caurisCost: 2,
     settings: [
       IMAGE_SIZE_FLUX,
@@ -117,9 +118,9 @@ export const FAL_MODELS: FalModel[] = [
     ],
   },
   {
-    id: "flux-pro-ultra", type: "image", brand: "FLUX", name: "Pro v1.1 Ultra",
+    id: "flux-pro-ultra", type: "image", brand: "Flux", name: "Ultra",
     endpoint: "fal-ai/flux-pro/v1.1-ultra",
-    description: "Pro 2K, qualité maximale", icon: "💎", color: "from-purple-500 to-pink-400",
+    description: "Qualité maximale, résolution 2K", icon: "◈", color: "from-white/20 to-white/5",
     maxImages: 1, supportsImageInput: false, caurisCost: 12,
     settings: [
       { key: "aspect_ratio", label: "Ratio", type: "select", options: [
@@ -131,25 +132,23 @@ export const FAL_MODELS: FalModel[] = [
     ],
   },
   {
-    id: "flux-kontext", type: "image", brand: "FLUX", name: "Kontext [pro]",
+    id: "flux-kontext", type: "image", brand: "Flux", name: "Éditeur",
     endpoint: "fal-ai/flux-pro/kontext",
-    description: "Édition contextuelle avec image", icon: "🎨", color: "from-orange-500 to-red-400",
+    description: "Édition contextuelle avec image", icon: "◫", color: "from-white/20 to-white/5",
     maxImages: 1, supportsImageInput: true, caurisCost: 8,
     settings: [INFERENCE_STEPS(), GUIDANCE_SCALE, SEED_SETTING],
   },
   {
-    id: "flux2-dev", type: "image", brand: "FLUX", name: "2 [dev]",
+    id: "flux2-dev", type: "image", brand: "Flux", name: "Nouvelle Génération",
     endpoint: "fal-ai/flux2/dev",
-    description: "Dernière génération, édition avancée", icon: "⚡", color: "from-violet-500 to-purple-400",
+    description: "Dernière version, édition avancée", icon: "◆", color: "from-white/20 to-white/5",
     maxImages: 1, supportsImageInput: true, caurisCost: 5,
     settings: [IMAGE_SIZE_FLUX, INFERENCE_STEPS(), GUIDANCE_SCALE],
   },
-
-  // ── Google ──
   {
-    id: "imagen4", type: "image", brand: "Google", name: "Imagen 4",
+    id: "imagen4", type: "image", brand: "Google", name: "Imagen",
     endpoint: "fal-ai/imagen4/preview",
-    description: "Images hyper-détaillées", icon: "🔮", color: "from-sky-500 to-blue-400",
+    description: "Images hyper-détaillées par Google", icon: "○", color: "from-white/20 to-white/5",
     maxImages: 4, supportsImageInput: false, caurisCost: 8,
     settings: [
       { key: "aspect_ratio", label: "Ratio", type: "select", options: [
@@ -158,12 +157,10 @@ export const FAL_MODELS: FalModel[] = [
       ], defaultValue: "1:1" },
     ],
   },
-
-  // ── Recraft ──
   {
-    id: "recraft-v3", type: "image", brand: "Recraft", name: "V3",
+    id: "recraft-v3", type: "image", brand: "Recraft", name: "Artiste",
     endpoint: "fal-ai/recraft/v3",
-    description: "SOTA, styles variés, texte dans l'image", icon: "🖌️", color: "from-rose-500 to-fuchsia-400",
+    description: "Styles variés, texte dans l'image", icon: "□", color: "from-white/20 to-white/5",
     maxImages: 2, supportsImageInput: false, caurisCost: 8,
     settings: [
       { key: "style", label: "Style", type: "select", options: [
@@ -176,12 +173,10 @@ export const FAL_MODELS: FalModel[] = [
       ], defaultValue: "1024x1024" },
     ],
   },
-
-  // ── Ideogram ──
   {
-    id: "ideogram-v2", type: "image", brand: "Ideogram", name: "V2",
+    id: "ideogram-v2", type: "image", brand: "Ideogram", name: "Typographe",
     endpoint: "fal-ai/ideogram/v2",
-    description: "Excellent pour le texte dans les images", icon: "✍️", color: "from-indigo-500 to-blue-400",
+    description: "Excellent pour le texte dans les images", icon: "▤", color: "from-white/20 to-white/5",
     maxImages: 1, supportsImageInput: false, caurisCost: 15,
     settings: [
       { key: "aspect_ratio", label: "Ratio", type: "select", options: [
@@ -195,26 +190,22 @@ export const FAL_MODELS: FalModel[] = [
       { key: "negative_prompt", label: "Prompt négatif", type: "text", defaultValue: "", description: "Ce que vous ne voulez PAS" },
     ],
   },
-
-  // ── Stable Diffusion ──
   {
-    id: "fast-sdxl", type: "image", brand: "Stable Diffusion", name: "Fast SDXL",
+    id: "fast-sdxl", type: "image", brand: "Stable", name: "Express",
     endpoint: "fal-ai/fast-sdxl",
-    description: "Rapide, très personnalisable", icon: "🎯", color: "from-amber-500 to-yellow-400",
+    description: "Rapide et très personnalisable", icon: "△", color: "from-white/20 to-white/5",
     maxImages: 4, supportsImageInput: false, caurisCost: 3,
     settings: [
-      IMAGE_SIZE_FLUX, INFERENCE_STEPS(25), 
+      IMAGE_SIZE_FLUX, INFERENCE_STEPS(25),
       { key: "guidance_scale", label: "Guidance Scale", type: "slider", min: 1, max: 20, step: 0.5, defaultValue: 7.5 },
       { key: "negative_prompt", label: "Prompt négatif", type: "text", defaultValue: "", description: "Ce que vous ne voulez PAS" },
       SEED_SETTING,
     ],
   },
-
-  // ── HiDream ──
   {
-    id: "hidream-i1", type: "image", brand: "HiDream", name: "I1 Full",
+    id: "hidream-i1", type: "image", brand: "HiDream", name: "Créatif",
     endpoint: "fal-ai/hidream-i1-full",
-    description: "Open-source haute qualité", icon: "🌈", color: "from-teal-500 to-cyan-400",
+    description: "Open-source haute qualité", icon: "▽", color: "from-white/20 to-white/5",
     maxImages: 1, supportsImageInput: false, caurisCost: 6,
     settings: [
       IMAGE_SIZE_FLUX, INFERENCE_STEPS(),
@@ -227,11 +218,10 @@ export const FAL_MODELS: FalModel[] = [
   //  VIDEO MODELS
   // ════════════════════════════════════════
 
-  // ── Google ──
   {
-    id: "veo3", type: "video", brand: "Google", name: "Veo 3",
+    id: "veo3", type: "video", brand: "Google", name: "Cinéaste",
     endpoint: "fal-ai/veo3",
-    description: "Vidéo haute qualité avec audio", icon: "🎬", color: "from-red-500 to-rose-400",
+    description: "Vidéo haute qualité avec audio", icon: "○", color: "from-white/20 to-white/5",
     maxImages: 1, supportsImageInput: false, caurisCost: 150, caurisCost10s: 300,
     settings: [
       { key: "duration", label: "Durée", type: "select", options: [{ value: "5", label: "5s" }, { value: "8", label: "8s" }], defaultValue: "8" },
@@ -239,12 +229,10 @@ export const FAL_MODELS: FalModel[] = [
       { key: "include_audio", label: "Inclure l'audio", type: "toggle", defaultValue: true },
     ],
   },
-
-  // ── Kling ──
   {
-    id: "kling-v3-std-t2v", type: "video", brand: "Kling", name: "3.0 Standard (T2V)",
+    id: "kling-v3-std-t2v", type: "video", brand: "Kling", name: "Studio",
     endpoint: "fal-ai/kling-video/v3/standard/text-to-video",
-    description: "Dernière génération, cinématique + audio", icon: "🎬", color: "from-emerald-500 to-green-400",
+    description: "Dernière génération, cinématique", icon: "◇", color: "from-white/20 to-white/5",
     maxImages: 1, supportsImageInput: false, caurisCost: 40, caurisCost10s: 80,
     settings: [
       DURATION_5_10, { ...ASPECT_RATIO_STANDARD },
@@ -252,9 +240,9 @@ export const FAL_MODELS: FalModel[] = [
     ],
   },
   {
-    id: "kling-v3-pro-t2v", type: "video", brand: "Kling", name: "3.0 Pro (T2V)",
+    id: "kling-v3-pro-t2v", type: "video", brand: "Kling", name: "Cinéma Pro",
     endpoint: "fal-ai/kling-video/o3/pro/text-to-video",
-    description: "Pro cinématique, qualité max", icon: "💎", color: "from-emerald-600 to-teal-400",
+    description: "Qualité maximale, rendu cinéma", icon: "◈", color: "from-white/20 to-white/5",
     maxImages: 1, supportsImageInput: false, caurisCost: 200, caurisCost10s: 400,
     settings: [
       DURATION_5_10, { ...ASPECT_RATIO_STANDARD },
@@ -262,46 +250,44 @@ export const FAL_MODELS: FalModel[] = [
     ],
   },
   {
-    id: "kling-v25-turbo-i2v", type: "video", brand: "Kling", name: "2.5 Turbo Pro (I2V)",
+    id: "kling-v25-turbo-i2v", type: "video", brand: "Kling", name: "Animateur Turbo",
     endpoint: "fal-ai/kling-video/v2.5-turbo/pro/image-to-video",
-    description: "Image vers vidéo, fluidité cinématique", icon: "⚡", color: "from-lime-500 to-emerald-400",
+    description: "Anime vos images en vidéo fluide", icon: "▹", color: "from-white/20 to-white/5",
     maxImages: 1, supportsImageInput: true, caurisCost: 50, caurisCost10s: 100,
     settings: [DURATION_5_10],
   },
   {
-    id: "kling-v21-std-i2v", type: "video", brand: "Kling", name: "2.1 Standard (I2V)",
+    id: "kling-v21-std-i2v", type: "video", brand: "Kling", name: "Animateur",
     endpoint: "fal-ai/kling-video/v2.1/standard/image-to-video",
-    description: "Image vers vidéo, bon rapport qualité/prix", icon: "🎞️", color: "from-green-500 to-lime-400",
+    description: "Image vers vidéo, bon rapport qualité/prix", icon: "◫", color: "from-white/20 to-white/5",
     maxImages: 1, supportsImageInput: true, caurisCost: 35, caurisCost10s: 70,
     settings: [DURATION_5_10],
   },
   {
-    id: "kling-v2-master-t2v", type: "video", brand: "Kling", name: "2.0 Master (T2V)",
+    id: "kling-v2-master-t2v", type: "video", brand: "Kling", name: "Maître",
     endpoint: "fal-ai/kling-video/v2/master/text-to-video",
-    description: "Text-to-video haute qualité", icon: "🏆", color: "from-teal-500 to-green-400",
+    description: "Texte vers vidéo haute qualité", icon: "◆", color: "from-white/20 to-white/5",
     maxImages: 1, supportsImageInput: false, caurisCost: 60, caurisCost10s: 120,
     settings: [DURATION_5_10, { ...ASPECT_RATIO_STANDARD }],
   },
   {
-    id: "kling-v16-std-t2v", type: "video", brand: "Kling", name: "1.6 Standard (T2V)",
+    id: "kling-v16-std-t2v", type: "video", brand: "Kling", name: "Classique",
     endpoint: "fal-ai/kling-video/v1.6/standard/text-to-video",
-    description: "Vidéos réalistes, mouvements naturels", icon: "🎥", color: "from-green-400 to-emerald-300",
+    description: "Vidéos réalistes, mouvements naturels", icon: "□", color: "from-white/20 to-white/5",
     maxImages: 1, supportsImageInput: false, caurisCost: 25, caurisCost10s: 50,
     settings: [DURATION_5_10, { ...ASPECT_RATIO_STANDARD }],
   },
   {
-    id: "kling-v16-elements", type: "video", brand: "Kling", name: "1.6 Elements (Multi-I2V)",
+    id: "kling-v16-elements", type: "video", brand: "Kling", name: "Multi-Images",
     endpoint: "fal-ai/kling-video/v1.6/standard/elements",
-    description: "Multi-images vers vidéo (jusqu'à 4)", icon: "🧩", color: "from-emerald-400 to-cyan-400",
+    description: "Combine jusqu'à 4 images en vidéo", icon: "▤", color: "from-white/20 to-white/5",
     maxImages: 1, supportsImageInput: true, caurisCost: 35, caurisCost10s: 70,
     settings: [DURATION_5_10],
   },
-
-  // ── Seedance (Bytedance) ──
   {
-    id: "seedance-pro-t2v", type: "video", brand: "Seedance", name: "1.0 Pro (T2V)",
+    id: "seedance-pro-t2v", type: "video", brand: "Seedance", name: "Pro",
     endpoint: "fal-ai/bytedance/seedance/v1/pro/text-to-video",
-    description: "Haute qualité, multi-ratios", icon: "🌱", color: "from-green-500 to-teal-400",
+    description: "Haute qualité, multi-ratios", icon: "◇", color: "from-white/20 to-white/5",
     maxImages: 1, supportsImageInput: false, caurisCost: 70, caurisCost10s: 140,
     settings: [
       DURATION_5_10,
@@ -312,16 +298,16 @@ export const FAL_MODELS: FalModel[] = [
     ],
   },
   {
-    id: "seedance-pro-i2v", type: "video", brand: "Seedance", name: "1.0 Pro (I2V)",
+    id: "seedance-pro-i2v", type: "video", brand: "Seedance", name: "Pro Animateur",
     endpoint: "fal-ai/bytedance/seedance/v1/pro/image-to-video",
-    description: "Image vers vidéo haute qualité", icon: "🌿", color: "from-teal-500 to-emerald-400",
+    description: "Image vers vidéo haute qualité", icon: "◫", color: "from-white/20 to-white/5",
     maxImages: 1, supportsImageInput: true, caurisCost: 70, caurisCost10s: 140,
     settings: [DURATION_5_10],
   },
   {
-    id: "seedance-pro-fast-t2v", type: "video", brand: "Seedance", name: "1.0 Pro Fast (T2V)",
+    id: "seedance-pro-fast-t2v", type: "video", brand: "Seedance", name: "Rapide",
     endpoint: "fal-ai/bytedance/seedance/v1/pro/fast/text-to-video",
-    description: "Rapide et efficace", icon: "⚡", color: "from-lime-500 to-green-400",
+    description: "Génération rapide et efficace", icon: "▹", color: "from-white/20 to-white/5",
     maxImages: 1, supportsImageInput: false, caurisCost: 45, caurisCost10s: 90,
     settings: [
       DURATION_5_10,
@@ -332,16 +318,16 @@ export const FAL_MODELS: FalModel[] = [
     ],
   },
   {
-    id: "seedance-pro-fast-i2v", type: "video", brand: "Seedance", name: "1.0 Pro Fast (I2V)",
+    id: "seedance-pro-fast-i2v", type: "video", brand: "Seedance", name: "Animateur Rapide",
     endpoint: "fal-ai/bytedance/seedance/v1/pro/fast/image-to-video",
-    description: "Image vers vidéo rapide", icon: "🚀", color: "from-cyan-500 to-green-400",
+    description: "Anime vos images rapidement", icon: "△", color: "from-white/20 to-white/5",
     maxImages: 1, supportsImageInput: true, caurisCost: 45, caurisCost10s: 90,
     settings: [DURATION_5_10],
   },
   {
-    id: "seedance-15-pro-i2v", type: "video", brand: "Seedance", name: "1.5 Pro (I2V + Audio)",
+    id: "seedance-15-pro-i2v", type: "video", brand: "Seedance", name: "Animateur Sonore",
     endpoint: "fal-ai/bytedance/seedance/v1.5/pro/image-to-video",
-    description: "Image vers vidéo avec audio", icon: "🔊", color: "from-teal-600 to-cyan-400",
+    description: "Image vers vidéo avec audio", icon: "◈", color: "from-white/20 to-white/5",
     maxImages: 1, supportsImageInput: true, caurisCost: 70, caurisCost10s: 140,
     settings: [
       DURATION_5_10,
@@ -349,41 +335,37 @@ export const FAL_MODELS: FalModel[] = [
     ],
   },
   {
-    id: "seedance-lite-i2v", type: "video", brand: "Seedance", name: "1.0 Lite (I2V)",
+    id: "seedance-lite-i2v", type: "video", brand: "Seedance", name: "Léger",
     endpoint: "fal-ai/bytedance/seedance/v1/lite/image-to-video",
-    description: "Léger, animation d'image", icon: "🍃", color: "from-green-400 to-lime-300",
+    description: "Animation légère et économique", icon: "▽", color: "from-white/20 to-white/5",
     maxImages: 1, supportsImageInput: true, caurisCost: 30, caurisCost10s: 60,
     settings: [DURATION_5_10],
   },
   {
-    id: "seedance-lite-ref", type: "video", brand: "Seedance", name: "1.0 Lite Référence (R2V)",
+    id: "seedance-lite-ref", type: "video", brand: "Seedance", name: "Multi-Référence",
     endpoint: "fal-ai/bytedance/seedance/v1/lite/reference-to-video",
-    description: "1-4 images de référence vers vidéo", icon: "🎭", color: "from-emerald-400 to-teal-300",
+    description: "1-4 images de référence vers vidéo", icon: "▤", color: "from-white/20 to-white/5",
     maxImages: 1, supportsImageInput: true, caurisCost: 30, caurisCost10s: 60,
     settings: [DURATION_5_10],
   },
-
-  // ── Luma (Ray2) ──
   {
-    id: "luma-ray2-t2v", type: "video", brand: "Luma", name: "Ray 2 (T2V)",
+    id: "luma-ray2-t2v", type: "video", brand: "Luma", name: "Réaliste",
     endpoint: "fal-ai/luma-dream-machine/ray-2",
-    description: "Visuals réalistes, mouvement cohérent", icon: "🌟", color: "from-violet-500 to-purple-400",
+    description: "Visuels réalistes, mouvement cohérent", icon: "○", color: "from-white/20 to-white/5",
     maxImages: 1, supportsImageInput: false, caurisCost: 60,
     settings: [{ ...ASPECT_RATIO_STANDARD }],
   },
   {
-    id: "luma-ray2-i2v", type: "video", brand: "Luma", name: "Ray 2 (I2V)",
+    id: "luma-ray2-i2v", type: "video", brand: "Luma", name: "Animateur Réaliste",
     endpoint: "fal-ai/luma-dream-machine/ray-2/image-to-video",
-    description: "Image vers vidéo cinématique", icon: "✨", color: "from-purple-500 to-violet-400",
+    description: "Anime vos images avec réalisme", icon: "◫", color: "from-white/20 to-white/5",
     maxImages: 1, supportsImageInput: true, caurisCost: 60,
     settings: [{ ...ASPECT_RATIO_STANDARD }],
   },
-
-  // ── Wan ──
   {
-    id: "wan-26-t2v", type: "video", brand: "Wan", name: "2.6 (T2V)",
+    id: "wan-26-t2v", type: "video", brand: "Wan", name: "Long Format",
     endpoint: "wan/v2.6/text-to-video",
-    description: "Multi-shot, jusqu'à 15s, 1080p", icon: "🎭", color: "from-orange-500 to-amber-400",
+    description: "Jusqu'à 15s en 1080p", icon: "◆", color: "from-white/20 to-white/5",
     maxImages: 1, supportsImageInput: false, caurisCost: 45, caurisCost10s: 90, caurisCost15s: 135,
     settings: [
       DURATION_5_10_15,
@@ -394,9 +376,9 @@ export const FAL_MODELS: FalModel[] = [
     ],
   },
   {
-    id: "wan-26-i2v", type: "video", brand: "Wan", name: "2.6 (I2V)",
+    id: "wan-26-i2v", type: "video", brand: "Wan", name: "Animateur Long",
     endpoint: "wan/v2.6/image-to-video",
-    description: "Image vers vidéo, multi-shot", icon: "🖼️", color: "from-amber-500 to-orange-400",
+    description: "Image vers vidéo jusqu'à 15s", icon: "◫", color: "from-white/20 to-white/5",
     maxImages: 1, supportsImageInput: true, caurisCost: 45, caurisCost10s: 90, caurisCost15s: 135,
     settings: [
       DURATION_5_10_15,
@@ -405,23 +387,19 @@ export const FAL_MODELS: FalModel[] = [
       ], defaultValue: "720p" },
     ],
   },
-
-  // ── MiniMax ──
   {
-    id: "minimax-video", type: "video", brand: "MiniMax", name: "Video 01 Live",
+    id: "minimax-video", type: "video", brand: "MiniMax", name: "Expressif",
     endpoint: "fal-ai/minimax/video-01-live",
-    description: "Vidéo fluide et expressive", icon: "🎥", color: "from-cyan-500 to-teal-400",
+    description: "Vidéo fluide et expressive", icon: "◇", color: "from-white/20 to-white/5",
     maxImages: 1, supportsImageInput: false, caurisCost: 60,
     settings: [
       { key: "prompt_optimizer", label: "Optimiser le prompt", type: "toggle", defaultValue: true },
     ],
   },
-
-  // ── Framepack ──
   {
-    id: "framepack-f1", type: "video", brand: "Framepack", name: "F1",
+    id: "framepack-f1", type: "video", brand: "Framepack", name: "Animateur Réel",
     endpoint: "fal-ai/framepack/f1",
-    description: "Image vers vidéo, animation réaliste", icon: "🖼️", color: "from-fuchsia-500 to-pink-400",
+    description: "Animation réaliste d'images", icon: "□", color: "from-white/20 to-white/5",
     maxImages: 1, supportsImageInput: true, caurisCost: 15,
     settings: [INFERENCE_STEPS(25), SEED_SETTING],
   },
@@ -430,11 +408,10 @@ export const FAL_MODELS: FalModel[] = [
   //  AUDIO MODELS
   // ════════════════════════════════════════
 
-  // ── Stable Audio ──
   {
-    id: "stable-audio", type: "audio", brand: "Stability", name: "Stable Audio",
+    id: "stable-audio", type: "audio", brand: "Stability", name: "Compositeur",
     endpoint: "fal-ai/stable-audio",
-    description: "Musique et bruitages jusqu'à 47s", icon: "🎵", color: "from-violet-500 to-purple-400",
+    description: "Musique et bruitages jusqu'à 47s", icon: "◆", color: "from-white/20 to-white/5",
     maxImages: 1, supportsImageInput: false, caurisCost: 5,
     settings: [
       { key: "audio_type", label: "Type", type: "select", options: [
@@ -444,33 +421,27 @@ export const FAL_MODELS: FalModel[] = [
       { key: "num_inference_steps", label: "Étapes", type: "slider", min: 10, max: 50, step: 1, defaultValue: 25 },
     ],
   },
-
-  // ── Ace Step ──
   {
-    id: "ace-step", type: "audio", brand: "Ace", name: "Ace Step",
+    id: "ace-step", type: "audio", brand: "Ace", name: "Chanteur",
     endpoint: "fal-ai/ace-step",
-    description: "Chansons avec paroles", icon: "🎤", color: "from-pink-500 to-rose-400",
+    description: "Génère des chansons avec paroles", icon: "◇", color: "from-white/20 to-white/5",
     maxImages: 1, supportsImageInput: false, caurisCost: 12,
     settings: [
       { key: "duration", label: "Durée (secondes)", type: "slider", min: 15, max: 120, step: 5, defaultValue: 30 },
       { key: "lyrics", label: "Paroles (optionnel)", type: "text", defaultValue: "", description: "Paroles de la chanson" },
     ],
   },
-
-  // ── Dia TTS ──
   {
-    id: "dia-tts", type: "audio", brand: "Nari", name: "Dia TTS",
+    id: "dia-tts", type: "audio", brand: "Nari", name: "Narrateur",
     endpoint: "fal-ai/dia-tts",
-    description: "Text-to-speech multi-locuteurs", icon: "🗣️", color: "from-cyan-500 to-blue-400",
+    description: "Voix multi-locuteurs naturelle", icon: "○", color: "from-white/20 to-white/5",
     maxImages: 1, supportsImageInput: false, caurisCost: 3,
     settings: [],
   },
-
-  // ── Kokoro TTS ──
   {
-    id: "kokoro-tts", type: "audio", brand: "Kokoro", name: "TTS",
+    id: "kokoro-tts", type: "audio", brand: "Kokoro", name: "Voix Express",
     endpoint: "fal-ai/kokoro/american-english",
-    description: "Voix rapide et naturelle", icon: "🔊", color: "from-emerald-500 to-green-400",
+    description: "Voix rapide et naturelle", icon: "▹", color: "from-white/20 to-white/5",
     maxImages: 1, supportsImageInput: false, caurisCost: 2,
     settings: [
       { key: "voice", label: "Voix", type: "select", options: [
@@ -479,12 +450,10 @@ export const FAL_MODELS: FalModel[] = [
       ], defaultValue: "af_heart" },
     ],
   },
-
-  // ── MMAudio ──
   {
-    id: "mmaudio", type: "audio", brand: "MMAudio", name: "V2",
+    id: "mmaudio", type: "audio", brand: "MMAudio", name: "Synchroniseur",
     endpoint: "fal-ai/mmaudio/v2",
-    description: "Génère un audio synchronisé à une vidéo", icon: "🎬", color: "from-amber-500 to-orange-400",
+    description: "Audio synchronisé à une vidéo", icon: "◫", color: "from-white/20 to-white/5",
     maxImages: 1, supportsImageInput: true, caurisCost: 8,
     settings: [
       { key: "duration", label: "Durée (secondes)", type: "slider", min: 1, max: 15, step: 1, defaultValue: 5 },
