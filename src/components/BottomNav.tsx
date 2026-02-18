@@ -3,7 +3,7 @@ import { Wand2, Users, CreditCard, UserCircle, Home } from "lucide-react";
 
 const navItems = [
   { to: "/", icon: Home, label: "Accueil" },
-  { to: "/studio", icon: Wand2, label: "Studio" },
+  { to: "/studio/create", icon: Wand2, label: "Studio" },
   { to: "/community", icon: Users, label: "Communauté" },
   { to: "/pricing", icon: CreditCard, label: "Recharge" },
   { to: "/profile", icon: UserCircle, label: "Profil" },
