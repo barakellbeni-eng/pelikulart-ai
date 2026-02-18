@@ -101,6 +101,7 @@ const Dashboard = () => {
   const [referenceImage, setReferenceImage] = useState<string | null>(null);
   const [referencePreview, setReferencePreview] = useState<string | null>(null);
   const [showModelDropdown, setShowModelDropdown] = useState(false);
+  const [openRatioDropdown, setOpenRatioDropdown] = useState<string | null>(null);
   const [previewImage, setPreviewImage] = useState<GeneratedImage | null>(null);
   const [isEnhancing, setIsEnhancing] = useState(false);
   const [gridSize, setGridSize] = useState<"small" | "medium" | "large">("medium");
@@ -500,17 +501,14 @@ const Dashboard = () => {
         // Helper to render a proportional frame icon for a ratio
         const RatioFrame = ({ ratio, className = "" }: { ratio: string; className?: string }) => {
           const dims: Record<string, { w: number; h: number }> = {
-            // Standard aspect ratios
             "16:9": { w: 20, h: 11 }, "9:16": { w: 11, h: 20 },
             "1:1": { w: 16, h: 16 }, "4:3": { w: 18, h: 14 },
             "3:4": { w: 14, h: 18 }, "4:5": { w: 14, h: 18 },
             "5:4": { w: 18, h: 14 }, "3:2": { w: 18, h: 12 },
             "2:3": { w: 12, h: 18 }, "21:9": { w: 22, h: 9 },
-            // image_size text values (Flux-style)
             "square_hd": { w: 16, h: 16 }, "square": { w: 16, h: 16 },
             "portrait_4_3": { w: 14, h: 18 }, "portrait_16_9": { w: 11, h: 20 },
             "landscape_4_3": { w: 18, h: 14 }, "landscape_16_9": { w: 20, h: 11 },
-            // Pixel dimensions
             "1024x1024": { w: 16, h: 16 }, "1365x1024": { w: 20, h: 15 },
             "1024x1365": { w: 15, h: 20 }, "1536x1024": { w: 20, h: 13 },
             "1024x1536": { w: 13, h: 20 },
@@ -526,31 +524,52 @@ const Dashboard = () => {
           );
         };
 
+        const ratioDropdownId = `ratio-dropdown-${setting.key}`;
+
         return (
-          <div key={setting.key} className="space-y-1.5">
-            <label className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">
-              {setting.label}
-            </label>
-            <div className="grid grid-cols-1 gap-1">
-              {setting.options.map((opt) => {
-                const isSelected = opt.value === value;
-                return (
-                  <button
-                    key={opt.value}
-                    onClick={() => updateSetting(setting.key, opt.value)}
-                    className={`flex items-center gap-2 px-2.5 py-1.5 rounded-md text-[11px] font-medium transition-all text-left ${
-                      isSelected
-                        ? "glass ring-1 ring-primary/60 text-foreground"
-                        : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
-                    }`}
-                  >
-                    <RatioFrame ratio={opt.value} className={isSelected ? "text-primary" : "text-muted-foreground"} />
-                    <span className="truncate">{opt.label}</span>
-                    {isSelected && <Check className="w-3 h-3 ml-auto text-primary shrink-0" />}
-                  </button>
-                );
-              })}
-            </div>
+          <div key={setting.key} className="relative">
+            <button
+              onClick={() => setOpenRatioDropdown(openRatioDropdown === ratioDropdownId ? null : ratioDropdownId)}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md glass text-[11px] font-medium text-foreground hover:bg-muted/40 transition-all"
+            >
+              <RatioFrame ratio={value} className="text-primary" />
+              <span>{selectedOpt?.label?.split(" — ")[0] || value}</span>
+              <ChevronDown className={`w-3.5 h-3.5 text-muted-foreground transition-transform ${openRatioDropdown === ratioDropdownId ? "rotate-180" : ""}`} />
+            </button>
+
+            <AnimatePresence>
+              {openRatioDropdown === ratioDropdownId && (
+                <motion.div
+                  initial={{ opacity: 0, y: -4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -4 }}
+                  transition={{ duration: 0.15 }}
+                  className="absolute z-50 top-full left-0 mt-1 min-w-[200px] rounded-lg glass border border-border/50 shadow-xl py-1 backdrop-blur-xl"
+                >
+                  {setting.options.map((opt) => {
+                    const isSelected = opt.value === value;
+                    return (
+                      <button
+                        key={opt.value}
+                        onClick={() => {
+                          updateSetting(setting.key, opt.value);
+                          setOpenRatioDropdown(null);
+                        }}
+                        className={`flex items-center gap-2.5 w-full px-3 py-2 text-[11px] font-medium transition-all text-left ${
+                          isSelected
+                            ? "text-foreground bg-primary/10"
+                            : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
+                        }`}
+                      >
+                        <RatioFrame ratio={opt.value} className={isSelected ? "text-primary" : "text-muted-foreground"} />
+                        <span className="truncate">{opt.label}</span>
+                        {isSelected && <Check className="w-3 h-3 ml-auto text-primary shrink-0" />}
+                      </button>
+                    );
+                  })}
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         );
       }
