@@ -35,8 +35,8 @@ export interface FalModel {
 const ASPECT_RATIO_STANDARD: ModelSetting = {
   key: "aspect_ratio", label: "Ratio", type: "select",
   options: [
-    { value: "16:9", label: "16:9" }, { value: "9:16", label: "9:16" },
-    { value: "1:1", label: "1:1" }, { value: "4:3", label: "4:3" }, { value: "3:4", label: "3:4" },
+    { value: "16:9", label: "16:9 — Cinématique" }, { value: "9:16", label: "9:16 — Vertical / Réels" },
+    { value: "1:1", label: "1:1 — Carré / Instagram" }, { value: "4:3", label: "4:3 — Photo classique" }, { value: "3:4", label: "3:4 — Portrait" },
   ],
   defaultValue: "16:9",
 };
@@ -91,9 +91,9 @@ export const FAL_MODELS: FalModel[] = [
     maxImages: 4, supportsImageInput: true, caurisCost: 3,
     settings: [
       { key: "aspect_ratio", label: "Ratio", type: "select", options: [
-        { value: "1:1", label: "1:1" }, { value: "4:5", label: "4:5" }, { value: "5:4", label: "5:4" },
-        { value: "4:3", label: "4:3" }, { value: "3:4", label: "3:4" },
-        { value: "16:9", label: "16:9" }, { value: "9:16", label: "9:16" },
+        { value: "1:1", label: "1:1 — Carré / Instagram" }, { value: "4:5", label: "4:5 — Portrait social" }, { value: "5:4", label: "5:4 — Paysage doux" },
+        { value: "4:3", label: "4:3 — Photo classique" }, { value: "3:4", label: "3:4 — Portrait" },
+        { value: "16:9", label: "16:9 — Cinématique" }, { value: "9:16", label: "9:16 — Vertical / Réels" },
       ], defaultValue: "4:5" },
       { key: "resolution", label: "Résolution", type: "select", options: [
         { value: "1K", label: "1K" }, { value: "2K", label: "2K" }, { value: "4K", label: "4K" },
@@ -124,8 +124,8 @@ export const FAL_MODELS: FalModel[] = [
     maxImages: 1, supportsImageInput: false, caurisCost: 12,
     settings: [
       { key: "aspect_ratio", label: "Ratio", type: "select", options: [
-        { value: "1:1", label: "1:1" }, { value: "4:3", label: "4:3" }, { value: "3:4", label: "3:4" },
-        { value: "16:9", label: "16:9" }, { value: "9:16", label: "9:16" }, { value: "21:9", label: "21:9" },
+        { value: "1:1", label: "1:1 — Carré / Instagram" }, { value: "4:3", label: "4:3 — Photo classique" }, { value: "3:4", label: "3:4 — Portrait" },
+        { value: "16:9", label: "16:9 — Cinématique" }, { value: "9:16", label: "9:16 — Vertical / Réels" }, { value: "21:9", label: "21:9 — Ultra-wide" },
       ], defaultValue: "1:1" },
       { key: "raw", label: "Mode Raw (moins stylisé)", type: "toggle", defaultValue: false },
       SEED_SETTING,
@@ -152,8 +152,8 @@ export const FAL_MODELS: FalModel[] = [
     maxImages: 4, supportsImageInput: false, caurisCost: 8,
     settings: [
       { key: "aspect_ratio", label: "Ratio", type: "select", options: [
-        { value: "1:1", label: "1:1" }, { value: "3:4", label: "3:4" }, { value: "4:3", label: "4:3" },
-        { value: "9:16", label: "9:16" }, { value: "16:9", label: "16:9" },
+        { value: "1:1", label: "1:1 — Carré / Instagram" }, { value: "3:4", label: "3:4 — Portrait" }, { value: "4:3", label: "4:3 — Photo classique" },
+        { value: "9:16", label: "9:16 — Vertical / Réels" }, { value: "16:9", label: "16:9 — Cinématique" },
       ], defaultValue: "1:1" },
     ],
   },
@@ -180,8 +180,8 @@ export const FAL_MODELS: FalModel[] = [
     maxImages: 1, supportsImageInput: false, caurisCost: 15,
     settings: [
       { key: "aspect_ratio", label: "Ratio", type: "select", options: [
-        { value: "1:1", label: "1:1" }, { value: "4:3", label: "4:3" }, { value: "3:4", label: "3:4" },
-        { value: "16:9", label: "16:9" }, { value: "9:16", label: "9:16" }, { value: "3:2", label: "3:2" }, { value: "2:3", label: "2:3" },
+        { value: "1:1", label: "1:1 — Carré / Instagram" }, { value: "4:3", label: "4:3 — Photo classique" }, { value: "3:4", label: "3:4 — Portrait" },
+        { value: "16:9", label: "16:9 — Cinématique" }, { value: "9:16", label: "9:16 — Vertical / Réels" }, { value: "3:2", label: "3:2 — Paysage photo" }, { value: "2:3", label: "2:3 — Portrait long" },
       ], defaultValue: "1:1" },
       { key: "style_type", label: "Type de style", type: "select", options: [
         { value: "auto", label: "Auto" }, { value: "general", label: "Général" }, { value: "realistic", label: "Réaliste" },
@@ -220,8 +220,8 @@ export const FAL_MODELS: FalModel[] = [
     maxImages: 4, supportsImageInput: false, caurisCost: 5,
     settings: [
       { key: "aspect_ratio", label: "Ratio", type: "select", options: [
-        { value: "1:1", label: "1:1" }, { value: "4:3", label: "4:3" }, { value: "3:4", label: "3:4" },
-        { value: "16:9", label: "16:9" }, { value: "9:16", label: "9:16" },
+        { value: "1:1", label: "1:1 — Carré / Instagram" }, { value: "4:3", label: "4:3 — Photo classique" }, { value: "3:4", label: "3:4 — Portrait" },
+        { value: "16:9", label: "16:9 — Cinématique" }, { value: "9:16", label: "9:16 — Vertical / Réels" },
       ], defaultValue: "1:1" },
       SEED_SETTING,
     ],
@@ -243,8 +243,8 @@ export const FAL_MODELS: FalModel[] = [
     maxImages: 4, supportsImageInput: false, caurisCost: 6,
     settings: [
       { key: "aspect_ratio", label: "Ratio", type: "select", options: [
-        { value: "1:1", label: "1:1" }, { value: "4:3", label: "4:3" }, { value: "3:4", label: "3:4" },
-        { value: "16:9", label: "16:9" }, { value: "9:16", label: "9:16" },
+        { value: "1:1", label: "1:1 — Carré / Instagram" }, { value: "4:3", label: "4:3 — Photo classique" }, { value: "3:4", label: "3:4 — Portrait" },
+        { value: "16:9", label: "16:9 — Cinématique" }, { value: "9:16", label: "9:16 — Vertical / Réels" },
       ], defaultValue: "1:1" },
       SEED_SETTING,
     ],
