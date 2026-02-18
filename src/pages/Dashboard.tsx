@@ -600,7 +600,7 @@ const Dashboard = () => {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -4 }}
                   transition={{ duration: 0.15 }}
-                  className="absolute z-50 top-full left-0 mt-1 min-w-[200px] rounded-lg glass border border-border/50 shadow-xl py-1 backdrop-blur-xl"
+                  className="absolute z-50 bottom-full left-0 mb-1 min-w-[200px] rounded-lg glass border border-border/50 shadow-xl py-1 backdrop-blur-xl"
                 >
                   {setting.options.map((opt) => {
                     const isSelected = opt.value === value;
