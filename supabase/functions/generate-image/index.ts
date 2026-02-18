@@ -20,6 +20,10 @@ const MODEL_ENDPOINTS: Record<string, string> = {
   "fast-sdxl": "https://queue.fal.run/fal-ai/fast-sdxl",
   "hidream-i1": "https://queue.fal.run/fal-ai/hidream-i1-full",
   "flux2-dev": "https://queue.fal.run/fal-ai/flux2/dev",
+  "seedream-v4-t2i": "https://queue.fal.run/fal-ai/bytedance/seedream/v4/text-to-image",
+  "seedream-v4-edit": "https://queue.fal.run/fal-ai/bytedance/seedream/v4/edit",
+  "seedream-v45-t2i": "https://queue.fal.run/fal-ai/bytedance/seedream/v4.5/text-to-image",
+  "seedream-v45-edit": "https://queue.fal.run/fal-ai/bytedance/seedream/v4.5/edit",
 };
 
 async function pollForResult(endpoint: string, requestId: string, apiKey: string): Promise<any> {
