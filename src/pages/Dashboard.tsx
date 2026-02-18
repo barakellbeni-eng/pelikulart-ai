@@ -835,13 +835,15 @@ const Dashboard = () => {
             </div>
           </div>
 
-          {/* Model-Specific Settings */}
+          {/* Model-Specific Settings (exclude ratio/resolution/image_size — shown below prompt) */}
           <div className="space-y-3">
             <label className="text-[11px] text-muted-foreground font-semibold uppercase tracking-wider">
               Réglages — {selectedModel.brand} {selectedModel.name}
             </label>
             <div className="space-y-3">
-              {selectedModel.settings.map((setting) => renderSetting(setting))}
+              {selectedModel.settings
+                .filter((s) => s.key !== "aspect_ratio" && s.key !== "image_size" && s.key !== "resolution")
+                .map((setting) => renderSetting(setting))}
             </div>
           </div>
 
@@ -977,6 +979,13 @@ const Dashboard = () => {
 
         {/* Bottom Controls */}
         <div className="p-4 border-t border-white/[0.06] space-y-3">
+          {/* Ratio / Resolution / Image Size dropdowns */}
+          <div className="flex flex-wrap items-center gap-2">
+            {selectedModel.settings
+              .filter((s) => s.key === "aspect_ratio" || s.key === "image_size" || s.key === "resolution")
+              .map((setting) => renderSetting(setting))}
+          </div>
+
           {/* Number of images */}
           {(selectedModel.maxImages || 1) > 1 && (() => {
             const maxImg = selectedModel.maxImages || 1;
