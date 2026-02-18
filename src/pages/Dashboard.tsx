@@ -493,6 +493,33 @@ const Dashboard = () => {
     const value = modelSettings[setting.key];
 
     if (setting.type === "select") {
+      const isRatioOrSize = setting.key === "aspect_ratio" || setting.key === "image_size";
+      const selectedOpt = setting.options?.find((o) => o.value === value);
+
+      if (isRatioOrSize && setting.options && setting.options.length > 4) {
+        return (
+          <div key={setting.key} className="space-y-1.5">
+            <label className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">
+              {setting.label}
+            </label>
+            <div className="relative">
+              <select
+                value={value}
+                onChange={(e) => updateSetting(setting.key, e.target.value)}
+                className="w-full appearance-none rounded-md glass text-[11px] font-medium text-foreground px-3 py-2 pr-8 cursor-pointer focus:outline-none focus:ring-1 focus:ring-primary/50"
+              >
+                {setting.options.map((opt) => (
+                  <option key={opt.value} value={opt.value} className="bg-background text-foreground">
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
+            </div>
+          </div>
+        );
+      }
+
       return (
         <div key={setting.key} className="space-y-1.5">
           <label className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">
