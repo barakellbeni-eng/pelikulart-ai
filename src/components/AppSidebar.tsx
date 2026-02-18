@@ -2,7 +2,6 @@ import { useLocation } from "react-router-dom";
 import { NavLink } from "react-router-dom";
 import {
   Wand2,
-  Users,
   CreditCard,
   UserCircle,
   Image,
@@ -27,7 +26,6 @@ import {
 const mainNav = [
   { title: "Accueil", url: "/studio", icon: Wand2 },
   { title: "Créer", url: "/studio/create", icon: Sparkles },
-  { title: "Communauté", url: "/community", icon: Users },
   { title: "Recharge", url: "/pricing", icon: CreditCard },
   { title: "Profil", url: "/profile", icon: UserCircle },
 ];

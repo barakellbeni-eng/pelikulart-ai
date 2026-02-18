@@ -11,7 +11,7 @@ import LandingPage from "./pages/LandingPage";
 import Auth from "./pages/Auth";
 import StudioHome from "./pages/StudioHome";
 import Dashboard from "./pages/Dashboard";
-import Community from "./pages/Community";
+
 import Pricing from "./pages/Pricing";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
@@ -81,16 +81,6 @@ const AppContent = () => {
             <ProtectedRoute>
               <AuthenticatedLayout>
                 <Dashboard />
-              </AuthenticatedLayout>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/community"
-          element={
-            <ProtectedRoute>
-              <AuthenticatedLayout>
-                <Community />
               </AuthenticatedLayout>
             </ProtectedRoute>
           }
