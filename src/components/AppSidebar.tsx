@@ -35,7 +35,6 @@ const mainNav = [
 const creationTools = [
   { title: "Générer Image", url: "/studio/create?mode=image", icon: Image },
   { title: "Générer Vidéo", url: "/studio/create?mode=video", icon: Video },
-  { title: "Cauris Boost", url: "/studio/create?boost=true", icon: Sparkles },
 ];
 
 
