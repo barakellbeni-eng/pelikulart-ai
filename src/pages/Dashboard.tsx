@@ -929,15 +929,14 @@ const Dashboard = () => {
                 <button
                   onClick={() => describeInputRef.current?.click()}
                   disabled={isDescribingImage}
-                  className="pointer-events-auto flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-medium bg-white/[0.06] hover:bg-white/[0.1] text-muted-foreground hover:text-foreground transition-all disabled:opacity-40 disabled:cursor-not-allowed backdrop-blur-sm border border-white/[0.06]"
-                  title="Ajouter une image pour la convertir en prompt"
+                  className="pointer-events-auto w-7 h-7 rounded-lg flex items-center justify-center bg-white/[0.06] hover:bg-white/[0.12] text-muted-foreground hover:text-foreground transition-all disabled:opacity-40 disabled:cursor-not-allowed backdrop-blur-sm border border-white/[0.06]"
+                  title="Image → Texte : convertir une image en prompt"
                 >
                   {isDescribingImage ? (
-                    <Loader2 className="w-3 h-3 animate-spin" />
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
                   ) : (
-                    <Image className="w-3 h-3" />
+                    <Image className="w-3.5 h-3.5" />
                   )}
-                  {isDescribingImage ? "Analyse..." : "📷 Image → Texte"}
                 </button>
                 <input
                   ref={describeInputRef}
