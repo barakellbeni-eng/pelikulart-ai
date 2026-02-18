@@ -8,12 +8,6 @@ import {
   Image,
   Video,
   Sparkles,
-  Palette,
-  Type,
-  Layers,
-  Eraser,
-  Paintbrush,
-  ScanFace,
   Zap,
 } from "lucide-react";
 import {
@@ -44,14 +38,6 @@ const creationTools = [
   { title: "Cauris Boost", url: "/studio/create?boost=true", icon: Sparkles },
 ];
 
-const editingTools = [
-  { title: "Supprimer fond", url: "/studio/create?tool=removebg", icon: Eraser },
-  { title: "Améliorer", url: "/studio/create?tool=enhance", icon: Paintbrush },
-  { title: "Style Transfer", url: "/studio/create?tool=style", icon: Palette },
-  { title: "Ajouter texte", url: "/studio/create?tool=text", icon: Type },
-  { title: "Face Swap", url: "/studio/create?tool=faceswap", icon: ScanFace },
-  { title: "Calques", url: "/studio/create?tool=layers", icon: Layers },
-];
 
 const AppSidebar = () => {
   const location = useLocation();
@@ -131,31 +117,8 @@ const AppSidebar = () => {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        <SidebarSeparator />
 
-        {/* Outils d'édition */}
-        <SidebarGroup>
-          <SidebarGroupLabel className="text-[10px] uppercase tracking-widest text-sidebar-foreground/50">
-            Édition
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {editingTools.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton
-                    asChild
-                    tooltip={item.title}
-                  >
-                    <NavLink to={item.url}>
-                      <item.icon className="w-4 h-4" />
-                      <span>{item.title}</span>
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+
       </SidebarContent>
 
       {/* Footer avec crédits */}

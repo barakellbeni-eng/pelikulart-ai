@@ -31,10 +31,6 @@ const quickTools = [
   { icon: Video, label: "Générateur vidéo", url: "/studio/create?mode=video", color: "from-purple-500/20 to-purple-600/10" },
   { icon: Music, label: "Générateur audio", url: "/studio/create?mode=audio", color: "from-green-500/20 to-green-600/10" },
   { icon: Sparkles, label: "Cauris Boost", url: "/studio/create?boost=true", color: "from-primary/20 to-primary/10" },
-  { icon: Eraser, label: "Supprimer fond", url: "/studio/create?tool=removebg", color: "from-red-500/20 to-red-600/10" },
-  { icon: Paintbrush, label: "Améliorer", url: "/studio/create?tool=enhance", color: "from-amber-500/20 to-amber-600/10" },
-  { icon: ScanFace, label: "Face Swap", url: "/studio/create?tool=faceswap", color: "from-pink-500/20 to-pink-600/10" },
-  { icon: Type, label: "Ajouter texte", url: "/studio/create?tool=text", color: "from-cyan-500/20 to-cyan-600/10" },
 ];
 
 interface RecentCreation {
