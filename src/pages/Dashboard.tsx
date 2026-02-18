@@ -653,6 +653,7 @@ const Dashboard = () => {
                   </span>
                 </div>
                 <span className="text-[10px] font-bold text-primary mr-1">{calculateCaurisCost(selectedModel, modelSettings, numImages)} c</span>
+                <span className="text-[9px] text-muted-foreground mr-1">⏱ {selectedModel.estimatedTime}</span>
                 <ChevronDown
                   className={`w-4 h-4 text-muted-foreground transition-transform ${
                     showModelDropdown ? "rotate-180" : ""
@@ -691,9 +692,12 @@ const Dashboard = () => {
                                 {model.brand} {model.name}
                               </span>
                             </div>
-                            <span className="text-[10px] text-muted-foreground font-medium shrink-0">
-                              {model.caurisCost}c
-                            </span>
+                            <div className="flex items-center gap-1.5 shrink-0">
+                              <span className="text-[9px] text-muted-foreground/60">⏱ {model.estimatedTime}</span>
+                              <span className="text-[10px] text-muted-foreground font-medium">
+                                {model.caurisCost}c
+                              </span>
+                            </div>
                             {selectedModel.id === model.id && (
                               <Check className="w-3.5 h-3.5 text-primary shrink-0" />
                             )}
