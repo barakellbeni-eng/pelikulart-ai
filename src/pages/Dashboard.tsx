@@ -107,6 +107,79 @@ const Dashboard = () => {
   const [isDescribingImage, setIsDescribingImage] = useState(false);
   const [gridSize, setGridSize] = useState<"small" | "medium" | "large">("medium");
   const describeInputRef = useRef<HTMLInputElement>(null);
+  const [isDraggingOverPrompt, setIsDraggingOverPrompt] = useState(false);
+  const [isDraggingOverUpload, setIsDraggingOverUpload] = useState(false);
+
+  // Helper: fetch a URL as base64 data URL
+  const urlToBase64 = useCallback(async (url: string): Promise<string> => {
+    const resp = await fetch(url);
+    const blob = await resp.blob();
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  }, []);
+
+  // Handle drop on prompt textarea → describe image → insert text
+  const handleDropOnPrompt = useCallback(async (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDraggingOverPrompt(false);
+    const imageUrl = e.dataTransfer.getData("text/x-gallery-image");
+    if (!imageUrl) return;
+    setIsDescribingImage(true);
+    try {
+      const base64 = await urlToBase64(imageUrl);
+      const describeUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/describe-image`;
+      const resp = await fetch(describeUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+        },
+        body: JSON.stringify({ image_base64: base64 }),
+      });
+      if (!resp.ok) {
+        const err = await resp.json().catch(() => ({ error: "Erreur" }));
+        throw new Error(err.error || "Erreur");
+      }
+      const data = await resp.json();
+      if (data.description) {
+        setPrompt((prev) => (prev ? `${prev}\n\n${data.description}` : data.description));
+        toast.success("Image convertie en prompt ✨");
+      }
+    } catch (err: any) {
+      console.error("Drop describe error:", err);
+      toast.error(err.message || "Erreur lors de la description");
+    } finally {
+      setIsDescribingImage(false);
+    }
+  }, [urlToBase64]);
+
+  // Handle drop on upload zone → add as reference image
+  const handleDropOnUpload = useCallback(async (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDraggingOverUpload(false);
+    const imageUrl = e.dataTransfer.getData("text/x-gallery-image");
+    if (!imageUrl) return;
+    const maxInput = selectedModel.maxInputImages || 1;
+    if (referenceImages.length >= maxInput) {
+      toast.error(`Maximum ${maxInput} images pour ce modèle`);
+      return;
+    }
+    try {
+      const base64 = await urlToBase64(imageUrl);
+      setReferenceImages((prev) => [...prev, base64]);
+      setReferencePreviews((prev) => [...prev, base64]);
+      toast.success("Image ajoutée comme référence !");
+    } catch {
+      // If base64 fails, use the URL directly
+      setReferenceImages((prev) => [...prev, imageUrl]);
+      setReferencePreviews((prev) => [...prev, imageUrl]);
+      toast.success("Image ajoutée comme référence !");
+    }
+  }, [selectedModel, referenceImages, urlToBase64]);
 
   const handleSelectModel = (model: FalModel) => {
     setSelectedModel(model);
@@ -881,7 +954,12 @@ const Dashboard = () => {
                 className="hidden"
                 onChange={handleImageUpload}
               />
-              <div className="grid grid-cols-3 gap-2">
+              <div
+                className={`grid grid-cols-3 gap-2 rounded-xl transition-all ${isDraggingOverUpload ? "ring-2 ring-primary/50 bg-primary/5" : ""}`}
+                onDragOver={(e) => { if (e.dataTransfer.types.includes("text/x-gallery-image")) { e.preventDefault(); setIsDraggingOverUpload(true); } }}
+                onDragLeave={() => setIsDraggingOverUpload(false)}
+                onDrop={handleDropOnUpload}
+              >
                 {referencePreviews.map((preview, idx) => (
                   <motion.div
                     key={`img-${idx}`}
@@ -928,7 +1006,12 @@ const Dashboard = () => {
             <label className="text-[11px] text-muted-foreground font-semibold uppercase tracking-wider">
               Prompt
             </label>
-            <div className="relative">
+            <div
+              className={`relative rounded-xl transition-all ${isDraggingOverPrompt ? "ring-2 ring-primary/50 bg-primary/5" : ""}`}
+              onDragOver={(e) => { if (e.dataTransfer.types.includes("text/x-gallery-image")) { e.preventDefault(); setIsDraggingOverPrompt(true); } }}
+              onDragLeave={() => setIsDraggingOverPrompt(false)}
+              onDrop={handleDropOnPrompt}
+            >
               <Textarea
                 value={prompt}
                 onChange={(e) => {
@@ -939,6 +1022,11 @@ const Dashboard = () => {
                 className="min-h-[200px] max-h-[360px] overflow-y-auto bg-white/[0.03] border border-white/[0.06] rounded-xl resize-y text-sm text-foreground placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-primary/30 pb-10 pr-3"
               />
               {/* Bottom bar inside textarea */}
+              {isDraggingOverPrompt && (
+                <div className="absolute inset-0 z-10 flex items-center justify-center rounded-xl bg-primary/10 border-2 border-dashed border-primary/40 pointer-events-none">
+                  <span className="text-xs font-semibold text-primary">Déposer pour décrire l'image →  prompt</span>
+                </div>
+              )}
               <div className="absolute bottom-2 left-2 right-2 flex items-center justify-between pointer-events-none">
                 <div className="flex items-center gap-1 pointer-events-auto">
                   {/* Image → Texte */}
@@ -1270,14 +1358,22 @@ const Dashboard = () => {
                     </motion.div>
                   ))}
                 {galleryImages.map((img, i) => (
-                  <motion.div
+                  <div
                     key={`img-${i}-${img.timestamp}`}
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    onClick={() => setPreviewImage(img)}
-                    className="aspect-square relative group rounded-xl overflow-hidden cursor-pointer"
+                    draggable
+                    onDragStart={(e) => {
+                      e.dataTransfer.setData("text/x-gallery-image", img.url);
+                      e.dataTransfer.effectAllowed = "copy";
+                    }}
+                    className="aspect-square relative group rounded-xl overflow-hidden cursor-grab active:cursor-grabbing"
                   >
-                    <img src={img.url} alt={img.prompt || "Generated"} className="w-full h-full object-cover rounded-xl" loading="lazy" />
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      onClick={() => setPreviewImage(img)}
+                      className="w-full h-full"
+                    >
+                    <img src={img.url} alt={img.prompt || "Generated"} className="w-full h-full object-cover rounded-xl pointer-events-none" loading="lazy" />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                       <div className="absolute top-1.5 right-1.5 flex items-center gap-1">
                         <button
@@ -1313,7 +1409,8 @@ const Dashboard = () => {
                         </div>
                       </div>
                     </div>
-                  </motion.div>
+                    </motion.div>
+                  </div>
                 ))}
               </div>
             )
