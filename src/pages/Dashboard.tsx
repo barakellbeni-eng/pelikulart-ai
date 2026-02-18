@@ -920,7 +920,7 @@ const Dashboard = () => {
                 }}
                 maxLength={2000}
                 placeholder="Décrivez votre image en détail : sujet, style, couleurs, lumière, ambiance..."
-                className="min-h-[140px] max-h-[240px] overflow-y-auto bg-white/[0.03] border border-white/[0.06] rounded-xl resize-y text-sm text-foreground placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-primary/30 pb-10 pr-3"
+                className="min-h-[200px] max-h-[360px] overflow-y-auto bg-white/[0.03] border border-white/[0.06] rounded-xl resize-y text-sm text-foreground placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-primary/30 pb-10 pr-3"
               />
               {/* Bottom bar inside textarea */}
               <div className="absolute bottom-2 left-2 right-2 flex items-center justify-between pointer-events-none">
@@ -972,117 +972,117 @@ const Dashboard = () => {
                 <span className={`pointer-events-auto text-[10px] font-medium tabular-nums ${prompt.length > 1800 ? "text-red-400" : prompt.length > 1400 ? "text-amber-400" : "text-muted-foreground/50"}`}>
                   {prompt.length}/2000
                 </span>
-              </div>
+            </div>
+          </div>
+
+          {/* Controls below prompt */}
+          <div className="space-y-3 mt-3">
+            {/* Ratio / Resolution / Image Size dropdowns */}
+            <div className="flex flex-wrap items-center gap-2">
+              {selectedModel.settings
+                .filter((s) => s.key === "aspect_ratio" || s.key === "image_size" || s.key === "resolution")
+                .map((setting) => renderSetting(setting))}
+            </div>
+
+            {/* Number of images */}
+            {(selectedModel.maxImages || 1) > 1 && (() => {
+              const maxImg = selectedModel.maxImages || 1;
+              const numImgDropdownId = "num-images-dropdown";
+              return (
+                <div className="flex items-center justify-between">
+                  <label className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">
+                    Nombre d'images
+                  </label>
+                  <div className="relative">
+                    <button
+                      onClick={() => setOpenRatioDropdown(openRatioDropdown === numImgDropdownId ? null : numImgDropdownId)}
+                      className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md glass text-[11px] font-medium text-foreground hover:bg-muted/40 transition-all"
+                    >
+                      <span className="inline-flex items-center justify-center" style={{ width: 24, height: 24 }}>
+                        <span className="border-[1.5px] border-current rounded-[2px] flex items-center justify-center" style={{ width: 16, height: 16 }}>
+                          <span className="text-[8px] font-bold leading-none">{numImages}</span>
+                        </span>
+                      </span>
+                      <span>{numImages} image{numImages > 1 ? "s" : ""}</span>
+                      <ChevronDown className={`w-3.5 h-3.5 text-muted-foreground transition-transform ${openRatioDropdown === numImgDropdownId ? "rotate-180" : ""}`} />
+                    </button>
+                    <AnimatePresence>
+                      {openRatioDropdown === numImgDropdownId && (
+                        <motion.div
+                          initial={{ opacity: 0, y: -4 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -4 }}
+                          transition={{ duration: 0.15 }}
+                          className="absolute z-50 bottom-full left-0 mb-1 min-w-[160px] rounded-lg glass border border-border/50 shadow-xl py-1 backdrop-blur-xl"
+                        >
+                          {Array.from({ length: maxImg }, (_, i) => i + 1).map((n) => {
+                            const isSelected = n === numImages;
+                            return (
+                              <button
+                                key={n}
+                                onClick={() => {
+                                  setNumImages(n);
+                                  setOpenRatioDropdown(null);
+                                }}
+                                className={`flex items-center gap-2.5 w-full px-3 py-2 text-[11px] font-medium transition-all text-left ${
+                                  isSelected
+                                    ? "text-foreground bg-primary/10"
+                                    : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
+                                }`}
+                              >
+                                <span className="inline-flex items-center justify-center" style={{ width: 24, height: 24 }}>
+                                  <span className={`border-[1.5px] rounded-[2px] flex items-center justify-center ${isSelected ? "border-primary" : "border-current"}`} style={{ width: 16, height: 16 }}>
+                                    <span className="text-[8px] font-bold leading-none">{n}</span>
+                                  </span>
+                                </span>
+                                <span>{n} image{n > 1 ? "s" : ""}</span>
+                                {isSelected && <Check className="w-3 h-3 ml-auto text-primary shrink-0" />}
+                              </button>
+                            );
+                          })}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                </div>
+              );
+            })()}
+
+            {/* Generate Button */}
+            <button
+              onClick={activeTab === "video" ? handleGenerateVideo : activeTab === "audio" ? handleGenerateAudio : handleGenerate}
+              disabled={isGenerating || !prompt.trim()}
+              className="btn-generate w-full flex items-center justify-between text-sm disabled:opacity-50 disabled:animate-none"
+            >
+              {isGenerating ? (
+                <span className="flex items-center gap-2 mx-auto">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Génération...
+                </span>
+              ) : (
+                <>
+                  <span className="flex items-center gap-2">
+                    <Wand2 className="w-4 h-4" />
+                    Générer
+                  </span>
+                  <span className="bg-black/20 px-2.5 py-1 rounded-lg text-xs font-bold">
+                    {calculateCaurisCost(selectedModel, modelSettings, numImages)} cauris
+                  </span>
+                </>
+              )}
+            </button>
+
+            {/* Balance indicator */}
+            <div className="text-center">
+              <span className="text-[11px] text-muted-foreground">
+                Il vous reste <span className="font-bold text-foreground">{balance}</span> cauris
+                {balance < calculateCaurisCost(selectedModel, modelSettings, numImages) && (
+                  <> · <a href="/pricing" className="text-primary underline underline-offset-2 font-semibold">Recharger</a></>
+                )}
+              </span>
             </div>
           </div>
         </div>
-
-        {/* Bottom Controls */}
-        <div className="p-4 border-t border-white/[0.06] space-y-3">
-          {/* Ratio / Resolution / Image Size dropdowns */}
-          <div className="flex flex-wrap items-center gap-2">
-            {selectedModel.settings
-              .filter((s) => s.key === "aspect_ratio" || s.key === "image_size" || s.key === "resolution")
-              .map((setting) => renderSetting(setting))}
-          </div>
-
-          {/* Number of images */}
-          {(selectedModel.maxImages || 1) > 1 && (() => {
-            const maxImg = selectedModel.maxImages || 1;
-            const numImgDropdownId = "num-images-dropdown";
-            return (
-              <div className="flex items-center justify-between">
-                <label className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">
-                  Nombre d'images
-                </label>
-                <div className="relative">
-                  <button
-                    onClick={() => setOpenRatioDropdown(openRatioDropdown === numImgDropdownId ? null : numImgDropdownId)}
-                    className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md glass text-[11px] font-medium text-foreground hover:bg-muted/40 transition-all"
-                  >
-                    <span className="inline-flex items-center justify-center" style={{ width: 24, height: 24 }}>
-                      <span className="border-[1.5px] border-current rounded-[2px] flex items-center justify-center" style={{ width: 16, height: 16 }}>
-                        <span className="text-[8px] font-bold leading-none">{numImages}</span>
-                      </span>
-                    </span>
-                    <span>{numImages} image{numImages > 1 ? "s" : ""}</span>
-                    <ChevronDown className={`w-3.5 h-3.5 text-muted-foreground transition-transform ${openRatioDropdown === numImgDropdownId ? "rotate-180" : ""}`} />
-                  </button>
-                  <AnimatePresence>
-                    {openRatioDropdown === numImgDropdownId && (
-                      <motion.div
-                        initial={{ opacity: 0, y: -4 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -4 }}
-                        transition={{ duration: 0.15 }}
-                        className="absolute z-50 bottom-full left-0 mb-1 min-w-[160px] rounded-lg glass border border-border/50 shadow-xl py-1 backdrop-blur-xl"
-                      >
-                        {Array.from({ length: maxImg }, (_, i) => i + 1).map((n) => {
-                          const isSelected = n === numImages;
-                          return (
-                            <button
-                              key={n}
-                              onClick={() => {
-                                setNumImages(n);
-                                setOpenRatioDropdown(null);
-                              }}
-                              className={`flex items-center gap-2.5 w-full px-3 py-2 text-[11px] font-medium transition-all text-left ${
-                                isSelected
-                                  ? "text-foreground bg-primary/10"
-                                  : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
-                              }`}
-                            >
-                              <span className="inline-flex items-center justify-center" style={{ width: 24, height: 24 }}>
-                                <span className={`border-[1.5px] rounded-[2px] flex items-center justify-center ${isSelected ? "border-primary" : "border-current"}`} style={{ width: 16, height: 16 }}>
-                                  <span className="text-[8px] font-bold leading-none">{n}</span>
-                                </span>
-                              </span>
-                              <span>{n} image{n > 1 ? "s" : ""}</span>
-                              {isSelected && <Check className="w-3 h-3 ml-auto text-primary shrink-0" />}
-                            </button>
-                          );
-                        })}
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-              </div>
-            );
-          })()}
-
-          {/* Generate Button */}
-          <button
-            onClick={activeTab === "video" ? handleGenerateVideo : activeTab === "audio" ? handleGenerateAudio : handleGenerate}
-            disabled={isGenerating || !prompt.trim()}
-            className="btn-generate w-full flex items-center justify-between text-sm disabled:opacity-50 disabled:animate-none"
-          >
-            {isGenerating ? (
-              <span className="flex items-center gap-2 mx-auto">
-                <Loader2 className="w-4 h-4 animate-spin" />
-                Génération...
-              </span>
-            ) : (
-              <>
-                <span className="flex items-center gap-2">
-                  <Wand2 className="w-4 h-4" />
-                  Générer
-                </span>
-                <span className="bg-black/20 px-2.5 py-1 rounded-lg text-xs font-bold">
-                  {calculateCaurisCost(selectedModel, modelSettings, numImages)} cauris
-                </span>
-              </>
-            )}
-          </button>
-
-          {/* Balance indicator */}
-          <div className="text-center">
-            <span className="text-[11px] text-muted-foreground">
-              Il vous reste <span className="font-bold text-foreground">{balance}</span> cauris
-              {balance < calculateCaurisCost(selectedModel, modelSettings, numImages) && (
-                <> · <a href="/pricing" className="text-primary underline underline-offset-2 font-semibold">Recharger</a></>
-              )}
-            </span>
-          </div>
         </div>
       </div>
 
