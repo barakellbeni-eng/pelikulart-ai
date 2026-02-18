@@ -497,24 +497,51 @@ const Dashboard = () => {
       const selectedOpt = setting.options?.find((o) => o.value === value);
 
       if (isRatioOrSize && setting.options && setting.options.length > 4) {
+        // Helper to render a proportional frame icon for a ratio
+        const RatioFrame = ({ ratio, className = "" }: { ratio: string; className?: string }) => {
+          const dims: Record<string, { w: number; h: number }> = {
+            "16:9": { w: 20, h: 11 }, "9:16": { w: 11, h: 20 },
+            "1:1": { w: 16, h: 16 }, "4:3": { w: 18, h: 14 },
+            "3:4": { w: 14, h: 18 }, "4:5": { w: 14, h: 18 },
+            "3:2": { w: 18, h: 12 }, "2:3": { w: 12, h: 18 },
+            "21:9": { w: 22, h: 9 },
+          };
+          const d = dims[ratio] || { w: 16, h: 16 };
+          return (
+            <span className={`inline-flex items-center justify-center ${className}`} style={{ width: 24, height: 24 }}>
+              <span
+                className="border-[1.5px] border-current rounded-[2px]"
+                style={{ width: d.w, height: d.h }}
+              />
+            </span>
+          );
+        };
+
         return (
           <div key={setting.key} className="space-y-1.5">
             <label className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">
               {setting.label}
             </label>
-            <div className="relative">
-              <select
-                value={value}
-                onChange={(e) => updateSetting(setting.key, e.target.value)}
-                className="w-full appearance-none rounded-md glass text-[11px] font-medium text-foreground px-3 py-2 pr-8 cursor-pointer focus:outline-none focus:ring-1 focus:ring-primary/50"
-              >
-                {setting.options.map((opt) => (
-                  <option key={opt.value} value={opt.value} className="bg-background text-foreground">
-                    {opt.label}
-                  </option>
-                ))}
-              </select>
-              <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
+            <div className="grid grid-cols-1 gap-1">
+              {setting.options.map((opt) => {
+                const ratioValue = opt.value.match(/\d+:\d+/) ? opt.value : "";
+                const isSelected = opt.value === value;
+                return (
+                  <button
+                    key={opt.value}
+                    onClick={() => updateSetting(setting.key, opt.value)}
+                    className={`flex items-center gap-2 px-2.5 py-1.5 rounded-md text-[11px] font-medium transition-all text-left ${
+                      isSelected
+                        ? "glass ring-1 ring-primary/60 text-foreground"
+                        : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
+                    }`}
+                  >
+                    {ratioValue && <RatioFrame ratio={ratioValue} className={isSelected ? "text-primary" : "text-muted-foreground"} />}
+                    <span className="truncate">{opt.label}</span>
+                    {isSelected && <Check className="w-3 h-3 ml-auto text-primary shrink-0" />}
+                  </button>
+                );
+              })}
             </div>
           </div>
         );
