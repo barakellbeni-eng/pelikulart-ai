@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route, useLocation, Navigate } from "react-route
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import AppSidebar from "@/components/AppSidebar";
+import ProfileRing from "@/components/ProfileRing";
 import LandingPage from "./pages/LandingPage";
 import Auth from "./pages/Auth";
 import StudioHome from "./pages/StudioHome";
@@ -44,6 +45,9 @@ const AuthenticatedLayout = ({ children }: { children: React.ReactNode }) => {
               <span className="text-gradient-primary">cauris</span>
               <span className="text-foreground">.ai</span>
             </h1>
+            <div className="ml-auto">
+              <ProfileRing />
+            </div>
           </header>
           <div className="flex-1">{children}</div>
         </main>
