@@ -98,8 +98,8 @@ const Dashboard = () => {
   const [galleryImages, setGalleryImages] = useState<GeneratedImage[]>([]);
   const [galleryVideos, setGalleryVideos] = useState<GeneratedVideo[]>([]);
   const [galleryAudios, setGalleryAudios] = useState<GeneratedAudio[]>([]);
-  const [referenceImage, setReferenceImage] = useState<string | null>(null);
-  const [referencePreview, setReferencePreview] = useState<string | null>(null);
+  const [referenceImages, setReferenceImages] = useState<string[]>([]);
+  const [referencePreviews, setReferencePreviews] = useState<string[]>([]);
   const [showModelDropdown, setShowModelDropdown] = useState(false);
   const [openRatioDropdown, setOpenRatioDropdown] = useState<string | null>(null);
   const [previewImage, setPreviewImage] = useState<GeneratedImage | null>(null);
@@ -173,18 +173,30 @@ const Dashboard = () => {
       toast.error("L'image ne doit pas dépasser 10 Mo");
       return;
     }
+    const maxInput = selectedModel.maxInputImages || 1;
+    if (referenceImages.length >= maxInput) {
+      toast.error(`Maximum ${maxInput} images pour ce modèle`);
+      return;
+    }
     const reader = new FileReader();
     reader.onload = () => {
       const dataUrl = reader.result as string;
-      setReferenceImage(dataUrl);
-      setReferencePreview(dataUrl);
+      setReferenceImages((prev) => [...prev, dataUrl]);
+      setReferencePreviews((prev) => [...prev, dataUrl]);
     };
     reader.readAsDataURL(file);
+    // Reset input so the same file can be re-selected
+    if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
-  const removeReferenceImage = () => {
-    setReferenceImage(null);
-    setReferencePreview(null);
+  const removeReferenceImage = (index?: number) => {
+    if (index !== undefined) {
+      setReferenceImages((prev) => prev.filter((_, i) => i !== index));
+      setReferencePreviews((prev) => prev.filter((_, i) => i !== index));
+    } else {
+      setReferenceImages([]);
+      setReferencePreviews([]);
+    }
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
@@ -290,8 +302,12 @@ const Dashboard = () => {
         output_format: "png",
         ...cleanSettings,
       };
-      if (referenceImage && selectedModel.supportsImageInput) {
-        payload.image_url = referenceImage;
+      if (referenceImages.length > 0 && selectedModel.supportsImageInput) {
+        if ((selectedModel.maxInputImages || 1) > 1) {
+          payload.image_urls = referenceImages;
+        } else {
+          payload.image_url = referenceImages[0];
+        }
       }
 
       const resp = await fetch(GENERATE_IMAGE_URL, {
@@ -370,8 +386,8 @@ const Dashboard = () => {
         model_id: selectedModel.id,
         ...cleanSettings,
       };
-      if (referenceImage && selectedModel.supportsImageInput) {
-        payload.image_url = referenceImage;
+      if (referenceImages.length > 0 && selectedModel.supportsImageInput) {
+        payload.image_url = referenceImages[0];
       }
 
       const resp = await fetch(GENERATE_VIDEO_URL, {
@@ -433,8 +449,8 @@ const Dashboard = () => {
         model_id: selectedModel.id,
         ...cleanSettings,
       };
-      if (referenceImage && selectedModel.supportsImageInput) {
-        payload.image_url = referenceImage;
+      if (referenceImages.length > 0 && selectedModel.supportsImageInput) {
+        payload.image_url = referenceImages[0];
       }
 
       const resp = await fetch(GENERATE_AUDIO_URL, {
@@ -513,8 +529,8 @@ const Dashboard = () => {
     setActiveTab("video");
     setSelectedModel(i2vModels[0]);
     setModelSettings(getDefaultSettings(i2vModels[0]));
-    setReferenceImage(img.url);
-    setReferencePreview(img.url);
+    setReferenceImages([img.url]);
+    setReferencePreviews([img.url]);
     if (img.prompt) setPrompt(img.prompt);
     setPreviewImage(null);
     toast.success("Image chargée dans le générateur vidéo !");
@@ -850,8 +866,13 @@ const Dashboard = () => {
           {/* Image Reference (only for image-to-image models) */}
           {selectedModel.supportsImageInput && (
             <div className="space-y-2">
-              <label className="text-[11px] text-muted-foreground font-semibold uppercase tracking-wider">
-                Image source
+              <label className="text-[11px] text-muted-foreground font-semibold uppercase tracking-wider flex items-center justify-between">
+                <span>Images source ({referencePreviews.length}/{selectedModel.maxInputImages || 1})</span>
+                {referencePreviews.length > 0 && (
+                  <button onClick={() => removeReferenceImage()} className="text-[10px] text-destructive hover:underline">
+                    Tout supprimer
+                  </button>
+                )}
               </label>
               <input
                 ref={fileInputRef}
@@ -860,49 +881,45 @@ const Dashboard = () => {
                 className="hidden"
                 onChange={handleImageUpload}
               />
-              <AnimatePresence mode="wait">
-                {referencePreview ? (
+              <div className="grid grid-cols-3 gap-2">
+                {referencePreviews.map((preview, idx) => (
                   <motion.div
-                    key="preview"
-                    initial={{ opacity: 0, scale: 0.95 }}
+                    key={`img-${idx}`}
+                    initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.95 }}
-                    className="relative"
+                    className="relative aspect-square rounded-xl overflow-hidden border border-white/[0.08] group"
                   >
                     <img
-                      src={referencePreview}
-                      alt="Image source"
-                      className="w-full rounded-xl border border-white/[0.08] max-h-40 object-cover"
+                      src={preview}
+                      alt={`@img${idx + 1}`}
+                      className="w-full h-full object-cover"
                     />
+                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent px-1.5 py-1">
+                      <span className="text-[10px] font-mono text-white/90">@img{idx + 1}</span>
+                    </div>
                     <button
-                      onClick={removeReferenceImage}
-                      className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center hover:bg-black/80 transition-colors"
+                      onClick={() => removeReferenceImage(idx)}
+                      className="absolute top-1 right-1 w-5 h-5 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
                     >
-                      <X className="w-3.5 h-3.5 text-white" />
-                    </button>
-                    <button
-                      onClick={() => fileInputRef.current?.click()}
-                      className="absolute bottom-1.5 right-1.5 px-2 py-1 rounded-lg bg-black/60 backdrop-blur-sm text-[10px] text-white font-medium hover:bg-black/80 transition-colors flex items-center gap-1"
-                    >
-                      <RefreshCw className="w-3 h-3" />
-                      Changer
+                      <X className="w-3 h-3 text-white" />
                     </button>
                   </motion.div>
-                ) : (
+                ))}
+                {referencePreviews.length < (selectedModel.maxInputImages || 1) && (
                   <motion.button
-                    key="upload"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
                     onClick={() => fileInputRef.current?.click()}
-                    className="w-full flex flex-col items-center justify-center gap-2 py-6 rounded-xl border-2 border-dashed border-white/[0.1] hover:border-primary/40 bg-white/[0.02] hover:bg-white/[0.04] transition-all cursor-pointer"
+                    className="aspect-square flex flex-col items-center justify-center gap-1.5 rounded-xl border-2 border-dashed border-white/[0.1] hover:border-primary/40 bg-white/[0.02] hover:bg-white/[0.04] transition-all cursor-pointer"
                   >
-                    <Upload className="w-6 h-6 text-muted-foreground" />
-                    <span className="text-[11px] text-muted-foreground font-medium">Charger une image</span>
-                    <span className="text-[9px] text-muted-foreground/50">PNG, JPG — max 10 Mo</span>
+                    <Upload className="w-5 h-5 text-muted-foreground" />
+                    <span className="text-[9px] text-muted-foreground font-medium">Upload</span>
                   </motion.button>
                 )}
-              </AnimatePresence>
+              </div>
+              {referencePreviews.length === 0 && (
+                <span className="text-[9px] text-muted-foreground/50">PNG, JPG — max 10 Mo par image</span>
+              )}
             </div>
           )}
 

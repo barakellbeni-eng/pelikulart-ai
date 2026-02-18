@@ -25,6 +25,7 @@ export interface FalModel {
   type: ModelType;
   settings: ModelSetting[];
   supportsImageInput?: boolean;
+  maxInputImages?: number; // Max number of reference images (default 1 if supportsImageInput)
   maxImages?: number;
   caurisCost: number; // Base cost in Cauris (5s for video)
   caurisCost10s?: number;
@@ -151,8 +152,8 @@ export const FAL_MODELS: FalModel[] = [
   {
     id: "nano-banana-pro-edit", type: "image", brand: "Google", name: "Nano Banana Pro Edit",
     endpoint: "fal-ai/nano-banana-pro/edit",
-    description: "Édition d'image avec Gemini 3 Pro", icon: "◫", color: "from-white/20 to-white/5",
-    maxImages: 4, supportsImageInput: true, caurisCost: 4, estimatedTime: "~4s",
+    description: "Édition multi-images avec Gemini 3 Pro", icon: "◫", color: "from-white/20 to-white/5",
+    maxImages: 4, supportsImageInput: true, maxInputImages: 5, caurisCost: 4, estimatedTime: "~4s",
     settings: [
       ASPECT_RATIO_NANO_BANANA,
       { key: "resolution", label: "Résolution", type: "select", options: [
@@ -191,8 +192,8 @@ export const FAL_MODELS: FalModel[] = [
   {
     id: "flux-kontext", type: "image", brand: "FLUX", name: "Kontext [pro]",
     endpoint: "fal-ai/flux-pro/kontext",
-    description: "Édition contextuelle avec image", icon: "◫", color: "from-white/20 to-white/5",
-    maxImages: 1, supportsImageInput: true, caurisCost: 8, estimatedTime: "~10s",
+    description: "Édition contextuelle (1 image)", icon: "◫", color: "from-white/20 to-white/5",
+    maxImages: 1, supportsImageInput: true, maxInputImages: 1, caurisCost: 8, estimatedTime: "~10s",
     settings: [
       ASPECT_RATIO_FLUX_PRO,
       INFERENCE_STEPS(), GUIDANCE_SCALE,
@@ -205,8 +206,8 @@ export const FAL_MODELS: FalModel[] = [
   {
     id: "flux-kontext-max", type: "image", brand: "FLUX", name: "Kontext [max]",
     endpoint: "fal-ai/flux-pro/kontext/max",
-    description: "Typographie améliorée, qualité max", icon: "◈", color: "from-white/20 to-white/5",
-    maxImages: 1, supportsImageInput: true, caurisCost: 12, estimatedTime: "~15s",
+    description: "Typographie améliorée (1 image)", icon: "◈", color: "from-white/20 to-white/5",
+    maxImages: 1, supportsImageInput: true, maxInputImages: 1, caurisCost: 12, estimatedTime: "~15s",
     settings: [
       ASPECT_RATIO_FLUX_PRO,
       GUIDANCE_SCALE,
@@ -226,8 +227,8 @@ export const FAL_MODELS: FalModel[] = [
   {
     id: "flux2-dev-edit", type: "image", brand: "FLUX", name: "2 [dev] Edit",
     endpoint: "fal-ai/flux-2/edit",
-    description: "Édition d'image avec FLUX 2", icon: "◫", color: "from-white/20 to-white/5",
-    maxImages: 1, supportsImageInput: true, caurisCost: 6, estimatedTime: "~12s",
+    description: "Édition multi-images avec FLUX 2", icon: "◫", color: "from-white/20 to-white/5",
+    maxImages: 1, supportsImageInput: true, maxInputImages: 5, caurisCost: 6, estimatedTime: "~12s",
     settings: [
       IMAGE_SIZE_FLUX, INFERENCE_STEPS(),
       { key: "guidance_scale", label: "Guidance Scale", type: "slider", min: 1, max: 20, step: 0.5, defaultValue: 2.5 } as ModelSetting,
@@ -333,8 +334,8 @@ export const FAL_MODELS: FalModel[] = [
   {
     id: "seedream-v4-edit", type: "image", brand: "Seedream", name: "v4 Edit",
     endpoint: "fal-ai/bytedance/seedream/v4/edit",
-    description: "Édition d'image intelligente", icon: "◫", color: "from-white/20 to-white/5",
-    maxImages: 1, supportsImageInput: true, caurisCost: 5, estimatedTime: "~5s",
+    description: "Édition multi-images intelligente", icon: "◫", color: "from-white/20 to-white/5",
+    maxImages: 1, supportsImageInput: true, maxInputImages: 10, caurisCost: 5, estimatedTime: "~5s",
     settings: [
       { key: "strength", label: "Force d'édition", type: "slider", min: 0.1, max: 1.0, step: 0.1, defaultValue: 0.7 },
       SEED_SETTING,
@@ -360,8 +361,8 @@ export const FAL_MODELS: FalModel[] = [
   {
     id: "seedream-v45-edit", type: "image", brand: "Seedream", name: "v4.5 Edit",
     endpoint: "fal-ai/bytedance/seedream/v4.5/edit",
-    description: "Édition avancée dernière génération", icon: "▹", color: "from-white/20 to-white/5",
-    maxImages: 1, supportsImageInput: true, caurisCost: 6, estimatedTime: "~4s",
+    description: "Édition multi-images dernière génération", icon: "▹", color: "from-white/20 to-white/5",
+    maxImages: 1, supportsImageInput: true, maxInputImages: 10, caurisCost: 6, estimatedTime: "~4s",
     settings: [
       { key: "strength", label: "Force d'édition", type: "slider", min: 0.1, max: 1.0, step: 0.1, defaultValue: 0.7 },
       SEED_SETTING,
