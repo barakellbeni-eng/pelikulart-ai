@@ -539,12 +539,23 @@ const Dashboard = () => {
     const value = modelSettings[setting.key];
 
     if (setting.type === "select") {
-      const isRatioOrSize = setting.key === "aspect_ratio" || setting.key === "image_size";
+      const isRatioOrSize = setting.key === "aspect_ratio" || setting.key === "image_size" || setting.key === "resolution";
       const selectedOpt = setting.options?.find((o) => o.value === value);
 
       if (isRatioOrSize && setting.options) {
-        // Helper to render a proportional frame icon for a ratio
+        // Helper to render a proportional frame icon for a ratio, or a resolution icon
         const RatioFrame = ({ ratio, className = "" }: { ratio: string; className?: string }) => {
+          // Resolution values get a simple box icon
+          const isResolution = /^\d+[Kk]$|^\d+p$/.test(ratio);
+          if (isResolution) {
+            return (
+              <span className={`inline-flex items-center justify-center ${className}`} style={{ width: 24, height: 24 }}>
+                <span className="border-[1.5px] border-current rounded-[2px] flex items-center justify-center" style={{ width: 18, height: 14 }}>
+                  <span className="text-[7px] font-bold leading-none">{ratio.replace(/p$/, '')}</span>
+                </span>
+              </span>
+            );
+          }
           const dims: Record<string, { w: number; h: number }> = {
             "16:9": { w: 20, h: 11 }, "9:16": { w: 11, h: 20 },
             "1:1": { w: 16, h: 16 }, "4:3": { w: 18, h: 14 },
@@ -967,30 +978,68 @@ const Dashboard = () => {
         {/* Bottom Controls */}
         <div className="p-4 border-t border-white/[0.06] space-y-3">
           {/* Number of images */}
-          {(selectedModel.maxImages || 1) > 1 && (
-            <div className="flex items-center justify-between">
-              <label className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">
-                Nombre d'images
-              </label>
-              <div className="flex items-center gap-0 glass rounded-lg">
-                <button
-                  onClick={() => setNumImages(Math.max(1, numImages - 1))}
-                  className="p-1.5 text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  <Minus className="w-3.5 h-3.5" />
-                </button>
-                <span className="text-sm font-semibold text-foreground w-5 text-center">
-                  {numImages}
-                </span>
-                <button
-                  onClick={() => setNumImages(Math.min(selectedModel.maxImages || 1, numImages + 1))}
-                  className="p-1.5 text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                </button>
+          {(selectedModel.maxImages || 1) > 1 && (() => {
+            const maxImg = selectedModel.maxImages || 1;
+            const numImgDropdownId = "num-images-dropdown";
+            return (
+              <div className="flex items-center justify-between">
+                <label className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">
+                  Nombre d'images
+                </label>
+                <div className="relative">
+                  <button
+                    onClick={() => setOpenRatioDropdown(openRatioDropdown === numImgDropdownId ? null : numImgDropdownId)}
+                    className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md glass text-[11px] font-medium text-foreground hover:bg-muted/40 transition-all"
+                  >
+                    <span className="inline-flex items-center justify-center" style={{ width: 24, height: 24 }}>
+                      <span className="border-[1.5px] border-current rounded-[2px] flex items-center justify-center" style={{ width: 16, height: 16 }}>
+                        <span className="text-[8px] font-bold leading-none">{numImages}</span>
+                      </span>
+                    </span>
+                    <span>{numImages} image{numImages > 1 ? "s" : ""}</span>
+                    <ChevronDown className={`w-3.5 h-3.5 text-muted-foreground transition-transform ${openRatioDropdown === numImgDropdownId ? "rotate-180" : ""}`} />
+                  </button>
+                  <AnimatePresence>
+                    {openRatioDropdown === numImgDropdownId && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -4 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -4 }}
+                        transition={{ duration: 0.15 }}
+                        className="absolute z-50 bottom-full left-0 mb-1 min-w-[160px] rounded-lg glass border border-border/50 shadow-xl py-1 backdrop-blur-xl"
+                      >
+                        {Array.from({ length: maxImg }, (_, i) => i + 1).map((n) => {
+                          const isSelected = n === numImages;
+                          return (
+                            <button
+                              key={n}
+                              onClick={() => {
+                                setNumImages(n);
+                                setOpenRatioDropdown(null);
+                              }}
+                              className={`flex items-center gap-2.5 w-full px-3 py-2 text-[11px] font-medium transition-all text-left ${
+                                isSelected
+                                  ? "text-foreground bg-primary/10"
+                                  : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
+                              }`}
+                            >
+                              <span className="inline-flex items-center justify-center" style={{ width: 24, height: 24 }}>
+                                <span className={`border-[1.5px] rounded-[2px] flex items-center justify-center ${isSelected ? "border-primary" : "border-current"}`} style={{ width: 16, height: 16 }}>
+                                  <span className="text-[8px] font-bold leading-none">{n}</span>
+                                </span>
+                              </span>
+                              <span>{n} image{n > 1 ? "s" : ""}</span>
+                              {isSelected && <Check className="w-3 h-3 ml-auto text-primary shrink-0" />}
+                            </button>
+                          );
+                        })}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
               </div>
-            </div>
-          )}
+            );
+          })()}
 
           {/* Generate Button */}
           <button
