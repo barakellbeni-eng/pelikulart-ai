@@ -213,6 +213,52 @@ export const FAL_MODELS: FalModel[] = [
       SEED_SETTING,
     ],
   },
+  {
+    id: "seedream-v4-t2i", type: "image", brand: "Seedream", name: "v4",
+    endpoint: "fal-ai/bytedance/seedream/v4/text-to-image",
+    description: "Génération rapide et photoréaliste", icon: "◆", color: "from-white/20 to-white/5",
+    maxImages: 4, supportsImageInput: false, caurisCost: 5,
+    settings: [
+      { key: "aspect_ratio", label: "Ratio", type: "select", options: [
+        { value: "1:1", label: "1:1" }, { value: "4:3", label: "4:3" }, { value: "3:4", label: "3:4" },
+        { value: "16:9", label: "16:9" }, { value: "9:16", label: "9:16" },
+      ], defaultValue: "1:1" },
+      SEED_SETTING,
+    ],
+  },
+  {
+    id: "seedream-v4-edit", type: "image", brand: "Seedream", name: "v4 Edit",
+    endpoint: "fal-ai/bytedance/seedream/v4/edit",
+    description: "Édition d'image intelligente", icon: "◫", color: "from-white/20 to-white/5",
+    maxImages: 1, supportsImageInput: true, caurisCost: 5,
+    settings: [
+      { key: "strength", label: "Force d'édition", type: "slider", min: 0.1, max: 1.0, step: 0.1, defaultValue: 0.7 },
+      SEED_SETTING,
+    ],
+  },
+  {
+    id: "seedream-v45-t2i", type: "image", brand: "Seedream", name: "v4.5",
+    endpoint: "fal-ai/bytedance/seedream/v4.5/text-to-image",
+    description: "Dernière version, ultra réaliste 2-3s", icon: "◈", color: "from-white/20 to-white/5",
+    maxImages: 4, supportsImageInput: false, caurisCost: 6,
+    settings: [
+      { key: "aspect_ratio", label: "Ratio", type: "select", options: [
+        { value: "1:1", label: "1:1" }, { value: "4:3", label: "4:3" }, { value: "3:4", label: "3:4" },
+        { value: "16:9", label: "16:9" }, { value: "9:16", label: "9:16" },
+      ], defaultValue: "1:1" },
+      SEED_SETTING,
+    ],
+  },
+  {
+    id: "seedream-v45-edit", type: "image", brand: "Seedream", name: "v4.5 Edit",
+    endpoint: "fal-ai/bytedance/seedream/v4.5/edit",
+    description: "Édition avancée dernière génération", icon: "▹", color: "from-white/20 to-white/5",
+    maxImages: 1, supportsImageInput: true, caurisCost: 6,
+    settings: [
+      { key: "strength", label: "Force d'édition", type: "slider", min: 0.1, max: 1.0, step: 0.1, defaultValue: 0.7 },
+      SEED_SETTING,
+    ],
+  },
 
   // ════════════════════════════════════════
   //  VIDEO MODELS
