@@ -4,8 +4,10 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
+import { ThemeProvider } from "@/hooks/useTheme";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import AppSidebar from "@/components/AppSidebar";
+import ThemeToggle from "@/components/ThemeToggle";
 import ProfileRing from "@/components/ProfileRing";
 import LandingPage from "./pages/LandingPage";
 import Auth from "./pages/Auth";
@@ -45,7 +47,8 @@ const AuthenticatedLayout = ({ children }: { children: React.ReactNode }) => {
               <span className="text-gradient-primary">cauris</span>
               <span className="text-foreground">.ai</span>
             </h1>
-            <div className="ml-auto">
+            <div className="ml-auto flex items-center gap-2">
+              <ThemeToggle />
               <ProfileRing />
             </div>
           </header>
@@ -61,7 +64,7 @@ const AppContent = () => {
   const isPublic = location.pathname === "/" || location.pathname === "/auth";
 
   return (
-    <div className="dark min-h-screen bg-background">
+    <div className="min-h-screen bg-background">
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/auth" element={<Auth />} />
@@ -111,15 +114,17 @@ const AppContent = () => {
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <AuthProvider>
-          <AppContent />
-        </AuthProvider>
-      </BrowserRouter>
-    </TooltipProvider>
+    <ThemeProvider>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <AuthProvider>
+            <AppContent />
+          </AuthProvider>
+        </BrowserRouter>
+      </TooltipProvider>
+    </ThemeProvider>
   </QueryClientProvider>
 );
 

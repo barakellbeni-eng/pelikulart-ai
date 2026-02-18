@@ -6,6 +6,56 @@
 
 @layer base {
   :root {
+    --background: 30 20% 96%;
+    --foreground: 20 10% 15%;
+
+    --card: 30 15% 92%;
+    --card-foreground: 20 10% 15%;
+
+    --popover: 30 15% 92%;
+    --popover-foreground: 20 10% 15%;
+
+    --primary: 32 100% 50%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 30 10% 88%;
+    --secondary-foreground: 20 10% 30%;
+
+    --muted: 30 10% 85%;
+    --muted-foreground: 20 5% 45%;
+
+    --accent: 43 56% 52%;
+    --accent-foreground: 0 0% 2%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 20 10% 15% / 0.08;
+    --input: 20 10% 15% / 0.1;
+    --ring: 32 100% 50%;
+
+    --radius: 0.75rem;
+
+    --sidebar-background: 30 15% 93%;
+    --sidebar-foreground: 20 10% 20%;
+    --sidebar-primary: 32 100% 50%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 30 10% 88%;
+    --sidebar-accent-foreground: 20 10% 20%;
+    --sidebar-border: 20 10% 15% / 0.08;
+    --sidebar-ring: 32 100% 50%;
+
+    /* Custom tokens */
+    --glass: 20 10% 15% / 0.04;
+    --glass-border: 20 10% 15% / 0.08;
+    --glass-hover: 20 10% 15% / 0.08;
+    --glow-orange: 32 100% 50%;
+    --glow-gold: 43 56% 52%;
+    --gradient-primary: linear-gradient(135deg, hsl(32 100% 50%), hsl(10 90% 50%));
+    --gradient-gold: linear-gradient(135deg, hsl(43 56% 52%), hsl(32 100% 50%));
+  }
+
+  .dark {
     --background: 0 0% 2%;
     --foreground: 0 0% 95%;
 
@@ -34,8 +84,6 @@
     --input: 0 0% 100% / 0.08;
     --ring: 32 100% 50%;
 
-    --radius: 0.75rem;
-
     --sidebar-background: 0 0% 5%;
     --sidebar-foreground: 0 0% 90%;
     --sidebar-primary: 32 100% 50%;
@@ -45,7 +93,6 @@
     --sidebar-border: 0 0% 100% / 0.05;
     --sidebar-ring: 32 100% 50%;
 
-    /* Custom tokens */
     --glass: 0 0% 100% / 0.03;
     --glass-border: 0 0% 100% / 0.06;
     --glass-hover: 0 0% 100% / 0.06;
