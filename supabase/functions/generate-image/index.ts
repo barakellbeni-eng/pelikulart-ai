@@ -23,6 +23,25 @@ const MODEL_PATHS: Record<string, string> = {
   "runway-t2i": "/v1/ai/text-to-image/runway",
 };
 
+// Freepik aspect_ratio mapping (simple ratio → Freepik enum)
+const ASPECT_RATIO_MAP: Record<string, string> = {
+  "1:1": "square_1_1",
+  "4:3": "classic_4_3",
+  "3:4": "traditional_3_4",
+  "16:9": "widescreen_16_9",
+  "9:16": "social_story_9_16",
+  "20:9": "smartphone_horizontal_20_9",
+  "9:20": "smartphone_vertical_9_20",
+  "21:9": "film_horizontal_21_9",
+  "9:21": "film_vertical_9_21",
+  "3:2": "standard_3_2",
+  "2:3": "portrait_2_3",
+  "2:1": "horizontal_2_1",
+  "1:2": "vertical_1_2",
+  "5:4": "social_5_4",
+  "4:5": "social_post_4_5",
+};
+
 // Classic endpoint is synchronous (returns base64), all others are async (task_id + polling)
 const SYNC_MODELS = new Set(["classic-fast"]);
 
@@ -167,6 +186,11 @@ serve(async (req) => {
 
     // Image input for models that support it (Flux Kontext, etc.)
     if (image_url) payload.image_url = image_url;
+
+    // Map aspect_ratio from simple format to Freepik enum
+    if (payload.aspect_ratio && ASPECT_RATIO_MAP[payload.aspect_ratio]) {
+      payload.aspect_ratio = ASPECT_RATIO_MAP[payload.aspect_ratio];
+    }
 
     // Clean empty values
     for (const key of Object.keys(payload)) {
