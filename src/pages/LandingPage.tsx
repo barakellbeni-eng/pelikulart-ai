@@ -174,6 +174,9 @@ const LandingPage = () => {
           </Link>
 
           <div className="hidden md:flex items-center gap-8 text-sm text-muted-foreground">
+            <a href="#" className="hover:text-foreground transition-colors">
+              Accueil
+            </a>
             <a href="#tools" className="hover:text-foreground transition-colors">
               Outils IA
             </a>
