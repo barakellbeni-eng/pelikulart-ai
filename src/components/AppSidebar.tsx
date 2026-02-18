@@ -121,13 +121,7 @@ const AppSidebar = () => {
       </SidebarContent>
 
       {/* Footer avec crédits */}
-      <SidebarFooter className="px-4 py-3">
-        <div className="glass rounded-xl px-3 py-2 flex items-center gap-2">
-          <Zap className="w-4 h-4 text-primary" />
-          <span className="text-xs font-semibold text-primary">Cauris 🐚</span>
-          <span className="text-[10px] text-muted-foreground ml-auto">crédits</span>
-        </div>
-      </SidebarFooter>
+      <SidebarFooter className="px-4 py-3" />
     </Sidebar>
   );
 };
