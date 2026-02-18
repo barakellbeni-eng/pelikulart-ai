@@ -92,8 +92,6 @@ const Dashboard = () => {
   const [modelSettings, setModelSettings] = useState<Record<string, any>>(getDefaultSettings(imageModels[0]));
   const [numImages, setNumImages] = useState(1);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [progress, setProgress] = useState(0);
-  const [progressStage, setProgressStage] = useState("");
   const [galleryImages, setGalleryImages] = useState<GeneratedImage[]>([]);
   const [galleryVideos, setGalleryVideos] = useState<GeneratedVideo[]>([]);
   const [galleryAudios, setGalleryAudios] = useState<GeneratedAudio[]>([]);
@@ -152,44 +150,7 @@ const Dashboard = () => {
     loadHistory();
   }, [user]);
 
-  const progressInterval = useRef<ReturnType<typeof setInterval> | null>(null);
-
-  useEffect(() => {
-    if (isGenerating) {
-      setProgress(0);
-      setProgressStage("Initialisation...");
-      const stages = [
-        { at: 10, label: "Analyse du prompt..." },
-        { at: 25, label: "Préparation du modèle..." },
-        { at: 40, label: "Génération en cours..." },
-        { at: 60, label: "Rendu des détails..." },
-        { at: 75, label: "Finalisation..." },
-        { at: 88, label: "Presque terminé..." },
-      ];
-      let current = 0;
-      progressInterval.current = setInterval(() => {
-        current += Math.random() * 3 + 0.5;
-        if (current > 92) current = 92;
-        setProgress(current);
-        const stage = [...stages].reverse().find((s) => current >= s.at);
-        if (stage) setProgressStage(stage.label);
-      }, 500);
-    } else {
-      if (progressInterval.current) {
-        clearInterval(progressInterval.current);
-        progressInterval.current = null;
-      }
-      if (progress > 0) {
-        setProgress(100);
-        setProgressStage("Terminé !");
-        const t = setTimeout(() => setProgress(0), 1000);
-        return () => clearTimeout(t);
-      }
-    }
-    return () => {
-      if (progressInterval.current) clearInterval(progressInterval.current);
-    };
-  }, [isGenerating]);
+  // No more fake progress — just show hourglass while generating
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -905,21 +866,17 @@ const Dashboard = () => {
                     key="audio-loading"
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    className="rounded-xl bg-white/[0.04] border border-white/[0.06] flex flex-col items-center justify-center p-6 space-y-4 relative overflow-hidden"
+                    className="rounded-xl bg-white/[0.04] border border-white/[0.06] flex flex-col items-center justify-center p-6 space-y-3"
                   >
-                    <div className="absolute inset-0 overflow-hidden">
-                      <div className="absolute inset-0 animate-pulse" style={{ background: `linear-gradient(135deg, transparent 30%, hsl(var(--primary) / 0.04) 50%, transparent 70%)` }} />
-                    </div>
-                    <div className="relative">
-                      <div className="w-12 h-12 rounded-full border-2 border-white/[0.08] border-t-primary animate-spin" />
-                    </div>
-                    <div className="relative w-full space-y-2 px-2">
-                      <p className="text-xs text-muted-foreground text-center font-medium">{progressStage}</p>
-                      <div className="w-full h-1.5 rounded-full bg-white/[0.06] overflow-hidden">
-                        <motion.div className="h-full rounded-full bg-primary" initial={{ width: "0%" }} animate={{ width: `${progress}%` }} transition={{ duration: 0.4, ease: "easeOut" }} />
-                      </div>
-                      <p className="text-[10px] text-primary font-bold text-center">{Math.round(progress)}%</p>
-                    </div>
+                    <motion.span
+                      className="text-4xl"
+                      animate={{ rotateY: [0, 180, 360] }}
+                      transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                      style={{ display: "inline-block" }}
+                    >
+                      ⏳
+                    </motion.span>
+                    <p className="text-xs text-muted-foreground text-center font-medium">Génération en cours…</p>
                   </motion.div>
                 )}
                 {galleryAudios.map((aud, i) => {
@@ -972,21 +929,17 @@ const Dashboard = () => {
                     key="video-loading"
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    className="aspect-video rounded-xl bg-white/[0.04] border border-white/[0.06] flex flex-col items-center justify-center p-4 space-y-4 relative overflow-hidden"
+                    className="aspect-video rounded-xl bg-white/[0.04] border border-white/[0.06] flex flex-col items-center justify-center p-4 space-y-3"
                   >
-                    <div className="absolute inset-0 overflow-hidden">
-                      <div className="absolute inset-0 animate-pulse" style={{ background: `linear-gradient(135deg, transparent 30%, hsl(var(--primary) / 0.04) 50%, transparent 70%)` }} />
-                    </div>
-                    <div className="relative">
-                      <div className="w-12 h-12 rounded-full border-2 border-white/[0.08] border-t-primary animate-spin" />
-                    </div>
-                    <div className="relative w-full space-y-2 px-2">
-                      <p className="text-xs text-muted-foreground text-center font-medium">{progressStage}</p>
-                      <div className="w-full h-1.5 rounded-full bg-white/[0.06] overflow-hidden">
-                        <motion.div className="h-full rounded-full bg-primary" initial={{ width: "0%" }} animate={{ width: `${progress}%` }} transition={{ duration: 0.4, ease: "easeOut" }} />
-                      </div>
-                      <p className="text-[10px] text-primary font-bold text-center">{Math.round(progress)}%</p>
-                    </div>
+                    <motion.span
+                      className="text-4xl"
+                      animate={{ rotateY: [0, 180, 360] }}
+                      transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                      style={{ display: "inline-block" }}
+                    >
+                      ⏳
+                    </motion.span>
+                    <p className="text-xs text-muted-foreground text-center font-medium">Génération en cours…</p>
                   </motion.div>
                 )}
                 {galleryVideos.map((vid, i) => (
@@ -1034,21 +987,17 @@ const Dashboard = () => {
                       key={`loading-${i}`}
                       initial={{ opacity: 0, scale: 0.95 }}
                       animate={{ opacity: 1, scale: 1 }}
-                      className="aspect-square rounded-xl bg-white/[0.04] border border-white/[0.06] flex flex-col items-center justify-center p-4 space-y-4 relative overflow-hidden"
+                      className="aspect-square rounded-xl bg-white/[0.04] border border-white/[0.06] flex flex-col items-center justify-center p-4 space-y-3"
                     >
-                      <div className="absolute inset-0 overflow-hidden">
-                        <div className="absolute inset-0 animate-pulse" style={{ background: `linear-gradient(135deg, transparent 30%, hsl(var(--primary) / 0.04) 50%, transparent 70%)` }} />
-                      </div>
-                      <div className="relative">
-                        <div className="w-12 h-12 rounded-full border-2 border-white/[0.08] border-t-primary animate-spin" />
-                      </div>
-                      <div className="relative w-full space-y-2 px-2">
-                        <p className="text-xs text-muted-foreground text-center font-medium">{progressStage}</p>
-                        <div className="w-full h-1.5 rounded-full bg-white/[0.06] overflow-hidden">
-                          <motion.div className="h-full rounded-full bg-primary" initial={{ width: "0%" }} animate={{ width: `${progress}%` }} transition={{ duration: 0.4, ease: "easeOut" }} />
-                        </div>
-                        <p className="text-[10px] text-primary font-bold text-center">{Math.round(progress)}%</p>
-                      </div>
+                      <motion.span
+                        className="text-4xl"
+                        animate={{ rotateY: [0, 180, 360] }}
+                        transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                        style={{ display: "inline-block" }}
+                      >
+                        ⏳
+                      </motion.span>
+                      <p className="text-xs text-muted-foreground text-center font-medium">Génération en cours…</p>
                     </motion.div>
                   ))}
                 {galleryImages.map((img, i) => (
