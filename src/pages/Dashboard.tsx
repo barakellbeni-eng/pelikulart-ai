@@ -103,6 +103,7 @@ const Dashboard = () => {
   const [showModelDropdown, setShowModelDropdown] = useState(false);
   const [previewImage, setPreviewImage] = useState<GeneratedImage | null>(null);
   const [isEnhancing, setIsEnhancing] = useState(false);
+  const [gridSize, setGridSize] = useState<"small" | "medium" | "large">("medium");
 
   const handleSelectModel = (model: FalModel) => {
     setSelectedModel(model);
@@ -847,10 +848,35 @@ const Dashboard = () => {
         <div className="flex items-center justify-between px-5 py-3 border-b border-white/[0.06]">
           <div className="flex items-center gap-4">
             <span className="text-sm font-medium text-foreground">
-              {galleryImages.length > 0
-                ? `${galleryImages.length} image${galleryImages.length > 1 ? "s" : ""}`
-                : "Gallery"}
+              {activeTab === "audio"
+                ? galleryAudios.length > 0 ? `${galleryAudios.length} audio${galleryAudios.length > 1 ? "s" : ""}` : "Gallery"
+                : activeTab === "video"
+                ? galleryVideos.length > 0 ? `${galleryVideos.length} vidéo${galleryVideos.length > 1 ? "s" : ""}` : "Gallery"
+                : galleryImages.length > 0 ? `${galleryImages.length} image${galleryImages.length > 1 ? "s" : ""}` : "Gallery"}
             </span>
+          </div>
+          <div className="flex items-center gap-1 glass rounded-lg p-0.5">
+            <button
+              onClick={() => setGridSize("small")}
+              className={`p-1.5 rounded-md transition-colors ${gridSize === "small" ? "bg-primary/20 text-primary" : "text-muted-foreground hover:text-foreground"}`}
+              title="Petite grille"
+            >
+              <Grid3X3 className="w-3.5 h-3.5" />
+            </button>
+            <button
+              onClick={() => setGridSize("medium")}
+              className={`p-1.5 rounded-md transition-colors ${gridSize === "medium" ? "bg-primary/20 text-primary" : "text-muted-foreground hover:text-foreground"}`}
+              title="Grille moyenne"
+            >
+              <LayoutGrid className="w-3.5 h-3.5" />
+            </button>
+            <button
+              onClick={() => setGridSize("large")}
+              className={`p-1.5 rounded-md transition-colors ${gridSize === "large" ? "bg-primary/20 text-primary" : "text-muted-foreground hover:text-foreground"}`}
+              title="Grande grille"
+            >
+              <Image className="w-3.5 h-3.5" />
+            </button>
           </div>
         </div>
 
@@ -868,7 +894,7 @@ const Dashboard = () => {
                 </div>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className={`grid gap-4 ${gridSize === "small" ? "grid-cols-1 md:grid-cols-3" : gridSize === "large" ? "grid-cols-1" : "grid-cols-1 md:grid-cols-2"}`}>
                 {isGenerating && (
                   <motion.div
                     key="audio-loading"
@@ -923,7 +949,7 @@ const Dashboard = () => {
                 </div>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className={`grid gap-4 ${gridSize === "small" ? "grid-cols-2 md:grid-cols-3 lg:grid-cols-4" : gridSize === "large" ? "grid-cols-1 md:grid-cols-2" : "grid-cols-1 md:grid-cols-2 lg:grid-cols-3"}`}>
                 {isGenerating && (
                   <motion.div
                     key="video-loading"
@@ -972,7 +998,7 @@ const Dashboard = () => {
                 </div>
               </div>
             ) : (
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+              <div className={`grid gap-3 ${gridSize === "small" ? "grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8" : gridSize === "large" ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-3" : "grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5"}`}>
                 {isGenerating &&
                   Array.from({ length: numImages }).map((_, i) => (
                     <motion.div
