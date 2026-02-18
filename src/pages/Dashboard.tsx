@@ -33,6 +33,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { FAL_MODELS, getModelById, getDefaultSettings, getModelsByType, getModelsByTypeGrouped, calculateCaurisCost, type FalModel } from "@/lib/fal-models";
+import HourglassLoader from "@/components/HourglassLoader";
 
 const GENERATE_IMAGE_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-image`;
 const GENERATE_VIDEO_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-video`;
@@ -868,15 +869,7 @@ const Dashboard = () => {
                     animate={{ opacity: 1, scale: 1 }}
                     className="rounded-xl bg-white/[0.04] border border-white/[0.06] flex flex-col items-center justify-center p-6 space-y-3"
                   >
-                    <motion.span
-                      className="text-4xl"
-                      animate={{ rotateY: [0, 180, 360] }}
-                      transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                      style={{ display: "inline-block" }}
-                    >
-                      ⏳
-                    </motion.span>
-                    <p className="text-xs text-muted-foreground text-center font-medium">Génération en cours…</p>
+                    <HourglassLoader size={40} />
                   </motion.div>
                 )}
                 {galleryAudios.map((aud, i) => {
@@ -931,15 +924,7 @@ const Dashboard = () => {
                     animate={{ opacity: 1, scale: 1 }}
                     className="aspect-video rounded-xl bg-white/[0.04] border border-white/[0.06] flex flex-col items-center justify-center p-4 space-y-3"
                   >
-                    <motion.span
-                      className="text-4xl"
-                      animate={{ rotateY: [0, 180, 360] }}
-                      transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                      style={{ display: "inline-block" }}
-                    >
-                      ⏳
-                    </motion.span>
-                    <p className="text-xs text-muted-foreground text-center font-medium">Génération en cours…</p>
+                    <HourglassLoader size={40} />
                   </motion.div>
                 )}
                 {galleryVideos.map((vid, i) => (
@@ -989,15 +974,7 @@ const Dashboard = () => {
                       animate={{ opacity: 1, scale: 1 }}
                       className="aspect-square rounded-xl bg-white/[0.04] border border-white/[0.06] flex flex-col items-center justify-center p-4 space-y-3"
                     >
-                      <motion.span
-                        className="text-4xl"
-                        animate={{ rotateY: [0, 180, 360] }}
-                        transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                        style={{ display: "inline-block" }}
-                      >
-                        ⏳
-                      </motion.span>
-                      <p className="text-xs text-muted-foreground text-center font-medium">Génération en cours…</p>
+                      <HourglassLoader size={36} />
                     </motion.div>
                   ))}
                 {galleryImages.map((img, i) => (
