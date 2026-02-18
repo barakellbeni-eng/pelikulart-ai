@@ -104,7 +104,9 @@ const Dashboard = () => {
   const [openRatioDropdown, setOpenRatioDropdown] = useState<string | null>(null);
   const [previewImage, setPreviewImage] = useState<GeneratedImage | null>(null);
   const [isEnhancing, setIsEnhancing] = useState(false);
+  const [isDescribingImage, setIsDescribingImage] = useState(false);
   const [gridSize, setGridSize] = useState<"small" | "medium" | "large">("medium");
+  const describeInputRef = useRef<HTMLInputElement>(null);
 
   const handleSelectModel = (model: FalModel) => {
     setSelectedModel(model);
@@ -213,6 +215,49 @@ const Dashboard = () => {
       toast.error(e.message || "Erreur lors de l'amélioration");
     } finally {
       setIsEnhancing(false);
+    }
+  };
+
+  const handleDescribeImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error("L'image ne doit pas dépasser 10 Mo");
+      return;
+    }
+    setIsDescribingImage(true);
+    try {
+      const reader = new FileReader();
+      const base64 = await new Promise<string>((resolve, reject) => {
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+
+      const describeUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/describe-image`;
+      const resp = await fetch(describeUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+        },
+        body: JSON.stringify({ image_base64: base64 }),
+      });
+      if (!resp.ok) {
+        const err = await resp.json().catch(() => ({ error: "Erreur" }));
+        throw new Error(err.error || "Erreur");
+      }
+      const data = await resp.json();
+      if (data.description) {
+        setPrompt((prev) => (prev ? `${prev}\n\n${data.description}` : data.description));
+        toast.success("Image convertie en prompt ✨");
+      }
+    } catch (e: any) {
+      console.error("Describe image error:", e);
+      toast.error(e.message || "Erreur lors de la description");
+    } finally {
+      setIsDescribingImage(false);
+      if (describeInputRef.current) describeInputRef.current.value = "";
     }
   };
 
@@ -841,24 +886,46 @@ const Dashboard = () => {
               <label className="text-[11px] text-muted-foreground font-semibold uppercase tracking-wider">
                 Prompt
               </label>
-              <button
-                onClick={handleEnhancePrompt}
-                disabled={!prompt.trim() || isEnhancing}
-                className="flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-semibold bg-gradient-to-r from-amber-500/20 to-orange-500/20 text-amber-400 hover:from-amber-500/30 hover:to-orange-500/30 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
-                title="Améliorer le prompt avec l'IA"
-              >
-                {isEnhancing ? (
-                  <Loader2 className="w-3 h-3 animate-spin" />
-                ) : (
-                  <Wand2 className="w-3 h-3" />
-                )}
-                {isEnhancing ? "Amélioration..." : "Améliorer"}
-              </button>
+              <div className="flex items-center gap-1.5">
+                <button
+                  onClick={() => describeInputRef.current?.click()}
+                  disabled={isDescribingImage}
+                  className="flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-semibold bg-gradient-to-r from-blue-500/20 to-cyan-500/20 text-blue-400 hover:from-blue-500/30 hover:to-cyan-500/30 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                  title="Ajouter une image pour générer un prompt"
+                >
+                  {isDescribingImage ? (
+                    <Loader2 className="w-3 h-3 animate-spin" />
+                  ) : (
+                    <Image className="w-3 h-3" />
+                  )}
+                  {isDescribingImage ? "Analyse..." : "Image → Texte"}
+                </button>
+                <input
+                  ref={describeInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleDescribeImage}
+                />
+                <button
+                  onClick={handleEnhancePrompt}
+                  disabled={!prompt.trim() || isEnhancing}
+                  className="flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-semibold bg-gradient-to-r from-amber-500/20 to-orange-500/20 text-amber-400 hover:from-amber-500/30 hover:to-orange-500/30 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                  title="Améliorer le prompt avec l'IA"
+                >
+                  {isEnhancing ? (
+                    <Loader2 className="w-3 h-3 animate-spin" />
+                  ) : (
+                    <Wand2 className="w-3 h-3" />
+                  )}
+                  {isEnhancing ? "Amélioration..." : "Améliorer"}
+                </button>
+              </div>
             </div>
             <Textarea
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
-              placeholder="Décrivez votre image..."
+              placeholder="Décrivez votre image ou ajoutez une image pour la convertir en prompt..."
               className="min-h-[100px] bg-white/[0.03] border border-white/[0.06] rounded-xl resize-none text-sm text-foreground placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-primary/30"
             />
           </div>
