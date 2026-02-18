@@ -896,24 +896,9 @@ const Dashboard = () => {
 
           {/* Prompt */}
           <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <label className="text-[11px] text-muted-foreground font-semibold uppercase tracking-wider">
-                Prompt
-              </label>
-              <button
-                onClick={handleEnhancePrompt}
-                disabled={!prompt.trim() || isEnhancing}
-                className="flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-semibold bg-gradient-to-r from-amber-500/20 to-orange-500/20 text-amber-400 hover:from-amber-500/30 hover:to-orange-500/30 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
-                title="Améliorer le prompt avec l'IA"
-              >
-                {isEnhancing ? (
-                  <Loader2 className="w-3 h-3 animate-spin" />
-                ) : (
-                  <Wand2 className="w-3 h-3" />
-                )}
-                {isEnhancing ? "Amélioration..." : "Améliorer"}
-              </button>
-            </div>
+            <label className="text-[11px] text-muted-foreground font-semibold uppercase tracking-wider">
+              Prompt
+            </label>
             <div className="relative">
               <Textarea
                 value={prompt}
@@ -926,25 +911,51 @@ const Dashboard = () => {
               />
               {/* Bottom bar inside textarea */}
               <div className="absolute bottom-2 left-2 right-2 flex items-center justify-between pointer-events-none">
-                <button
-                  onClick={() => describeInputRef.current?.click()}
-                  disabled={isDescribingImage}
-                  className="pointer-events-auto w-7 h-7 rounded-lg flex items-center justify-center bg-white/[0.06] hover:bg-white/[0.12] text-muted-foreground hover:text-foreground transition-all disabled:opacity-40 disabled:cursor-not-allowed backdrop-blur-sm border border-white/[0.06]"
-                  title="Image → Texte : convertir une image en prompt"
-                >
-                  {isDescribingImage ? (
-                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                  ) : (
-                    <Image className="w-3.5 h-3.5" />
+                <div className="flex items-center gap-1 pointer-events-auto">
+                  {/* Image → Texte */}
+                  <button
+                    onClick={() => describeInputRef.current?.click()}
+                    disabled={isDescribingImage}
+                    className="w-7 h-7 rounded-lg flex items-center justify-center bg-white/[0.06] hover:bg-white/[0.12] text-muted-foreground hover:text-foreground transition-all disabled:opacity-40 disabled:cursor-not-allowed backdrop-blur-sm border border-white/[0.06]"
+                    title="Image → Texte : convertir une image en prompt"
+                  >
+                    {isDescribingImage ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <Image className="w-3.5 h-3.5" />
+                    )}
+                  </button>
+                  <input
+                    ref={describeInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleDescribeImage}
+                  />
+                  {/* Améliorer */}
+                  <button
+                    onClick={handleEnhancePrompt}
+                    disabled={!prompt.trim() || isEnhancing}
+                    className="w-7 h-7 rounded-lg flex items-center justify-center bg-white/[0.06] hover:bg-white/[0.12] text-muted-foreground hover:text-foreground transition-all disabled:opacity-40 disabled:cursor-not-allowed backdrop-blur-sm border border-white/[0.06]"
+                    title="Améliorer le prompt avec l'IA"
+                  >
+                    {isEnhancing ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <Wand2 className="w-3.5 h-3.5" />
+                    )}
+                  </button>
+                  {/* Effacer */}
+                  {prompt.length > 0 && (
+                    <button
+                      onClick={() => setPrompt("")}
+                      className="w-7 h-7 rounded-lg flex items-center justify-center bg-white/[0.06] hover:bg-white/[0.12] text-muted-foreground hover:text-foreground transition-all backdrop-blur-sm border border-white/[0.06]"
+                      title="Effacer le prompt"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
                   )}
-                </button>
-                <input
-                  ref={describeInputRef}
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={handleDescribeImage}
-                />
+                </div>
                 <span className={`pointer-events-auto text-[10px] font-medium tabular-nums ${prompt.length > 1800 ? "text-red-400" : prompt.length > 1400 ? "text-amber-400" : "text-muted-foreground/50"}`}>
                   {prompt.length}/2000
                 </span>
