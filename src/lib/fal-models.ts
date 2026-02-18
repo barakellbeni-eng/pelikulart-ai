@@ -85,9 +85,9 @@ export const FAL_MODELS: FalModel[] = [
   // ════════════════════════════════════════
 
   {
-    id: "nano-banana-pro", type: "image", brand: "Nano", name: "Rapide",
+    id: "nano-banana-pro", type: "image", brand: "Nano Banana", name: "Pro",
     endpoint: "fal-ai/nano-banana-pro",
-    description: "Génération rapide et polyvalente", icon: "◆", color: "from-white/20 to-white/5",
+    description: "Rapide et polyvalent", icon: "◆", color: "from-white/20 to-white/5",
     maxImages: 4, supportsImageInput: true, caurisCost: 3,
     settings: [
       { key: "aspect_ratio", label: "Ratio", type: "select", options: [
@@ -101,14 +101,14 @@ export const FAL_MODELS: FalModel[] = [
     ],
   },
   {
-    id: "flux-dev", type: "image", brand: "Flux", name: "Précis",
+    id: "flux-dev", type: "image", brand: "FLUX", name: "[dev]",
     endpoint: "fal-ai/flux/dev",
     description: "Haute qualité, rendu détaillé", icon: "◇", color: "from-white/20 to-white/5",
     maxImages: 4, supportsImageInput: false, caurisCost: 5,
     settings: [IMAGE_SIZE_FLUX, INFERENCE_STEPS(), GUIDANCE_SCALE, SEED_SETTING],
   },
   {
-    id: "flux-schnell", type: "image", brand: "Flux", name: "Éclair",
+    id: "flux-schnell", type: "image", brand: "FLUX", name: "[schnell]",
     endpoint: "fal-ai/flux/schnell",
     description: "Ultra rapide, 4 étapes", icon: "▹", color: "from-white/20 to-white/5",
     maxImages: 4, supportsImageInput: false, caurisCost: 2,
@@ -118,7 +118,7 @@ export const FAL_MODELS: FalModel[] = [
     ],
   },
   {
-    id: "flux-pro-ultra", type: "image", brand: "Flux", name: "Ultra",
+    id: "flux-pro-ultra", type: "image", brand: "FLUX", name: "Pro v1.1 Ultra",
     endpoint: "fal-ai/flux-pro/v1.1-ultra",
     description: "Qualité maximale, résolution 2K", icon: "◈", color: "from-white/20 to-white/5",
     maxImages: 1, supportsImageInput: false, caurisCost: 12,
@@ -132,21 +132,21 @@ export const FAL_MODELS: FalModel[] = [
     ],
   },
   {
-    id: "flux-kontext", type: "image", brand: "Flux", name: "Éditeur",
+    id: "flux-kontext", type: "image", brand: "FLUX", name: "Kontext [pro]",
     endpoint: "fal-ai/flux-pro/kontext",
     description: "Édition contextuelle avec image", icon: "◫", color: "from-white/20 to-white/5",
     maxImages: 1, supportsImageInput: true, caurisCost: 8,
     settings: [INFERENCE_STEPS(), GUIDANCE_SCALE, SEED_SETTING],
   },
   {
-    id: "flux2-dev", type: "image", brand: "Flux", name: "Nouvelle Génération",
+    id: "flux2-dev", type: "image", brand: "FLUX", name: "2 [dev]",
     endpoint: "fal-ai/flux2/dev",
     description: "Dernière version, édition avancée", icon: "◆", color: "from-white/20 to-white/5",
     maxImages: 1, supportsImageInput: true, caurisCost: 5,
     settings: [IMAGE_SIZE_FLUX, INFERENCE_STEPS(), GUIDANCE_SCALE],
   },
   {
-    id: "imagen4", type: "image", brand: "Google", name: "Imagen",
+    id: "imagen4", type: "image", brand: "Google", name: "Imagen 4",
     endpoint: "fal-ai/imagen4/preview",
     description: "Images hyper-détaillées par Google", icon: "○", color: "from-white/20 to-white/5",
     maxImages: 4, supportsImageInput: false, caurisCost: 8,
@@ -158,7 +158,7 @@ export const FAL_MODELS: FalModel[] = [
     ],
   },
   {
-    id: "recraft-v3", type: "image", brand: "Recraft", name: "Artiste",
+    id: "recraft-v3", type: "image", brand: "Recraft", name: "V3",
     endpoint: "fal-ai/recraft/v3",
     description: "Styles variés, texte dans l'image", icon: "□", color: "from-white/20 to-white/5",
     maxImages: 2, supportsImageInput: false, caurisCost: 8,
@@ -174,7 +174,7 @@ export const FAL_MODELS: FalModel[] = [
     ],
   },
   {
-    id: "ideogram-v2", type: "image", brand: "Ideogram", name: "Typographe",
+    id: "ideogram-v2", type: "image", brand: "Ideogram", name: "V2",
     endpoint: "fal-ai/ideogram/v2",
     description: "Excellent pour le texte dans les images", icon: "▤", color: "from-white/20 to-white/5",
     maxImages: 1, supportsImageInput: false, caurisCost: 15,
@@ -191,7 +191,7 @@ export const FAL_MODELS: FalModel[] = [
     ],
   },
   {
-    id: "fast-sdxl", type: "image", brand: "Stable", name: "Express",
+    id: "fast-sdxl", type: "image", brand: "Stable Diffusion", name: "XL",
     endpoint: "fal-ai/fast-sdxl",
     description: "Rapide et très personnalisable", icon: "△", color: "from-white/20 to-white/5",
     maxImages: 4, supportsImageInput: false, caurisCost: 3,
@@ -203,7 +203,7 @@ export const FAL_MODELS: FalModel[] = [
     ],
   },
   {
-    id: "hidream-i1", type: "image", brand: "HiDream", name: "Créatif",
+    id: "hidream-i1", type: "image", brand: "HiDream", name: "I1 Full",
     endpoint: "fal-ai/hidream-i1-full",
     description: "Open-source haute qualité", icon: "▽", color: "from-white/20 to-white/5",
     maxImages: 1, supportsImageInput: false, caurisCost: 6,
@@ -219,7 +219,7 @@ export const FAL_MODELS: FalModel[] = [
   // ════════════════════════════════════════
 
   {
-    id: "veo3", type: "video", brand: "Google", name: "Cinéaste",
+    id: "veo3", type: "video", brand: "Google", name: "Veo 3",
     endpoint: "fal-ai/veo3",
     description: "Vidéo haute qualité avec audio", icon: "○", color: "from-white/20 to-white/5",
     maxImages: 1, supportsImageInput: false, caurisCost: 150, caurisCost10s: 300,
@@ -230,7 +230,7 @@ export const FAL_MODELS: FalModel[] = [
     ],
   },
   {
-    id: "kling-v3-std-t2v", type: "video", brand: "Kling", name: "Studio",
+    id: "kling-v3-std-t2v", type: "video", brand: "Kling", name: "v3 Standard",
     endpoint: "fal-ai/kling-video/v3/standard/text-to-video",
     description: "Dernière génération, cinématique", icon: "◇", color: "from-white/20 to-white/5",
     maxImages: 1, supportsImageInput: false, caurisCost: 40, caurisCost10s: 80,
@@ -240,7 +240,7 @@ export const FAL_MODELS: FalModel[] = [
     ],
   },
   {
-    id: "kling-v3-pro-t2v", type: "video", brand: "Kling", name: "Cinéma Pro",
+    id: "kling-v3-pro-t2v", type: "video", brand: "Kling", name: "v3 Pro",
     endpoint: "fal-ai/kling-video/o3/pro/text-to-video",
     description: "Qualité maximale, rendu cinéma", icon: "◈", color: "from-white/20 to-white/5",
     maxImages: 1, supportsImageInput: false, caurisCost: 200, caurisCost10s: 400,
@@ -250,42 +250,42 @@ export const FAL_MODELS: FalModel[] = [
     ],
   },
   {
-    id: "kling-v25-turbo-i2v", type: "video", brand: "Kling", name: "Animateur Turbo",
+    id: "kling-v25-turbo-i2v", type: "video", brand: "Kling", name: "v2.5 Turbo (I2V)",
     endpoint: "fal-ai/kling-video/v2.5-turbo/pro/image-to-video",
     description: "Anime vos images en vidéo fluide", icon: "▹", color: "from-white/20 to-white/5",
     maxImages: 1, supportsImageInput: true, caurisCost: 50, caurisCost10s: 100,
     settings: [DURATION_5_10],
   },
   {
-    id: "kling-v21-std-i2v", type: "video", brand: "Kling", name: "Animateur",
+    id: "kling-v21-std-i2v", type: "video", brand: "Kling", name: "v2.1 Standard (I2V)",
     endpoint: "fal-ai/kling-video/v2.1/standard/image-to-video",
     description: "Image vers vidéo, bon rapport qualité/prix", icon: "◫", color: "from-white/20 to-white/5",
     maxImages: 1, supportsImageInput: true, caurisCost: 35, caurisCost10s: 70,
     settings: [DURATION_5_10],
   },
   {
-    id: "kling-v2-master-t2v", type: "video", brand: "Kling", name: "Maître",
+    id: "kling-v2-master-t2v", type: "video", brand: "Kling", name: "v2 Master",
     endpoint: "fal-ai/kling-video/v2/master/text-to-video",
     description: "Texte vers vidéo haute qualité", icon: "◆", color: "from-white/20 to-white/5",
     maxImages: 1, supportsImageInput: false, caurisCost: 60, caurisCost10s: 120,
     settings: [DURATION_5_10, { ...ASPECT_RATIO_STANDARD }],
   },
   {
-    id: "kling-v16-std-t2v", type: "video", brand: "Kling", name: "Classique",
+    id: "kling-v16-std-t2v", type: "video", brand: "Kling", name: "v1.6 Standard",
     endpoint: "fal-ai/kling-video/v1.6/standard/text-to-video",
     description: "Vidéos réalistes, mouvements naturels", icon: "□", color: "from-white/20 to-white/5",
     maxImages: 1, supportsImageInput: false, caurisCost: 25, caurisCost10s: 50,
     settings: [DURATION_5_10, { ...ASPECT_RATIO_STANDARD }],
   },
   {
-    id: "kling-v16-elements", type: "video", brand: "Kling", name: "Multi-Images",
+    id: "kling-v16-elements", type: "video", brand: "Kling", name: "v1.6 Elements (Multi-I2V)",
     endpoint: "fal-ai/kling-video/v1.6/standard/elements",
     description: "Combine jusqu'à 4 images en vidéo", icon: "▤", color: "from-white/20 to-white/5",
     maxImages: 1, supportsImageInput: true, caurisCost: 35, caurisCost10s: 70,
     settings: [DURATION_5_10],
   },
   {
-    id: "seedance-pro-t2v", type: "video", brand: "Seedance", name: "Pro",
+    id: "seedance-pro-t2v", type: "video", brand: "Seedance", name: "v1 Pro",
     endpoint: "fal-ai/bytedance/seedance/v1/pro/text-to-video",
     description: "Haute qualité, multi-ratios", icon: "◇", color: "from-white/20 to-white/5",
     maxImages: 1, supportsImageInput: false, caurisCost: 70, caurisCost10s: 140,
@@ -298,14 +298,14 @@ export const FAL_MODELS: FalModel[] = [
     ],
   },
   {
-    id: "seedance-pro-i2v", type: "video", brand: "Seedance", name: "Pro Animateur",
+    id: "seedance-pro-i2v", type: "video", brand: "Seedance", name: "v1 Pro (I2V)",
     endpoint: "fal-ai/bytedance/seedance/v1/pro/image-to-video",
     description: "Image vers vidéo haute qualité", icon: "◫", color: "from-white/20 to-white/5",
     maxImages: 1, supportsImageInput: true, caurisCost: 70, caurisCost10s: 140,
     settings: [DURATION_5_10],
   },
   {
-    id: "seedance-pro-fast-t2v", type: "video", brand: "Seedance", name: "Rapide",
+    id: "seedance-pro-fast-t2v", type: "video", brand: "Seedance", name: "v1 Pro Fast",
     endpoint: "fal-ai/bytedance/seedance/v1/pro/fast/text-to-video",
     description: "Génération rapide et efficace", icon: "▹", color: "from-white/20 to-white/5",
     maxImages: 1, supportsImageInput: false, caurisCost: 45, caurisCost10s: 90,
@@ -318,14 +318,14 @@ export const FAL_MODELS: FalModel[] = [
     ],
   },
   {
-    id: "seedance-pro-fast-i2v", type: "video", brand: "Seedance", name: "Animateur Rapide",
+    id: "seedance-pro-fast-i2v", type: "video", brand: "Seedance", name: "v1 Pro Fast (I2V)",
     endpoint: "fal-ai/bytedance/seedance/v1/pro/fast/image-to-video",
     description: "Anime vos images rapidement", icon: "△", color: "from-white/20 to-white/5",
     maxImages: 1, supportsImageInput: true, caurisCost: 45, caurisCost10s: 90,
     settings: [DURATION_5_10],
   },
   {
-    id: "seedance-15-pro-i2v", type: "video", brand: "Seedance", name: "Animateur Sonore",
+    id: "seedance-15-pro-i2v", type: "video", brand: "Seedance", name: "v1.5 Pro (I2V + Audio)",
     endpoint: "fal-ai/bytedance/seedance/v1.5/pro/image-to-video",
     description: "Image vers vidéo avec audio", icon: "◈", color: "from-white/20 to-white/5",
     maxImages: 1, supportsImageInput: true, caurisCost: 70, caurisCost10s: 140,
@@ -335,35 +335,35 @@ export const FAL_MODELS: FalModel[] = [
     ],
   },
   {
-    id: "seedance-lite-i2v", type: "video", brand: "Seedance", name: "Léger",
+    id: "seedance-lite-i2v", type: "video", brand: "Seedance", name: "v1 Lite (I2V)",
     endpoint: "fal-ai/bytedance/seedance/v1/lite/image-to-video",
     description: "Animation légère et économique", icon: "▽", color: "from-white/20 to-white/5",
     maxImages: 1, supportsImageInput: true, caurisCost: 30, caurisCost10s: 60,
     settings: [DURATION_5_10],
   },
   {
-    id: "seedance-lite-ref", type: "video", brand: "Seedance", name: "Multi-Référence",
+    id: "seedance-lite-ref", type: "video", brand: "Seedance", name: "v1 Lite Reference (R2V)",
     endpoint: "fal-ai/bytedance/seedance/v1/lite/reference-to-video",
     description: "1-4 images de référence vers vidéo", icon: "▤", color: "from-white/20 to-white/5",
     maxImages: 1, supportsImageInput: true, caurisCost: 30, caurisCost10s: 60,
     settings: [DURATION_5_10],
   },
   {
-    id: "luma-ray2-t2v", type: "video", brand: "Luma", name: "Réaliste",
+    id: "luma-ray2-t2v", type: "video", brand: "Luma", name: "Ray 2",
     endpoint: "fal-ai/luma-dream-machine/ray-2",
     description: "Visuels réalistes, mouvement cohérent", icon: "○", color: "from-white/20 to-white/5",
     maxImages: 1, supportsImageInput: false, caurisCost: 60,
     settings: [{ ...ASPECT_RATIO_STANDARD }],
   },
   {
-    id: "luma-ray2-i2v", type: "video", brand: "Luma", name: "Animateur Réaliste",
+    id: "luma-ray2-i2v", type: "video", brand: "Luma", name: "Ray 2 (I2V)",
     endpoint: "fal-ai/luma-dream-machine/ray-2/image-to-video",
     description: "Anime vos images avec réalisme", icon: "◫", color: "from-white/20 to-white/5",
     maxImages: 1, supportsImageInput: true, caurisCost: 60,
     settings: [{ ...ASPECT_RATIO_STANDARD }],
   },
   {
-    id: "wan-26-t2v", type: "video", brand: "Wan", name: "Long Format",
+    id: "wan-26-t2v", type: "video", brand: "Wan", name: "v2.6",
     endpoint: "wan/v2.6/text-to-video",
     description: "Jusqu'à 15s en 1080p", icon: "◆", color: "from-white/20 to-white/5",
     maxImages: 1, supportsImageInput: false, caurisCost: 45, caurisCost10s: 90, caurisCost15s: 135,
@@ -376,7 +376,7 @@ export const FAL_MODELS: FalModel[] = [
     ],
   },
   {
-    id: "wan-26-i2v", type: "video", brand: "Wan", name: "Animateur Long",
+    id: "wan-26-i2v", type: "video", brand: "Wan", name: "v2.6 (I2V)",
     endpoint: "wan/v2.6/image-to-video",
     description: "Image vers vidéo jusqu'à 15s", icon: "◫", color: "from-white/20 to-white/5",
     maxImages: 1, supportsImageInput: true, caurisCost: 45, caurisCost10s: 90, caurisCost15s: 135,
@@ -388,7 +388,7 @@ export const FAL_MODELS: FalModel[] = [
     ],
   },
   {
-    id: "minimax-video", type: "video", brand: "MiniMax", name: "Expressif",
+    id: "minimax-video", type: "video", brand: "MiniMax", name: "Video-01 Live",
     endpoint: "fal-ai/minimax/video-01-live",
     description: "Vidéo fluide et expressive", icon: "◇", color: "from-white/20 to-white/5",
     maxImages: 1, supportsImageInput: false, caurisCost: 60,
@@ -397,7 +397,7 @@ export const FAL_MODELS: FalModel[] = [
     ],
   },
   {
-    id: "framepack-f1", type: "video", brand: "Framepack", name: "Animateur Réel",
+    id: "framepack-f1", type: "video", brand: "Framepack", name: "F1",
     endpoint: "fal-ai/framepack/f1",
     description: "Animation réaliste d'images", icon: "□", color: "from-white/20 to-white/5",
     maxImages: 1, supportsImageInput: true, caurisCost: 15,
@@ -409,7 +409,7 @@ export const FAL_MODELS: FalModel[] = [
   // ════════════════════════════════════════
 
   {
-    id: "stable-audio", type: "audio", brand: "Stability", name: "Compositeur",
+    id: "stable-audio", type: "audio", brand: "Stability", name: "Stable Audio",
     endpoint: "fal-ai/stable-audio",
     description: "Musique et bruitages jusqu'à 47s", icon: "◆", color: "from-white/20 to-white/5",
     maxImages: 1, supportsImageInput: false, caurisCost: 5,
@@ -422,7 +422,7 @@ export const FAL_MODELS: FalModel[] = [
     ],
   },
   {
-    id: "ace-step", type: "audio", brand: "Ace", name: "Chanteur",
+    id: "ace-step", type: "audio", brand: "Ace", name: "Ace Step",
     endpoint: "fal-ai/ace-step",
     description: "Génère des chansons avec paroles", icon: "◇", color: "from-white/20 to-white/5",
     maxImages: 1, supportsImageInput: false, caurisCost: 12,
@@ -432,14 +432,14 @@ export const FAL_MODELS: FalModel[] = [
     ],
   },
   {
-    id: "dia-tts", type: "audio", brand: "Nari", name: "Narrateur",
+    id: "dia-tts", type: "audio", brand: "Nari", name: "Dia TTS",
     endpoint: "fal-ai/dia-tts",
     description: "Voix multi-locuteurs naturelle", icon: "○", color: "from-white/20 to-white/5",
     maxImages: 1, supportsImageInput: false, caurisCost: 3,
     settings: [],
   },
   {
-    id: "kokoro-tts", type: "audio", brand: "Kokoro", name: "Voix Express",
+    id: "kokoro-tts", type: "audio", brand: "Kokoro", name: "TTS",
     endpoint: "fal-ai/kokoro/american-english",
     description: "Voix rapide et naturelle", icon: "▹", color: "from-white/20 to-white/5",
     maxImages: 1, supportsImageInput: false, caurisCost: 2,
@@ -451,7 +451,7 @@ export const FAL_MODELS: FalModel[] = [
     ],
   },
   {
-    id: "mmaudio", type: "audio", brand: "MMAudio", name: "Synchroniseur",
+    id: "mmaudio", type: "audio", brand: "MMAudio", name: "V2",
     endpoint: "fal-ai/mmaudio/v2",
     description: "Audio synchronisé à une vidéo", icon: "◫", color: "from-white/20 to-white/5",
     maxImages: 1, supportsImageInput: true, caurisCost: 8,
