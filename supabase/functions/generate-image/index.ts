@@ -7,72 +7,26 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-// Model endpoint mapping
+// Model endpoint mapping — use fal.run (synchronous) instead of queue.fal.run
 const MODEL_ENDPOINTS: Record<string, string> = {
-  "nano-banana-pro": "https://queue.fal.run/fal-ai/nano-banana-pro",
-  "flux-dev": "https://queue.fal.run/fal-ai/flux/dev",
-  "flux-schnell": "https://queue.fal.run/fal-ai/flux/schnell",
-  "flux-pro-ultra": "https://queue.fal.run/fal-ai/flux-pro/v1.1-ultra",
-  "flux-kontext": "https://queue.fal.run/fal-ai/flux-pro/kontext",
-  "recraft-v3": "https://queue.fal.run/fal-ai/recraft/v3",
-  "ideogram-v2": "https://queue.fal.run/fal-ai/ideogram/v2",
-  "imagen4": "https://queue.fal.run/fal-ai/imagen4/preview",
-  "fast-sdxl": "https://queue.fal.run/fal-ai/fast-sdxl",
-  "hidream-i1": "https://queue.fal.run/fal-ai/hidream-i1-full",
-  "flux2-dev": "https://queue.fal.run/fal-ai/flux2/dev",
-  "seedream-v4-t2i": "https://queue.fal.run/fal-ai/bytedance/seedream/v4/text-to-image",
-  "seedream-v4-edit": "https://queue.fal.run/fal-ai/bytedance/seedream/v4/edit",
-  "seedream-v45-t2i": "https://queue.fal.run/fal-ai/bytedance/seedream/v4.5/text-to-image",
-  "seedream-v45-edit": "https://queue.fal.run/fal-ai/bytedance/seedream/v4.5/edit",
+  "nano-banana-pro": "https://fal.run/fal-ai/nano-banana-pro",
+  "flux-dev": "https://fal.run/fal-ai/flux/dev",
+  "flux-schnell": "https://fal.run/fal-ai/flux/schnell",
+  "flux-pro-ultra": "https://fal.run/fal-ai/flux-pro/v1.1-ultra",
+  "flux-kontext": "https://fal.run/fal-ai/flux-pro/kontext",
+  "recraft-v3": "https://fal.run/fal-ai/recraft/v3",
+  "ideogram-v2": "https://fal.run/fal-ai/ideogram/v2",
+  "imagen4": "https://fal.run/fal-ai/imagen4/preview",
+  "fast-sdxl": "https://fal.run/fal-ai/fast-sdxl",
+  "hidream-i1": "https://fal.run/fal-ai/hidream-i1-full",
+  "flux2-dev": "https://fal.run/fal-ai/flux2/dev",
+  "seedream-v4-t2i": "https://fal.run/fal-ai/bytedance/seedream/v4/text-to-image",
+  "seedream-v4-edit": "https://fal.run/fal-ai/bytedance/seedream/v4/edit",
+  "seedream-v45-t2i": "https://fal.run/fal-ai/bytedance/seedream/v4.5/text-to-image",
+  "seedream-v45-edit": "https://fal.run/fal-ai/bytedance/seedream/v4.5/edit",
 };
 
-async function pollForResult(endpoint: string, requestId: string, apiKey: string): Promise<any> {
-  let consecutiveErrors = 0;
-  for (let i = 0; i < 90; i++) {
-    await new Promise((r) => setTimeout(r, 2000));
-    const statusResp = await fetch(`${endpoint}/requests/${requestId}/status`, {
-      headers: { Authorization: `Key ${apiKey}` },
-    });
-
-    // Fail fast on HTTP errors (405, 404, etc.)
-    if (!statusResp.ok && statusResp.status !== 200) {
-      const errText = await statusResp.text();
-      console.error(`Poll HTTP error ${statusResp.status}:`, errText.slice(0, 200));
-      consecutiveErrors++;
-      if (consecutiveErrors >= 3) {
-        throw new Error(`Polling failed: HTTP ${statusResp.status} after ${consecutiveErrors} retries`);
-      }
-      continue;
-    }
-    consecutiveErrors = 0;
-
-    const statusText = await statusResp.text();
-    let statusData: any;
-    try {
-      statusData = JSON.parse(statusText);
-    } catch {
-      console.error("Non-JSON status response:", statusText.slice(0, 200));
-      continue;
-    }
-    console.log("Poll attempt", i + 1, "status:", statusData.status);
-    if (statusData.status === "COMPLETED") {
-      const resultResp = await fetch(`${endpoint}/requests/${requestId}`, {
-        headers: { Authorization: `Key ${apiKey}` },
-      });
-      const resultText = await resultResp.text();
-      try {
-        return JSON.parse(resultText);
-      } catch {
-        console.error("Non-JSON result response:", resultText.slice(0, 200));
-        throw new Error("Invalid response from Fal AI");
-      }
-    }
-    if (statusData.status === "FAILED") {
-      throw new Error("Image generation failed on Fal AI");
-    }
-  }
-  throw new Error("Generation timed out");
-}
+// No polling needed — fal.run returns results synchronously
 
 async function downloadAndUpload(
   supabase: any,
@@ -205,12 +159,8 @@ serve(async (req) => {
     }
 
     const submitData = await submitResp.json();
-    let falImages = submitData.images;
-
-    if (!falImages?.length && submitData.request_id) {
-      const result = await pollForResult(endpoint, submitData.request_id, FAL_API_KEY);
-      falImages = result.images;
-    }
+    console.log("Fal response keys:", Object.keys(submitData));
+    const falImages = submitData.images || submitData.output?.images;
 
     if (!falImages?.length) {
       return new Response(
