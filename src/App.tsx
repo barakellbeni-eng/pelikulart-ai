@@ -40,8 +40,8 @@ const AuthenticatedLayout = ({ children }: { children: React.ReactNode }) => {
           <header className="sticky top-0 z-50 glass border-b border-sidebar-border px-4 py-2 flex items-center gap-3">
             <SidebarTrigger />
             <h1 className="text-sm font-bold tracking-tight">
-              <span className="text-gradient-primary">AFRIKA</span>{" "}
-              <span className="text-foreground">DRIVE</span>
+              <span className="text-gradient-primary">cauris</span>
+              <span className="text-foreground">.ai</span>
             </h1>
           </header>
           <div className="flex-1">{children}</div>
