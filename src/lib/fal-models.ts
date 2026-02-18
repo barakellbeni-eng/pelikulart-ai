@@ -89,13 +89,16 @@ export const FAL_MODELS: FalModel[] = [
     id: "nano-banana-pro", type: "image", brand: "Nano Banana", name: "Pro",
     endpoint: "fal-ai/nano-banana-pro",
     description: "Rapide et polyvalent", icon: "◆", color: "from-white/20 to-white/5",
-    maxImages: 4, supportsImageInput: true, caurisCost: 3, estimatedTime: "~3s",
+    maxImages: 4, supportsImageInput: false, caurisCost: 3, estimatedTime: "~3s",
     settings: [
       { key: "aspect_ratio", label: "Ratio", type: "select", options: [
-        { value: "1:1", label: "1:1 — Carré / Instagram" }, { value: "4:5", label: "4:5 — Portrait social" }, { value: "5:4", label: "5:4 — Paysage doux" },
+        { value: "auto", label: "Auto" }, { value: "1:1", label: "1:1 — Carré / Instagram" },
+        { value: "4:5", label: "4:5 — Portrait social" }, { value: "5:4", label: "5:4 — Paysage doux" },
         { value: "4:3", label: "4:3 — Photo classique" }, { value: "3:4", label: "3:4 — Portrait" },
+        { value: "3:2", label: "3:2 — Paysage photo" }, { value: "2:3", label: "2:3 — Portrait long" },
         { value: "16:9", label: "16:9 — Cinématique" }, { value: "9:16", label: "9:16 — Vertical / Réels" },
-      ], defaultValue: "4:5" },
+        { value: "21:9", label: "21:9 — Ultra-wide" },
+      ], defaultValue: "1:1" },
       { key: "resolution", label: "Résolution", type: "select", options: [
         { value: "1K", label: "1K" }, { value: "2K", label: "2K" }, { value: "4K", label: "4K" },
       ], defaultValue: "2K" },
