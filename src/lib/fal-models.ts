@@ -152,7 +152,7 @@ export const FAL_MODELS: FalModel[] = [
   },
   {
     id: "flux2-dev-edit", type: "image", brand: "FLUX", name: "2 [dev] Edit",
-    endpoint: "fal-ai/flux-2/dev/edit",
+    endpoint: "fal-ai/flux-2/edit",
     description: "Édition d'image avec FLUX 2", icon: "◫", color: "from-white/20 to-white/5",
     maxImages: 1, supportsImageInput: true, caurisCost: 6, estimatedTime: "~12s",
     settings: [
