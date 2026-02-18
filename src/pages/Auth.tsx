@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { Zap, Mail, Lock, User, ArrowRight, Loader2 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { lovable } from "@/integrations/lovable/index";
+import { supabase } from "@/integrations/supabase/client";
 
 const Auth = () => {
   const { user, loading, signIn, signUp } = useAuth();
@@ -14,6 +15,11 @@ const Auth = () => {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [showForgot, setShowForgot] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState("");
+  const [forgotError, setForgotError] = useState("");
+  const [forgotSuccess, setForgotSuccess] = useState("");
+  const [forgotSubmitting, setForgotSubmitting] = useState(false);
 
   if (loading) {
     return (
@@ -84,6 +90,49 @@ const Auth = () => {
             </button>
           </div>
 
+          {isLogin && showForgot ? (
+            <div className="space-y-4">
+              <p className="text-sm text-muted-foreground">Entrez votre email pour recevoir un lien de réinitialisation.</p>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <input
+                  type="email"
+                  placeholder="Email"
+                  required
+                  value={forgotEmail}
+                  onChange={(e) => setForgotEmail(e.target.value)}
+                  className="w-full bg-white/[0.05] border border-white/[0.08] rounded-xl pl-10 pr-4 py-3 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:border-primary/50 transition-colors"
+                />
+              </div>
+              {forgotSuccess && (
+                <p className="text-sm text-green-400 bg-green-400/10 rounded-xl px-4 py-2">{forgotSuccess}</p>
+              )}
+              {forgotError && (
+                <p className="text-sm text-destructive bg-destructive/10 rounded-xl px-4 py-2">{forgotError}</p>
+              )}
+              <button
+                type="button"
+                disabled={forgotSubmitting}
+                onClick={async () => {
+                  setForgotError("");
+                  setForgotSuccess("");
+                  setForgotSubmitting(true);
+                  const { error } = await supabase.auth.resetPasswordForEmail(forgotEmail, {
+                    redirectTo: `${window.location.origin}/reset-password`,
+                  });
+                  if (error) setForgotError(error.message);
+                  else setForgotSuccess("Un email de réinitialisation a été envoyé !");
+                  setForgotSubmitting(false);
+                }}
+                className="btn-generate w-full flex items-center justify-center gap-2 !animate-none disabled:opacity-50"
+              >
+                {forgotSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : <>Envoyer le lien <ArrowRight className="w-4 h-4" /></>}
+              </button>
+              <button type="button" onClick={() => setShowForgot(false)} className="text-sm text-primary hover:underline w-full text-center">
+                Retour à la connexion
+              </button>
+            </div>
+          ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
             {!isLogin && (
               <div className="relative">
@@ -144,7 +193,14 @@ const Auth = () => {
                 </>
               )}
             </button>
+
+            {isLogin && (
+              <button type="button" onClick={() => setShowForgot(true)} className="text-sm text-primary hover:underline w-full text-center">
+                Mot de passe oublié ?
+              </button>
+            )}
           </form>
+          )}
 
           {/* Divider */}
           <div className="flex items-center gap-3 my-5">

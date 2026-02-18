@@ -16,6 +16,7 @@ import Dashboard from "./pages/Dashboard";
 
 import Pricing from "./pages/Pricing";
 import Profile from "./pages/Profile";
+import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
 import { Loader2, PanelLeft } from "lucide-react";
 
@@ -106,6 +107,7 @@ const AppContent = () => {
             </ProtectedRoute>
           }
         />
+        <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </div>
