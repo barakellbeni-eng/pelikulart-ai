@@ -19,7 +19,7 @@ const MODEL_ENDPOINTS: Record<string, string> = {
   "imagen4": "https://fal.run/fal-ai/imagen4/preview",
   "fast-sdxl": "https://fal.run/fal-ai/fast-sdxl",
   "hidream-i1": "https://fal.run/fal-ai/hidream-i1-full",
-  "flux2-dev": "https://fal.run/fal-ai/flux2/dev",
+  "flux2-dev": "https://fal.run/fal-ai/flux-2/dev",
   "seedream-v4-t2i": "https://fal.run/fal-ai/bytedance/seedream/v4/text-to-image",
   "seedream-v4-edit": "https://fal.run/fal-ai/bytedance/seedream/v4/edit",
   "seedream-v45-t2i": "https://fal.run/fal-ai/bytedance/seedream/v4.5/text-to-image",
