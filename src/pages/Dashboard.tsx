@@ -666,10 +666,10 @@ const Dashboard = () => {
               <AnimatePresence>
                 {showModelDropdown && (
                   <motion.div
-                    initial={{ opacity: 0, y: -4 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -4 }}
-                    className="absolute left-0 right-0 top-full mt-1 bg-card border border-white/[0.08] rounded-xl p-1 z-50 max-h-[400px] overflow-y-auto shadow-xl"
+                    initial={{ opacity: 0, x: -8 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -8 }}
+                    className="fixed left-[288px] top-[120px] w-72 bg-card border border-white/[0.08] rounded-xl p-1 z-[100] max-h-[70vh] overflow-y-auto shadow-2xl"
                   >
                     {getModelsByTypeGrouped(activeTab === "video" ? "video" : activeTab === "audio" ? "audio" : "image").map((group) => (
                       <div key={group.brand}>
@@ -691,7 +691,7 @@ const Dashboard = () => {
                             </span>
                             <div className="flex-1 min-w-0">
                               <span className="text-xs font-medium text-foreground block truncate">
-                                {model.name}
+                                {model.brand} {model.name}
                               </span>
                             </div>
                             <span className="text-[10px] text-muted-foreground font-medium shrink-0">
