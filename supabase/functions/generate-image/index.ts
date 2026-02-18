@@ -109,6 +109,7 @@ serve(async (req) => {
       output_format = "png",
       num_images = 1,
       image_url,
+      image_urls,
       // All other settings are model-specific and passed through
       ...modelSettings
     } = body;
@@ -147,7 +148,14 @@ serve(async (req) => {
     }
 
     // Handle image input: some models use image_url, others use image_urls (array)
-    if (image_url) {
+    if (image_urls && Array.isArray(image_urls) && image_urls.length > 0) {
+      // Client already sent an array — use it for multi-image models
+      if (MODELS_USING_IMAGE_URLS.has(model_id)) {
+        payload.image_urls = image_urls;
+      } else {
+        payload.image_url = image_urls[0];
+      }
+    } else if (image_url) {
       if (MODELS_USING_IMAGE_URLS.has(model_id)) {
         payload.image_urls = [image_url];
       } else {
