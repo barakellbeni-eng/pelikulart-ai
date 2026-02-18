@@ -38,34 +38,60 @@ const MODEL_ENDPOINTS: Record<string, string> = {
 };
 
 async function pollForResult(endpoint: string, requestId: string, apiKey: string): Promise<any> {
+  let consecutiveErrors = 0;
   for (let i = 0; i < 120; i++) {
     await new Promise((r) => setTimeout(r, 3000));
-    const statusResp = await fetch(`${endpoint}/requests/${requestId}/status`, {
-      headers: { Authorization: `Key ${apiKey}` },
-    });
-    const statusText = await statusResp.text();
-    let statusData: any;
     try {
-      statusData = JSON.parse(statusText);
-    } catch {
-      console.error("Non-JSON status response:", statusText.slice(0, 200));
-      continue;
-    }
-    console.log("Poll attempt", i + 1, "status:", statusData.status);
-    if (statusData.status === "COMPLETED") {
-      const resultResp = await fetch(`${endpoint}/requests/${requestId}`, {
-        headers: { Authorization: `Key ${apiKey}` },
+      const statusResp = await fetch(`${endpoint}/requests/${requestId}/status`, {
+        method: "GET",
+        headers: { Authorization: `Key ${apiKey}`, Accept: "application/json" },
       });
-      const resultText = await resultResp.text();
-      try {
-        return JSON.parse(resultText);
-      } catch {
-        console.error("Non-JSON result response:", resultText.slice(0, 200));
-        throw new Error("Invalid response from Fal AI");
+
+      // Handle non-OK responses gracefully
+      if (!statusResp.ok) {
+        const errText = await statusResp.text();
+        console.warn(`Poll attempt ${i + 1}: HTTP ${statusResp.status} - ${errText.slice(0, 100)}`);
+        consecutiveErrors++;
+        if (consecutiveErrors > 30) {
+          throw new Error(`Polling failed after ${consecutiveErrors} consecutive errors (last: HTTP ${statusResp.status})`);
+        }
+        continue;
       }
-    }
-    if (statusData.status === "FAILED") {
-      throw new Error("Video generation failed on Fal AI");
+
+      consecutiveErrors = 0;
+      const statusText = await statusResp.text();
+      let statusData: any;
+      try {
+        statusData = JSON.parse(statusText);
+      } catch {
+        console.error("Non-JSON status response:", statusText.slice(0, 200));
+        continue;
+      }
+      console.log("Poll attempt", i + 1, "status:", statusData.status);
+      if (statusData.status === "COMPLETED") {
+        const resultResp = await fetch(`${endpoint}/requests/${requestId}`, {
+          headers: { Authorization: `Key ${apiKey}` },
+        });
+        const resultText = await resultResp.text();
+        try {
+          return JSON.parse(resultText);
+        } catch {
+          console.error("Non-JSON result response:", resultText.slice(0, 200));
+          throw new Error("Invalid response from Fal AI");
+        }
+      }
+      if (statusData.status === "FAILED") {
+        throw new Error("Video generation failed on Fal AI");
+      }
+    } catch (fetchErr) {
+      // Handle transient network errors (HTTP/2, connection reset, etc.)
+      consecutiveErrors++;
+      console.warn(`Poll attempt ${i + 1}: network error - ${fetchErr instanceof Error ? fetchErr.message : fetchErr}`);
+      if (consecutiveErrors > 10) {
+        throw new Error(`Polling aborted after ${consecutiveErrors} consecutive network errors`);
+      }
+      // Wait a bit longer before retrying on network errors
+      await new Promise((r) => setTimeout(r, 2000));
     }
   }
   throw new Error("Generation timed out");
