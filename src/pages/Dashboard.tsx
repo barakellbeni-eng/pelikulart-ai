@@ -869,7 +869,7 @@ const Dashboard = () => {
                     animate={{ opacity: 1, scale: 1 }}
                     className="rounded-xl bg-white/[0.04] border border-white/[0.06] flex flex-col items-center justify-center p-6 space-y-3"
                   >
-                    <HourglassLoader size={40} />
+                    <HourglassLoader size={28} />
                   </motion.div>
                 )}
                 {galleryAudios.map((aud, i) => {
@@ -924,7 +924,7 @@ const Dashboard = () => {
                     animate={{ opacity: 1, scale: 1 }}
                     className="aspect-video rounded-xl bg-white/[0.04] border border-white/[0.06] flex flex-col items-center justify-center p-4 space-y-3"
                   >
-                    <HourglassLoader size={40} />
+                    <HourglassLoader size={28} />
                   </motion.div>
                 )}
                 {galleryVideos.map((vid, i) => (
@@ -974,7 +974,7 @@ const Dashboard = () => {
                       animate={{ opacity: 1, scale: 1 }}
                       className="aspect-square rounded-xl bg-white/[0.04] border border-white/[0.06] flex flex-col items-center justify-center p-4 space-y-3"
                     >
-                      <HourglassLoader size={36} />
+                      <HourglassLoader size={24} />
                     </motion.div>
                   ))}
                 {galleryImages.map((img, i) => (
