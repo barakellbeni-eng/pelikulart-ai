@@ -152,8 +152,17 @@ serve(async (req) => {
     if (!submitResp.ok) {
       const errText = await submitResp.text();
       console.error("Fal submit error:", submitResp.status, errText);
+
+      // Friendly message for temporary overload
+      if (submitResp.status === 500 && errText.includes("temporarily overloaded")) {
+        return new Response(
+          JSON.stringify({ error: "Le service IA est temporairement surchargé. Réessayez dans quelques secondes." }),
+          { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
       return new Response(
-        JSON.stringify({ error: `Fal AI error (${submitResp.status}): ${errText}` }),
+        JSON.stringify({ error: `Erreur du service IA (${submitResp.status}). Réessayez.` }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
