@@ -10,6 +10,7 @@ const corsHeaders = {
 // Model endpoint mapping — use fal.run (synchronous) instead of queue.fal.run
 const MODEL_ENDPOINTS: Record<string, string> = {
   "nano-banana-pro": "https://fal.run/fal-ai/nano-banana-pro",
+  "nano-banana-pro-edit": "https://fal.run/fal-ai/nano-banana-pro/edit",
   "flux-dev": "https://fal.run/fal-ai/flux/dev",
   "flux-schnell": "https://fal.run/fal-ai/flux/schnell",
   "flux-pro-ultra": "https://fal.run/fal-ai/flux-pro/v1.1-ultra",
@@ -32,7 +33,7 @@ const MODEL_ENDPOINTS: Record<string, string> = {
 
 // Models that use image_urls (array) instead of image_url (singular)
 const MODELS_USING_IMAGE_URLS = new Set([
-  "seedream-v4-edit", "seedream-v45-edit", "flux2-dev-edit",
+  "seedream-v4-edit", "seedream-v45-edit", "flux2-dev-edit", "nano-banana-pro-edit",
 ]);
 
 // No polling needed — fal.run returns results synchronously

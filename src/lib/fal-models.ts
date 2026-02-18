@@ -149,6 +149,18 @@ export const FAL_MODELS: FalModel[] = [
     ],
   },
   {
+    id: "nano-banana-pro-edit", type: "image", brand: "Google", name: "Nano Banana Pro Edit",
+    endpoint: "fal-ai/nano-banana-pro/edit",
+    description: "Édition d'image avec Gemini 3 Pro", icon: "◫", color: "from-white/20 to-white/5",
+    maxImages: 4, supportsImageInput: true, caurisCost: 4, estimatedTime: "~4s",
+    settings: [
+      ASPECT_RATIO_NANO_BANANA,
+      { key: "resolution", label: "Résolution", type: "select", options: [
+        { value: "1K", label: "1K" }, { value: "2K", label: "2K" }, { value: "4K", label: "4K" },
+      ], defaultValue: "2K" },
+    ],
+  },
+  {
     id: "flux-dev", type: "image", brand: "FLUX", name: "[dev]",
     endpoint: "fal-ai/flux/dev",
     description: "Haute qualité, rendu détaillé", icon: "◇", color: "from-white/20 to-white/5",
