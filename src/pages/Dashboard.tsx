@@ -496,15 +496,24 @@ const Dashboard = () => {
       const isRatioOrSize = setting.key === "aspect_ratio" || setting.key === "image_size";
       const selectedOpt = setting.options?.find((o) => o.value === value);
 
-      if (isRatioOrSize && setting.options && setting.options.length > 4) {
+      if (isRatioOrSize && setting.options) {
         // Helper to render a proportional frame icon for a ratio
         const RatioFrame = ({ ratio, className = "" }: { ratio: string; className?: string }) => {
           const dims: Record<string, { w: number; h: number }> = {
+            // Standard aspect ratios
             "16:9": { w: 20, h: 11 }, "9:16": { w: 11, h: 20 },
             "1:1": { w: 16, h: 16 }, "4:3": { w: 18, h: 14 },
             "3:4": { w: 14, h: 18 }, "4:5": { w: 14, h: 18 },
-            "3:2": { w: 18, h: 12 }, "2:3": { w: 12, h: 18 },
-            "21:9": { w: 22, h: 9 },
+            "5:4": { w: 18, h: 14 }, "3:2": { w: 18, h: 12 },
+            "2:3": { w: 12, h: 18 }, "21:9": { w: 22, h: 9 },
+            // image_size text values (Flux-style)
+            "square_hd": { w: 16, h: 16 }, "square": { w: 16, h: 16 },
+            "portrait_4_3": { w: 14, h: 18 }, "portrait_16_9": { w: 11, h: 20 },
+            "landscape_4_3": { w: 18, h: 14 }, "landscape_16_9": { w: 20, h: 11 },
+            // Pixel dimensions
+            "1024x1024": { w: 16, h: 16 }, "1365x1024": { w: 20, h: 15 },
+            "1024x1365": { w: 15, h: 20 }, "1536x1024": { w: 20, h: 13 },
+            "1024x1536": { w: 13, h: 20 },
           };
           const d = dims[ratio] || { w: 16, h: 16 };
           return (
@@ -524,7 +533,6 @@ const Dashboard = () => {
             </label>
             <div className="grid grid-cols-1 gap-1">
               {setting.options.map((opt) => {
-                const ratioValue = opt.value.match(/\d+:\d+/) ? opt.value : "";
                 const isSelected = opt.value === value;
                 return (
                   <button
@@ -536,7 +544,7 @@ const Dashboard = () => {
                         : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
                     }`}
                   >
-                    {ratioValue && <RatioFrame ratio={ratioValue} className={isSelected ? "text-primary" : "text-muted-foreground"} />}
+                    <RatioFrame ratio={opt.value} className={isSelected ? "text-primary" : "text-muted-foreground"} />
                     <span className="truncate">{opt.label}</span>
                     {isSelected && <Check className="w-3 h-3 ml-auto text-primary shrink-0" />}
                   </button>
