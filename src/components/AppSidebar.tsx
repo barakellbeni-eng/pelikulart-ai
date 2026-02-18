@@ -1,15 +1,6 @@
 import { useLocation } from "react-router-dom";
 import { NavLink } from "react-router-dom";
-import {
-  Wand2,
-  Users,
-  CreditCard,
-  UserCircle,
-  Image,
-  Video,
-  Sparkles,
-  Zap,
-} from "lucide-react";
+import { Wand2, Users, CreditCard, UserCircle, Image, Video, Sparkles } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -33,11 +24,10 @@ const mainNav = [
 ];
 
 const creationTools = [
-  { title: "Générer Image", url: "/studio/create?mode=image", icon: Image },
-  { title: "Générer Vidéo", url: "/studio/create?mode=video", icon: Video },
+  { title: "Image IA", url: "/studio/create?mode=image", icon: Image },
+  { title: "Vidéo IA", url: "/studio/create?mode=video", icon: Video },
   { title: "Cauris Boost", url: "/studio/create?boost=true", icon: Sparkles },
 ];
-
 
 const AppSidebar = () => {
   const location = useLocation();
@@ -50,37 +40,26 @@ const AppSidebar = () => {
 
   return (
     <Sidebar className="border-r border-sidebar-border">
-      {/* Logo Header */}
-      <SidebarHeader className="px-4 py-5">
-        <NavLink to="/studio" className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-destructive flex items-center justify-center">
-            <Zap className="w-4 h-4 text-primary-foreground" />
-          </div>
-          <div>
-            <span className="text-sm font-bold tracking-tight text-gradient-primary">cauris</span>
-            <span className="text-sm font-bold tracking-tight text-sidebar-foreground">.ai</span>
-          </div>
+      <SidebarHeader className="px-5 py-5">
+        <NavLink to="/studio" className="font-display text-lg tracking-tight">
+          <span className="text-gradient-primary">cauris</span>
+          <span className="text-sidebar-foreground">.ai</span>
         </NavLink>
       </SidebarHeader>
 
       <SidebarSeparator />
 
       <SidebarContent>
-        {/* Navigation principale */}
         <SidebarGroup>
-          <SidebarGroupLabel className="text-[10px] uppercase tracking-widest text-sidebar-foreground/50">
+          <SidebarGroupLabel className="text-[10px] tracking-[0.2em] uppercase text-sidebar-foreground/40 font-body">
             Navigation
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {mainNav.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton
-                    asChild
-                    isActive={isActive(item.url)}
-                    tooltip={item.title}
-                  >
-                    <NavLink to={item.url}>
+                  <SidebarMenuButton asChild isActive={isActive(item.url)} tooltip={item.title}>
+                    <NavLink to={item.url} className="font-body">
                       <item.icon className="w-4 h-4" />
                       <span>{item.title}</span>
                     </NavLink>
@@ -93,20 +72,16 @@ const AppSidebar = () => {
 
         <SidebarSeparator />
 
-        {/* Outils de création */}
         <SidebarGroup>
-          <SidebarGroupLabel className="text-[10px] uppercase tracking-widest text-sidebar-foreground/50">
-            Création IA
+          <SidebarGroupLabel className="text-[10px] tracking-[0.2em] uppercase text-sidebar-foreground/40 font-body">
+            Création
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {creationTools.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton
-                    asChild
-                    tooltip={item.title}
-                  >
-                    <NavLink to={item.url}>
+                  <SidebarMenuButton asChild tooltip={item.title}>
+                    <NavLink to={item.url} className="font-body">
                       <item.icon className="w-4 h-4" />
                       <span>{item.title}</span>
                     </NavLink>
@@ -116,17 +91,12 @@ const AppSidebar = () => {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
-
-
-
       </SidebarContent>
 
-      {/* Footer avec crédits */}
       <SidebarFooter className="px-4 py-3">
-        <div className="glass rounded-xl px-3 py-2 flex items-center gap-2">
-          <Zap className="w-4 h-4 text-primary" />
-          <span className="text-xs font-semibold text-primary">Cauris 🐚</span>
-          <span className="text-[10px] text-muted-foreground ml-auto">crédits</span>
+        <div className="bg-card border border-border rounded-lg px-3 py-2 flex items-center gap-2">
+          <span className="text-xs font-medium text-primary font-body">cauris</span>
+          <span className="text-[10px] text-muted-foreground ml-auto font-body">crédits</span>
         </div>
       </SidebarFooter>
     </Sidebar>

@@ -39,9 +39,9 @@ const AuthenticatedLayout = ({ children }: { children: React.ReactNode }) => {
         <AppSidebar />
         <main className="flex-1 flex flex-col min-h-screen overflow-auto">
           {/* Top bar with sidebar trigger */}
-          <header className="sticky top-0 z-50 glass border-b border-sidebar-border px-4 py-2 flex items-center gap-3">
+          <header className="sticky top-0 z-50 bg-background/60 backdrop-blur-2xl border-b border-border px-5 py-3 flex items-center gap-3">
             <SidebarTrigger />
-            <h1 className="text-sm font-bold tracking-tight">
+            <h1 className="text-sm font-display tracking-tight">
               <span className="text-gradient-primary">cauris</span>
               <span className="text-foreground">.ai</span>
             </h1>
