@@ -20,11 +20,17 @@ const MODEL_ENDPOINTS: Record<string, string> = {
   "fast-sdxl": "https://fal.run/fal-ai/fast-sdxl",
   "hidream-i1": "https://fal.run/fal-ai/hidream-i1-full",
   "flux2-dev": "https://fal.run/fal-ai/flux-2/dev",
+  "flux2-dev-edit": "https://fal.run/fal-ai/flux-2/dev/edit",
   "seedream-v4-t2i": "https://fal.run/fal-ai/bytedance/seedream/v4/text-to-image",
   "seedream-v4-edit": "https://fal.run/fal-ai/bytedance/seedream/v4/edit",
   "seedream-v45-t2i": "https://fal.run/fal-ai/bytedance/seedream/v4.5/text-to-image",
   "seedream-v45-edit": "https://fal.run/fal-ai/bytedance/seedream/v4.5/edit",
 };
+
+// Models that use image_urls (array) instead of image_url (singular)
+const MODELS_USING_IMAGE_URLS = new Set([
+  "seedream-v4-edit", "seedream-v45-edit", "flux2-dev-edit",
+]);
 
 // No polling needed — fal.run returns results synchronously
 
@@ -136,7 +142,14 @@ serve(async (req) => {
       }
     }
 
-    if (image_url) payload.image_url = image_url;
+    // Handle image input: some models use image_url, others use image_urls (array)
+    if (image_url) {
+      if (MODELS_USING_IMAGE_URLS.has(model_id)) {
+        payload.image_urls = [image_url];
+      } else {
+        payload.image_url = image_url;
+      }
+    }
 
     console.log(`Submitting to ${model_id} (${endpoint}):`, JSON.stringify(payload));
 

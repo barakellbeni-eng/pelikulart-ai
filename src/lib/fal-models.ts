@@ -145,10 +145,21 @@ export const FAL_MODELS: FalModel[] = [
   },
   {
     id: "flux2-dev", type: "image", brand: "FLUX", name: "2 [dev]",
-    endpoint: "fal-ai/flux2/dev",
-    description: "Dernière version, édition avancée", icon: "◆", color: "from-white/20 to-white/5",
-    maxImages: 1, supportsImageInput: true, caurisCost: 5, estimatedTime: "~12s",
-    settings: [IMAGE_SIZE_FLUX, INFERENCE_STEPS(), GUIDANCE_SCALE],
+    endpoint: "fal-ai/flux-2/dev",
+    description: "Dernière version, texte vers image", icon: "◆", color: "from-white/20 to-white/5",
+    maxImages: 4, supportsImageInput: false, caurisCost: 5, estimatedTime: "~12s",
+    settings: [IMAGE_SIZE_FLUX, INFERENCE_STEPS(), GUIDANCE_SCALE, SEED_SETTING],
+  },
+  {
+    id: "flux2-dev-edit", type: "image", brand: "FLUX", name: "2 [dev] Edit",
+    endpoint: "fal-ai/flux-2/dev/edit",
+    description: "Édition d'image avec FLUX 2", icon: "◫", color: "from-white/20 to-white/5",
+    maxImages: 1, supportsImageInput: true, caurisCost: 6, estimatedTime: "~12s",
+    settings: [
+      IMAGE_SIZE_FLUX, INFERENCE_STEPS(),
+      { key: "guidance_scale", label: "Guidance Scale", type: "slider", min: 1, max: 20, step: 0.5, defaultValue: 2.5 } as ModelSetting,
+      SEED_SETTING,
+    ],
   },
   {
     id: "imagen4", type: "image", brand: "Google", name: "Imagen 4",
@@ -292,7 +303,7 @@ export const FAL_MODELS: FalModel[] = [
   },
   {
     id: "kling-v3-pro-t2v", type: "video", brand: "Kling", name: "v3 Pro",
-    endpoint: "fal-ai/kling-video/o3/pro/text-to-video",
+    endpoint: "fal-ai/kling-video/v3/pro/text-to-video",
     description: "Qualité maximale, rendu cinéma", icon: "◈", color: "from-white/20 to-white/5",
     maxImages: 1, supportsImageInput: false, caurisCost: 200, caurisCost10s: 400, estimatedTime: "~3min",
     settings: [
@@ -415,7 +426,7 @@ export const FAL_MODELS: FalModel[] = [
   },
   {
     id: "wan-26-t2v", type: "video", brand: "Wan", name: "v2.6",
-    endpoint: "wan/v2.6/text-to-video",
+    endpoint: "fal-ai/wan/v2.6/1080p/text-to-video",
     description: "Jusqu'à 15s en 1080p", icon: "◆", color: "from-white/20 to-white/5",
     maxImages: 1, supportsImageInput: false, caurisCost: 45, caurisCost10s: 90, caurisCost15s: 135, estimatedTime: "~1min",
     settings: [
@@ -428,7 +439,7 @@ export const FAL_MODELS: FalModel[] = [
   },
   {
     id: "wan-26-i2v", type: "video", brand: "Wan", name: "v2.6 (I2V)",
-    endpoint: "wan/v2.6/image-to-video",
+    endpoint: "fal-ai/wan/v2.6/1080p/image-to-video",
     description: "Image vers vidéo jusqu'à 15s", icon: "◫", color: "from-white/20 to-white/5",
     maxImages: 1, supportsImageInput: true, caurisCost: 45, caurisCost10s: 90, caurisCost15s: 135, estimatedTime: "~1min",
     settings: [
