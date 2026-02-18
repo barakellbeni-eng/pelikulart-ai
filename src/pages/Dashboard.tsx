@@ -847,34 +847,12 @@ const Dashboard = () => {
             </div>
           </div>
 
-          {/* References */}
+          {/* Image Reference (only for image-to-image models) */}
           {selectedModel.supportsImageInput && (
             <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <label className="text-[11px] text-muted-foreground font-semibold uppercase tracking-wider">
-                  Référence
-                </label>
-              </div>
-              <div className="grid grid-cols-3 gap-2">
-                <button
-                  onClick={handleBoost}
-                  className="flex flex-col items-center gap-1.5 glass glass-hover rounded-xl p-3"
-                >
-                  <Sparkles className="w-5 h-5 text-accent" />
-                  <span className="text-[10px] text-muted-foreground font-medium">Style</span>
-                </button>
-                <button className="flex flex-col items-center gap-1.5 glass glass-hover rounded-xl p-3">
-                  <User className="w-5 h-5 text-muted-foreground" />
-                  <span className="text-[10px] text-muted-foreground font-medium">Character</span>
-                </button>
-                <button
-                  onClick={() => fileInputRef.current?.click()}
-                  className="flex flex-col items-center gap-1.5 glass glass-hover rounded-xl p-3"
-                >
-                  <Upload className="w-5 h-5 text-muted-foreground" />
-                  <span className="text-[10px] text-muted-foreground font-medium">Upload</span>
-                </button>
-              </div>
+              <label className="text-[11px] text-muted-foreground font-semibold uppercase tracking-wider">
+                Image source
+              </label>
               <input
                 ref={fileInputRef}
                 type="file"
@@ -882,26 +860,47 @@ const Dashboard = () => {
                 className="hidden"
                 onChange={handleImageUpload}
               />
-              <AnimatePresence>
-                {referencePreview && (
+              <AnimatePresence mode="wait">
+                {referencePreview ? (
                   <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: "auto" }}
-                    exit={{ opacity: 0, height: 0 }}
+                    key="preview"
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
                     className="relative"
                   >
                     <img
                       src={referencePreview}
-                      alt="Référence"
-                      className="w-full rounded-xl border border-white/[0.08] max-h-32 object-cover"
+                      alt="Image source"
+                      className="w-full rounded-xl border border-white/[0.08] max-h-40 object-cover"
                     />
                     <button
                       onClick={removeReferenceImage}
-                      className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center"
+                      className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center hover:bg-black/80 transition-colors"
                     >
-                      <X className="w-3 h-3 text-white" />
+                      <X className="w-3.5 h-3.5 text-white" />
+                    </button>
+                    <button
+                      onClick={() => fileInputRef.current?.click()}
+                      className="absolute bottom-1.5 right-1.5 px-2 py-1 rounded-lg bg-black/60 backdrop-blur-sm text-[10px] text-white font-medium hover:bg-black/80 transition-colors flex items-center gap-1"
+                    >
+                      <RefreshCw className="w-3 h-3" />
+                      Changer
                     </button>
                   </motion.div>
+                ) : (
+                  <motion.button
+                    key="upload"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    onClick={() => fileInputRef.current?.click()}
+                    className="w-full flex flex-col items-center justify-center gap-2 py-6 rounded-xl border-2 border-dashed border-white/[0.1] hover:border-primary/40 bg-white/[0.02] hover:bg-white/[0.04] transition-all cursor-pointer"
+                  >
+                    <Upload className="w-6 h-6 text-muted-foreground" />
+                    <span className="text-[11px] text-muted-foreground font-medium">Charger une image</span>
+                    <span className="text-[9px] text-muted-foreground/50">PNG, JPG — max 10 Mo</span>
+                  </motion.button>
                 )}
               </AnimatePresence>
             </div>
