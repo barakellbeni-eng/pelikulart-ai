@@ -6,6 +6,7 @@ import {
   UserCircle,
   Image,
   Video,
+  Music,
   Sparkles,
   Zap,
 } from "lucide-react";
@@ -33,6 +34,7 @@ const mainNav = [
 const creationTools = [
   { title: "Générer Image", url: "/studio/create?mode=image", icon: Image },
   { title: "Générer Vidéo", url: "/studio/create?mode=video", icon: Video },
+  { title: "Générer Audio", url: "/studio/create?mode=audio", icon: Music },
 ];
 
 
@@ -41,8 +43,9 @@ const AppSidebar = () => {
   const currentPath = location.pathname;
 
   const isActive = (url: string) => {
-    const basePath = url.split("?")[0];
-    return currentPath === basePath;
+    const fullCurrent = currentPath + location.search;
+    if (url.includes("?")) return fullCurrent === url;
+    return currentPath === url;
   };
 
   return (
