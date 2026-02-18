@@ -37,17 +37,16 @@ const MODEL_ENDPOINTS: Record<string, string> = {
   "framepack-f1": "https://queue.fal.run/fal-ai/framepack/f1",
 };
 
-async function pollForResult(endpoint: string, requestId: string, apiKey: string): Promise<any> {
+async function pollForResult(statusUrl: string, responseUrl: string, apiKey: string): Promise<any> {
   let consecutiveErrors = 0;
   for (let i = 0; i < 120; i++) {
     await new Promise((r) => setTimeout(r, 3000));
     try {
-      const statusResp = await fetch(`${endpoint}/requests/${requestId}/status`, {
+      const statusResp = await fetch(statusUrl, {
         method: "GET",
         headers: { Authorization: `Key ${apiKey}`, Accept: "application/json" },
       });
 
-      // Handle non-OK responses gracefully
       if (!statusResp.ok) {
         const errText = await statusResp.text();
         console.warn(`Poll attempt ${i + 1}: HTTP ${statusResp.status} - ${errText.slice(0, 100)}`);
@@ -59,38 +58,31 @@ async function pollForResult(endpoint: string, requestId: string, apiKey: string
       }
 
       consecutiveErrors = 0;
-      const statusText = await statusResp.text();
-      let statusData: any;
-      try {
-        statusData = JSON.parse(statusText);
-      } catch {
-        console.error("Non-JSON status response:", statusText.slice(0, 200));
-        continue;
-      }
+      const statusData = await statusResp.json();
       console.log("Poll attempt", i + 1, "status:", statusData.status);
+
       if (statusData.status === "COMPLETED") {
-        const resultResp = await fetch(`${endpoint}/requests/${requestId}`, {
-          headers: { Authorization: `Key ${apiKey}` },
+        const resultResp = await fetch(responseUrl, {
+          method: "GET",
+          headers: { Authorization: `Key ${apiKey}`, Accept: "application/json" },
         });
-        const resultText = await resultResp.text();
-        try {
-          return JSON.parse(resultText);
-        } catch {
-          console.error("Non-JSON result response:", resultText.slice(0, 200));
-          throw new Error("Invalid response from Fal AI");
+        if (!resultResp.ok) {
+          throw new Error(`Failed to fetch result: HTTP ${resultResp.status}`);
         }
+        return await resultResp.json();
       }
       if (statusData.status === "FAILED") {
         throw new Error("Video generation failed on Fal AI");
       }
-    } catch (fetchErr) {
-      // Handle transient network errors (HTTP/2, connection reset, etc.)
+    } catch (fetchErr: any) {
+      if (fetchErr.message?.includes("Polling failed") || fetchErr.message?.includes("Video generation failed") || fetchErr.message?.includes("Failed to fetch result")) {
+        throw fetchErr;
+      }
       consecutiveErrors++;
-      console.warn(`Poll attempt ${i + 1}: network error - ${fetchErr instanceof Error ? fetchErr.message : fetchErr}`);
-      if (consecutiveErrors > 10) {
+      console.warn(`Poll attempt ${i + 1}: network error - ${fetchErr.message || fetchErr}`);
+      if (consecutiveErrors > 15) {
         throw new Error(`Polling aborted after ${consecutiveErrors} consecutive network errors`);
       }
-      // Wait a bit longer before retrying on network errors
       await new Promise((r) => setTimeout(r, 2000));
     }
   }
@@ -152,10 +144,14 @@ serve(async (req) => {
     }
 
     const submitData = await submitResp.json();
+    console.log("Submit response keys:", Object.keys(submitData));
     let videoUrl = submitData.video?.url;
 
     if (!videoUrl && submitData.request_id) {
-      const result = await pollForResult(endpoint, submitData.request_id, FAL_API_KEY);
+      const statusUrl = submitData.status_url || `${endpoint}/requests/${submitData.request_id}/status`;
+      const responseUrl = submitData.response_url || `${endpoint}/requests/${submitData.request_id}`;
+      console.log("Polling with status_url:", statusUrl);
+      const result = await pollForResult(statusUrl, responseUrl, FAL_API_KEY);
       videoUrl = result.video?.url;
     }
 
