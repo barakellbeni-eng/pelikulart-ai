@@ -39,8 +39,58 @@ const ASPECT_RATIO_STANDARD: ModelSetting = {
   options: [
     { value: "16:9", label: "16:9 — Cinématique" }, { value: "9:16", label: "9:16 — Vertical / Réels" },
     { value: "1:1", label: "1:1 — Carré / Instagram" }, { value: "4:3", label: "4:3 — Photo classique" }, { value: "3:4", label: "3:4 — Portrait" },
+    { value: "3:2", label: "3:2 — Paysage photo" }, { value: "2:3", label: "2:3 — Portrait long" },
+    { value: "21:9", label: "21:9 — Ultra-wide" },
   ],
   defaultValue: "16:9",
+};
+
+// Aspect ratios for Flux Pro Ultra, Kontext etc (includes 9:21)
+const ASPECT_RATIO_FLUX_PRO: ModelSetting = {
+  key: "aspect_ratio", label: "Ratio", type: "select",
+  options: [
+    { value: "1:1", label: "1:1 — Carré" }, { value: "16:9", label: "16:9 — Cinématique" }, { value: "9:16", label: "9:16 — Vertical" },
+    { value: "4:3", label: "4:3 — Photo classique" }, { value: "3:4", label: "3:4 — Portrait" },
+    { value: "3:2", label: "3:2 — Paysage photo" }, { value: "2:3", label: "2:3 — Portrait long" },
+    { value: "21:9", label: "21:9 — Ultra-wide" }, { value: "9:21", label: "9:21 — Ultra-vertical" },
+  ],
+  defaultValue: "1:1",
+};
+
+// Aspect ratios for Nano Banana Pro (Google)
+const ASPECT_RATIO_NANO_BANANA: ModelSetting = {
+  key: "aspect_ratio", label: "Ratio", type: "select",
+  options: [
+    { value: "1:1", label: "1:1 — Carré" }, { value: "16:9", label: "16:9 — Cinématique" }, { value: "9:16", label: "9:16 — Vertical" },
+    { value: "4:3", label: "4:3 — Photo classique" }, { value: "3:4", label: "3:4 — Portrait" },
+    { value: "3:2", label: "3:2 — Paysage photo" }, { value: "2:3", label: "2:3 — Portrait long" },
+    { value: "4:5", label: "4:5 — Portrait social" }, { value: "5:4", label: "5:4 — Paysage doux" },
+    { value: "21:9", label: "21:9 — Ultra-wide" },
+  ],
+  defaultValue: "1:1",
+};
+
+// Aspect ratios for Imagen 4 (Google)
+const ASPECT_RATIO_IMAGEN4: ModelSetting = {
+  key: "aspect_ratio", label: "Ratio", type: "select",
+  options: [
+    { value: "1:1", label: "1:1 — Carré" }, { value: "16:9", label: "16:9 — Cinématique" }, { value: "9:16", label: "9:16 — Vertical" },
+    { value: "4:3", label: "4:3 — Photo classique" }, { value: "3:4", label: "3:4 — Portrait" },
+  ],
+  defaultValue: "1:1",
+};
+
+// Aspect ratios for Ideogram V2
+const ASPECT_RATIO_IDEOGRAM: ModelSetting = {
+  key: "aspect_ratio", label: "Ratio", type: "select",
+  options: [
+    { value: "1:1", label: "1:1 — Carré" }, { value: "16:9", label: "16:9 — Cinématique" }, { value: "9:16", label: "9:16 — Vertical" },
+    { value: "4:3", label: "4:3 — Photo classique" }, { value: "3:4", label: "3:4 — Portrait" },
+    { value: "3:2", label: "3:2 — Paysage photo" }, { value: "2:3", label: "2:3 — Portrait long" },
+    { value: "16:10", label: "16:10 — Écran large" }, { value: "10:16", label: "10:16 — Vertical large" },
+    { value: "3:1", label: "3:1 — Panorama" }, { value: "1:3", label: "1:3 — Bannière verticale" },
+  ],
+  defaultValue: "1:1",
 };
 
 const DURATION_5_10: ModelSetting = {
@@ -87,19 +137,12 @@ export const FAL_MODELS: FalModel[] = [
   // ════════════════════════════════════════
 
   {
-    id: "nano-banana-pro", type: "image", brand: "Nano Banana", name: "Pro",
+    id: "nano-banana-pro", type: "image", brand: "Google", name: "Nano Banana Pro",
     endpoint: "fal-ai/nano-banana-pro",
-    description: "Rapide et polyvalent", icon: "◆", color: "from-white/20 to-white/5",
+    description: "Gemini 3 Pro Image — rapide, polyvalent, multi-ratio", icon: "◆", color: "from-white/20 to-white/5",
     maxImages: 4, supportsImageInput: false, caurisCost: 3, estimatedTime: "~3s", recommended: true,
     settings: [
-      { key: "aspect_ratio", label: "Ratio", type: "select", options: [
-        { value: "auto", label: "Auto" }, { value: "1:1", label: "1:1 — Carré / Instagram" },
-        { value: "4:5", label: "4:5 — Portrait social" }, { value: "5:4", label: "5:4 — Paysage doux" },
-        { value: "4:3", label: "4:3 — Photo classique" }, { value: "3:4", label: "3:4 — Portrait" },
-        { value: "3:2", label: "3:2 — Paysage photo" }, { value: "2:3", label: "2:3 — Portrait long" },
-        { value: "16:9", label: "16:9 — Cinématique" }, { value: "9:16", label: "9:16 — Vertical / Réels" },
-        { value: "21:9", label: "21:9 — Ultra-wide" },
-      ], defaultValue: "1:1" },
+      ASPECT_RATIO_NANO_BANANA,
       { key: "resolution", label: "Résolution", type: "select", options: [
         { value: "1K", label: "1K" }, { value: "2K", label: "2K" }, { value: "4K", label: "4K" },
       ], defaultValue: "2K" },
@@ -128,10 +171,7 @@ export const FAL_MODELS: FalModel[] = [
     description: "Qualité maximale, résolution 2K", icon: "◈", color: "from-white/20 to-white/5",
     maxImages: 1, supportsImageInput: false, caurisCost: 12, estimatedTime: "~15s",
     settings: [
-      { key: "aspect_ratio", label: "Ratio", type: "select", options: [
-        { value: "1:1", label: "1:1 — Carré / Instagram" }, { value: "4:3", label: "4:3 — Photo classique" }, { value: "3:4", label: "3:4 — Portrait" },
-        { value: "16:9", label: "16:9 — Cinématique" }, { value: "9:16", label: "9:16 — Vertical / Réels" }, { value: "21:9", label: "21:9 — Ultra-wide" },
-      ], defaultValue: "1:1" },
+      ASPECT_RATIO_FLUX_PRO,
       { key: "raw", label: "Mode Raw (moins stylisé)", type: "toggle", defaultValue: false },
       SEED_SETTING,
     ],
@@ -141,7 +181,28 @@ export const FAL_MODELS: FalModel[] = [
     endpoint: "fal-ai/flux-pro/kontext",
     description: "Édition contextuelle avec image", icon: "◫", color: "from-white/20 to-white/5",
     maxImages: 1, supportsImageInput: true, caurisCost: 8, estimatedTime: "~10s",
-    settings: [INFERENCE_STEPS(), GUIDANCE_SCALE, SEED_SETTING],
+    settings: [
+      ASPECT_RATIO_FLUX_PRO,
+      INFERENCE_STEPS(), GUIDANCE_SCALE,
+      { key: "output_format", label: "Format", type: "select", options: [
+        { value: "png", label: "PNG" }, { value: "jpeg", label: "JPEG" }, { value: "webp", label: "WebP" },
+      ], defaultValue: "png" },
+      SEED_SETTING,
+    ],
+  },
+  {
+    id: "flux-kontext-max", type: "image", brand: "FLUX", name: "Kontext [max]",
+    endpoint: "fal-ai/flux-pro/kontext/max",
+    description: "Typographie améliorée, qualité max", icon: "◈", color: "from-white/20 to-white/5",
+    maxImages: 1, supportsImageInput: true, caurisCost: 12, estimatedTime: "~15s",
+    settings: [
+      ASPECT_RATIO_FLUX_PRO,
+      GUIDANCE_SCALE,
+      { key: "output_format", label: "Format", type: "select", options: [
+        { value: "png", label: "PNG" }, { value: "jpeg", label: "JPEG" }, { value: "webp", label: "WebP" },
+      ], defaultValue: "png" },
+      SEED_SETTING,
+    ],
   },
   {
     id: "flux2-dev", type: "image", brand: "FLUX", name: "2 [dev]",
@@ -166,12 +227,21 @@ export const FAL_MODELS: FalModel[] = [
     endpoint: "fal-ai/imagen4/preview",
     description: "Images hyper-détaillées par Google", icon: "○", color: "from-white/20 to-white/5",
     maxImages: 4, supportsImageInput: false, caurisCost: 8, estimatedTime: "~8s", recommended: true,
-    settings: [
-      { key: "aspect_ratio", label: "Ratio", type: "select", options: [
-        { value: "1:1", label: "1:1 — Carré / Instagram" }, { value: "3:4", label: "3:4 — Portrait" }, { value: "4:3", label: "4:3 — Photo classique" },
-        { value: "9:16", label: "9:16 — Vertical / Réels" }, { value: "16:9", label: "16:9 — Cinématique" },
-      ], defaultValue: "1:1" },
-    ],
+    settings: [ASPECT_RATIO_IMAGEN4],
+  },
+  {
+    id: "imagen4-fast", type: "image", brand: "Google", name: "Imagen 4 Fast",
+    endpoint: "fal-ai/imagen4/preview/fast",
+    description: "Version rapide, meilleur rapport qualité/prix", icon: "▹", color: "from-white/20 to-white/5",
+    maxImages: 4, supportsImageInput: false, caurisCost: 6, estimatedTime: "~4s",
+    settings: [ASPECT_RATIO_IMAGEN4],
+  },
+  {
+    id: "imagen4-ultra", type: "image", brand: "Google", name: "Imagen 4 Ultra",
+    endpoint: "fal-ai/imagen4/preview/ultra",
+    description: "Qualité maximale, détails extrêmes", icon: "◈", color: "from-white/20 to-white/5",
+    maxImages: 4, supportsImageInput: false, caurisCost: 10, estimatedTime: "~12s",
+    settings: [ASPECT_RATIO_IMAGEN4],
   },
   {
     id: "recraft-v3", type: "image", brand: "Recraft", name: "V3",
@@ -195,15 +265,17 @@ export const FAL_MODELS: FalModel[] = [
     description: "Excellent pour le texte dans les images", icon: "▤", color: "from-white/20 to-white/5",
     maxImages: 1, supportsImageInput: false, caurisCost: 15, estimatedTime: "~12s",
     settings: [
-      { key: "aspect_ratio", label: "Ratio", type: "select", options: [
-        { value: "1:1", label: "1:1 — Carré / Instagram" }, { value: "4:3", label: "4:3 — Photo classique" }, { value: "3:4", label: "3:4 — Portrait" },
-        { value: "16:9", label: "16:9 — Cinématique" }, { value: "9:16", label: "9:16 — Vertical / Réels" }, { value: "3:2", label: "3:2 — Paysage photo" }, { value: "2:3", label: "2:3 — Portrait long" },
-      ], defaultValue: "1:1" },
-      { key: "style_type", label: "Type de style", type: "select", options: [
+      ASPECT_RATIO_IDEOGRAM,
+      { key: "style", label: "Style", type: "select", options: [
         { value: "auto", label: "Auto" }, { value: "general", label: "Général" }, { value: "realistic", label: "Réaliste" },
-        { value: "design", label: "Design" }, { value: "render_3d", label: "Rendu 3D" }, { value: "anime", label: "Anime" },
+        { value: "design", label: "Design" }, { value: "render_3D", label: "Rendu 3D" }, { value: "anime", label: "Anime" },
       ], defaultValue: "auto" },
+      { key: "rendering_speed", label: "Vitesse de rendu", type: "select", options: [
+        { value: "TURBO", label: "Turbo (rapide)" }, { value: "BALANCED", label: "Équilibré" }, { value: "QUALITY", label: "Qualité (lent)" },
+      ], defaultValue: "BALANCED" },
+      { key: "expand_prompt", label: "MagicPrompt (enrichir)", type: "toggle", defaultValue: true },
       { key: "negative_prompt", label: "Prompt négatif", type: "text", defaultValue: "", description: "Ce que vous ne voulez PAS" },
+      SEED_SETTING,
     ],
   },
   {
@@ -236,9 +308,13 @@ export const FAL_MODELS: FalModel[] = [
     maxImages: 4, supportsImageInput: false, caurisCost: 5, estimatedTime: "~4s",
     settings: [
       { key: "aspect_ratio", label: "Ratio", type: "select", options: [
-        { value: "1:1", label: "1:1 — Carré / Instagram" }, { value: "4:3", label: "4:3 — Photo classique" }, { value: "3:4", label: "3:4 — Portrait" },
-        { value: "16:9", label: "16:9 — Cinématique" }, { value: "9:16", label: "9:16 — Vertical / Réels" },
+        { value: "1:1", label: "1:1 — Carré" }, { value: "16:9", label: "16:9 — Cinématique" }, { value: "9:16", label: "9:16 — Vertical" },
+        { value: "4:3", label: "4:3 — Photo classique" }, { value: "3:4", label: "3:4 — Portrait" },
+        { value: "3:2", label: "3:2 — Paysage photo" }, { value: "2:3", label: "2:3 — Portrait long" },
       ], defaultValue: "1:1" },
+      { key: "guidance_scale", label: "Guidance Scale", type: "slider", min: 1, max: 15, step: 0.5, defaultValue: 7 },
+      { key: "num_inference_steps", label: "Étapes", type: "slider", min: 10, max: 50, step: 1, defaultValue: 30 },
+      { key: "negative_prompt", label: "Prompt négatif", type: "text", defaultValue: "", description: "Éléments à exclure" },
       SEED_SETTING,
     ],
   },
@@ -259,9 +335,13 @@ export const FAL_MODELS: FalModel[] = [
     maxImages: 4, supportsImageInput: false, caurisCost: 6, estimatedTime: "~3s", recommended: true,
     settings: [
       { key: "aspect_ratio", label: "Ratio", type: "select", options: [
-        { value: "1:1", label: "1:1 — Carré / Instagram" }, { value: "4:3", label: "4:3 — Photo classique" }, { value: "3:4", label: "3:4 — Portrait" },
-        { value: "16:9", label: "16:9 — Cinématique" }, { value: "9:16", label: "9:16 — Vertical / Réels" },
+        { value: "1:1", label: "1:1 — Carré" }, { value: "16:9", label: "16:9 — Cinématique" }, { value: "9:16", label: "9:16 — Vertical" },
+        { value: "4:3", label: "4:3 — Photo classique" }, { value: "3:4", label: "3:4 — Portrait" },
+        { value: "3:2", label: "3:2 — Paysage photo" }, { value: "2:3", label: "2:3 — Portrait long" },
       ], defaultValue: "1:1" },
+      { key: "guidance_scale", label: "Guidance Scale", type: "slider", min: 1, max: 15, step: 0.5, defaultValue: 7 },
+      { key: "num_inference_steps", label: "Étapes", type: "slider", min: 10, max: 50, step: 1, defaultValue: 30 },
+      { key: "negative_prompt", label: "Prompt négatif", type: "text", defaultValue: "", description: "Éléments à exclure" },
       SEED_SETTING,
     ],
   },
