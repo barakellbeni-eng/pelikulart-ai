@@ -30,6 +30,7 @@ export interface FalModel {
   caurisCost10s?: number;
   caurisCost15s?: number;
   estimatedTime: string; // e.g. "~3s", "~15s", "~2min"
+  recommended?: boolean; // Show as popular/recommended
 }
 
 // ─── Shared setting presets ───
@@ -89,7 +90,7 @@ export const FAL_MODELS: FalModel[] = [
     id: "nano-banana-pro", type: "image", brand: "Nano Banana", name: "Pro",
     endpoint: "fal-ai/nano-banana-pro",
     description: "Rapide et polyvalent", icon: "◆", color: "from-white/20 to-white/5",
-    maxImages: 4, supportsImageInput: false, caurisCost: 3, estimatedTime: "~3s",
+    maxImages: 4, supportsImageInput: false, caurisCost: 3, estimatedTime: "~3s", recommended: true,
     settings: [
       { key: "aspect_ratio", label: "Ratio", type: "select", options: [
         { value: "auto", label: "Auto" }, { value: "1:1", label: "1:1 — Carré / Instagram" },
@@ -108,7 +109,7 @@ export const FAL_MODELS: FalModel[] = [
     id: "flux-dev", type: "image", brand: "FLUX", name: "[dev]",
     endpoint: "fal-ai/flux/dev",
     description: "Haute qualité, rendu détaillé", icon: "◇", color: "from-white/20 to-white/5",
-    maxImages: 4, supportsImageInput: false, caurisCost: 5, estimatedTime: "~10s",
+    maxImages: 4, supportsImageInput: false, caurisCost: 5, estimatedTime: "~10s", recommended: true,
     settings: [IMAGE_SIZE_FLUX, INFERENCE_STEPS(), GUIDANCE_SCALE, SEED_SETTING],
   },
   {
@@ -153,7 +154,7 @@ export const FAL_MODELS: FalModel[] = [
     id: "imagen4", type: "image", brand: "Google", name: "Imagen 4",
     endpoint: "fal-ai/imagen4/preview",
     description: "Images hyper-détaillées par Google", icon: "○", color: "from-white/20 to-white/5",
-    maxImages: 4, supportsImageInput: false, caurisCost: 8, estimatedTime: "~8s",
+    maxImages: 4, supportsImageInput: false, caurisCost: 8, estimatedTime: "~8s", recommended: true,
     settings: [
       { key: "aspect_ratio", label: "Ratio", type: "select", options: [
         { value: "1:1", label: "1:1 — Carré / Instagram" }, { value: "3:4", label: "3:4 — Portrait" }, { value: "4:3", label: "4:3 — Photo classique" },
@@ -244,7 +245,7 @@ export const FAL_MODELS: FalModel[] = [
     id: "seedream-v45-t2i", type: "image", brand: "Seedream", name: "v4.5",
     endpoint: "fal-ai/bytedance/seedream/v4.5/text-to-image",
     description: "Dernière version, ultra réaliste 2-3s", icon: "◈", color: "from-white/20 to-white/5",
-    maxImages: 4, supportsImageInput: false, caurisCost: 6, estimatedTime: "~3s",
+    maxImages: 4, supportsImageInput: false, caurisCost: 6, estimatedTime: "~3s", recommended: true,
     settings: [
       { key: "aspect_ratio", label: "Ratio", type: "select", options: [
         { value: "1:1", label: "1:1 — Carré / Instagram" }, { value: "4:3", label: "4:3 — Photo classique" }, { value: "3:4", label: "3:4 — Portrait" },
@@ -272,7 +273,7 @@ export const FAL_MODELS: FalModel[] = [
     id: "veo3", type: "video", brand: "Google", name: "Veo 3",
     endpoint: "fal-ai/veo3",
     description: "Vidéo haute qualité avec audio", icon: "○", color: "from-white/20 to-white/5",
-    maxImages: 1, supportsImageInput: false, caurisCost: 150, caurisCost10s: 300, estimatedTime: "~2min",
+    maxImages: 1, supportsImageInput: false, caurisCost: 150, caurisCost10s: 300, estimatedTime: "~2min", recommended: true,
     settings: [
       { key: "duration", label: "Durée", type: "select", options: [{ value: "5", label: "5s" }, { value: "8", label: "8s" }], defaultValue: "8" },
       { ...ASPECT_RATIO_STANDARD },

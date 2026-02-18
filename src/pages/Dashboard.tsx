@@ -744,9 +744,16 @@ const Dashboard = () => {
                   {selectedModel.brand.slice(0, 2)}
                 </span>
                 <div className="flex-1 text-left">
-                  <span className="text-sm font-medium text-foreground block leading-tight">
-                    {selectedModel.brand} {selectedModel.name}
-                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-sm font-medium text-foreground leading-tight">
+                      {selectedModel.brand} {selectedModel.name}
+                    </span>
+                    {selectedModel.recommended && (
+                      <span className="shrink-0 px-1.5 py-0.5 rounded-full text-[7px] font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/20">
+                        ★
+                      </span>
+                    )}
+                  </div>
                   <span className="text-[10px] text-muted-foreground leading-tight">
                     {selectedModel.description}
                   </span>
@@ -787,9 +794,16 @@ const Dashboard = () => {
                               {model.brand.slice(0, 2)}
                             </span>
                             <div className="flex-1 min-w-0">
-                              <span className="text-xs font-medium text-foreground block truncate">
-                                {model.brand} {model.name}
-                              </span>
+                              <div className="flex items-center gap-1.5">
+                                <span className="text-xs font-medium text-foreground truncate">
+                                  {model.brand} {model.name}
+                                </span>
+                                {model.recommended && (
+                                  <span className="shrink-0 px-1.5 py-0.5 rounded-full text-[8px] font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/20">
+                                    Populaire
+                                  </span>
+                                )}
+                              </div>
                             </div>
                             <div className="flex items-center gap-1.5 shrink-0">
                               <span className="text-[9px] text-muted-foreground/60">⏱ {model.estimatedTime}</span>
