@@ -900,19 +900,44 @@ const Dashboard = () => {
               <label className="text-[11px] text-muted-foreground font-semibold uppercase tracking-wider">
                 Prompt
               </label>
-              <div className="flex items-center gap-1.5">
+              <button
+                onClick={handleEnhancePrompt}
+                disabled={!prompt.trim() || isEnhancing}
+                className="flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-semibold bg-gradient-to-r from-amber-500/20 to-orange-500/20 text-amber-400 hover:from-amber-500/30 hover:to-orange-500/30 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                title="Améliorer le prompt avec l'IA"
+              >
+                {isEnhancing ? (
+                  <Loader2 className="w-3 h-3 animate-spin" />
+                ) : (
+                  <Wand2 className="w-3 h-3" />
+                )}
+                {isEnhancing ? "Amélioration..." : "Améliorer"}
+              </button>
+            </div>
+            <div className="relative">
+              <Textarea
+                value={prompt}
+                onChange={(e) => {
+                  if (e.target.value.length <= 2000) setPrompt(e.target.value);
+                }}
+                maxLength={2000}
+                placeholder="Décrivez votre image en détail : sujet, style, couleurs, lumière, ambiance..."
+                className="min-h-[140px] max-h-[240px] overflow-y-auto bg-white/[0.03] border border-white/[0.06] rounded-xl resize-y text-sm text-foreground placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-primary/30 pb-10 pr-3"
+              />
+              {/* Bottom bar inside textarea */}
+              <div className="absolute bottom-2 left-2 right-2 flex items-center justify-between pointer-events-none">
                 <button
                   onClick={() => describeInputRef.current?.click()}
                   disabled={isDescribingImage}
-                  className="flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-semibold bg-gradient-to-r from-blue-500/20 to-cyan-500/20 text-blue-400 hover:from-blue-500/30 hover:to-cyan-500/30 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
-                  title="Ajouter une image pour générer un prompt"
+                  className="pointer-events-auto flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-medium bg-white/[0.06] hover:bg-white/[0.1] text-muted-foreground hover:text-foreground transition-all disabled:opacity-40 disabled:cursor-not-allowed backdrop-blur-sm border border-white/[0.06]"
+                  title="Ajouter une image pour la convertir en prompt"
                 >
                   {isDescribingImage ? (
                     <Loader2 className="w-3 h-3 animate-spin" />
                   ) : (
                     <Image className="w-3 h-3" />
                   )}
-                  {isDescribingImage ? "Analyse..." : "Image → Texte"}
+                  {isDescribingImage ? "Analyse..." : "📷 Image → Texte"}
                 </button>
                 <input
                   ref={describeInputRef}
@@ -921,27 +946,11 @@ const Dashboard = () => {
                   className="hidden"
                   onChange={handleDescribeImage}
                 />
-                <button
-                  onClick={handleEnhancePrompt}
-                  disabled={!prompt.trim() || isEnhancing}
-                  className="flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-semibold bg-gradient-to-r from-amber-500/20 to-orange-500/20 text-amber-400 hover:from-amber-500/30 hover:to-orange-500/30 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
-                  title="Améliorer le prompt avec l'IA"
-                >
-                  {isEnhancing ? (
-                    <Loader2 className="w-3 h-3 animate-spin" />
-                  ) : (
-                    <Wand2 className="w-3 h-3" />
-                  )}
-                  {isEnhancing ? "Amélioration..." : "Améliorer"}
-                </button>
+                <span className={`pointer-events-auto text-[10px] font-medium tabular-nums ${prompt.length > 1800 ? "text-red-400" : prompt.length > 1400 ? "text-amber-400" : "text-muted-foreground/50"}`}>
+                  {prompt.length}/2000
+                </span>
               </div>
             </div>
-            <Textarea
-              value={prompt}
-              onChange={(e) => setPrompt(e.target.value)}
-              placeholder="Décrivez votre image ou ajoutez une image pour la convertir en prompt..."
-              className="min-h-[100px] bg-white/[0.03] border border-white/[0.06] rounded-xl resize-none text-sm text-foreground placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-primary/30"
-            />
           </div>
         </div>
 
