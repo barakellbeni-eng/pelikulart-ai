@@ -66,6 +66,37 @@ const StudioHome = () => {
   return (
     <div className="flex-1 overflow-y-auto">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
+        {/* Hero branding */}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-10 rounded-2xl glass-card p-6 sm:p-8 relative overflow-hidden"
+        >
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 pointer-events-none" />
+          <div className="relative z-10">
+            <p className="text-xs font-semibold uppercase tracking-widest text-primary mb-2">
+              Bienvenue, {displayName}
+            </p>
+            <h1 className="text-2xl sm:text-3xl font-bold text-foreground leading-tight mb-2" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
+              La plateforme n°1 de création IA en Afrique
+            </h1>
+            <p className="text-sm text-muted-foreground max-w-xl mb-4">
+              Générez des images, vidéos et sons avec l'intelligence artificielle. Payez uniquement ce que vous utilisez via <span className="font-semibold text-foreground">Mobile Money</span>, <span className="font-semibold text-foreground">Wave</span> ou <span className="font-semibold text-foreground">MoMo</span> — sans abonnement.
+            </p>
+            <div className="flex flex-wrap items-center gap-3">
+              <span className="inline-flex items-center gap-1.5 text-xs font-medium text-foreground glass px-3 py-1.5 rounded-full">
+                Solde : <span className="font-bold text-primary">{balance} cauris</span>
+              </span>
+              <Link
+                to="/pricing"
+                className="inline-flex items-center gap-1.5 text-xs font-medium text-primary hover:underline"
+              >
+                Recharger <ArrowRight className="w-3 h-3" />
+              </Link>
+            </div>
+          </div>
+        </motion.div>
+
         {/* Search bar */}
         <div className="max-w-2xl mx-auto mb-10">
           <div className="glass rounded-2xl p-1.5 flex items-center gap-2">
