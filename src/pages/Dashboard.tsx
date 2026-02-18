@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useSyncExternalStore, useCallback } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { Slider } from "@/components/ui/slider";
 import { supabase } from "@/integrations/supabase/client";
@@ -34,6 +34,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { FAL_MODELS, getModelById, getDefaultSettings, getModelsByType, getModelsByTypeGrouped, calculateCaurisCost, type FalModel } from "@/lib/fal-models";
 import HourglassLoader from "@/components/HourglassLoader";
+import { getGenerationJob, startGeneration, completeGeneration, failGeneration, subscribeGeneration } from "@/hooks/useGenerationStore";
 
 const GENERATE_IMAGE_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-image`;
 const GENERATE_VIDEO_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-video`;
@@ -92,7 +93,8 @@ const Dashboard = () => {
   const [selectedModel, setSelectedModel] = useState<FalModel>(imageModels[0]);
   const [modelSettings, setModelSettings] = useState<Record<string, any>>(getDefaultSettings(imageModels[0]));
   const [numImages, setNumImages] = useState(1);
-  const [isGenerating, setIsGenerating] = useState(false);
+  const generationJob = useSyncExternalStore(subscribeGeneration, getGenerationJob);
+  const isGenerating = generationJob?.status === "pending";
   const [galleryImages, setGalleryImages] = useState<GeneratedImage[]>([]);
   const [galleryVideos, setGalleryVideos] = useState<GeneratedVideo[]>([]);
   const [galleryAudios, setGalleryAudios] = useState<GeneratedAudio[]>([]);
@@ -219,7 +221,7 @@ const Dashboard = () => {
       toast.error(`Solde insuffisant ! Il vous faut ${cost} cauris. Rechargez votre compte.`);
       return;
     }
-    setIsGenerating(true);
+    startGeneration("image", prompt, numImages);
 
     try {
       // Get user's auth token
@@ -285,14 +287,15 @@ const Dashboard = () => {
       }
 
       setGalleryImages((prev) => [...newImages, ...prev]);
-      // Deduct cauris after success
       await deduct(cost);
       refetchCauris();
+      completeGeneration();
     } catch (e: any) {
       console.error("Generation error:", e);
       toast.error(e.message || "Erreur lors de la génération");
+      failGeneration(e.message);
     } finally {
-      setIsGenerating(false);
+      if (getGenerationJob()?.status === "pending") completeGeneration();
     }
   };
 
@@ -303,7 +306,7 @@ const Dashboard = () => {
       toast.error(`Solde insuffisant ! Il vous faut ${cost} cauris. Rechargez votre compte.`);
       return;
     }
-    setIsGenerating(true);
+    startGeneration("video", prompt);
     try {
       const { data: sessionData } = await supabase.auth.getSession();
       const accessToken = sessionData?.session?.access_token;
@@ -347,14 +350,16 @@ const Dashboard = () => {
         toast.success("Vidéo générée !");
         await deduct(cost);
         refetchCauris();
+        completeGeneration();
       } else {
         throw new Error("Aucune vidéo retournée");
       }
     } catch (e: any) {
       console.error("Video generation error:", e);
       toast.error(e.message || "Erreur lors de la génération vidéo");
+      failGeneration(e.message);
     } finally {
-      setIsGenerating(false);
+      if (getGenerationJob()?.status === "pending") completeGeneration();
     }
   };
 
@@ -365,7 +370,7 @@ const Dashboard = () => {
       toast.error(`Solde insuffisant ! Il vous faut ${cost} cauris.`);
       return;
     }
-    setIsGenerating(true);
+    startGeneration("audio", prompt);
     try {
       const { data: sessionData } = await supabase.auth.getSession();
       const accessToken = sessionData?.session?.access_token;
@@ -408,14 +413,16 @@ const Dashboard = () => {
         toast.success("Audio généré !");
         await deduct(cost);
         refetchCauris();
+        completeGeneration();
       } else {
         throw new Error("Aucun audio retourné");
       }
     } catch (e: any) {
       console.error("Audio generation error:", e);
       toast.error(e.message || "Erreur lors de la génération audio");
+      failGeneration(e.message);
     } finally {
-      setIsGenerating(false);
+      if (getGenerationJob()?.status === "pending") completeGeneration();
     }
   };
 
