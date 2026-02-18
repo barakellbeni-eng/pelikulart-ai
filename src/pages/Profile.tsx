@@ -1,4 +1,4 @@
-import { Coins, LogOut, Shield, Camera, Settings, HelpCircle } from "lucide-react";
+import { User, Image, Video, LogOut, Shield, Coins, Camera, Settings, HelpCircle } from "lucide-react";
 import { motion } from "framer-motion";
 import { useAuth } from "@/hooks/useAuth";
 import { useCauris } from "@/hooks/useCauris";
@@ -9,7 +9,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
 
-const MAX_CAURIS = 500;
+const MAX_CAURIS = 500; // Limit display for progress bar
 
 const Profile = () => {
   const { user, signOut } = useAuth();
@@ -39,19 +39,40 @@ const Profile = () => {
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !user) return;
-    if (!file.type.startsWith("image/")) { toast.error("Veuillez sélectionner une image"); return; }
-    if (file.size > 2 * 1024 * 1024) { toast.error("L'image ne doit pas dépasser 2 Mo"); return; }
+
+    if (!file.type.startsWith("image/")) {
+      toast.error("Veuillez sélectionner une image");
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error("L'image ne doit pas dépasser 2 Mo");
+      return;
+    }
 
     setUploading(true);
     try {
       const ext = file.name.split(".").pop();
       const filePath = `${user.id}/avatar.${ext}`;
-      const { error: uploadError } = await supabase.storage.from("avatars").upload(filePath, file, { upsert: true });
+
+      const { error: uploadError } = await supabase.storage
+        .from("avatars")
+        .upload(filePath, file, { upsert: true });
+
       if (uploadError) throw uploadError;
-      const { data: { publicUrl } } = supabase.storage.from("avatars").getPublicUrl(filePath);
+
+      const { data: { publicUrl } } = supabase.storage
+        .from("avatars")
+        .getPublicUrl(filePath);
+
       const url = `${publicUrl}?t=${Date.now()}`;
-      const { error: updateError } = await supabase.from("profiles").update({ avatar_url: url }).eq("user_id", user.id);
+
+      const { error: updateError } = await supabase
+        .from("profiles")
+        .update({ avatar_url: url })
+        .eq("user_id", user.id);
+
       if (updateError) throw updateError;
+
       setAvatarUrl(url);
       toast.success("Photo de profil mise à jour !");
     } catch (err: any) {
@@ -61,50 +82,64 @@ const Profile = () => {
     }
   };
 
-  const handleSignOut = async () => { await signOut(); navigate("/"); };
-  const usagePercent = Math.min((balance / MAX_CAURIS) * 100, 100);
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/");
+  };
 
-  const menuItems = [
-    { icon: Coins, label: "Plan & recharge", onClick: () => navigate("/pricing"), badge: `${balance} cauris` },
-    { icon: Shield, label: "Sécurité du compte" },
-    { icon: Settings, label: "Paramètres" },
-    { icon: HelpCircle, label: "Centre d'aide" },
-  ];
+  const usagePercent = Math.min((balance / MAX_CAURIS) * 100, 100);
 
   return (
     <div className="min-h-screen pb-24 md:pb-8">
-      <main className="max-w-lg mx-auto px-6 pt-12 space-y-8">
+      <main className="max-w-2xl mx-auto px-4 pt-8 space-y-6">
         {/* Avatar & Info */}
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="flex items-center gap-4">
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex items-center gap-4"
+        >
           <div className="relative group">
-            <Avatar className="w-16 h-16 border-2 border-border">
-              {avatarUrl ? <AvatarImage src={avatarUrl} alt="Avatar" /> : null}
-              <AvatarFallback className="bg-primary/15 text-primary text-xl font-display font-bold">
+            <Avatar className="w-16 h-16 border-2 border-primary/30">
+              {avatarUrl ? (
+                <AvatarImage src={avatarUrl} alt="Avatar" />
+              ) : null}
+              <AvatarFallback className="bg-gradient-to-br from-primary to-accent text-primary-foreground text-xl font-bold">
                 {displayName.charAt(0).toUpperCase()}
               </AvatarFallback>
             </Avatar>
             <button
               onClick={() => fileInputRef.current?.click()}
               disabled={uploading}
-              className="absolute inset-0 rounded-full bg-background/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+              className="absolute inset-0 rounded-full bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
             >
-              <Camera className="w-5 h-5 text-foreground" />
+              <Camera className="w-5 h-5 text-white" />
             </button>
-            <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleAvatarUpload}
+            />
           </div>
           <div>
-            <h2 className="font-display text-xl font-semibold text-foreground">{displayName}</h2>
-            <p className="text-sm text-muted-foreground font-body">{user?.email}</p>
+            <h2 className="font-bold text-lg text-foreground">{displayName}</h2>
+            <p className="text-sm text-muted-foreground">{user?.email}</p>
           </div>
         </motion.div>
 
         {/* Recharge CTA */}
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+        >
           <button
             onClick={() => navigate("/pricing")}
-            className="w-full btn-generate flex items-center justify-center gap-2 py-3 text-sm"
+            className="w-full btn-generate flex items-center justify-center gap-2 py-3 text-sm rounded-xl"
           >
-            Recharger mes cauris
+            <Coins className="w-4 h-4" />
+            Recharger mes Cauris
           </button>
         </motion.div>
 
@@ -113,16 +148,16 @@ const Profile = () => {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.15 }}
-          className="bg-card border border-border rounded-xl p-5 space-y-3"
+          className="glass-card p-5 space-y-3"
         >
           <div className="flex items-center gap-3">
-            <Coins className="w-4 h-4 text-primary" />
-            <span className="font-display font-semibold text-foreground">Utilisation des cauris</span>
+            <Coins className="w-5 h-5 text-primary" />
+            <span className="font-semibold text-foreground">Utilisation des Cauris 🐚</span>
           </div>
-          <div className="flex justify-between text-sm text-muted-foreground font-body">
-            <span>Solde : <span className="text-foreground font-semibold">{balance}</span></span>
+          <div className="flex justify-between text-sm text-muted-foreground">
+            <span>Solde : <span className="text-foreground font-bold">{balance}</span></span>
           </div>
-          <Progress value={usagePercent} className="h-1.5" />
+          <Progress value={usagePercent} className="h-2" />
         </motion.div>
 
         {/* Menu Items */}
@@ -130,29 +165,39 @@ const Profile = () => {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="bg-card border border-border rounded-xl divide-y divide-border"
+          className="glass-card divide-y divide-white/[0.06]"
         >
-          {menuItems.map((item) => (
-            <button
-              key={item.label}
-              onClick={item.onClick}
-              className="w-full flex items-center gap-3 p-4 text-left text-sm text-foreground hover:bg-secondary/50 transition-colors font-body"
-            >
-              <item.icon className="w-4 h-4 text-muted-foreground" />
-              <span className="flex-1">{item.label}</span>
-              {item.badge && (
-                <span className="text-xs px-2 py-0.5 rounded-full bg-primary/15 text-primary font-medium">
-                  {item.badge}
-                </span>
-              )}
-            </button>
-          ))}
+          <button
+            onClick={() => navigate("/pricing")}
+            className="w-full flex items-center gap-3 p-4 text-left text-sm text-foreground hover:bg-white/[0.03] transition-colors"
+          >
+            <CreditCardIcon className="w-5 h-5 text-muted-foreground" />
+            <span className="flex-1">Plan & recharge</span>
+            <span className="text-xs px-2 py-0.5 rounded-full bg-primary/20 text-primary font-semibold">
+              {balance} 🐚
+            </span>
+          </button>
+
+          <button className="w-full flex items-center gap-3 p-4 text-left text-sm text-foreground hover:bg-white/[0.03] transition-colors">
+            <Shield className="w-5 h-5 text-muted-foreground" />
+            <span className="flex-1">Sécurité du compte</span>
+          </button>
+
+          <button className="w-full flex items-center gap-3 p-4 text-left text-sm text-foreground hover:bg-white/[0.03] transition-colors">
+            <Settings className="w-5 h-5 text-muted-foreground" />
+            <span className="flex-1">Paramètres</span>
+          </button>
+
+          <button className="w-full flex items-center gap-3 p-4 text-left text-sm text-foreground hover:bg-white/[0.03] transition-colors">
+            <HelpCircle className="w-5 h-5 text-muted-foreground" />
+            <span className="flex-1">Centre d'aide</span>
+          </button>
 
           <button
             onClick={handleSignOut}
-            className="w-full flex items-center gap-3 p-4 text-left text-sm text-destructive hover:bg-destructive/5 transition-colors font-body"
+            className="w-full flex items-center gap-3 p-4 text-left text-sm text-destructive hover:bg-white/[0.03] transition-colors"
           >
-            <LogOut className="w-4 h-4" />
+            <LogOut className="w-5 h-5" />
             <span className="flex-1">Déconnexion</span>
           </button>
         </motion.div>
@@ -160,5 +205,10 @@ const Profile = () => {
     </div>
   );
 };
+
+// Simple credit card icon inline to avoid extra import
+const CreditCardIcon = ({ className }: { className?: string }) => (
+  <Coins className={className} />
+);
 
 export default Profile;
