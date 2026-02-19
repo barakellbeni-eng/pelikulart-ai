@@ -37,58 +37,6 @@ const MODEL_ENDPOINTS: Record<string, string> = {
   "framepack-f1": "https://queue.fal.run/fal-ai/framepack/f1",
 };
 
-async function pollForResult(statusUrl: string, responseUrl: string, apiKey: string): Promise<any> {
-  let consecutiveErrors = 0;
-  for (let i = 0; i < 120; i++) {
-    await new Promise((r) => setTimeout(r, 3000));
-    try {
-      const statusResp = await fetch(statusUrl, {
-        method: "GET",
-        headers: { Authorization: `Key ${apiKey}`, Accept: "application/json" },
-      });
-
-      if (!statusResp.ok) {
-        const errText = await statusResp.text();
-        console.warn(`Poll attempt ${i + 1}: HTTP ${statusResp.status} - ${errText.slice(0, 100)}`);
-        consecutiveErrors++;
-        if (consecutiveErrors > 30) {
-          throw new Error(`Polling failed after ${consecutiveErrors} consecutive errors (last: HTTP ${statusResp.status})`);
-        }
-        continue;
-      }
-
-      consecutiveErrors = 0;
-      const statusData = await statusResp.json();
-      console.log("Poll attempt", i + 1, "status:", statusData.status);
-
-      if (statusData.status === "COMPLETED") {
-        const resultResp = await fetch(responseUrl, {
-          method: "GET",
-          headers: { Authorization: `Key ${apiKey}`, Accept: "application/json" },
-        });
-        if (!resultResp.ok) {
-          throw new Error(`Failed to fetch result: HTTP ${resultResp.status}`);
-        }
-        return await resultResp.json();
-      }
-      if (statusData.status === "FAILED") {
-        throw new Error("Video generation failed on Fal AI");
-      }
-    } catch (fetchErr: any) {
-      if (fetchErr.message?.includes("Polling failed") || fetchErr.message?.includes("Video generation failed") || fetchErr.message?.includes("Failed to fetch result")) {
-        throw fetchErr;
-      }
-      consecutiveErrors++;
-      console.warn(`Poll attempt ${i + 1}: network error - ${fetchErr.message || fetchErr}`);
-      if (consecutiveErrors > 15) {
-        throw new Error(`Polling aborted after ${consecutiveErrors} consecutive network errors`);
-      }
-      await new Promise((r) => setTimeout(r, 2000));
-    }
-  }
-  throw new Error("Generation timed out");
-}
-
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -99,8 +47,65 @@ serve(async (req) => {
     if (!FAL_API_KEY) throw new Error("FAL_API_KEY is not configured");
 
     const body = await req.json();
-    const { prompt, model_id = "veo3", image_url, ...modelSettings } = body;
+    const { prompt, model_id = "veo3", image_url, action, status_url, response_url, ...modelSettings } = body;
 
+    // === POLL ACTION: client asks us to check status ===
+    if (action === "poll") {
+      if (!status_url || !response_url) {
+        return new Response(
+          JSON.stringify({ error: "status_url and response_url required for polling" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      const statusResp = await fetch(status_url, {
+        method: "GET",
+        headers: { Authorization: `Key ${FAL_API_KEY}`, Accept: "application/json" },
+      });
+
+      if (!statusResp.ok) {
+        const errText = await statusResp.text();
+        return new Response(
+          JSON.stringify({ status: "error", error: `Status check failed: ${statusResp.status}` }),
+          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      const statusData = await statusResp.json();
+
+      if (statusData.status === "COMPLETED") {
+        const resultResp = await fetch(response_url, {
+          method: "GET",
+          headers: { Authorization: `Key ${FAL_API_KEY}`, Accept: "application/json" },
+        });
+        if (!resultResp.ok) {
+          return new Response(
+            JSON.stringify({ status: "error", error: "Failed to fetch result" }),
+            { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+        const result = await resultResp.json();
+        const videoUrl = result.video?.url;
+        return new Response(
+          JSON.stringify({ status: "COMPLETED", video_url: videoUrl }),
+          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      if (statusData.status === "FAILED") {
+        return new Response(
+          JSON.stringify({ status: "FAILED", error: "Video generation failed" }),
+          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      return new Response(
+        JSON.stringify({ status: statusData.status || "IN_PROGRESS" }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // === SUBMIT ACTION: submit job and return polling URLs ===
     if (!prompt || typeof prompt !== "string") {
       return new Response(
         JSON.stringify({ error: "A prompt is required" }),
@@ -145,26 +150,34 @@ serve(async (req) => {
 
     const submitData = await submitResp.json();
     console.log("Submit response keys:", Object.keys(submitData));
-    let videoUrl = submitData.video?.url;
 
-    if (!videoUrl && submitData.request_id) {
-      const statusUrl = submitData.status_url || `${endpoint}/requests/${submitData.request_id}/status`;
-      const responseUrl = submitData.response_url || `${endpoint}/requests/${submitData.request_id}`;
-      console.log("Polling with status_url:", statusUrl);
-      const result = await pollForResult(statusUrl, responseUrl, FAL_API_KEY);
-      videoUrl = result.video?.url;
+    // If video is immediately available (unlikely for queue endpoints)
+    const videoUrl = submitData.video?.url;
+    if (videoUrl) {
+      return new Response(
+        JSON.stringify({ video_url: videoUrl }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
-    if (!videoUrl) {
+    // Return polling info to client
+    if (submitData.request_id) {
+      const sUrl = submitData.status_url || `${endpoint}/requests/${submitData.request_id}/status`;
+      const rUrl = submitData.response_url || `${endpoint}/requests/${submitData.request_id}`;
       return new Response(
-        JSON.stringify({ error: "No video generated" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        JSON.stringify({
+          status: "QUEUED",
+          request_id: submitData.request_id,
+          status_url: sUrl,
+          response_url: rUrl,
+        }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
     return new Response(
-      JSON.stringify({ video_url: videoUrl }),
-      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      JSON.stringify({ error: "No video generated and no request_id returned" }),
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (e) {
     console.error("generate-video error:", e);

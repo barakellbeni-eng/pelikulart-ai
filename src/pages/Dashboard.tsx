@@ -464,12 +464,11 @@ const Dashboard = () => {
         payload.image_url = referenceImages[0];
       }
 
+      const authHeader = `Bearer ${accessToken || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`;
+
       const resp = await fetch(GENERATE_VIDEO_URL, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${accessToken || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-        },
+        headers: { "Content-Type": "application/json", Authorization: authHeader },
         body: JSON.stringify(payload),
       });
 
@@ -479,18 +478,52 @@ const Dashboard = () => {
       }
 
       const data = await resp.json();
+
+      // Immediate result
       if (data.video_url) {
-        setGalleryVideos((prev) => [
-          { url: data.video_url, prompt, timestamp: Date.now() },
-          ...prev,
-        ]);
+        setGalleryVideos((prev) => [{ url: data.video_url, prompt, timestamp: Date.now() }, ...prev]);
         toast.success("Vidéo générée !");
         await deduct(cost);
         refetchCauris();
         completeGeneration();
-      } else {
-        throw new Error("Aucune vidéo retournée");
+        return;
       }
+
+      // Queued → poll from client
+      if (data.status === "QUEUED" && data.status_url && data.response_url) {
+        toast.info("Vidéo en file d'attente, veuillez patienter...");
+        const maxPolls = 200; // ~10 minutes
+        for (let i = 0; i < maxPolls; i++) {
+          await new Promise((r) => setTimeout(r, 3000));
+          try {
+            const pollResp = await fetch(GENERATE_VIDEO_URL, {
+              method: "POST",
+              headers: { "Content-Type": "application/json", Authorization: authHeader },
+              body: JSON.stringify({ action: "poll", status_url: data.status_url, response_url: data.response_url }),
+            });
+            const pollData = await pollResp.json();
+
+            if (pollData.status === "COMPLETED" && pollData.video_url) {
+              setGalleryVideos((prev) => [{ url: pollData.video_url, prompt, timestamp: Date.now() }, ...prev]);
+              toast.success("Vidéo générée !");
+              await deduct(cost);
+              refetchCauris();
+              completeGeneration();
+              return;
+            }
+            if (pollData.status === "FAILED") {
+              throw new Error(pollData.error || "La génération vidéo a échoué");
+            }
+            // Still in progress, continue polling
+          } catch (pollErr: any) {
+            if (pollErr.message?.includes("échoué") || pollErr.message?.includes("FAILED")) throw pollErr;
+            console.warn("Poll error, retrying...", pollErr.message);
+          }
+        }
+        throw new Error("La génération vidéo a pris trop de temps (timeout)");
+      }
+
+      throw new Error("Aucune vidéo retournée");
     } catch (e: any) {
       console.error("Video generation error:", e);
       toast.error(e.message || "Erreur lors de la génération vidéo");
