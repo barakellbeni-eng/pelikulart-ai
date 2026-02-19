@@ -22,6 +22,7 @@ export type Database = {
           id: string
           image_url: string
           is_public: boolean
+          media_type: string
           output_format: string | null
           prompt: string
           resolution: string | null
@@ -34,6 +35,7 @@ export type Database = {
           id?: string
           image_url: string
           is_public?: boolean
+          media_type?: string
           output_format?: string | null
           prompt: string
           resolution?: string | null
@@ -46,6 +48,7 @@ export type Database = {
           id?: string
           image_url?: string
           is_public?: boolean
+          media_type?: string
           output_format?: string | null
           prompt?: string
           resolution?: string | null
