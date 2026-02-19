@@ -104,6 +104,7 @@ const Dashboard = () => {
   const [showModelDropdown, setShowModelDropdown] = useState(false);
   const [openRatioDropdown, setOpenRatioDropdown] = useState<string | null>(null);
   const [previewImage, setPreviewImage] = useState<GeneratedImage | null>(null);
+  const [previewVideo, setPreviewVideo] = useState<GeneratedVideo | null>(null);
   const [isEnhancing, setIsEnhancing] = useState(false);
   const [isDescribingImage, setIsDescribingImage] = useState(false);
   const [gridSize, setGridSize] = useState<"small" | "medium" | "large">("medium");
@@ -1453,9 +1454,10 @@ const Dashboard = () => {
                         key={`vid-${i}-${item.ts}`}
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        className="aspect-square relative group rounded-xl overflow-hidden"
+                        className="aspect-square relative group rounded-xl overflow-hidden cursor-pointer"
+                        onClick={() => setPreviewVideo(vid)}
                       >
-                        <video src={vid.url} controls className="w-full h-full object-cover rounded-xl" />
+                        <video src={vid.url} muted className="w-full h-full object-cover rounded-xl pointer-events-none" />
                         {/* Type badge */}
                         <div className="absolute top-1.5 left-1.5 z-10">
                           <span className="flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-purple-500/80 backdrop-blur-sm text-[9px] font-bold text-white uppercase">
@@ -1522,6 +1524,52 @@ const Dashboard = () => {
           })()}
         </div>
       </div>
+
+      {/* ===== VIDEO PREVIEW MODAL ===== */}
+      <AnimatePresence>
+        {previewVideo && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
+            onClick={() => setPreviewVideo(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="relative max-w-4xl max-h-[90vh] flex flex-col items-center gap-4"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <video
+                src={previewVideo.url}
+                controls
+                autoPlay
+                className="max-w-full max-h-[70vh] rounded-xl"
+              />
+              {previewVideo.prompt && (
+                <p className="text-sm text-white/70 max-w-md truncate">{previewVideo.prompt}</p>
+              )}
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => handleDownload(previewVideo.url, 0)}
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-primary-foreground text-sm font-semibold hover:opacity-90 transition-opacity"
+                >
+                  <Download className="w-4 h-4" />
+                  Télécharger
+                </button>
+              </div>
+              <button
+                onClick={() => setPreviewVideo(null)}
+                className="absolute top-2 right-2 w-8 h-8 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center hover:bg-black/80 transition-colors"
+              >
+                <X className="w-4 h-4 text-white" />
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* ===== IMAGE PREVIEW MODAL ===== */}
       <AnimatePresence>
