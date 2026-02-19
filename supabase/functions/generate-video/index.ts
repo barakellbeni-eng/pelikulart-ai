@@ -58,51 +58,77 @@ serve(async (req) => {
         );
       }
 
-      const statusResp = await fetch(status_url, {
-        method: "GET",
-        headers: { Authorization: `Key ${FAL_API_KEY}`, Accept: "application/json" },
-      });
-
-      if (!statusResp.ok) {
-        const errText = await statusResp.text();
-        return new Response(
-          JSON.stringify({ status: "error", error: `Status check failed: ${statusResp.status}` }),
-          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-
-      const statusData = await statusResp.json();
-
-      if (statusData.status === "COMPLETED") {
-        const resultResp = await fetch(response_url, {
+      try {
+        const statusResp = await fetch(status_url, {
           method: "GET",
           headers: { Authorization: `Key ${FAL_API_KEY}`, Accept: "application/json" },
         });
-        if (!resultResp.ok) {
+
+        console.log("Poll status HTTP:", statusResp.status);
+
+        if (!statusResp.ok) {
+          const errText = await statusResp.text();
+          console.log("Poll status error body:", errText.slice(0, 300));
+          // Don't return error — return IN_PROGRESS so client retries
           return new Response(
-            JSON.stringify({ status: "error", error: "Failed to fetch result" }),
+            JSON.stringify({ status: "IN_PROGRESS" }),
             { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
           );
         }
-        const result = await resultResp.json();
-        const videoUrl = result.video?.url;
+
+        const statusData = await statusResp.json();
+        console.log("Poll status data:", JSON.stringify(statusData).slice(0, 300));
+
+        if (statusData.status === "COMPLETED") {
+          const resultResp = await fetch(response_url, {
+            method: "GET",
+            headers: { Authorization: `Key ${FAL_API_KEY}`, Accept: "application/json" },
+          });
+          console.log("Result fetch HTTP:", resultResp.status);
+          if (!resultResp.ok) {
+            const errText = await resultResp.text();
+            console.log("Result fetch error:", errText.slice(0, 300));
+            // Retry on next poll instead of failing permanently
+            return new Response(
+              JSON.stringify({ status: "IN_PROGRESS" }),
+              { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+            );
+          }
+          const result = await resultResp.json();
+          console.log("Result keys:", Object.keys(result));
+          const videoUrl = result.video?.url;
+          if (!videoUrl) {
+            console.log("No video.url found in result:", JSON.stringify(result).slice(0, 500));
+            return new Response(
+              JSON.stringify({ status: "FAILED", error: "No video URL in result" }),
+              { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+            );
+          }
+          return new Response(
+            JSON.stringify({ status: "COMPLETED", video_url: videoUrl }),
+            { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+
+        if (statusData.status === "FAILED") {
+          return new Response(
+            JSON.stringify({ status: "FAILED", error: statusData.error || "Video generation failed" }),
+            { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+
         return new Response(
-          JSON.stringify({ status: "COMPLETED", video_url: videoUrl }),
+          JSON.stringify({ status: statusData.status || "IN_PROGRESS" }),
+          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      } catch (pollErr) {
+        console.error("Poll exception:", pollErr);
+        // Return IN_PROGRESS so client retries instead of treating as permanent error
+        return new Response(
+          JSON.stringify({ status: "IN_PROGRESS" }),
           { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
-
-      if (statusData.status === "FAILED") {
-        return new Response(
-          JSON.stringify({ status: "FAILED", error: "Video generation failed" }),
-          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-
-      return new Response(
-        JSON.stringify({ status: statusData.status || "IN_PROGRESS" }),
-        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
     }
 
     // === SUBMIT ACTION: submit job and return polling URLs ===
