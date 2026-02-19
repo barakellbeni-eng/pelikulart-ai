@@ -349,258 +349,283 @@ const Dashboard = () => {
   };
 
   const handleGenerate = async () => {
-    if (!prompt.trim() || isSubmitting) return;
+    if (!prompt.trim()) return;
     const cost = calculateCaurisCost(selectedModel, modelSettings, numImages);
     if (balance < cost) {
       toast.error(`Solde insuffisant ! Il vous faut ${cost} cauris. Rechargez votre compte.`);
       return;
     }
+
+    // Capture current values before resetting UI
+    const currentPrompt = prompt;
+    const currentModel = selectedModel;
+    const currentSettings = { ...modelSettings };
+    const currentNumImages = numImages;
+    const currentRefImages = [...referenceImages];
+
+    // Brief submitting flash for feedback
     setIsSubmitting(true);
-    startGeneration("image", prompt, numImages);
+    setTimeout(() => setIsSubmitting(false), 600);
 
-    try {
-      // Get user's auth token
-      const { data: sessionData } = await supabase.auth.getSession();
-      const accessToken = sessionData?.session?.access_token;
+    // Fire and forget — generation runs in background
+    (async () => {
+      startGeneration("image", currentPrompt, currentNumImages);
+      try {
+        const { data: sessionData } = await supabase.auth.getSession();
+        const accessToken = sessionData?.session?.access_token;
 
-      // Build payload with model-specific settings
-      const cleanSettings: Record<string, any> = {};
-      for (const [key, value] of Object.entries(modelSettings)) {
-        if (value === "" || value === undefined || value === null) continue;
-        if (key === "seed" && value === 0) continue;
-        cleanSettings[key] = value;
-      }
-
-      const payload: Record<string, any> = {
-        prompt,
-        model_id: selectedModel.id,
-        num_images: Math.min(numImages, selectedModel.maxImages || 1),
-        output_format: "png",
-        ...cleanSettings,
-      };
-      if (referenceImages.length > 0 && selectedModel.supportsImageInput) {
-        if ((selectedModel.maxInputImages || 1) > 1) {
-          payload.image_urls = referenceImages;
-        } else {
-          payload.image_url = referenceImages[0];
+        const cleanSettings: Record<string, any> = {};
+        for (const [key, value] of Object.entries(currentSettings)) {
+          if (value === "" || value === undefined || value === null) continue;
+          if (key === "seed" && value === 0) continue;
+          cleanSettings[key] = value;
         }
-      }
 
-      const resp = await fetch(GENERATE_IMAGE_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${accessToken || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-        },
-        body: JSON.stringify(payload),
-      });
+        const payload: Record<string, any> = {
+          prompt: currentPrompt,
+          model_id: currentModel.id,
+          num_images: Math.min(currentNumImages, currentModel.maxImages || 1),
+          output_format: "png",
+          ...cleanSettings,
+        };
+        if (currentRefImages.length > 0 && currentModel.supportsImageInput) {
+          if ((currentModel.maxInputImages || 1) > 1) {
+            payload.image_urls = currentRefImages;
+          } else {
+            payload.image_url = currentRefImages[0];
+          }
+        }
 
-      if (!resp.ok) {
-        const err = await resp.json().catch(() => ({ error: "Erreur inconnue" }));
-        throw new Error(err.error || `Erreur ${resp.status}`);
-      }
-
-      const data = await resp.json();
-      const newImages: GeneratedImage[] = [];
-      const cost = calculateCaurisCost(selectedModel, modelSettings, numImages);
-
-      if (data.images?.length) {
-        data.images.forEach((img: any) => {
-          newImages.push({
-            url: img.url,
-            width: img.width,
-            height: img.height,
-            prompt,
-            resolution: modelSettings.resolution || modelSettings.image_size || "",
-            timestamp: Date.now(),
-            modelId: selectedModel.id,
-            modelSettings: { ...modelSettings },
-            caurisCost: cost,
-            numImages,
-          });
+        const resp = await fetch(GENERATE_IMAGE_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          },
+          body: JSON.stringify(payload),
         });
-      } else if (data.image_url) {
-        newImages.push({ url: data.image_url, prompt, timestamp: Date.now(), modelId: selectedModel.id, modelSettings: { ...modelSettings }, caurisCost: cost, numImages });
-      } else {
-        throw new Error("Aucune image retournée");
-      }
 
-      setGalleryImages((prev) => [...newImages, ...prev]);
-      await deduct(cost);
-      refetchCauris();
-      completeGeneration();
-    } catch (e: any) {
-      console.error("Generation error:", e);
-      toast.error(e.message || "Erreur lors de la génération");
-      failGeneration(e.message);
-    } finally {
-      setIsSubmitting(false);
-      if (getGenerationJob()?.status === "pending") completeGeneration();
-    }
+        if (!resp.ok) {
+          const err = await resp.json().catch(() => ({ error: "Erreur inconnue" }));
+          throw new Error(err.error || `Erreur ${resp.status}`);
+        }
+
+        const data = await resp.json();
+        const newImages: GeneratedImage[] = [];
+        const imgCost = calculateCaurisCost(currentModel, currentSettings, currentNumImages);
+
+        if (data.images?.length) {
+          data.images.forEach((img: any) => {
+            newImages.push({
+              url: img.url,
+              width: img.width,
+              height: img.height,
+              prompt: currentPrompt,
+              resolution: currentSettings.resolution || currentSettings.image_size || "",
+              timestamp: Date.now(),
+              modelId: currentModel.id,
+              modelSettings: currentSettings,
+              caurisCost: imgCost,
+              numImages: currentNumImages,
+            });
+          });
+        } else if (data.image_url) {
+          newImages.push({ url: data.image_url, prompt: currentPrompt, timestamp: Date.now(), modelId: currentModel.id, modelSettings: currentSettings, caurisCost: imgCost, numImages: currentNumImages });
+        } else {
+          throw new Error("Aucune image retournée");
+        }
+
+        setGalleryImages((prev) => [...newImages, ...prev]);
+        await deduct(imgCost);
+        refetchCauris();
+        completeGeneration();
+      } catch (e: any) {
+        console.error("Generation error:", e);
+        toast.error(e.message || "Erreur lors de la génération");
+        failGeneration(e.message);
+      } finally {
+        if (getGenerationJob()?.status === "pending") completeGeneration();
+      }
+    })();
   };
 
   const handleGenerateVideo = async () => {
-    if (!prompt.trim() || isSubmitting) return;
+    if (!prompt.trim()) return;
     const cost = calculateCaurisCost(selectedModel, modelSettings);
     if (balance < cost) {
       toast.error(`Solde insuffisant ! Il vous faut ${cost} cauris. Rechargez votre compte.`);
       return;
     }
+
+    const currentPrompt = prompt;
+    const currentModel = selectedModel;
+    const currentSettings = { ...modelSettings };
+    const currentRefImages = [...referenceImages];
+
     setIsSubmitting(true);
-    startGeneration("video", prompt);
-    try {
-      const { data: sessionData } = await supabase.auth.getSession();
-      const accessToken = sessionData?.session?.access_token;
+    setTimeout(() => setIsSubmitting(false), 600);
 
-      const cleanSettings: Record<string, any> = {};
-      for (const [key, value] of Object.entries(modelSettings)) {
-        if (value === "" || value === undefined || value === null) continue;
-        if (key === "seed" && value === 0) continue;
-        cleanSettings[key] = value;
-      }
+    (async () => {
+      startGeneration("video", currentPrompt);
+      try {
+        const { data: sessionData } = await supabase.auth.getSession();
+        const accessToken = sessionData?.session?.access_token;
 
-      const payload: Record<string, any> = {
-        prompt,
-        model_id: selectedModel.id,
-        ...cleanSettings,
-      };
-      if (referenceImages.length > 0 && selectedModel.supportsImageInput) {
-        payload.image_url = referenceImages[0];
-      }
-
-      const authHeader = `Bearer ${accessToken || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`;
-
-      const resp = await fetch(GENERATE_VIDEO_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: authHeader },
-        body: JSON.stringify(payload),
-      });
-
-      if (!resp.ok) {
-        const err = await resp.json().catch(() => ({ error: "Erreur inconnue" }));
-        throw new Error(err.error || `Erreur ${resp.status}`);
-      }
-
-      const data = await resp.json();
-
-      // Immediate result
-      if (data.video_url) {
-        setGalleryVideos((prev) => [{ url: data.video_url, prompt, timestamp: Date.now() }, ...prev]);
-        toast.success("Vidéo générée !");
-        await deduct(cost);
-        refetchCauris();
-        completeGeneration();
-        return;
-      }
-
-      // Queued → poll from client
-      if (data.status === "QUEUED" && data.status_url && data.response_url) {
-        toast.info("Vidéo en file d'attente, veuillez patienter...");
-        const maxPolls = 200; // ~10 minutes
-        for (let i = 0; i < maxPolls; i++) {
-          await new Promise((r) => setTimeout(r, 3000));
-          try {
-            const pollResp = await fetch(GENERATE_VIDEO_URL, {
-              method: "POST",
-              headers: { "Content-Type": "application/json", Authorization: authHeader },
-              body: JSON.stringify({ action: "poll", status_url: data.status_url, response_url: data.response_url }),
-            });
-            const pollData = await pollResp.json();
-
-            if (pollData.status === "COMPLETED" && pollData.video_url) {
-              setGalleryVideos((prev) => [{ url: pollData.video_url, prompt, timestamp: Date.now() }, ...prev]);
-              toast.success("Vidéo générée !");
-              await deduct(cost);
-              refetchCauris();
-              completeGeneration();
-              return;
-            }
-            if (pollData.status === "FAILED") {
-              throw new Error(pollData.error || "La génération vidéo a échoué");
-            }
-            // Still in progress, continue polling
-          } catch (pollErr: any) {
-            if (pollErr.message?.includes("échoué") || pollErr.message?.includes("FAILED")) throw pollErr;
-            console.warn("Poll error, retrying...", pollErr.message);
-          }
+        const cleanSettings: Record<string, any> = {};
+        for (const [key, value] of Object.entries(currentSettings)) {
+          if (value === "" || value === undefined || value === null) continue;
+          if (key === "seed" && value === 0) continue;
+          cleanSettings[key] = value;
         }
-        throw new Error("La génération vidéo a pris trop de temps (timeout)");
-      }
 
-      throw new Error("Aucune vidéo retournée");
-    } catch (e: any) {
-      console.error("Video generation error:", e);
-      toast.error(e.message || "Erreur lors de la génération vidéo");
-      failGeneration(e.message);
-    } finally {
-      setIsSubmitting(false);
-      if (getGenerationJob()?.status === "pending") completeGeneration();
-    }
+        const payload: Record<string, any> = {
+          prompt: currentPrompt,
+          model_id: currentModel.id,
+          ...cleanSettings,
+        };
+        if (currentRefImages.length > 0 && currentModel.supportsImageInput) {
+          payload.image_url = currentRefImages[0];
+        }
+
+        const authHeader = `Bearer ${accessToken || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`;
+
+        const resp = await fetch(GENERATE_VIDEO_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: authHeader },
+          body: JSON.stringify(payload),
+        });
+
+        if (!resp.ok) {
+          const err = await resp.json().catch(() => ({ error: "Erreur inconnue" }));
+          throw new Error(err.error || `Erreur ${resp.status}`);
+        }
+
+        const data = await resp.json();
+
+        if (data.video_url) {
+          setGalleryVideos((prev) => [{ url: data.video_url, prompt: currentPrompt, timestamp: Date.now() }, ...prev]);
+          toast.success("Vidéo générée !");
+          await deduct(cost);
+          refetchCauris();
+          completeGeneration();
+          return;
+        }
+
+        if (data.status === "QUEUED" && data.status_url && data.response_url) {
+          toast.info("Vidéo en file d'attente, veuillez patienter...");
+          const maxPolls = 200;
+          for (let i = 0; i < maxPolls; i++) {
+            await new Promise((r) => setTimeout(r, 3000));
+            try {
+              const pollResp = await fetch(GENERATE_VIDEO_URL, {
+                method: "POST",
+                headers: { "Content-Type": "application/json", Authorization: authHeader },
+                body: JSON.stringify({ action: "poll", status_url: data.status_url, response_url: data.response_url }),
+              });
+              const pollData = await pollResp.json();
+
+              if (pollData.status === "COMPLETED" && pollData.video_url) {
+                setGalleryVideos((prev) => [{ url: pollData.video_url, prompt: currentPrompt, timestamp: Date.now() }, ...prev]);
+                toast.success("Vidéo générée !");
+                await deduct(cost);
+                refetchCauris();
+                completeGeneration();
+                return;
+              }
+              if (pollData.status === "FAILED") {
+                throw new Error(pollData.error || "La génération vidéo a échoué");
+              }
+            } catch (pollErr: any) {
+              if (pollErr.message?.includes("échoué") || pollErr.message?.includes("FAILED")) throw pollErr;
+              console.warn("Poll error, retrying...", pollErr.message);
+            }
+          }
+          throw new Error("La génération vidéo a pris trop de temps (timeout)");
+        }
+
+        throw new Error("Aucune vidéo retournée");
+      } catch (e: any) {
+        console.error("Video generation error:", e);
+        toast.error(e.message || "Erreur lors de la génération vidéo");
+        failGeneration(e.message);
+      } finally {
+        if (getGenerationJob()?.status === "pending") completeGeneration();
+      }
+    })();
   };
 
   const handleGenerateAudio = async () => {
-    if (!prompt.trim() || isSubmitting) return;
+    if (!prompt.trim()) return;
     const cost = calculateCaurisCost(selectedModel, modelSettings);
     if (balance < cost) {
       toast.error(`Solde insuffisant ! Il vous faut ${cost} cauris.`);
       return;
     }
+
+    const currentPrompt = prompt;
+    const currentModel = selectedModel;
+    const currentSettings = { ...modelSettings };
+    const currentRefImages = [...referenceImages];
+
     setIsSubmitting(true);
-    startGeneration("audio", prompt);
-    try {
-      const { data: sessionData } = await supabase.auth.getSession();
-      const accessToken = sessionData?.session?.access_token;
+    setTimeout(() => setIsSubmitting(false), 600);
 
-      const cleanSettings: Record<string, any> = {};
-      for (const [key, value] of Object.entries(modelSettings)) {
-        if (value === "" || value === undefined || value === null) continue;
-        cleanSettings[key] = value;
+    (async () => {
+      startGeneration("audio", currentPrompt);
+      try {
+        const { data: sessionData } = await supabase.auth.getSession();
+        const accessToken = sessionData?.session?.access_token;
+
+        const cleanSettings: Record<string, any> = {};
+        for (const [key, value] of Object.entries(currentSettings)) {
+          if (value === "" || value === undefined || value === null) continue;
+          cleanSettings[key] = value;
+        }
+
+        const payload: Record<string, any> = {
+          prompt: currentPrompt,
+          model_id: currentModel.id,
+          ...cleanSettings,
+        };
+        if (currentRefImages.length > 0 && currentModel.supportsImageInput) {
+          payload.image_url = currentRefImages[0];
+        }
+
+        const resp = await fetch(GENERATE_AUDIO_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          },
+          body: JSON.stringify(payload),
+        });
+
+        if (!resp.ok) {
+          const err = await resp.json().catch(() => ({ error: "Erreur inconnue" }));
+          throw new Error(err.error || `Erreur ${resp.status}`);
+        }
+
+        const data = await resp.json();
+        if (data.audio_url) {
+          setGalleryAudios((prev) => [
+            { url: data.audio_url, prompt: currentPrompt, timestamp: Date.now(), modelId: currentModel.id },
+            ...prev,
+          ]);
+          toast.success("Audio généré !");
+          await deduct(cost);
+          refetchCauris();
+          completeGeneration();
+        } else {
+          throw new Error("Aucun audio retourné");
+        }
+      } catch (e: any) {
+        console.error("Audio generation error:", e);
+        toast.error(e.message || "Erreur lors de la génération audio");
+        failGeneration(e.message);
+      } finally {
+        if (getGenerationJob()?.status === "pending") completeGeneration();
       }
-
-      const payload: Record<string, any> = {
-        prompt,
-        model_id: selectedModel.id,
-        ...cleanSettings,
-      };
-      if (referenceImages.length > 0 && selectedModel.supportsImageInput) {
-        payload.image_url = referenceImages[0];
-      }
-
-      const resp = await fetch(GENERATE_AUDIO_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${accessToken || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-        },
-        body: JSON.stringify(payload),
-      });
-
-      if (!resp.ok) {
-        const err = await resp.json().catch(() => ({ error: "Erreur inconnue" }));
-        throw new Error(err.error || `Erreur ${resp.status}`);
-      }
-
-      const data = await resp.json();
-      if (data.audio_url) {
-        setGalleryAudios((prev) => [
-          { url: data.audio_url, prompt, timestamp: Date.now(), modelId: selectedModel.id },
-          ...prev,
-        ]);
-        toast.success("Audio généré !");
-        await deduct(cost);
-        refetchCauris();
-        completeGeneration();
-      } else {
-        throw new Error("Aucun audio retourné");
-      }
-    } catch (e: any) {
-      console.error("Audio generation error:", e);
-      toast.error(e.message || "Erreur lors de la génération audio");
-      failGeneration(e.message);
-    } finally {
-      setIsSubmitting(false);
-      if (getGenerationJob()?.status === "pending") completeGeneration();
-    }
+    })();
   };
 
   const handleDownload = async (url: string, index: number) => {
