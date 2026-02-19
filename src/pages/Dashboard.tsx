@@ -106,6 +106,7 @@ const Dashboard = () => {
   const [isEnhancing, setIsEnhancing] = useState(false);
   const [isDescribingImage, setIsDescribingImage] = useState(false);
   const [gridSize, setGridSize] = useState<"small" | "medium" | "large">("medium");
+  const [galleryFilter, setGalleryFilter] = useState<"all" | "image" | "video" | "audio">("all");
   const describeInputRef = useRef<HTMLInputElement>(null);
   const [isDraggingOverPrompt, setIsDraggingOverPrompt] = useState(false);
   const [isDraggingOverUpload, setIsDraggingOverUpload] = useState(false);
@@ -1190,17 +1191,34 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* ===== RIGHT GALLERY ===== */}
+      {/* ===== RIGHT GALLERY (UNIFIED) ===== */}
       <div className="flex-1 flex flex-col overflow-hidden">
         <div className="flex items-center justify-between px-5 py-3 border-b border-white/[0.06]">
-          <div className="flex items-center gap-4">
-            <span className="text-sm font-medium text-foreground">
-              {activeTab === "audio"
-                ? galleryAudios.length > 0 ? `${galleryAudios.length} audio${galleryAudios.length > 1 ? "s" : ""}` : "Gallery"
-                : activeTab === "video"
-                ? galleryVideos.length > 0 ? `${galleryVideos.length} vidéo${galleryVideos.length > 1 ? "s" : ""}` : "Gallery"
-                : galleryImages.length > 0 ? `${galleryImages.length} image${galleryImages.length > 1 ? "s" : ""}` : "Gallery"}
-            </span>
+          <div className="flex items-center gap-1 glass rounded-lg p-0.5">
+            {([
+              { value: "all" as const, label: "Tout", icon: null, count: galleryImages.length + galleryVideos.length + galleryAudios.length },
+              { value: "image" as const, label: "Images", icon: Image, count: galleryImages.length },
+              { value: "video" as const, label: "Vidéos", icon: Video, count: galleryVideos.length },
+              { value: "audio" as const, label: "Audios", icon: Music, count: galleryAudios.length },
+            ]).map((f) => (
+              <button
+                key={f.value}
+                onClick={() => setGalleryFilter(f.value)}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                  galleryFilter === f.value
+                    ? "bg-primary/20 text-primary"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {f.icon && <f.icon className="w-3 h-3" />}
+                {f.label}
+                {f.count > 0 && (
+                  <span className={`text-[9px] px-1.5 py-0.5 rounded-full ${galleryFilter === f.value ? "bg-primary/30" : "bg-white/[0.06]"}`}>
+                    {f.count}
+                  </span>
+                )}
+              </button>
+            ))}
           </div>
           <div className="flex items-center gap-1 glass rounded-lg p-0.5">
             <button
@@ -1228,193 +1246,215 @@ const Dashboard = () => {
         </div>
 
         <div className="flex-1 overflow-y-auto p-4">
-          {activeTab === "audio" ? (
-            /* ===== AUDIO GALLERY ===== */
-            galleryAudios.length === 0 && !isGenerating ? (
-              <div className="flex flex-col items-center justify-center h-full text-center space-y-4">
-                <div className="w-20 h-20 rounded-2xl bg-white/[0.04] flex items-center justify-center">
-                  <Music className="w-10 h-10 text-muted-foreground/30" />
+          {(() => {
+            // Build unified gallery items
+            type UnifiedItem = { type: "image"; data: GeneratedImage; ts: number } | { type: "video"; data: GeneratedVideo; ts: number } | { type: "audio"; data: GeneratedAudio; ts: number };
+            const allItems: UnifiedItem[] = [];
+            if (galleryFilter === "all" || galleryFilter === "image") {
+              galleryImages.forEach((img) => allItems.push({ type: "image", data: img, ts: img.timestamp || 0 }));
+            }
+            if (galleryFilter === "all" || galleryFilter === "video") {
+              galleryVideos.forEach((vid) => allItems.push({ type: "video", data: vid, ts: vid.timestamp || 0 }));
+            }
+            if (galleryFilter === "all" || galleryFilter === "audio") {
+              galleryAudios.forEach((aud) => allItems.push({ type: "audio", data: aud, ts: aud.timestamp || 0 }));
+            }
+            allItems.sort((a, b) => b.ts - a.ts);
+
+            const totalCount = allItems.length;
+
+            if (totalCount === 0 && !isGenerating) {
+              return (
+                <div className="flex flex-col items-center justify-center h-full text-center space-y-4">
+                  <div className="w-20 h-20 rounded-2xl bg-white/[0.04] flex items-center justify-center">
+                    <Sparkles className="w-10 h-10 text-muted-foreground/30" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Vos créations apparaîtront ici</p>
+                    <p className="text-xs text-muted-foreground/60 mt-1">Générez des images, vidéos ou audios pour les voir ici</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Vos audios apparaîtront ici</p>
-                  <p className="text-xs text-muted-foreground/60 mt-1">Choisissez un modèle audio, entrez un prompt et cliquez sur Générer</p>
-                </div>
-              </div>
-            ) : (
-              <div className={`grid gap-4 ${gridSize === "small" ? "grid-cols-1 md:grid-cols-3" : gridSize === "large" ? "grid-cols-1" : "grid-cols-1 md:grid-cols-2"}`}>
-                {isGenerating && (
-                  <motion.div
-                    key="audio-loading"
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="rounded-xl bg-white/[0.04] border border-white/[0.06] flex flex-col items-center justify-center p-6 space-y-3"
-                  >
-                    <HourglassLoader size={28} />
-                  </motion.div>
-                )}
-                {galleryAudios.map((aud, i) => {
-                  const model = aud.modelId ? getModelById(aud.modelId) : null;
-                  return (
-                    <motion.div
-                      key={`aud-${i}-${aud.timestamp}`}
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      className="glass rounded-xl p-4 space-y-3"
-                    >
-                      <div className="flex items-center gap-2">
-                        {model && (
-                          <span className="w-5 h-5 rounded bg-white/[0.06] flex items-center justify-center text-[9px] font-bold text-muted-foreground uppercase">
-                            {model.brand.slice(0, 2)}
-                          </span>
-                        )}
-                        <span className="text-xs font-medium text-foreground truncate flex-1">
-                          {aud.prompt}
-                        </span>
-                        <button
-                          onClick={() => handleDownload(aud.url, i)}
-                          className="w-7 h-7 rounded-lg bg-white/[0.06] flex items-center justify-center hover:bg-white/[0.1] transition-colors shrink-0"
-                        >
-                          <Download className="w-3.5 h-3.5 text-muted-foreground" />
-                        </button>
-                      </div>
-                      <audio src={aud.url} controls className="w-full h-8" />
-                    </motion.div>
-                  );
-                })}
-              </div>
-            )
-          ) : activeTab === "video" ? (
-            /* ===== VIDEO GALLERY ===== */
-            galleryVideos.length === 0 && !isGenerating ? (
-              <div className="flex flex-col items-center justify-center h-full text-center space-y-4">
-                <div className="w-20 h-20 rounded-2xl bg-white/[0.04] flex items-center justify-center">
-                  <Video className="w-10 h-10 text-muted-foreground/30" />
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Vos vidéos apparaîtront ici</p>
-                  <p className="text-xs text-muted-foreground/60 mt-1">Choisissez un modèle vidéo, entrez un prompt et cliquez sur Générer</p>
-                </div>
-              </div>
-            ) : (
-              <div className={`grid gap-4 ${gridSize === "small" ? "grid-cols-2 md:grid-cols-3 lg:grid-cols-4" : gridSize === "large" ? "grid-cols-1 md:grid-cols-2" : "grid-cols-1 md:grid-cols-2 lg:grid-cols-3"}`}>
-                {isGenerating && (
-                  <motion.div
-                    key="video-loading"
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="aspect-video rounded-xl bg-white/[0.04] border border-white/[0.06] flex flex-col items-center justify-center p-4 space-y-3"
-                  >
-                    <HourglassLoader size={28} />
-                  </motion.div>
-                )}
-                {galleryVideos.map((vid, i) => (
-                  <motion.div
-                    key={`vid-${i}-${vid.timestamp}`}
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="aspect-video relative group rounded-xl overflow-hidden"
-                  >
-                    <video src={vid.url} controls className="w-full h-full object-cover rounded-xl" />
-                    <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button
-                        onClick={() => handleDownload(vid.url, i)}
-                        className="w-7 h-7 rounded-lg bg-black/60 backdrop-blur-sm flex items-center justify-center hover:bg-black/80 transition-colors"
-                      >
-                        <Download className="w-3.5 h-3.5 text-white" />
-                      </button>
-                    </div>
-                    {vid.prompt && (
-                      <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
-                        <p className="text-[10px] text-white/80 truncate">{vid.prompt}</p>
-                      </div>
-                    )}
-                  </motion.div>
-                ))}
-              </div>
-            )
-          ) : (
-            /* ===== IMAGE GALLERY ===== */
-            galleryImages.length === 0 && !isGenerating ? (
-              <div className="flex flex-col items-center justify-center h-full text-center space-y-4">
-                <div className="w-20 h-20 rounded-2xl bg-white/[0.04] flex items-center justify-center">
-                  <Image className="w-10 h-10 text-muted-foreground/30" />
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Vos créations apparaîtront ici</p>
-                  <p className="text-xs text-muted-foreground/60 mt-1">Choisissez un modèle, entrez un prompt et cliquez sur Générer</p>
-                </div>
-              </div>
-            ) : (
+              );
+            }
+
+            return (
               <div className={`grid gap-3 ${gridSize === "small" ? "grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8" : gridSize === "large" ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-3" : "grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5"}`}>
-                {isGenerating &&
-                  Array.from({ length: numImages }).map((_, i) => (
+                {/* Loading placeholders */}
+                {isGenerating && (
+                  activeTab === "audio" ? (
                     <motion.div
-                      key={`loading-${i}`}
+                      key="loading-audio"
                       initial={{ opacity: 0, scale: 0.95 }}
                       animate={{ opacity: 1, scale: 1 }}
-                      className="aspect-square rounded-xl bg-white/[0.04] border border-white/[0.06] flex flex-col items-center justify-center p-4 space-y-3"
+                      className="col-span-full rounded-xl bg-white/[0.04] border border-white/[0.06] flex flex-col items-center justify-center p-6 space-y-3"
                     >
-                      <HourglassLoader size={24} />
+                      <HourglassLoader size={28} />
                     </motion.div>
-                  ))}
-                {galleryImages.map((img, i) => (
-                  <div
-                    key={`img-${i}-${img.timestamp}`}
-                    draggable
-                    onDragStart={(e) => {
-                      e.dataTransfer.setData("text/x-gallery-image", img.url);
-                      e.dataTransfer.effectAllowed = "copy";
-                    }}
-                    className="aspect-square relative group rounded-xl overflow-hidden cursor-grab active:cursor-grabbing"
-                  >
+                  ) : activeTab === "video" ? (
                     <motion.div
+                      key="loading-video"
                       initial={{ opacity: 0, scale: 0.95 }}
                       animate={{ opacity: 1, scale: 1 }}
-                      onClick={() => setPreviewImage(img)}
-                      className="w-full h-full"
+                      className="aspect-video rounded-xl bg-white/[0.04] border border-white/[0.06] flex flex-col items-center justify-center p-4 space-y-3"
                     >
-                    <img src={img.url} alt={img.prompt || "Generated"} className="w-full h-full object-cover rounded-xl pointer-events-none" loading="lazy" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                      <div className="absolute top-1.5 right-1.5 flex items-center gap-1">
-                        <button
-                          onClick={(e) => { e.stopPropagation(); handleImageToVideo(img); }}
-                          className="w-6 h-6 rounded-md bg-white/10 backdrop-blur-sm flex items-center justify-center hover:bg-white/25 transition-colors"
-                          title="Animer en vidéo"
+                      <HourglassLoader size={28} />
+                    </motion.div>
+                  ) : (
+                    Array.from({ length: numImages }).map((_, i) => (
+                      <motion.div
+                        key={`loading-${i}`}
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="aspect-square rounded-xl bg-white/[0.04] border border-white/[0.06] flex flex-col items-center justify-center p-4 space-y-3"
+                      >
+                        <HourglassLoader size={24} />
+                      </motion.div>
+                    ))
+                  )
+                )}
+
+                {/* Unified items */}
+                {allItems.map((item, i) => {
+                  if (item.type === "image") {
+                    const img = item.data as GeneratedImage;
+                    return (
+                      <div
+                        key={`img-${i}-${item.ts}`}
+                        draggable
+                        onDragStart={(e) => {
+                          e.dataTransfer.setData("text/x-gallery-image", img.url);
+                          e.dataTransfer.effectAllowed = "copy";
+                        }}
+                        className="aspect-square relative group rounded-xl overflow-hidden cursor-grab active:cursor-grabbing"
+                      >
+                        <motion.div
+                          initial={{ opacity: 0, scale: 0.95 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          onClick={() => setPreviewImage(img)}
+                          className="w-full h-full"
                         >
-                          <Film className="w-3 h-3 text-white" />
-                        </button>
-                        <button
-                          onClick={(e) => { e.stopPropagation(); handleRecreateImage(img); }}
-                          className="w-6 h-6 rounded-md bg-white/10 backdrop-blur-sm flex items-center justify-center hover:bg-white/25 transition-colors"
-                          title="Recréer"
-                        >
-                          <RefreshCw className="w-3 h-3 text-white" />
-                        </button>
+                          <img src={img.url} alt={img.prompt || "Generated"} className="w-full h-full object-cover rounded-xl pointer-events-none" loading="lazy" />
+                          {/* Type badge */}
+                          <div className="absolute top-1.5 left-1.5">
+                            <span className="flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-blue-500/80 backdrop-blur-sm text-[9px] font-bold text-white uppercase">
+                              <Image className="w-2.5 h-2.5" />
+                              IMG
+                            </span>
+                          </div>
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                            <div className="absolute top-1.5 right-1.5 flex items-center gap-1">
+                              <button
+                                onClick={(e) => { e.stopPropagation(); handleImageToVideo(img); }}
+                                className="w-6 h-6 rounded-md bg-white/10 backdrop-blur-sm flex items-center justify-center hover:bg-white/25 transition-colors"
+                                title="Animer en vidéo"
+                              >
+                                <Film className="w-3 h-3 text-white" />
+                              </button>
+                              <button
+                                onClick={(e) => { e.stopPropagation(); handleRecreateImage(img); }}
+                                className="w-6 h-6 rounded-md bg-white/10 backdrop-blur-sm flex items-center justify-center hover:bg-white/25 transition-colors"
+                                title="Recréer"
+                              >
+                                <RefreshCw className="w-3 h-3 text-white" />
+                              </button>
+                            </div>
+                            <div className="absolute bottom-0 left-0 right-0 p-2.5 flex items-end justify-between">
+                              <span className="text-[10px] text-white/80 font-medium">{img.resolution || ""}</span>
+                              <div className="flex items-center gap-1.5">
+                                <button
+                                  onClick={(e) => { e.stopPropagation(); handleDeleteImage(img); }}
+                                  className="w-7 h-7 rounded-lg bg-destructive/20 backdrop-blur-sm flex items-center justify-center hover:bg-destructive/40 transition-colors"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5 text-destructive" />
+                                </button>
+                                <button
+                                  onClick={(e) => { e.stopPropagation(); handleDownload(img.url, i); }}
+                                  className="w-7 h-7 rounded-lg bg-white/10 backdrop-blur-sm flex items-center justify-center hover:bg-white/20 transition-colors"
+                                >
+                                  <Download className="w-3.5 h-3.5 text-white" />
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        </motion.div>
                       </div>
-                      <div className="absolute bottom-0 left-0 right-0 p-2.5 flex items-end justify-between">
-                        <span className="text-[10px] text-white/80 font-medium">{img.resolution || ""}</span>
-                        <div className="flex items-center gap-1.5">
+                    );
+                  }
+
+                  if (item.type === "video") {
+                    const vid = item.data as GeneratedVideo;
+                    return (
+                      <motion.div
+                        key={`vid-${i}-${item.ts}`}
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="aspect-square relative group rounded-xl overflow-hidden"
+                      >
+                        <video src={vid.url} controls className="w-full h-full object-cover rounded-xl" />
+                        {/* Type badge */}
+                        <div className="absolute top-1.5 left-1.5 z-10">
+                          <span className="flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-purple-500/80 backdrop-blur-sm text-[9px] font-bold text-white uppercase">
+                            <Video className="w-2.5 h-2.5" />
+                            VID
+                          </span>
+                        </div>
+                        <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
                           <button
-                            onClick={(e) => { e.stopPropagation(); handleDeleteImage(img); }}
-                            className="w-7 h-7 rounded-lg bg-destructive/20 backdrop-blur-sm flex items-center justify-center hover:bg-destructive/40 transition-colors"
-                          >
-                            <Trash2 className="w-3.5 h-3.5 text-destructive" />
-                          </button>
-                          <button
-                            onClick={(e) => { e.stopPropagation(); handleDownload(img.url, i); }}
-                            className="w-7 h-7 rounded-lg bg-white/10 backdrop-blur-sm flex items-center justify-center hover:bg-white/20 transition-colors"
+                            onClick={() => handleDownload(vid.url, i)}
+                            className="w-7 h-7 rounded-lg bg-black/60 backdrop-blur-sm flex items-center justify-center hover:bg-black/80 transition-colors"
                           >
                             <Download className="w-3.5 h-3.5 text-white" />
                           </button>
                         </div>
-                      </div>
-                    </div>
-                    </motion.div>
-                  </div>
-                ))}
+                        {vid.prompt && (
+                          <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                            <p className="text-[10px] text-white/80 truncate">{vid.prompt}</p>
+                          </div>
+                        )}
+                      </motion.div>
+                    );
+                  }
+
+                  if (item.type === "audio") {
+                    const aud = item.data as GeneratedAudio;
+                    const model = aud.modelId ? getModelById(aud.modelId) : null;
+                    return (
+                      <motion.div
+                        key={`aud-${i}-${item.ts}`}
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="col-span-full glass rounded-xl p-4 space-y-3"
+                      >
+                        <div className="flex items-center gap-2">
+                          <span className="flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-green-500/80 backdrop-blur-sm text-[9px] font-bold text-white uppercase shrink-0">
+                            <Music className="w-2.5 h-2.5" />
+                            AUD
+                          </span>
+                          {model && (
+                            <span className="w-5 h-5 rounded bg-white/[0.06] flex items-center justify-center text-[9px] font-bold text-muted-foreground uppercase">
+                              {model.brand.slice(0, 2)}
+                            </span>
+                          )}
+                          <span className="text-xs font-medium text-foreground truncate flex-1">
+                            {aud.prompt}
+                          </span>
+                          <button
+                            onClick={() => handleDownload(aud.url, i)}
+                            className="w-7 h-7 rounded-lg bg-white/[0.06] flex items-center justify-center hover:bg-white/[0.1] transition-colors shrink-0"
+                          >
+                            <Download className="w-3.5 h-3.5 text-muted-foreground" />
+                          </button>
+                        </div>
+                        <audio src={aud.url} controls className="w-full h-8" />
+                      </motion.div>
+                    );
+                  }
+
+                  return null;
+                })}
               </div>
-            )
-          )}
+            );
+          })()}
         </div>
       </div>
 
