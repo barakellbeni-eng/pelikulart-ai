@@ -129,6 +129,16 @@ serve(async (req) => {
       );
     }
 
+    // Edit models require at least one reference image
+    const isEditModel = MODELS_USING_IMAGE_URLS.has(model_id);
+    const hasImages = (image_urls && Array.isArray(image_urls) && image_urls.length > 0) || !!image_url;
+    if (isEditModel && !hasImages) {
+      return new Response(
+        JSON.stringify({ error: "Ce modèle d'édition nécessite au moins une image de référence." }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     // Build payload — always include prompt and num_images
     const payload: Record<string, any> = {
       prompt,
