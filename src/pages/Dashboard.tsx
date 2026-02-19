@@ -95,6 +95,7 @@ const Dashboard = () => {
   const [numImages, setNumImages] = useState(1);
   const generationJob = useSyncExternalStore(subscribeGeneration, getGenerationJob);
   const isGenerating = generationJob?.status === "pending";
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [galleryImages, setGalleryImages] = useState<GeneratedImage[]>([]);
   const [galleryVideos, setGalleryVideos] = useState<GeneratedVideo[]>([]);
   const [galleryAudios, setGalleryAudios] = useState<GeneratedAudio[]>([]);
@@ -348,12 +349,13 @@ const Dashboard = () => {
   };
 
   const handleGenerate = async () => {
-    if (!prompt.trim()) return;
+    if (!prompt.trim() || isSubmitting) return;
     const cost = calculateCaurisCost(selectedModel, modelSettings, numImages);
     if (balance < cost) {
       toast.error(`Solde insuffisant ! Il vous faut ${cost} cauris. Rechargez votre compte.`);
       return;
     }
+    setIsSubmitting(true);
     startGeneration("image", prompt, numImages);
 
     try {
@@ -432,17 +434,19 @@ const Dashboard = () => {
       toast.error(e.message || "Erreur lors de la génération");
       failGeneration(e.message);
     } finally {
+      setIsSubmitting(false);
       if (getGenerationJob()?.status === "pending") completeGeneration();
     }
   };
 
   const handleGenerateVideo = async () => {
-    if (!prompt.trim()) return;
+    if (!prompt.trim() || isSubmitting) return;
     const cost = calculateCaurisCost(selectedModel, modelSettings);
     if (balance < cost) {
       toast.error(`Solde insuffisant ! Il vous faut ${cost} cauris. Rechargez votre compte.`);
       return;
     }
+    setIsSubmitting(true);
     startGeneration("video", prompt);
     try {
       const { data: sessionData } = await supabase.auth.getSession();
@@ -529,17 +533,19 @@ const Dashboard = () => {
       toast.error(e.message || "Erreur lors de la génération vidéo");
       failGeneration(e.message);
     } finally {
+      setIsSubmitting(false);
       if (getGenerationJob()?.status === "pending") completeGeneration();
     }
   };
 
   const handleGenerateAudio = async () => {
-    if (!prompt.trim()) return;
+    if (!prompt.trim() || isSubmitting) return;
     const cost = calculateCaurisCost(selectedModel, modelSettings);
     if (balance < cost) {
       toast.error(`Solde insuffisant ! Il vous faut ${cost} cauris.`);
       return;
     }
+    setIsSubmitting(true);
     startGeneration("audio", prompt);
     try {
       const { data: sessionData } = await supabase.auth.getSession();
@@ -592,6 +598,7 @@ const Dashboard = () => {
       toast.error(e.message || "Erreur lors de la génération audio");
       failGeneration(e.message);
     } finally {
+      setIsSubmitting(false);
       if (getGenerationJob()?.status === "pending") completeGeneration();
     }
   };
@@ -1189,13 +1196,13 @@ const Dashboard = () => {
             {/* Generate Button */}
             <button
               onClick={activeTab === "video" ? handleGenerateVideo : activeTab === "audio" ? handleGenerateAudio : handleGenerate}
-              disabled={isGenerating || !prompt.trim()}
+              disabled={isSubmitting || !prompt.trim()}
               className="btn-generate w-full flex items-center justify-between text-sm disabled:opacity-50 disabled:animate-none"
             >
-              {isGenerating ? (
+              {isSubmitting ? (
                 <span className="flex items-center gap-2 mx-auto">
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  Génération...
+                  Envoi...
                 </span>
               ) : (
                 <>
