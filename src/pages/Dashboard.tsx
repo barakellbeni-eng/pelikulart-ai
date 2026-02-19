@@ -210,6 +210,40 @@ const Dashboard = () => {
     setModelSettings((prev) => ({ ...prev, [key]: value }));
   };
 
+  // Helper: download a remote file and upload to Supabase storage, then insert into generations table
+  const persistMedia = useCallback(async (
+    remoteUrl: string,
+    mediaType: "video" | "audio",
+    promptText: string,
+    ext: string,
+    contentType: string,
+  ): Promise<string> => {
+    if (!user) return remoteUrl;
+    try {
+      const resp = await fetch(remoteUrl);
+      if (!resp.ok) return remoteUrl;
+      const blob = await resp.blob();
+      const arrayBuffer = await blob.arrayBuffer();
+      const fileName = `${user.id}/${crypto.randomUUID()}.${ext}`;
+      const { error: uploadError } = await supabase.storage
+        .from("generations")
+        .upload(fileName, new Uint8Array(arrayBuffer), { contentType, upsert: false });
+      if (uploadError) { console.error("Upload error:", uploadError); return remoteUrl; }
+      const { data: publicUrlData } = supabase.storage.from("generations").getPublicUrl(fileName);
+      const storedUrl = publicUrlData.publicUrl;
+      await supabase.from("generations").insert({
+        user_id: user.id,
+        prompt: promptText,
+        image_url: storedUrl,
+        media_type: mediaType,
+      } as any);
+      return storedUrl;
+    } catch (e) {
+      console.error("persistMedia error:", e);
+      return remoteUrl;
+    }
+  }, [user]);
+
   // Load history from DB
   useEffect(() => {
     if (!user) return;
@@ -220,14 +254,26 @@ const Dashboard = () => {
         .order("created_at", { ascending: false })
         .limit(50);
       if (!error && data) {
-        setGalleryImages(
-          data.map((g: any) => ({
+        const images: GeneratedImage[] = [];
+        const videos: GeneratedVideo[] = [];
+        const audios: GeneratedAudio[] = [];
+        for (const g of data as any[]) {
+          const item = {
             url: g.image_url,
             prompt: g.prompt,
-            resolution: g.resolution,
             timestamp: new Date(g.created_at).getTime(),
-          }))
-        );
+          };
+          if (g.media_type === "video") {
+            videos.push(item);
+          } else if (g.media_type === "audio") {
+            audios.push(item);
+          } else {
+            images.push({ ...item, resolution: g.resolution });
+          }
+        }
+        setGalleryImages(images);
+        setGalleryVideos(videos);
+        setGalleryAudios(audios);
       }
     };
     loadHistory();
@@ -504,7 +550,8 @@ const Dashboard = () => {
         const data = await resp.json();
 
         if (data.video_url) {
-          setGalleryVideos((prev) => [{ url: data.video_url, prompt: currentPrompt, timestamp: Date.now() }, ...prev]);
+          const storedUrl = await persistMedia(data.video_url, "video", currentPrompt, "mp4", "video/mp4");
+          setGalleryVideos((prev) => [{ url: storedUrl, prompt: currentPrompt, timestamp: Date.now() }, ...prev]);
           toast.success("Vidéo générée !");
           await deduct(cost);
           refetchCauris();
@@ -526,7 +573,8 @@ const Dashboard = () => {
               const pollData = await pollResp.json();
 
               if (pollData.status === "COMPLETED" && pollData.video_url) {
-                setGalleryVideos((prev) => [{ url: pollData.video_url, prompt: currentPrompt, timestamp: Date.now() }, ...prev]);
+                const storedUrl = await persistMedia(pollData.video_url, "video", currentPrompt, "mp4", "video/mp4");
+                setGalleryVideos((prev) => [{ url: storedUrl, prompt: currentPrompt, timestamp: Date.now() }, ...prev]);
                 toast.success("Vidéo générée !");
                 await deduct(cost);
                 refetchCauris();
@@ -608,8 +656,9 @@ const Dashboard = () => {
 
         const data = await resp.json();
         if (data.audio_url) {
+          const storedUrl = await persistMedia(data.audio_url, "audio", currentPrompt, "wav", "audio/wav");
           setGalleryAudios((prev) => [
-            { url: data.audio_url, prompt: currentPrompt, timestamp: Date.now(), modelId: currentModel.id },
+            { url: storedUrl, prompt: currentPrompt, timestamp: Date.now(), modelId: currentModel.id },
             ...prev,
           ]);
           toast.success("Audio généré !");
