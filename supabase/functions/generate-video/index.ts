@@ -1,15 +1,24 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
-};
+const ALLOWED_ORIGINS = [
+  "https://africa-art-ai.lovable.app",
+  "https://id-preview--9eba64cd-60e6-4a36-8ba1-08ca51ba2e45.lovable.app",
+  "http://localhost:5173",
+  "http://localhost:8080",
+];
+
+function getCorsHeaders(req: Request) {
+  const origin = req.headers.get("origin") || "";
+  return {
+    "Access-Control-Allow-Origin": ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0],
+    "Access-Control-Allow-Headers":
+      "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
+  };
+}
 
 const MODEL_ENDPOINTS: Record<string, string> = {
-  // Google
   "veo3": "https://queue.fal.run/fal-ai/veo3",
-  // Kling
   "kling-v3-std-t2v": "https://queue.fal.run/fal-ai/kling-video/v3/standard/text-to-video",
   "kling-v3-pro-t2v": "https://queue.fal.run/fal-ai/kling-video/o3/pro/text-to-video",
   "kling-v25-turbo-i2v": "https://queue.fal.run/fal-ai/kling-video/v2.5-turbo/pro/image-to-video",
@@ -17,7 +26,6 @@ const MODEL_ENDPOINTS: Record<string, string> = {
   "kling-v2-master-t2v": "https://queue.fal.run/fal-ai/kling-video/v2/master/text-to-video",
   "kling-v16-std-t2v": "https://queue.fal.run/fal-ai/kling-video/v1.6/standard/text-to-video",
   "kling-v16-elements": "https://queue.fal.run/fal-ai/kling-video/v1.6/standard/elements",
-  // Seedance
   "seedance-pro-t2v": "https://queue.fal.run/fal-ai/bytedance/seedance/v1/pro/text-to-video",
   "seedance-pro-i2v": "https://queue.fal.run/fal-ai/bytedance/seedance/v1/pro/image-to-video",
   "seedance-pro-fast-t2v": "https://queue.fal.run/fal-ai/bytedance/seedance/v1/pro/fast/text-to-video",
@@ -25,19 +33,22 @@ const MODEL_ENDPOINTS: Record<string, string> = {
   "seedance-15-pro-i2v": "https://queue.fal.run/fal-ai/bytedance/seedance/v1.5/pro/image-to-video",
   "seedance-lite-i2v": "https://queue.fal.run/fal-ai/bytedance/seedance/v1/lite/image-to-video",
   "seedance-lite-ref": "https://queue.fal.run/fal-ai/bytedance/seedance/v1/lite/reference-to-video",
-  // Luma
   "luma-ray2-t2v": "https://queue.fal.run/fal-ai/luma-dream-machine/ray-2",
   "luma-ray2-i2v": "https://queue.fal.run/fal-ai/luma-dream-machine/ray-2/image-to-video",
-  // Wan
   "wan-26-t2v": "https://queue.fal.run/wan/v2.6/text-to-video",
   "wan-26-i2v": "https://queue.fal.run/wan/v2.6/image-to-video",
-  // MiniMax
   "minimax-video": "https://queue.fal.run/fal-ai/minimax/video-01-live",
-  // Framepack
   "framepack-f1": "https://queue.fal.run/fal-ai/framepack/f1",
 };
 
+const ALLOWED_SETTINGS = new Set([
+  "aspect_ratio", "duration", "resolution", "seed", "negative_prompt",
+  "guidance_scale", "num_inference_steps", "fps",
+]);
+
 serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req);
+
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -46,14 +57,42 @@ serve(async (req) => {
     const FAL_API_KEY = Deno.env.get("FAL_API_KEY");
     if (!FAL_API_KEY) throw new Error("FAL_API_KEY is not configured");
 
-    const body = await req.json();
-    const { prompt, model_id = "veo3", image_url, action, status_url, response_url, ...modelSettings } = body;
+    const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
+    const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) throw new Error("Supabase config missing");
 
-    // === POLL ACTION: client asks us to check status ===
+    // --- Authentication ---
+    const authHeader = req.headers.get("authorization") || "";
+    if (!authHeader.startsWith("Bearer ")) {
+      return new Response(
+        JSON.stringify({ error: "Authentification requise" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const token = authHeader.replace("Bearer ", "");
+    const userClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
+      global: { headers: { Authorization: authHeader } },
+    });
+    const { data: claimsData, error: claimsError } = await userClient.auth.getClaims(token);
+    if (claimsError || !claimsData?.claims?.sub) {
+      return new Response(
+        JSON.stringify({ error: "Authentification invalide" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const userId = claimsData.claims.sub as string;
+    const adminClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+
+    const body = await req.json();
+    const { prompt, model_id = "veo3", image_url, action, status_url, response_url, cauris_cost = 0, ...rawSettings } = body;
+
+    // === POLL ACTION ===
     if (action === "poll") {
       if (!status_url || !response_url) {
         return new Response(
-          JSON.stringify({ error: "status_url and response_url required for polling" }),
+          JSON.stringify({ error: "status_url and response_url required" }),
           { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
@@ -64,12 +103,7 @@ serve(async (req) => {
           headers: { Authorization: `Key ${FAL_API_KEY}`, Accept: "application/json" },
         });
 
-        console.log("Poll status HTTP:", statusResp.status);
-
         if (!statusResp.ok) {
-          const errText = await statusResp.text();
-          console.log("Poll status error body:", errText.slice(0, 300));
-          // Don't return error — return IN_PROGRESS so client retries
           return new Response(
             JSON.stringify({ status: "IN_PROGRESS" }),
             { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -77,30 +111,23 @@ serve(async (req) => {
         }
 
         const statusData = await statusResp.json();
-        console.log("Poll status data:", JSON.stringify(statusData).slice(0, 300));
 
         if (statusData.status === "COMPLETED") {
           const resultResp = await fetch(response_url, {
             method: "GET",
             headers: { Authorization: `Key ${FAL_API_KEY}`, Accept: "application/json" },
           });
-          console.log("Result fetch HTTP:", resultResp.status);
           if (!resultResp.ok) {
-            const errText = await resultResp.text();
-            console.log("Result fetch error:", errText.slice(0, 300));
-            // Retry on next poll instead of failing permanently
             return new Response(
               JSON.stringify({ status: "IN_PROGRESS" }),
               { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
             );
           }
           const result = await resultResp.json();
-          console.log("Result keys:", Object.keys(result));
           const videoUrl = result.video?.url;
           if (!videoUrl) {
-            console.log("No video.url found in result:", JSON.stringify(result).slice(0, 500));
             return new Response(
-              JSON.stringify({ status: "FAILED", error: "No video URL in result" }),
+              JSON.stringify({ status: "FAILED", error: "Aucune vidéo dans le résultat" }),
               { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
             );
           }
@@ -112,7 +139,7 @@ serve(async (req) => {
 
         if (statusData.status === "FAILED") {
           return new Response(
-            JSON.stringify({ status: "FAILED", error: statusData.error || "Video generation failed" }),
+            JSON.stringify({ status: "FAILED", error: "La génération vidéo a échoué" }),
             { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
           );
         }
@@ -123,7 +150,6 @@ serve(async (req) => {
         );
       } catch (pollErr) {
         console.error("Poll exception:", pollErr);
-        // Return IN_PROGRESS so client retries instead of treating as permanent error
         return new Response(
           JSON.stringify({ status: "IN_PROGRESS" }),
           { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -131,10 +157,17 @@ serve(async (req) => {
       }
     }
 
-    // === SUBMIT ACTION: submit job and return polling URLs ===
+    // === SUBMIT ACTION ===
     if (!prompt || typeof prompt !== "string") {
       return new Response(
-        JSON.stringify({ error: "A prompt is required" }),
+        JSON.stringify({ error: "Un prompt est requis" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    if (prompt.length > 5000) {
+      return new Response(
+        JSON.stringify({ error: "Le prompt est trop long (max 5000 caractères)" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -142,19 +175,38 @@ serve(async (req) => {
     const endpoint = MODEL_ENDPOINTS[model_id];
     if (!endpoint) {
       return new Response(
-        JSON.stringify({ error: `Unknown video model: ${model_id}` }),
+        JSON.stringify({ error: "Modèle vidéo inconnu" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    const payload: Record<string, any> = { prompt, ...modelSettings };
-    for (const key of Object.keys(payload)) {
-      if (payload[key] === "" || payload[key] === null || payload[key] === undefined) delete payload[key];
-      if (key === "seed" && payload[key] === 0) delete payload[key];
+    // Filter settings
+    const modelSettings: Record<string, any> = {};
+    for (const [key, value] of Object.entries(rawSettings)) {
+      if (ALLOWED_SETTINGS.has(key) && value !== "" && value !== null && value !== undefined) {
+        if (key === "seed" && value === 0) continue;
+        modelSettings[key] = value;
+      }
     }
+
+    // --- Server-side credit deduction ---
+    const cost = typeof cauris_cost === "number" && cauris_cost > 0 ? cauris_cost : 10;
+    const { data: deductResult, error: deductError } = await adminClient.rpc("deduct_cauris", {
+      p_user_id: userId,
+      p_amount: cost,
+    });
+
+    if (deductError || deductResult === -1) {
+      return new Response(
+        JSON.stringify({ error: "Solde insuffisant" }),
+        { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const payload: Record<string, any> = { prompt, ...modelSettings };
     if (image_url) payload.image_url = image_url;
 
-    console.log(`Submitting video to ${model_id} (${endpoint}):`, JSON.stringify(payload));
+    console.log(`Submitting video to ${model_id}`);
 
     const submitResp = await fetch(endpoint, {
       method: "POST",
@@ -168,25 +220,24 @@ serve(async (req) => {
     if (!submitResp.ok) {
       const errText = await submitResp.text();
       console.error("Fal submit error:", submitResp.status, errText);
+      // Refund on failure
+      await adminClient.rpc("add_cauris", { p_user_id: userId, p_amount: cost });
       return new Response(
-        JSON.stringify({ error: `Fal AI error (${submitResp.status}): ${errText}` }),
+        JSON.stringify({ error: "Erreur du service de génération vidéo. Réessayez." }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
     const submitData = await submitResp.json();
-    console.log("Submit response keys:", Object.keys(submitData));
 
-    // If video is immediately available (unlikely for queue endpoints)
     const videoUrl = submitData.video?.url;
     if (videoUrl) {
       return new Response(
-        JSON.stringify({ video_url: videoUrl }),
+        JSON.stringify({ video_url: videoUrl, new_balance: deductResult }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // Return polling info to client
     if (submitData.request_id) {
       const sUrl = submitData.status_url || `${endpoint}/requests/${submitData.request_id}/status`;
       const rUrl = submitData.response_url || `${endpoint}/requests/${submitData.request_id}`;
@@ -196,19 +247,22 @@ serve(async (req) => {
           request_id: submitData.request_id,
           status_url: sUrl,
           response_url: rUrl,
+          new_balance: deductResult,
         }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
+    // Refund if nothing returned
+    await adminClient.rpc("add_cauris", { p_user_id: userId, p_amount: cost });
     return new Response(
-      JSON.stringify({ error: "No video generated and no request_id returned" }),
+      JSON.stringify({ error: "Aucune vidéo générée" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (e) {
     console.error("generate-video error:", e);
     return new Response(
-      JSON.stringify({ error: e instanceof Error ? e.message : "Unknown error" }),
+      JSON.stringify({ error: "Une erreur interne est survenue. Réessayez." }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }

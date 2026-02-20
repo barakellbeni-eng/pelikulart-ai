@@ -1,13 +1,22 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
-};
+const ALLOWED_ORIGINS = [
+  "https://africa-art-ai.lovable.app",
+  "https://id-preview--9eba64cd-60e6-4a36-8ba1-08ca51ba2e45.lovable.app",
+  "http://localhost:5173",
+  "http://localhost:8080",
+];
 
-// Model endpoint mapping — use fal.run (synchronous) instead of queue.fal.run
+function getCorsHeaders(req: Request) {
+  const origin = req.headers.get("origin") || "";
+  return {
+    "Access-Control-Allow-Origin": ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0],
+    "Access-Control-Allow-Headers":
+      "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
+  };
+}
+
 const MODEL_ENDPOINTS: Record<string, string> = {
   "nano-banana-pro": "https://fal.run/fal-ai/nano-banana-pro",
   "nano-banana-pro-edit": "https://fal.run/fal-ai/nano-banana-pro/edit",
@@ -31,12 +40,16 @@ const MODEL_ENDPOINTS: Record<string, string> = {
   "seedream-v45-edit": "https://fal.run/fal-ai/bytedance/seedream/v4.5/edit",
 };
 
-// Models that use image_urls (array) instead of image_url (singular)
 const MODELS_USING_IMAGE_URLS = new Set([
   "seedream-v4-edit", "seedream-v45-edit", "flux2-dev-edit", "nano-banana-pro-edit",
 ]);
 
-// No polling needed — fal.run returns results synchronously
+// Allowed setting keys to prevent arbitrary data injection
+const ALLOWED_SETTINGS = new Set([
+  "aspect_ratio", "resolution", "image_size", "guidance_scale", "seed",
+  "negative_prompt", "num_inference_steps", "style", "safety_tolerance",
+  "enable_safety_checker", "expand_prompt", "raw",
+]);
 
 async function downloadAndUpload(
   supabase: any,
@@ -72,6 +85,8 @@ async function downloadAndUpload(
 }
 
 serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req);
+
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -86,20 +101,29 @@ serve(async (req) => {
       throw new Error("Supabase config missing");
     }
 
+    // --- Authentication: require valid JWT ---
     const authHeader = req.headers.get("authorization") || "";
+    if (!authHeader.startsWith("Bearer ")) {
+      return new Response(
+        JSON.stringify({ error: "Authentification requise" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const token = authHeader.replace("Bearer ", "");
     const userClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
       global: { headers: { Authorization: authHeader } },
     });
 
-    let user: { id: string } | null = null;
-    if (authHeader.startsWith("Bearer ")) {
-      const token = authHeader.replace("Bearer ", "");
-      const { data, error } = await userClient.auth.getClaims(token);
-      if (!error && data?.claims?.sub) {
-        user = { id: data.claims.sub as string };
-      }
+    const { data: claimsData, error: claimsError } = await userClient.auth.getClaims(token);
+    if (claimsError || !claimsData?.claims?.sub) {
+      return new Response(
+        JSON.stringify({ error: "Authentification invalide" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
+    const userId = claimsData.claims.sub as string;
     const adminClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
     const body = await req.json();
@@ -110,13 +134,21 @@ serve(async (req) => {
       num_images = 1,
       image_url,
       image_urls,
-      // All other settings are model-specific and passed through
-      ...modelSettings
+      cauris_cost = 0,
+      ...rawSettings
     } = body;
 
+    // --- Input validation ---
     if (!prompt || typeof prompt !== "string") {
       return new Response(
-        JSON.stringify({ error: "A prompt is required" }),
+        JSON.stringify({ error: "Un prompt est requis" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    if (prompt.length > 5000) {
+      return new Response(
+        JSON.stringify({ error: "Le prompt est trop long (max 5000 caractères)" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -124,8 +156,33 @@ serve(async (req) => {
     const endpoint = MODEL_ENDPOINTS[model_id];
     if (!endpoint) {
       return new Response(
-        JSON.stringify({ error: `Unknown model: ${model_id}` }),
+        JSON.stringify({ error: "Modèle inconnu" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const safeNumImages = Math.min(Math.max(1, Number(num_images) || 1), 4);
+
+    // Filter model settings to allowed keys only
+    const modelSettings: Record<string, any> = {};
+    for (const [key, value] of Object.entries(rawSettings)) {
+      if (ALLOWED_SETTINGS.has(key) && value !== "" && value !== null && value !== undefined) {
+        if (key === "seed" && value === 0) continue;
+        modelSettings[key] = value;
+      }
+    }
+
+    // --- Server-side credit deduction BEFORE processing ---
+    const cost = typeof cauris_cost === "number" && cauris_cost > 0 ? cauris_cost : 2;
+    const { data: deductResult, error: deductError } = await adminClient.rpc("deduct_cauris", {
+      p_user_id: userId,
+      p_amount: cost,
+    });
+
+    if (deductError || deductResult === -1) {
+      return new Response(
+        JSON.stringify({ error: "Solde insuffisant" }),
+        { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
@@ -133,35 +190,26 @@ serve(async (req) => {
     const isEditModel = MODELS_USING_IMAGE_URLS.has(model_id);
     const hasImages = (image_urls && Array.isArray(image_urls) && image_urls.length > 0) || !!image_url;
     if (isEditModel && !hasImages) {
+      // Refund credits since we can't process
+      await adminClient.rpc("add_cauris", { p_user_id: userId, p_amount: cost });
       return new Response(
         JSON.stringify({ error: "Ce modèle d'édition nécessite au moins une image de référence." }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // Build payload — always include prompt and num_images
+    // Build payload
     const payload: Record<string, any> = {
       prompt,
-      num_images: Math.min(num_images, 4),
+      num_images: safeNumImages,
       output_format,
       ...modelSettings,
     };
 
-    // Remove empty/null values and seed=0
-    for (const key of Object.keys(payload)) {
-      if (payload[key] === "" || payload[key] === null || payload[key] === undefined) {
-        delete payload[key];
-      }
-      if (key === "seed" && payload[key] === 0) {
-        delete payload[key];
-      }
-    }
-
-    // Handle image input: some models use image_url, others use image_urls (array)
+    // Handle image input
     if (image_urls && Array.isArray(image_urls) && image_urls.length > 0) {
-      // Client already sent an array — use it for multi-image models
       if (MODELS_USING_IMAGE_URLS.has(model_id)) {
-        payload.image_urls = image_urls;
+        payload.image_urls = image_urls.slice(0, 5);
       } else {
         payload.image_url = image_urls[0];
       }
@@ -173,7 +221,7 @@ serve(async (req) => {
       }
     }
 
-    console.log(`Submitting to ${model_id} (${endpoint}):`, JSON.stringify(payload));
+    console.log(`Submitting to ${model_id}`);
 
     const submitResp = await fetch(endpoint, {
       method: "POST",
@@ -188,7 +236,9 @@ serve(async (req) => {
       const errText = await submitResp.text();
       console.error("Fal submit error:", submitResp.status, errText);
 
-      // Friendly message for temporary overload
+      // Refund credits on failure
+      await adminClient.rpc("add_cauris", { p_user_id: userId, p_amount: cost });
+
       if (submitResp.status === 500 && errText.includes("temporarily overloaded")) {
         return new Response(
           JSON.stringify({ error: "Le service IA est temporairement surchargé. Réessayez dans quelques secondes." }),
@@ -197,18 +247,19 @@ serve(async (req) => {
       }
 
       return new Response(
-        JSON.stringify({ error: `Erreur du service IA (${submitResp.status}). Réessayez.` }),
+        JSON.stringify({ error: "Erreur du service de génération. Réessayez." }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
     const submitData = await submitResp.json();
-    console.log("Fal response keys:", Object.keys(submitData));
     const falImages = submitData.images || submitData.output?.images;
 
     if (!falImages?.length) {
+      // Refund credits
+      await adminClient.rpc("add_cauris", { p_user_id: userId, p_amount: cost });
       return new Response(
-        JSON.stringify({ error: "No images generated" }),
+        JSON.stringify({ error: "Aucune image générée" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -216,47 +267,32 @@ serve(async (req) => {
     const savedImages = [];
     for (const img of falImages) {
       try {
-        const storedUrl = await downloadAndUpload(
-          adminClient,
-          img.url,
-          user?.id || "anonymous",
+        const storedUrl = await downloadAndUpload(adminClient, img.url, userId, output_format);
+
+        await adminClient.from("generations").insert({
+          user_id: userId,
+          prompt: prompt.slice(0, 5000),
+          image_url: storedUrl,
+          aspect_ratio: modelSettings.aspect_ratio || null,
+          resolution: modelSettings.resolution || modelSettings.image_size || null,
           output_format,
-        );
-
-        if (user) {
-          await adminClient.from("generations").insert({
-            user_id: user.id,
-            prompt,
-            image_url: storedUrl,
-            aspect_ratio: modelSettings.aspect_ratio || null,
-            resolution: modelSettings.resolution || modelSettings.image_size || null,
-            output_format,
-          });
-        }
-
-        savedImages.push({
-          url: storedUrl,
-          width: img.width,
-          height: img.height,
         });
+
+        savedImages.push({ url: storedUrl, width: img.width, height: img.height });
       } catch (uploadErr) {
         console.error("Upload/save error:", uploadErr);
-        savedImages.push({
-          url: img.url,
-          width: img.width,
-          height: img.height,
-        });
+        savedImages.push({ url: img.url, width: img.width, height: img.height });
       }
     }
 
     return new Response(
-      JSON.stringify({ images: savedImages }),
+      JSON.stringify({ images: savedImages, new_balance: deductResult }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (e) {
     console.error("generate-image error:", e);
     return new Response(
-      JSON.stringify({ error: e instanceof Error ? e.message : "Unknown error" }),
+      JSON.stringify({ error: "Une erreur interne est survenue. Réessayez." }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
