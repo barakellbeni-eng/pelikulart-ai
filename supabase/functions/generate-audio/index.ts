@@ -1,17 +1,17 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 
-const ALLOWED_ORIGINS = [
-  "https://africa-art-ai.lovable.app",
-  "https://id-preview--9eba64cd-60e6-4a36-8ba1-08ca51ba2e45.lovable.app",
-  "http://localhost:5173",
-  "http://localhost:8080",
-];
+function isAllowedOrigin(origin: string): boolean {
+  if (!origin) return false;
+  if (origin.endsWith(".lovable.app") || origin.endsWith(".lovableproject.com")) return true;
+  if (origin === "http://localhost:5173" || origin === "http://localhost:8080") return true;
+  return false;
+}
 
 function getCorsHeaders(req: Request) {
   const origin = req.headers.get("origin") || "";
   return {
-    "Access-Control-Allow-Origin": ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0],
+    "Access-Control-Allow-Origin": isAllowedOrigin(origin) ? origin : "https://africa-art-ai.lovable.app",
     "Access-Control-Allow-Headers":
       "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
   };
