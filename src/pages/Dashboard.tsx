@@ -428,11 +428,13 @@ const Dashboard = () => {
           cleanSettings[key] = value;
         }
 
+        const imgCostForPayload = calculateCaurisCost(currentModel, currentSettings, currentNumImages);
         const payload: Record<string, any> = {
           prompt: currentPrompt,
           model_id: currentModel.id,
           num_images: Math.min(currentNumImages, currentModel.maxImages || 1),
           output_format: "png",
+          cauris_cost: imgCostForPayload,
           ...cleanSettings,
         };
         if (currentRefImages.length > 0 && currentModel.supportsImageInput) {
@@ -483,8 +485,10 @@ const Dashboard = () => {
         }
 
         setGalleryImages((prev) => [...newImages, ...prev]);
-        await deduct(imgCost);
-        refetchCauris();
+        // Credits already deducted server-side; just refresh balance
+        if (data.new_balance !== undefined) {
+          refetchCauris();
+        }
         completeGeneration();
       } catch (e: any) {
         console.error("Generation error:", e);
@@ -528,6 +532,7 @@ const Dashboard = () => {
         const payload: Record<string, any> = {
           prompt: currentPrompt,
           model_id: currentModel.id,
+          cauris_cost: cost,
           ...cleanSettings,
         };
         if (currentRefImages.length > 0 && currentModel.supportsImageInput) {
@@ -553,7 +558,6 @@ const Dashboard = () => {
           const storedUrl = await persistMedia(data.video_url, "video", currentPrompt, "mp4", "video/mp4");
           setGalleryVideos((prev) => [{ url: storedUrl, prompt: currentPrompt, timestamp: Date.now() }, ...prev]);
           toast.success("Vidéo générée !");
-          await deduct(cost);
           refetchCauris();
           completeGeneration();
           return;
@@ -576,7 +580,6 @@ const Dashboard = () => {
                 const storedUrl = await persistMedia(pollData.video_url, "video", currentPrompt, "mp4", "video/mp4");
                 setGalleryVideos((prev) => [{ url: storedUrl, prompt: currentPrompt, timestamp: Date.now() }, ...prev]);
                 toast.success("Vidéo générée !");
-                await deduct(cost);
                 refetchCauris();
                 completeGeneration();
                 return;
@@ -634,6 +637,7 @@ const Dashboard = () => {
         const payload: Record<string, any> = {
           prompt: currentPrompt,
           model_id: currentModel.id,
+          cauris_cost: cost,
           ...cleanSettings,
         };
         if (currentRefImages.length > 0 && currentModel.supportsImageInput) {
@@ -662,7 +666,6 @@ const Dashboard = () => {
             ...prev,
           ]);
           toast.success("Audio généré !");
-          await deduct(cost);
           refetchCauris();
           completeGeneration();
         } else {
