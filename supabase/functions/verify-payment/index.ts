@@ -87,6 +87,20 @@ serve(async (req) => {
       );
     }
 
+    // Check if transaction already processed
+    const { data: existing } = await adminClient
+      .from("payment_transactions")
+      .select("id")
+      .eq("transaction_id", transaction_id)
+      .single();
+
+    if (existing) {
+      return new Response(
+        JSON.stringify({ error: "Transaction déjà traitée" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     // Verify transaction with KkiaPay API if secret is available
     if (KKIAPAY_SECRET) {
       try {
@@ -136,6 +150,14 @@ serve(async (req) => {
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+
+    // Record transaction to prevent replay
+    await adminClient.from("payment_transactions").insert({
+      transaction_id,
+      user_id: userId,
+      amount,
+      cauris_added: caurisAmount,
+    });
 
     console.log(`Payment verified: user=${userId}, amount=${amount}, cauris=${caurisAmount}, tx=${transaction_id}`);
 
