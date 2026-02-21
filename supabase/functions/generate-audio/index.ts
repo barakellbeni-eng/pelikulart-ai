@@ -1,21 +1,11 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 
-function isAllowedOrigin(origin: string): boolean {
-  if (!origin) return false;
-  if (origin.endsWith(".lovable.app") || origin.endsWith(".lovableproject.com")) return true;
-  if (origin === "http://localhost:5173" || origin === "http://localhost:8080") return true;
-  return false;
-}
-
-function getCorsHeaders(req: Request) {
-  const origin = req.headers.get("origin") || "";
-  return {
-    "Access-Control-Allow-Origin": isAllowedOrigin(origin) ? origin : "https://africa-art-ai.lovable.app",
-    "Access-Control-Allow-Headers":
-      "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
-  };
-}
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
+};
 
 const MODEL_ENDPOINTS: Record<string, string> = {
   "stable-audio": "https://queue.fal.run/fal-ai/stable-audio",
@@ -61,8 +51,6 @@ async function pollForResult(endpoint: string, requestId: string, apiKey: string
 }
 
 serve(async (req) => {
-  const corsHeaders = getCorsHeaders(req);
-
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
