@@ -56,6 +56,33 @@ export type Database = {
         }
         Relationships: []
       }
+      payment_transactions: {
+        Row: {
+          amount: number
+          cauris_added: number
+          id: string
+          processed_at: string
+          transaction_id: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          cauris_added: number
+          id?: string
+          processed_at?: string
+          transaction_id: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          cauris_added?: number
+          id?: string
+          processed_at?: string
+          transaction_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
