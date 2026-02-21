@@ -925,10 +925,10 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="flex h-full overflow-hidden">
+    <div className="flex h-full max-h-full overflow-hidden">
       {/* ===== LEFT SIDEBAR ===== */}
       <div className="w-72 min-w-[288px] max-w-[288px] shrink-0 border-r border-white/[0.06] bg-white/[0.02] flex flex-col overflow-hidden">
-        <div className="p-4 space-y-4 flex-1 overflow-y-auto min-h-0">
+        <div className="p-4 space-y-4 flex-1 overflow-y-auto scrollbar-thin min-h-0">
           {/* Tabs: Image / Video / Audio */}
           <div className="flex rounded-xl bg-white/[0.04] p-1">
            {(["image", "video", "audio"] as const).map((tab) => (
