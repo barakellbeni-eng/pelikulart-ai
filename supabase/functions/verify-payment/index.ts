@@ -35,6 +35,12 @@ serve(async (req) => {
 
   try {
     const KKIAPAY_SECRET = Deno.env.get("KKIAPAY_SECRET_KEY");
+    if (!KKIAPAY_SECRET) {
+      return new Response(
+        JSON.stringify({ error: "Configuration de vérification de paiement manquante" }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
     if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) throw new Error("Config missing");
@@ -101,40 +107,45 @@ serve(async (req) => {
       );
     }
 
-    // Verify transaction with KkiaPay API if secret is available
-    if (KKIAPAY_SECRET) {
-      try {
-        const verifyResp = await fetch("https://api.kkiapay.me/api/v1/transactions/status", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "x-api-key": KKIAPAY_SECRET,
-          },
-          body: JSON.stringify({ transactionId: transaction_id }),
-        });
+    // Verify transaction with KkiaPay API (mandatory)
+    try {
+      const verifyResp = await fetch("https://api.kkiapay.me/api/v1/transactions/status", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-api-key": KKIAPAY_SECRET,
+        },
+        body: JSON.stringify({ transactionId: transaction_id }),
+      });
 
-        if (verifyResp.ok) {
-          const verifyData = await verifyResp.json();
-          if (verifyData.status !== "SUCCESS") {
-            return new Response(
-              JSON.stringify({ error: "Paiement non confirmé" }),
-              { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-            );
-          }
-          // Verify amount matches
-          if (verifyData.amount !== amount) {
-            return new Response(
-              JSON.stringify({ error: "Montant de paiement incorrect" }),
-              { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-            );
-          }
-        } else {
-          console.error("KkiaPay verification failed:", verifyResp.status);
-        }
-      } catch (verifyErr) {
-        console.error("KkiaPay verification error:", verifyErr);
-        // Continue without verification if API is down - log for audit
+      if (!verifyResp.ok) {
+        console.error("KkiaPay verification failed:", verifyResp.status);
+        return new Response(
+          JSON.stringify({ error: "Impossible de vérifier le paiement auprès de KkiaPay" }),
+          { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
       }
+
+      const verifyData = await verifyResp.json();
+      if (verifyData.status !== "SUCCESS") {
+        return new Response(
+          JSON.stringify({ error: "Paiement non confirmé" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      // Verify amount matches
+      if (verifyData.amount !== amount) {
+        return new Response(
+          JSON.stringify({ error: "Montant de paiement incorrect" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+    } catch (verifyErr) {
+      console.error("KkiaPay verification error:", verifyErr);
+      return new Response(
+        JSON.stringify({ error: "Erreur lors de la vérification du paiement" }),
+        { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
     // Add cauris to user's balance
