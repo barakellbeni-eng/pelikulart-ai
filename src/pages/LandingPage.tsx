@@ -9,18 +9,19 @@ import {
   Video,
   ArrowRight,
   Star,
-  Shield,
   CheckCircle2,
   Sparkles,
   Wand2,
   Palette,
   Send,
-  Globe,
   ChevronLeft,
   ChevronRight,
-  Film,
-  Music,
+  GraduationCap,
 } from "lucide-react";
+import About from "@/components/landing/About";
+import VideoSection from "@/components/landing/VideoSection";
+import TrainingCTA from "@/components/landing/TrainingCTA";
+import PelikulartFooter from "@/components/landing/PelikulartFooter";
 
 import heroBg1 from "@/assets/hero-bg-1.jpg";
 import heroBg2 from "@/assets/hero-bg-2.jpg";
@@ -178,11 +179,14 @@ const LandingPage = () => {
             <a href="#tools" className="hover:text-primary transition-colors">
               Services
             </a>
+            <Link to="/formation" className="hover:text-primary transition-colors">
+              Formation
+            </Link>
+            <Link to="/devis" className="hover:text-primary transition-colors">
+              Devis
+            </Link>
             <a href="#pricing" className="hover:text-primary transition-colors">
               Tarifs
-            </a>
-            <a href="#testimonials" className="hover:text-primary transition-colors">
-              Témoignages
             </a>
           </div>
 
@@ -532,6 +536,15 @@ const LandingPage = () => {
         </div>
       </section>
 
+      {/* ─── About ─── */}
+      <About />
+
+      {/* ─── Video Showcase ─── */}
+      <VideoSection />
+
+      {/* ─── Training CTA ─── */}
+      <TrainingCTA />
+
       {/* ─── CTA ─── */}
       <section className="py-20 md:py-28 px-5">
         <motion.div
@@ -562,30 +575,7 @@ const LandingPage = () => {
       </section>
 
       {/* ─── Footer ─── */}
-      <footer className="border-t border-white/[0.06] py-10 px-5">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="flex items-center gap-2">
-            <img src={pelikulartLogo} alt="Pelikulart AI" className="w-7 h-7 rounded-lg" />
-            <span className="font-bold text-sm tracking-[0.15em] uppercase">
-              PELIKULART<span className="text-primary">.</span>AI
-            </span>
-          </div>
-          <div className="flex items-center gap-6 text-sm text-muted-foreground uppercase tracking-wider">
-            <a href="#tools" className="hover:text-primary transition-colors">
-              Services
-            </a>
-            <a href="#pricing" className="hover:text-primary transition-colors">
-              Tarifs
-            </a>
-            <Link to="/studio" className="hover:text-primary transition-colors">
-              Studio
-            </Link>
-          </div>
-          <p className="text-xs text-muted-foreground">
-            © 2025 Pelikulart AI — Tous droits réservés.
-          </p>
-        </div>
-      </footer>
+      <PelikulartFooter />
     </div>
   );
 };

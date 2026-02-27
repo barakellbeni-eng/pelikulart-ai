@@ -19,6 +19,8 @@ import Pricing from "./pages/Pricing";
 import Profile from "./pages/Profile";
 import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
+import Training from "./pages/Training";
+import Devis from "./pages/Devis";
 import { Loader2, PanelLeft } from "lucide-react";
 
 const queryClient = new QueryClient();
@@ -63,13 +65,15 @@ const AuthenticatedLayout = ({ children }: { children: React.ReactNode }) => {
 
 const AppContent = () => {
   const location = useLocation();
-  const isPublic = location.pathname === "/" || location.pathname === "/auth";
+  const isPublic = ["/", "/auth", "/formation", "/devis"].includes(location.pathname);
 
   return (
     <div className="min-h-screen bg-background">
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/auth" element={<Auth />} />
+        <Route path="/formation" element={<Training />} />
+        <Route path="/devis" element={<Devis />} />
         <Route
           path="/studio"
           element={
