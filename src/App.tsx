@@ -9,6 +9,7 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import AppSidebar from "@/components/AppSidebar";
 import ThemeToggle from "@/components/ThemeToggle";
 import ProfileRing from "@/components/ProfileRing";
+import pelikulartLogo from "@/assets/pelikulart-logo.jpeg";
 import LandingPage from "./pages/LandingPage";
 import Auth from "./pages/Auth";
 import StudioHome from "./pages/StudioHome";
@@ -44,6 +45,7 @@ const AuthenticatedLayout = ({ children }: { children: React.ReactNode }) => {
           {/* Top bar with sidebar trigger */}
           <header className="sticky top-0 z-50 bg-black/80 backdrop-blur-xl border-b border-white/[0.06] px-4 py-2 flex items-center gap-3">
             <SidebarTrigger />
+            <img src={pelikulartLogo} alt="Pelikulart AI" className="w-7 h-7 rounded-lg" />
             <h1 className="text-sm font-bold tracking-[0.15em] uppercase">
               PELIKULART<span className="text-primary">.</span>AI
             </h1>
