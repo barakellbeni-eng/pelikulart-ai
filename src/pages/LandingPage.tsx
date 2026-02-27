@@ -2,26 +2,22 @@ import { useState, useEffect, useCallback } from "react";
 import { Link, Navigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/hooks/useAuth";
-import pelikulartLogo from "@/assets/pelikulart-logo.jpeg";
 import {
   Zap,
-  Image,
-  Video,
   ArrowRight,
   Star,
   CheckCircle2,
-  Sparkles,
-  Wand2,
-  Palette,
   Send,
   ChevronLeft,
   ChevronRight,
-  GraduationCap,
 } from "lucide-react";
+import Navigation from "@/components/landing/Navigation";
+import Services from "@/components/landing/Services";
 import About from "@/components/landing/About";
 import VideoSection from "@/components/landing/VideoSection";
 import TrainingCTA from "@/components/landing/TrainingCTA";
 import PelikulartFooter from "@/components/landing/PelikulartFooter";
+import FloatingPromoBanner from "@/components/landing/FloatingPromoBanner";
 
 import heroBg1 from "@/assets/hero-bg-1.jpg";
 import heroBg2 from "@/assets/hero-bg-2.jpg";
@@ -71,33 +67,6 @@ const heroSlides = [
     title: "CONÇU POUR LES CRÉATEURS AFRICAINS",
     desc: "Payez avec Mobile Money, générez en connexion limitée. Pelikulart AI est fait pour vous.",
     cta: "COMMENCER",
-  },
-];
-
-const aiTools = [
-  {
-    icon: Image,
-    title: "GÉNÉRATEUR D'IMAGES IA",
-    desc: "Créez des visuels HD en quelques secondes avec les modèles les plus avancés.",
-    color: "from-primary/20 to-primary/5",
-  },
-  {
-    icon: Video,
-    title: "GÉNÉRATEUR DE VIDÉOS IA",
-    desc: "Transformez vos idées en vidéos cinématiques. Jusqu'à 15 secondes en haute qualité.",
-    color: "from-accent/20 to-accent/5",
-  },
-  {
-    icon: Wand2,
-    title: "PELIKULART BOOST",
-    desc: "Enrichissez vos prompts avec des références culturelles : Lumière du Sahel, Textures Wax, Afrofuturisme.",
-    color: "from-primary/20 to-accent/5",
-  },
-  {
-    icon: Palette,
-    title: "STYLES & RÉFÉRENCES",
-    desc: "Choisissez parmi des dizaines de styles africains pré-configurés pour des résultats cohérents.",
-    color: "from-accent/20 to-primary/5",
   },
 ];
 
@@ -162,51 +131,8 @@ const LandingPage = () => {
 
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
-      {/* ─── Navbar ─── */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-xl border-b border-white/[0.06]">
-        <div className="max-w-7xl mx-auto flex items-center justify-between px-5 py-3">
-          <Link to="/" className="flex items-center gap-2.5">
-            <img src={pelikulartLogo} alt="Pelikulart AI" className="w-8 h-8 rounded-lg" />
-            <span className="text-lg font-bold tracking-[0.15em] uppercase text-white">
-              PELIKULART<span className="text-primary">.</span>AI
-            </span>
-          </Link>
-
-          <div className="hidden md:flex items-center gap-8 text-sm text-white/60 uppercase tracking-wider font-medium">
-            <a href="#" className="hover:text-primary transition-colors">
-              Accueil
-            </a>
-            <a href="#tools" className="hover:text-primary transition-colors">
-              Services
-            </a>
-            <Link to="/formation" className="hover:text-primary transition-colors">
-              Formation
-            </Link>
-            <Link to="/devis" className="hover:text-primary transition-colors">
-              Devis
-            </Link>
-            <a href="#pricing" className="hover:text-primary transition-colors">
-              Tarifs
-            </a>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <Link
-              to="/auth"
-              className="hidden sm:inline-flex text-sm text-white/60 hover:text-white transition-colors uppercase tracking-wider"
-            >
-              Se connecter
-            </Link>
-            <Link
-              to="/auth"
-              className="btn-generate !px-5 !py-2.5 !text-sm !rounded-xl !animate-none"
-            >
-              Commencer
-              <ArrowRight className="w-4 h-4 inline ml-1" />
-            </Link>
-          </div>
-        </div>
-      </nav>
+      {/* ─── Navigation ─── */}
+      <Navigation />
 
       {/* ─── Hero Carousel ─── */}
       <section className="relative pt-14 h-[85vh] min-h-[600px] max-h-[900px]">
@@ -250,15 +176,11 @@ const LandingPage = () => {
               transition={{ duration: 0.5 }}
               className="max-w-xl"
             >
-              <span className="inline-block bg-primary text-black text-xs font-bold px-3 py-1 rounded-full mb-4 uppercase tracking-wider">
+              <span className="inline-block bg-primary text-primary-foreground text-xs font-bold px-3 py-1 rounded-full mb-4 uppercase tracking-wider">
                 {slide.tag}
               </span>
-              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black leading-[1.05] tracking-tight mb-4 uppercase">
-                <span className="text-white">{slide.title.split("L'IA")[0]}</span>
-                {slide.title.includes("L'IA") && (
-                  <span className="text-primary">L'IA</span>
-                )}
-                {slide.title.includes("PAR L'IA") ? "" : ""}
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black leading-[1.05] tracking-tight mb-4 uppercase text-white">
+                {slide.title}
               </h1>
               <p className="text-sm sm:text-base text-white/60 leading-relaxed mb-6 max-w-md">
                 {slide.desc}
@@ -287,7 +209,7 @@ const LandingPage = () => {
                 to="/studio"
                 className="shrink-0 w-10 h-10 rounded-xl bg-primary flex items-center justify-center hover:bg-primary/90 transition-colors"
               >
-                <Send className="w-4 h-4 text-black" />
+                <Send className="w-4 h-4 text-primary-foreground" />
               </Link>
             </div>
           </div>
@@ -323,49 +245,11 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* ─── AI Tools Grid ─── */}
-      <section id="tools" className="py-20 md:py-28 px-5">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-14">
-            <h2 className="text-3xl md:text-4xl font-black mb-3 uppercase tracking-tight">
-              NOS <span className="text-primary">SERVICES</span>
-            </h2>
-            <p className="text-muted-foreground max-w-lg mx-auto">
-              Une expertise pointue pour donner vie à vos idées les plus ambitieuses.
-            </p>
-          </div>
-
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            {aiTools.map((tool, i) => (
-              <motion.div
-                key={tool.title}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.1, duration: 0.5 }}
-              >
-                <Link
-                  to="/studio"
-                  className="block glass-card p-6 h-full group hover:border-primary/30 transition-all duration-300 hover:-translate-y-1"
-                >
-                  <div
-                    className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${tool.color} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}
-                  >
-                    <tool.icon className="w-5 h-5 text-primary" />
-                  </div>
-                  <h3 className="font-bold text-foreground mb-2 text-sm uppercase tracking-wider">{tool.title}</h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed">
-                    {tool.desc}
-                  </p>
-                </Link>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* ─── Services (Accordion) ─── */}
+      <Services />
 
       {/* ─── Stats Banner ─── */}
-      <section className="py-14 px-5 border-y border-white/[0.04]">
+      <section className="py-14 px-5 border-y border-border">
         <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8">
           {highlights.map((stat) => (
             <div key={stat.label} className="text-center">
@@ -375,50 +259,6 @@ const LandingPage = () => {
               <p className="text-sm text-muted-foreground mt-1 uppercase tracking-wider">{stat.label}</p>
             </div>
           ))}
-        </div>
-      </section>
-
-      {/* ─── Video Showcase ─── */}
-      <section className="py-20 md:py-28 px-5">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-14">
-            <h2 className="text-3xl md:text-4xl font-black mb-3 uppercase tracking-tight">
-              VIDÉOS <span className="text-primary">CINÉMATIQUES</span> EN UN CLIC
-            </h2>
-            <p className="text-muted-foreground max-w-lg mx-auto">
-              Transformez vos prompts en vidéos de haute qualité avec l'IA.
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-6">
-            {[heroVideo1, heroVideo2].map((vid, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.15, duration: 0.5 }}
-                className="glass-card p-2 glow-lime"
-              >
-                <div className="relative rounded-xl overflow-hidden aspect-video">
-                  <video
-                    src={vid}
-                    autoPlay
-                    muted
-                    loop
-                    playsInline
-                    className="w-full h-full object-cover"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent pointer-events-none" />
-                  <div className="absolute bottom-3 left-3">
-                    <span className="text-xs glass px-3 py-1.5 rounded-full text-white/80 uppercase tracking-wider">
-                      Généré par IA
-                    </span>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
         </div>
       </section>
 
@@ -451,12 +291,12 @@ const LandingPage = () => {
                   plan.popular
                     ? "border-primary/30 glow-lime"
                     : hoveredPlan === i
-                    ? "border-white/10"
+                    ? "border-muted-foreground/20"
                     : ""
                 }`}
               >
                 {plan.popular && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-black text-xs font-bold px-4 py-1 rounded-full uppercase tracking-wider">
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-xs font-bold px-4 py-1 rounded-full uppercase tracking-wider">
                     POPULAIRE
                   </div>
                 )}
@@ -553,7 +393,7 @@ const LandingPage = () => {
           viewport={{ once: true }}
           className="max-w-3xl mx-auto glass-card p-10 md:p-16 text-center relative overflow-hidden"
         >
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_hsl(72_100%_50%_/_0.08)_0%,_transparent_60%)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_hsl(var(--primary)/0.08)_0%,_transparent_60%)]" />
           <div className="relative z-10">
             <h2 className="text-3xl md:text-4xl font-black mb-4 uppercase tracking-tight">
               PRÊT À CRÉER AVEC{" "}
@@ -576,6 +416,9 @@ const LandingPage = () => {
 
       {/* ─── Footer ─── */}
       <PelikulartFooter />
+
+      {/* ─── Floating Promo ─── */}
+      <FloatingPromoBanner />
     </div>
   );
 };
