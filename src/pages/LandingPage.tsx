@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { Link, Navigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/hooks/useAuth";
+import pelikulartLogo from "@/assets/pelikulart-logo.jpeg";
 import {
   Zap,
   Image,
@@ -164,6 +165,7 @@ const LandingPage = () => {
       <nav className="fixed top-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-xl border-b border-white/[0.06]">
         <div className="max-w-7xl mx-auto flex items-center justify-between px-5 py-3">
           <Link to="/" className="flex items-center gap-2.5">
+            <img src={pelikulartLogo} alt="Pelikulart AI" className="w-8 h-8 rounded-lg" />
             <span className="text-lg font-bold tracking-[0.15em] uppercase text-white">
               PELIKULART<span className="text-primary">.</span>AI
             </span>
@@ -562,9 +564,12 @@ const LandingPage = () => {
       {/* ─── Footer ─── */}
       <footer className="border-t border-white/[0.06] py-10 px-5">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
-          <span className="font-bold text-sm tracking-[0.15em] uppercase">
-            PELIKULART<span className="text-primary">.</span>AI
-          </span>
+          <div className="flex items-center gap-2">
+            <img src={pelikulartLogo} alt="Pelikulart AI" className="w-7 h-7 rounded-lg" />
+            <span className="font-bold text-sm tracking-[0.15em] uppercase">
+              PELIKULART<span className="text-primary">.</span>AI
+            </span>
+          </div>
           <div className="flex items-center gap-6 text-sm text-muted-foreground uppercase tracking-wider">
             <a href="#tools" className="hover:text-primary transition-colors">
               Services
