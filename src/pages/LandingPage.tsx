@@ -17,6 +17,8 @@ import {
   Globe,
   ChevronLeft,
   ChevronRight,
+  Film,
+  Music,
 } from "lucide-react";
 
 import heroBg1 from "@/assets/hero-bg-1.jpg";
@@ -29,69 +31,69 @@ import heroVideo2 from "@/assets/hero-video-2.mp4";
 
 const heroSlides = [
   {
+    type: "video" as const,
+    src: heroVideo1,
+    tag: "NOUVEAU",
+    title: "LA RÉVOLUTION DE L'IMAGE PAR L'IA",
+    desc: "Où la pellicule rencontre le futur. Créez des visuels et vidéos cinématiques avec l'intelligence artificielle.",
+    cta: "NOS CRÉATIONS",
+  },
+  {
     type: "image" as const,
     src: heroBg1,
-    tag: "NOUVEAU",
-    title: "Portraits IA Afrofuturistes",
-    desc: "Créez des portraits époustouflants inspirés de l'esthétique africaine avec notre modèle Nano entraîné sur des milliers de références.",
-    cta: "Essayer maintenant",
+    tag: "CLIPS IA",
+    title: "PORTRAITS IA & FORMATS LONGS",
+    desc: "Créez des portraits époustouflants et des vidéos cinématiques avec notre technologie IA de pointe.",
+    cta: "ESSAYER MAINTENANT",
   },
   {
     type: "video" as const,
-    src: heroVideo1,
+    src: heroVideo2,
     tag: "VIDÉO IA",
-    title: "Vidéos cinématiques en un clic",
-    desc: "Générez des vidéos HD de 15 secondes avec le modèle Kling v2. Scènes africaines, transitions fluides, qualité studio.",
-    cta: "Créer une vidéo",
+    title: "VIDÉOS CINÉMATIQUES EN UN CLIC",
+    desc: "Générez des vidéos HD de 15 secondes. Scènes africaines, transitions fluides, qualité studio.",
+    cta: "CRÉER UNE VIDÉO",
   },
   {
     type: "image" as const,
     src: heroBg2,
     tag: "PELIKULART BOOST",
-    title: "L'Afrique rencontre le Futur",
-    desc: "Notre moteur Pelikulart Boost enrichit vos prompts avec des références culturelles africaines pour des résultats uniques au monde.",
-    cta: "Découvrir",
-  },
-  {
-    type: "video" as const,
-    src: heroVideo2,
-    tag: "CRÉATEURS",
-    title: "Conçu pour les créateurs africains",
-    desc: "Payez avec Mobile Money, générez en connexion limitée. Pelikulart AI est fait pour vous.",
-    cta: "Commencer gratuitement",
+    title: "L'AFRIQUE RENCONTRE LE FUTUR",
+    desc: "Notre moteur Pelikulart Boost enrichit vos prompts avec des références culturelles africaines pour des résultats uniques.",
+    cta: "DÉCOUVRIR",
   },
   {
     type: "image" as const,
     src: heroBg3,
-    tag: "TEXTURES",
-    title: "Du Wax au Pixel",
-    desc: "Transformez les textures traditionnelles africaines en art numérique avec l'intelligence artificielle.",
-    cta: "Explorer",
+    tag: "CRÉATEURS",
+    title: "CONÇU POUR LES CRÉATEURS AFRICAINS",
+    desc: "Payez avec Mobile Money, générez en connexion limitée. Pelikulart AI est fait pour vous.",
+    cta: "COMMENCER",
   },
 ];
 
 const aiTools = [
   {
     icon: Image,
-    title: "Générateur d'images IA",
-    desc: "Créez des visuels HD en quelques secondes avec le modèle Nano, optimisé pour l'esthétique africaine.",
+    title: "GÉNÉRATEUR D'IMAGES IA",
+    desc: "Créez des visuels HD en quelques secondes avec les modèles les plus avancés.",
     color: "from-primary/20 to-primary/5",
   },
   {
     icon: Video,
-    title: "Générateur de vidéos IA",
-    desc: "Transformez vos idées en vidéos cinématiques avec Kling v2. Jusqu'à 15 secondes en haute qualité.",
+    title: "GÉNÉRATEUR DE VIDÉOS IA",
+    desc: "Transformez vos idées en vidéos cinématiques. Jusqu'à 15 secondes en haute qualité.",
     color: "from-accent/20 to-accent/5",
   },
   {
     icon: Wand2,
-    title: "Pelikulart Boost",
+    title: "PELIKULART BOOST",
     desc: "Enrichissez vos prompts avec des références culturelles : Lumière du Sahel, Textures Wax, Afrofuturisme.",
     color: "from-primary/20 to-accent/5",
   },
   {
     icon: Palette,
-    title: "Styles & Références",
+    title: "STYLES & RÉFÉRENCES",
     desc: "Choisissez parmi des dizaines de styles africains pré-configurés pour des résultats cohérents.",
     color: "from-accent/20 to-primary/5",
   },
@@ -147,13 +149,11 @@ const LandingPage = () => {
     setCurrentSlide((p) => (p - 1 + heroSlides.length) % heroSlides.length);
   }, []);
 
-  // Auto-advance slides
   useEffect(() => {
     const timer = setInterval(nextSlide, 6000);
     return () => clearInterval(timer);
   }, [nextSlide]);
 
-  // Redirect logged-in users to studio
   if (!loading && user) return <Navigate to="/studio" replace />;
 
   const slide = heroSlides[currentSlide];
@@ -161,29 +161,25 @@ const LandingPage = () => {
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
       {/* ─── Navbar ─── */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-xl border-b border-white/[0.06]">
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-xl border-b border-white/[0.06]">
         <div className="max-w-7xl mx-auto flex items-center justify-between px-5 py-3">
           <Link to="/" className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-destructive flex items-center justify-center">
-              <Zap className="w-4 h-4 text-primary-foreground" />
-            </div>
-            <span className="text-lg font-bold tracking-tight">
-              <span className="text-gradient-primary">Pelikulart</span>
-              <span className="text-foreground"> AI</span>
+            <span className="text-lg font-bold tracking-[0.15em] uppercase text-white">
+              PELIKULART<span className="text-primary">.</span>AI
             </span>
           </Link>
 
-          <div className="hidden md:flex items-center gap-8 text-sm text-muted-foreground">
-            <a href="#" className="hover:text-foreground transition-colors">
+          <div className="hidden md:flex items-center gap-8 text-sm text-white/60 uppercase tracking-wider font-medium">
+            <a href="#" className="hover:text-primary transition-colors">
               Accueil
             </a>
-            <a href="#tools" className="hover:text-foreground transition-colors">
-              Outils IA
+            <a href="#tools" className="hover:text-primary transition-colors">
+              Services
             </a>
-            <a href="#pricing" className="hover:text-foreground transition-colors">
+            <a href="#pricing" className="hover:text-primary transition-colors">
               Tarifs
             </a>
-            <a href="#testimonials" className="hover:text-foreground transition-colors">
+            <a href="#testimonials" className="hover:text-primary transition-colors">
               Témoignages
             </a>
           </div>
@@ -191,7 +187,7 @@ const LandingPage = () => {
           <div className="flex items-center gap-3">
             <Link
               to="/auth"
-              className="hidden sm:inline-flex text-sm text-muted-foreground hover:text-foreground transition-colors"
+              className="hidden sm:inline-flex text-sm text-white/60 hover:text-white transition-colors uppercase tracking-wider"
             >
               Se connecter
             </Link>
@@ -206,9 +202,8 @@ const LandingPage = () => {
         </div>
       </nav>
 
-      {/* ─── Hero Carousel (Freepik-style) ─── */}
+      {/* ─── Hero Carousel ─── */}
       <section className="relative pt-14 h-[85vh] min-h-[600px] max-h-[900px]">
-        {/* Background media */}
         <AnimatePresence mode="wait">
           <motion.div
             key={currentSlide}
@@ -234,13 +229,11 @@ const LandingPage = () => {
                 className="w-full h-full object-cover"
               />
             )}
-            {/* Overlay gradient */}
-            <div className="absolute inset-0 bg-gradient-to-r from-background via-background/70 to-transparent" />
-            <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-background/40" />
+            <div className="absolute inset-0 bg-gradient-to-r from-black via-black/80 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black/50" />
           </motion.div>
         </AnimatePresence>
 
-        {/* Content */}
         <div className="relative z-10 h-full flex flex-col justify-end pb-16 md:pb-20 px-5 md:px-12 max-w-7xl mx-auto">
           <AnimatePresence mode="wait">
             <motion.div
@@ -251,13 +244,17 @@ const LandingPage = () => {
               transition={{ duration: 0.5 }}
               className="max-w-xl"
             >
-              <span className="inline-block bg-primary/90 text-primary-foreground text-xs font-bold px-3 py-1 rounded-full mb-4">
+              <span className="inline-block bg-primary text-black text-xs font-bold px-3 py-1 rounded-full mb-4 uppercase tracking-wider">
                 {slide.tag}
               </span>
-              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold leading-[1.1] tracking-tight mb-4">
-                {slide.title}
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black leading-[1.05] tracking-tight mb-4 uppercase">
+                <span className="text-white">{slide.title.split("L'IA")[0]}</span>
+                {slide.title.includes("L'IA") && (
+                  <span className="text-primary">L'IA</span>
+                )}
+                {slide.title.includes("PAR L'IA") ? "" : ""}
               </h1>
-              <p className="text-sm sm:text-base text-muted-foreground leading-relaxed mb-6 max-w-md">
+              <p className="text-sm sm:text-base text-white/60 leading-relaxed mb-6 max-w-md">
                 {slide.desc}
               </p>
               <Link
@@ -270,7 +267,7 @@ const LandingPage = () => {
             </motion.div>
           </AnimatePresence>
 
-          {/* Prompt bar (Freepik-style) */}
+          {/* Prompt bar */}
           <div className="mt-8 max-w-xl">
             <div className="glass rounded-2xl p-1.5 flex items-center gap-2">
               <input
@@ -278,13 +275,13 @@ const LandingPage = () => {
                 placeholder="Décrivez ce que vous voulez créer..."
                 value={promptText}
                 onChange={(e) => setPromptText(e.target.value)}
-                className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground px-4 py-3 outline-none"
+                className="flex-1 bg-transparent text-sm text-white placeholder:text-white/40 px-4 py-3 outline-none"
               />
               <Link
                 to="/studio"
                 className="shrink-0 w-10 h-10 rounded-xl bg-primary flex items-center justify-center hover:bg-primary/90 transition-colors"
               >
-                <Send className="w-4 h-4 text-primary-foreground" />
+                <Send className="w-4 h-4 text-black" />
               </Link>
             </div>
           </div>
@@ -295,7 +292,7 @@ const LandingPage = () => {
               onClick={prevSlide}
               className="w-9 h-9 rounded-full glass flex items-center justify-center hover:bg-white/10 transition-colors"
             >
-              <ChevronLeft className="w-4 h-4 text-foreground" />
+              <ChevronLeft className="w-4 h-4 text-white" />
             </button>
             <div className="flex gap-2">
               {heroSlides.map((_, i) => (
@@ -314,7 +311,7 @@ const LandingPage = () => {
               onClick={nextSlide}
               className="w-9 h-9 rounded-full glass flex items-center justify-center hover:bg-white/10 transition-colors"
             >
-              <ChevronRight className="w-4 h-4 text-foreground" />
+              <ChevronRight className="w-4 h-4 text-white" />
             </button>
           </div>
         </div>
@@ -324,11 +321,11 @@ const LandingPage = () => {
       <section id="tools" className="py-20 md:py-28 px-5">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-14">
-            <h2 className="text-3xl md:text-4xl font-bold mb-3">
-              La suite IA <span className="text-gradient-primary">complète</span>
+            <h2 className="text-3xl md:text-4xl font-black mb-3 uppercase tracking-tight">
+              NOS <span className="text-primary">SERVICES</span>
             </h2>
             <p className="text-muted-foreground max-w-lg mx-auto">
-              Accédez aux modèles IA les plus avancés, entraînés pour le contenu africain.
+              Une expertise pointue pour donner vie à vos idées les plus ambitieuses.
             </p>
           </div>
 
@@ -343,14 +340,14 @@ const LandingPage = () => {
               >
                 <Link
                   to="/studio"
-                  className="block glass-card p-6 h-full group hover:border-primary/20 transition-all duration-300 hover:-translate-y-1"
+                  className="block glass-card p-6 h-full group hover:border-primary/30 transition-all duration-300 hover:-translate-y-1"
                 >
                   <div
                     className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${tool.color} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}
                   >
                     <tool.icon className="w-5 h-5 text-primary" />
                   </div>
-                  <h3 className="font-semibold text-foreground mb-2">{tool.title}</h3>
+                  <h3 className="font-bold text-foreground mb-2 text-sm uppercase tracking-wider">{tool.title}</h3>
                   <p className="text-sm text-muted-foreground leading-relaxed">
                     {tool.desc}
                   </p>
@@ -366,10 +363,10 @@ const LandingPage = () => {
         <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8">
           {highlights.map((stat) => (
             <div key={stat.label} className="text-center">
-              <p className="text-3xl md:text-4xl font-extrabold text-gradient-primary">
+              <p className="text-3xl md:text-4xl font-black text-primary">
                 {stat.value}
               </p>
-              <p className="text-sm text-muted-foreground mt-1">{stat.label}</p>
+              <p className="text-sm text-muted-foreground mt-1 uppercase tracking-wider">{stat.label}</p>
             </div>
           ))}
         </div>
@@ -379,11 +376,11 @@ const LandingPage = () => {
       <section className="py-20 md:py-28 px-5">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-14">
-            <h2 className="text-3xl md:text-4xl font-bold mb-3">
-              Générez des <span className="text-gradient-gold">vidéos IA</span> en un clic
+            <h2 className="text-3xl md:text-4xl font-black mb-3 uppercase tracking-tight">
+              VIDÉOS <span className="text-primary">CINÉMATIQUES</span> EN UN CLIC
             </h2>
             <p className="text-muted-foreground max-w-lg mx-auto">
-              Le modèle Kling v2 transforme vos prompts en vidéos cinématiques de haute qualité.
+              Transformez vos prompts en vidéos de haute qualité avec l'IA.
             </p>
           </div>
 
@@ -395,7 +392,7 @@ const LandingPage = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.15, duration: 0.5 }}
-                className="glass-card p-2 glow-orange"
+                className="glass-card p-2 glow-lime"
               >
                 <div className="relative rounded-xl overflow-hidden aspect-video">
                   <video
@@ -406,9 +403,9 @@ const LandingPage = () => {
                     playsInline
                     className="w-full h-full object-cover"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-background/60 to-transparent pointer-events-none" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent pointer-events-none" />
                   <div className="absolute bottom-3 left-3">
-                    <span className="text-xs glass px-3 py-1.5 rounded-full text-foreground/80">
+                    <span className="text-xs glass px-3 py-1.5 rounded-full text-white/80 uppercase tracking-wider">
                       Généré par IA
                     </span>
                   </div>
@@ -426,8 +423,8 @@ const LandingPage = () => {
       >
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-14">
-            <h2 className="text-3xl md:text-4xl font-bold mb-3">
-              Des tarifs <span className="text-gradient-gold">accessibles</span>
+            <h2 className="text-3xl md:text-4xl font-black mb-3 uppercase tracking-tight">
+              TARIFS <span className="text-primary">ACCESSIBLES</span>
             </h2>
             <p className="text-muted-foreground">
               Payez en FCFA avec Mobile Money. Sans carte bancaire.
@@ -446,22 +443,22 @@ const LandingPage = () => {
                 onMouseLeave={() => setHoveredPlan(null)}
                 className={`glass-card p-6 relative transition-all duration-300 ${
                   plan.popular
-                    ? "border-primary/30 glow-orange"
+                    ? "border-primary/30 glow-lime"
                     : hoveredPlan === i
                     ? "border-white/10"
                     : ""
                 }`}
               >
                 {plan.popular && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-primary to-destructive text-primary-foreground text-xs font-bold px-4 py-1 rounded-full">
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-black text-xs font-bold px-4 py-1 rounded-full uppercase tracking-wider">
                     POPULAIRE
                   </div>
                 )}
-                <h3 className="font-bold text-lg mb-1">{plan.name}</h3>
+                <h3 className="font-bold text-lg mb-1 uppercase">{plan.name}</h3>
                 <p className="text-muted-foreground text-sm mb-4">
                   {plan.credits} Cauris
                 </p>
-                <p className="text-3xl font-extrabold mb-1">
+                <p className="text-3xl font-black mb-1">
                   {plan.price}{" "}
                   <span className="text-base font-normal text-muted-foreground">FCFA</span>
                 </p>
@@ -477,7 +474,7 @@ const LandingPage = () => {
                 </ul>
                 <Link
                   to="/pricing"
-                  className={`block text-center rounded-xl py-3 text-sm font-semibold transition-all ${
+                  className={`block text-center rounded-xl py-3 text-sm font-bold transition-all uppercase tracking-wider ${
                     plan.popular
                       ? "btn-generate !animate-none"
                       : "glass glass-hover text-foreground"
@@ -495,8 +492,8 @@ const LandingPage = () => {
       <section id="testimonials" className="py-20 md:py-28 px-5">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-14">
-            <h2 className="text-3xl md:text-4xl font-bold mb-3">
-              Ils nous font <span className="text-gradient-primary">confiance</span>
+            <h2 className="text-3xl md:text-4xl font-black mb-3 uppercase tracking-tight">
+              ILS NOUS FONT <span className="text-primary">CONFIANCE</span>
             </h2>
           </div>
 
@@ -512,7 +509,7 @@ const LandingPage = () => {
               >
                 <div className="flex items-center gap-1 mb-4">
                   {[...Array(5)].map((_, j) => (
-                    <Star key={j} className="w-4 h-4 text-accent fill-accent" />
+                    <Star key={j} className="w-4 h-4 text-primary fill-primary" />
                   ))}
                 </div>
                 <p className="text-sm text-muted-foreground leading-relaxed mb-6">
@@ -541,11 +538,11 @@ const LandingPage = () => {
           viewport={{ once: true }}
           className="max-w-3xl mx-auto glass-card p-10 md:p-16 text-center relative overflow-hidden"
         >
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_hsl(32_100%_50%_/_0.08)_0%,_transparent_60%)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_hsl(72_100%_50%_/_0.08)_0%,_transparent_60%)]" />
           <div className="relative z-10">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              Prêt à créer avec{" "}
-              <span className="text-gradient-primary">Pelikulart AI</span> ?
+            <h2 className="text-3xl md:text-4xl font-black mb-4 uppercase tracking-tight">
+              PRÊT À CRÉER AVEC{" "}
+              <span className="text-primary">PELIKULART AI</span> ?
             </h2>
             <p className="text-muted-foreground mb-8 max-w-lg mx-auto">
               Rejoignez des milliers de créateurs africains. 50 crédits gratuits, sans engagement.
@@ -555,7 +552,7 @@ const LandingPage = () => {
               className="btn-generate !py-4 !px-10 !text-base inline-flex items-center gap-2 animate-pulse-glow"
             >
               <Zap className="w-5 h-5" />
-              Créer mon compte gratuit
+              CRÉER MON COMPTE GRATUIT
               <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
@@ -565,23 +562,17 @@ const LandingPage = () => {
       {/* ─── Footer ─── */}
       <footer className="border-t border-white/[0.06] py-10 px-5">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-primary to-destructive flex items-center justify-center">
-              <Zap className="w-3.5 h-3.5 text-primary-foreground" />
-            </div>
-            <span className="font-bold text-sm">
-              <span className="text-gradient-primary">Pelikulart</span>
-              <span className="text-foreground"> AI</span>
-            </span>
-          </div>
-          <div className="flex items-center gap-6 text-sm text-muted-foreground">
-            <a href="#tools" className="hover:text-foreground transition-colors">
-              Outils IA
+          <span className="font-bold text-sm tracking-[0.15em] uppercase">
+            PELIKULART<span className="text-primary">.</span>AI
+          </span>
+          <div className="flex items-center gap-6 text-sm text-muted-foreground uppercase tracking-wider">
+            <a href="#tools" className="hover:text-primary transition-colors">
+              Services
             </a>
-            <a href="#pricing" className="hover:text-foreground transition-colors">
+            <a href="#pricing" className="hover:text-primary transition-colors">
               Tarifs
             </a>
-            <Link to="/studio" className="hover:text-foreground transition-colors">
+            <Link to="/studio" className="hover:text-primary transition-colors">
               Studio
             </Link>
           </div>

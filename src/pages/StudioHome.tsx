@@ -77,8 +77,8 @@ const StudioHome = () => {
             <p className="text-xs font-semibold uppercase tracking-widest text-primary mb-2">
               Bienvenue, {displayName}
             </p>
-            <h1 className="text-2xl sm:text-3xl font-bold text-foreground leading-tight mb-2" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
-              La plateforme n°1 de création IA en Afrique
+            <h1 className="text-2xl sm:text-3xl font-black text-foreground leading-tight mb-2 uppercase tracking-tight">
+              LA PLATEFORME N°1 DE CRÉATION IA EN AFRIQUE
             </h1>
             <p className="text-sm text-muted-foreground max-w-xl mb-4">
               Générez des images, vidéos et sons avec l'intelligence artificielle. Payez uniquement ce que vous utilisez via <span className="font-semibold text-foreground">Mobile Money</span>, <span className="font-semibold text-foreground">Wave</span> ou <span className="font-semibold text-foreground">MoMo</span> — sans abonnement.
