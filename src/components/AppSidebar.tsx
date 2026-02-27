@@ -57,8 +57,8 @@ const AppSidebar = () => {
             <Zap className="w-4 h-4 text-primary-foreground" />
           </div>
           <div>
-            <span className="text-sm font-bold tracking-tight text-gradient-primary">cauris</span>
-            <span className="text-sm font-bold tracking-tight text-sidebar-foreground">.ai</span>
+            <span className="text-sm font-bold tracking-tight text-gradient-primary">Pelikulart</span>
+            <span className="text-sm font-bold tracking-tight text-sidebar-foreground"> AI</span>
           </div>
         </NavLink>
       </SidebarHeader>

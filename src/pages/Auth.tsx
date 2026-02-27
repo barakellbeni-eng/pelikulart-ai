@@ -65,8 +65,8 @@ const Auth = () => {
             <Zap className="w-5 h-5 text-primary-foreground" />
           </div>
           <span className="text-2xl font-bold tracking-tight">
-            <span className="text-gradient-primary">cauris</span>
-            <span className="text-foreground">.ai</span>
+            <span className="text-gradient-primary">Pelikulart</span>
+            <span className="text-foreground"> AI</span>
           </span>
         </Link>
 
