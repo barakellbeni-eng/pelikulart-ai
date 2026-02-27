@@ -47,9 +47,9 @@ const heroSlides = [
   {
     type: "image" as const,
     src: heroBg2,
-    tag: "CAURIS BOOST",
+    tag: "PELIKULART BOOST",
     title: "L'Afrique rencontre le Futur",
-    desc: "Notre moteur Cauris Boost enrichit vos prompts avec des références culturelles africaines pour des résultats uniques au monde.",
+    desc: "Notre moteur Pelikulart Boost enrichit vos prompts avec des références culturelles africaines pour des résultats uniques au monde.",
     cta: "Découvrir",
   },
   {
@@ -57,7 +57,7 @@ const heroSlides = [
     src: heroVideo2,
     tag: "CRÉATEURS",
     title: "Conçu pour les créateurs africains",
-    desc: "Payez avec Mobile Money, générez en connexion limitée. cauris.ai est fait pour vous.",
+    desc: "Payez avec Mobile Money, générez en connexion limitée. Pelikulart AI est fait pour vous.",
     cta: "Commencer gratuitement",
   },
   {
@@ -85,7 +85,7 @@ const aiTools = [
   },
   {
     icon: Wand2,
-    title: "Cauris Boost",
+    title: "Pelikulart Boost",
     desc: "Enrichissez vos prompts avec des références culturelles : Lumière du Sahel, Textures Wax, Afrofuturisme.",
     color: "from-primary/20 to-accent/5",
   },
@@ -108,7 +108,7 @@ const testimonials = [
   {
     name: "Aminata Diallo",
     role: "Directrice Marketing, Dakar",
-    text: "cauris.ai a révolutionné notre processus créatif. Nous produisons 10x plus de contenu visuel en un temps record.",
+    text: "Pelikulart AI a révolutionné notre processus créatif. Nous produisons 10x plus de contenu visuel en un temps record.",
     avatar: "AD",
   },
   {
@@ -168,8 +168,8 @@ const LandingPage = () => {
               <Zap className="w-4 h-4 text-primary-foreground" />
             </div>
             <span className="text-lg font-bold tracking-tight">
-              <span className="text-gradient-primary">cauris</span>
-              <span className="text-foreground">.ai</span>
+              <span className="text-gradient-primary">Pelikulart</span>
+              <span className="text-foreground"> AI</span>
             </span>
           </Link>
 
@@ -459,14 +459,14 @@ const LandingPage = () => {
                 )}
                 <h3 className="font-bold text-lg mb-1">{plan.name}</h3>
                 <p className="text-muted-foreground text-sm mb-4">
-                  {plan.credits} Cauris 🐚
+                  {plan.credits} Cauris
                 </p>
                 <p className="text-3xl font-extrabold mb-1">
                   {plan.price}{" "}
                   <span className="text-base font-normal text-muted-foreground">FCFA</span>
                 </p>
                 <ul className="space-y-2 my-6 text-sm text-muted-foreground">
-                  {["Images & vidéos IA", "Cauris Boost inclus", "Téléchargement HD"].map(
+                  {["Images & vidéos IA", "Pelikulart Boost inclus", "Téléchargement HD"].map(
                     (feat) => (
                       <li key={feat} className="flex items-center gap-2">
                         <CheckCircle2 className="w-4 h-4 text-primary shrink-0" />
@@ -545,7 +545,7 @@ const LandingPage = () => {
           <div className="relative z-10">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
               Prêt à créer avec{" "}
-              <span className="text-gradient-primary">cauris.ai</span> ?
+              <span className="text-gradient-primary">Pelikulart AI</span> ?
             </h2>
             <p className="text-muted-foreground mb-8 max-w-lg mx-auto">
               Rejoignez des milliers de créateurs africains. 50 crédits gratuits, sans engagement.
@@ -570,8 +570,8 @@ const LandingPage = () => {
               <Zap className="w-3.5 h-3.5 text-primary-foreground" />
             </div>
             <span className="font-bold text-sm">
-              <span className="text-gradient-primary">cauris</span>
-              <span className="text-foreground">.ai</span>
+              <span className="text-gradient-primary">Pelikulart</span>
+              <span className="text-foreground"> AI</span>
             </span>
           </div>
           <div className="flex items-center gap-6 text-sm text-muted-foreground">
@@ -586,7 +586,7 @@ const LandingPage = () => {
             </Link>
           </div>
           <p className="text-xs text-muted-foreground">
-            © 2025 cauris.ai — Tous droits réservés.
+            © 2025 Pelikulart AI — Tous droits réservés.
           </p>
         </div>
       </footer>

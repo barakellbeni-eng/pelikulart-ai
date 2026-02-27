@@ -30,7 +30,7 @@ const quickTools = [
   { icon: Image, label: "Générateur d'images", url: "/studio/create?mode=image", color: "from-blue-500/20 to-blue-600/10" },
   { icon: Video, label: "Générateur vidéo", url: "/studio/create?mode=video", color: "from-purple-500/20 to-purple-600/10" },
   { icon: Music, label: "Générateur audio", url: "/studio/create?mode=audio", color: "from-green-500/20 to-green-600/10" },
-  { icon: Sparkles, label: "Cauris Boost", url: "/studio/create?boost=true", color: "from-primary/20 to-primary/10" },
+  { icon: Sparkles, label: "Pelikulart Boost", url: "/studio/create?boost=true", color: "from-primary/20 to-primary/10" },
 ];
 
 interface RecentCreation {
