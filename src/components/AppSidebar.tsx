@@ -53,12 +53,13 @@ const AppSidebar = () => {
       {/* Logo Header */}
       <SidebarHeader className="px-4 py-5">
         <NavLink to="/studio" className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-destructive flex items-center justify-center">
-            <Zap className="w-4 h-4 text-primary-foreground" />
+          <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
+            <Zap className="w-4 h-4 text-black" />
           </div>
           <div>
-            <span className="text-sm font-bold tracking-tight text-gradient-primary">Pelikulart</span>
-            <span className="text-sm font-bold tracking-tight text-sidebar-foreground"> AI</span>
+            <span className="text-sm font-bold tracking-[0.1em] uppercase text-foreground">PELIKULART</span>
+            <span className="text-sm font-bold text-primary">.</span>
+            <span className="text-sm font-bold text-sidebar-foreground">AI</span>
           </div>
         </NavLink>
       </SidebarHeader>
