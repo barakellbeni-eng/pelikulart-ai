@@ -56,23 +56,35 @@ serve(async (req) => {
     const userId = userData.user.id;
     const adminClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-    const { transaction_id, amount } = await req.json();
+    const payload = await req.json().catch(() => null) as Record<string, unknown> | null;
 
-    if (!transaction_id || typeof transaction_id !== "string") {
+    const transactionIdCandidate =
+      (payload?.transaction_id as string | undefined) ||
+      (payload?.transactionId as string | undefined) ||
+      ((payload?.transaction as Record<string, unknown> | undefined)?.id as string | undefined) ||
+      "";
+
+    const amountCandidate = payload?.amount;
+    const normalizedAmount =
+      typeof amountCandidate === "number" ? amountCandidate : Number(amountCandidate ?? NaN);
+    const transaction_id = String(transactionIdCandidate).trim();
+
+    if (!transaction_id) {
       return new Response(
         JSON.stringify({ error: "transaction_id requis" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    if (!amount || typeof amount !== "number") {
+    if (!Number.isFinite(normalizedAmount)) {
       return new Response(
         JSON.stringify({ error: "amount requis" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    const caurisAmount = VALID_PACKS[amount];
+    const requestedAmount = Math.round(normalizedAmount);
+    const caurisAmount = VALID_PACKS[requestedAmount];
     if (!caurisAmount) {
       return new Response(
         JSON.stringify({ error: "Montant invalide" }),
@@ -114,14 +126,23 @@ serve(async (req) => {
       }
 
       const verifyData = await verifyResp.json();
-      if (verifyData.status !== "SUCCESS") {
+      const verifiedStatus = String(
+        verifyData?.status ?? verifyData?.transactionStatus ?? verifyData?.data?.status ?? ""
+      ).toUpperCase();
+      const acceptedStatuses = new Set(["SUCCESS", "SUCCEEDED", "COMPLETED", "APPROVED"]);
+
+      if (!acceptedStatuses.has(verifiedStatus)) {
         return new Response(
           JSON.stringify({ error: "Paiement non confirmé" }),
           { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
-      // Verify amount matches
-      if (verifyData.amount !== amount) {
+
+      const verifiedAmount = Number(
+        verifyData?.amount ?? verifyData?.data?.amount ?? verifyData?.transaction?.amount ?? NaN
+      );
+
+      if (!Number.isFinite(verifiedAmount) || Math.round(verifiedAmount) !== requestedAmount) {
         return new Response(
           JSON.stringify({ error: "Montant de paiement incorrect" }),
           { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -150,14 +171,22 @@ serve(async (req) => {
     }
 
     // Record transaction to prevent replay
-    await adminClient.from("payment_transactions").insert({
+    const { error: txInsertError } = await adminClient.from("payment_transactions").insert({
       transaction_id,
       user_id: userId,
-      amount,
+      amount: requestedAmount,
       cauris_added: caurisAmount,
     });
 
-    console.log(`Payment verified: user=${userId}, amount=${amount}, cauris=${caurisAmount}, tx=${transaction_id}`);
+    if (txInsertError) {
+      console.error("payment_transactions insert error:", txInsertError);
+      return new Response(
+        JSON.stringify({ error: "Paiement validé mais journalisation échouée" }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    console.log(`Payment verified: user=${userId}, amount=${requestedAmount}, cauris=${caurisAmount}, tx=${transaction_id}`);
 
     return new Response(
       JSON.stringify({ success: true, new_balance: newBalance, cauris_added: caurisAmount }),

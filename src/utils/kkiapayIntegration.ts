@@ -40,6 +40,21 @@ interface PaymentResult {
   timestamp: string;
 }
 
+const extractTransactionId = (response: Record<string, any>): string => {
+  const candidates = [
+    response?.transactionId,
+    response?.transaction_id,
+    response?.transaction?.id,
+    response?.data?.transactionId,
+    response?.data?.transaction_id,
+    response?.data?.transaction?.id,
+    response?.id,
+  ];
+
+  const found = candidates.find((value) => typeof value === "string" && value.trim().length > 0);
+  return found ? found.trim() : "";
+};
+
 export const initiateKkiapayPayment = async ({ amount, email, name, trainingName }: PaymentParams): Promise<PaymentResult> => {
   console.log("Initiating Kkiapay payment flow...");
   await loadKkiapayScript();
@@ -48,19 +63,26 @@ export const initiateKkiapayPayment = async ({ amount, email, name, trainingName
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const successHandler = (response: any) => {
       console.log("Payment success callback received!", response);
-      
+      const rawResponse = (response ?? {}) as Record<string, any>;
+      const transactionId = extractTransactionId(rawResponse);
+
       if (window.removeKkiapayListener) {
         window.removeKkiapayListener('success', successHandler);
       }
-      
+
+      if (!transactionId) {
+        reject(new Error("Transaction Kkiapay introuvable après paiement"));
+        return;
+      }
+
       const paymentData: PaymentResult = {
-        transactionId: response.transactionId,
+        transactionId,
         amount,
         email,
         name,
         trainingName,
         paymentStatus: 'COMPLETED',
-        rawResponse: response,
+        rawResponse,
         timestamp: new Date().toISOString()
       };
 
