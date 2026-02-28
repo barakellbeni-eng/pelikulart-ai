@@ -107,7 +107,7 @@ const Dashboard = () => {
   const [previewVideo, setPreviewVideo] = useState<GeneratedVideo | null>(null);
   const [isEnhancing, setIsEnhancing] = useState(false);
   const [isDescribingImage, setIsDescribingImage] = useState(false);
-  const [gridSize, setGridSize] = useState<"small" | "medium" | "large">("medium");
+  const [gridSize, setGridSize] = useState<"small" | "medium" | "large" | "feed">("feed");
   const [galleryFilter, setGalleryFilter] = useState<"all" | "image" | "video" | "audio">("all");
   const describeInputRef = useRef<HTMLInputElement>(null);
   const [isDraggingOverPrompt, setIsDraggingOverPrompt] = useState(false);
@@ -927,7 +927,7 @@ const Dashboard = () => {
   return (
     <div className="flex h-full max-h-full overflow-hidden">
       {/* ===== LEFT SIDEBAR ===== */}
-      <div className="w-72 min-w-[288px] max-w-[288px] shrink-0 border-r border-white/[0.06] bg-white/[0.02] flex flex-col overflow-hidden">
+      <div className="w-72 min-w-[288px] max-w-[288px] shrink-0 border-r border-border/30 bg-card/50 flex flex-col overflow-hidden">
         <div className="p-4 space-y-4 flex-1 overflow-y-auto scrollbar-thin min-h-0">
           {/* Tabs: Image / Video / Audio */}
           <div className="flex rounded-xl bg-white/[0.04] p-1">
@@ -1198,9 +1198,8 @@ const Dashboard = () => {
             </div>
           </div>
 
-          {/* Controls below prompt */}
+          {/* Controls below prompt: Ratio / Resolution / Image Size */}
           <div className="space-y-3 mt-3">
-            {/* Ratio / Resolution / Image Size dropdowns */}
             <div className="flex flex-wrap items-center gap-2">
               {selectedModel.settings
                 .filter((s) => s.key === "aspect_ratio" || s.key === "image_size" || s.key === "resolution")
@@ -1270,48 +1269,51 @@ const Dashboard = () => {
                 </div>
               );
             })()}
-
-            {/* Generate Button */}
-            <button
-              onClick={activeTab === "video" ? handleGenerateVideo : activeTab === "audio" ? handleGenerateAudio : handleGenerate}
-              disabled={isSubmitting || !prompt.trim()}
-              className="btn-generate w-full flex items-center justify-between text-sm disabled:opacity-50 disabled:animate-none"
-            >
-              {isSubmitting ? (
-                <span className="flex items-center gap-2 mx-auto">
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  Envoi...
-                </span>
-              ) : (
-                <>
-                  <span className="flex items-center gap-2">
-                    <Wand2 className="w-4 h-4" />
-                    Générer
-                  </span>
-                  <span className="bg-black/20 px-2.5 py-1 rounded-lg text-xs font-bold">
-                    {calculateCaurisCost(selectedModel, modelSettings, numImages)} cauris
-                  </span>
-                </>
-              )}
-            </button>
-
-            {/* Balance indicator */}
-            <div className="text-center">
-              <span className="text-[11px] text-muted-foreground">
-                Il vous reste <span className="font-bold text-foreground">{balance}</span> cauris
-                {balance < calculateCaurisCost(selectedModel, modelSettings, numImages) && (
-                  <> · <a href="/pricing" className="text-primary underline underline-offset-2 font-semibold">Recharger</a></>
-                )}
-              </span>
-            </div>
           </div>
         </div>
+        </div>
+
+        {/* ===== PINNED BOTTOM BAR ===== */}
+        <div className="shrink-0 border-t border-border/30 p-4 space-y-3 bg-card/80 backdrop-blur-sm">
+          {/* Generate Button */}
+          <button
+            onClick={activeTab === "video" ? handleGenerateVideo : activeTab === "audio" ? handleGenerateAudio : handleGenerate}
+            disabled={isSubmitting || !prompt.trim()}
+            className="btn-generate w-full flex items-center justify-between text-sm disabled:opacity-50 disabled:animate-none"
+          >
+            {isSubmitting ? (
+              <span className="flex items-center gap-2 mx-auto">
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Envoi...
+              </span>
+            ) : (
+              <>
+                <span className="flex items-center gap-2">
+                  <Wand2 className="w-4 h-4" />
+                  Générer
+                </span>
+                <span className="bg-black/20 px-2.5 py-1 rounded-lg text-xs font-bold">
+                  {calculateCaurisCost(selectedModel, modelSettings, numImages)} cauris
+                </span>
+              </>
+            )}
+          </button>
+
+          {/* Balance indicator */}
+          <div className="text-center">
+            <span className="text-[11px] text-muted-foreground">
+              Il vous reste <span className="font-bold text-foreground">{balance}</span> cauris
+              {balance < calculateCaurisCost(selectedModel, modelSettings, numImages) && (
+                <> · <a href="/pricing" className="text-primary underline underline-offset-2 font-semibold">Recharger</a></>
+              )}
+            </span>
+          </div>
         </div>
       </div>
 
       {/* ===== RIGHT GALLERY (UNIFIED) ===== */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        <div className="flex items-center justify-between px-5 py-3 border-b border-white/[0.06]">
+        <div className="flex items-center justify-between px-5 py-3 border-b border-border/30">
           <div className="flex items-center gap-1 glass rounded-lg p-0.5">
             {([
               { value: "all" as const, label: "Tout", icon: null, count: galleryImages.length + galleryVideos.length + galleryAudios.length },
@@ -1331,7 +1333,7 @@ const Dashboard = () => {
                 {f.icon && <f.icon className="w-3 h-3" />}
                 {f.label}
                 {f.count > 0 && (
-                  <span className={`text-[9px] px-1.5 py-0.5 rounded-full ${galleryFilter === f.value ? "bg-primary/30" : "bg-white/[0.06]"}`}>
+                  <span className={`text-[9px] px-1.5 py-0.5 rounded-full ${galleryFilter === f.value ? "bg-primary/30" : "bg-muted/50"}`}>
                     {f.count}
                   </span>
                 )}
@@ -1339,6 +1341,13 @@ const Dashboard = () => {
             ))}
           </div>
           <div className="flex items-center gap-1 glass rounded-lg p-0.5">
+            <button
+              onClick={() => setGridSize("feed")}
+              className={`p-1.5 rounded-md transition-colors ${gridSize === "feed" ? "bg-primary/20 text-primary" : "text-muted-foreground hover:text-foreground"}`}
+              title="Vue flux"
+            >
+              <SlidersHorizontal className="w-3.5 h-3.5" />
+            </button>
             <button
               onClick={() => setGridSize("small")}
               className={`p-1.5 rounded-md transition-colors ${gridSize === "small" ? "bg-primary/20 text-primary" : "text-muted-foreground hover:text-foreground"}`}
@@ -1391,6 +1400,143 @@ const Dashboard = () => {
                     <p className="text-sm font-medium text-muted-foreground">Vos créations apparaîtront ici</p>
                     <p className="text-xs text-muted-foreground/60 mt-1">Générez des images, vidéos ou audios pour les voir ici</p>
                   </div>
+                </div>
+              );
+            }
+
+            if (gridSize === "feed") {
+              // ===== FEED VIEW (like Kling AI) =====
+              return (
+                <div className="max-w-2xl mx-auto space-y-6">
+                  {/* Loading placeholder */}
+                  {isGenerating && (
+                    <motion.div
+                      key="loading-feed"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="rounded-xl border border-border/30 bg-card/50 overflow-hidden"
+                    >
+                      <div className="aspect-video flex items-center justify-center bg-muted/20">
+                        <HourglassLoader size={32} />
+                      </div>
+                    </motion.div>
+                  )}
+
+                  {allItems.map((item, i) => {
+                    const model = (() => {
+                      if (item.type === "image") {
+                        const img = item.data as GeneratedImage;
+                        return img.modelId ? getModelById(img.modelId) : null;
+                      }
+                      return null;
+                    })();
+
+                    return (
+                      <motion.div
+                        key={`feed-${item.type}-${i}-${item.ts}`}
+                        initial={{ opacity: 0, y: 15 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: i * 0.03 }}
+                        className="rounded-xl border border-border/30 bg-card/50 overflow-hidden"
+                      >
+                        {/* Media */}
+                        {item.type === "image" && (
+                          <div
+                            className="cursor-pointer"
+                            onClick={() => setPreviewImage(item.data as GeneratedImage)}
+                          >
+                            <img
+                              src={(item.data as GeneratedImage).url}
+                              alt={(item.data as GeneratedImage).prompt || "Generated"}
+                              className="w-full object-contain max-h-[600px] bg-black/20"
+                              loading="lazy"
+                            />
+                          </div>
+                        )}
+                        {item.type === "video" && (
+                          <div className="cursor-pointer" onClick={() => setPreviewVideo(item.data as GeneratedVideo)}>
+                            <video
+                              src={(item.data as GeneratedVideo).url}
+                              controls
+                              className="w-full max-h-[600px]"
+                            />
+                          </div>
+                        )}
+                        {item.type === "audio" && (
+                          <div className="p-4">
+                            <audio src={(item.data as GeneratedAudio).url} controls className="w-full" />
+                          </div>
+                        )}
+
+                        {/* Actions bar */}
+                        <div className="px-4 py-2.5 flex items-center gap-3 border-t border-border/20">
+                          <span className={`flex items-center gap-1 px-2 py-0.5 rounded-md text-[9px] font-bold uppercase ${
+                            item.type === "image" ? "bg-blue-500/20 text-blue-400" :
+                            item.type === "video" ? "bg-purple-500/20 text-purple-400" :
+                            "bg-green-500/20 text-green-400"
+                          }`}>
+                            {item.type === "image" && <Image className="w-2.5 h-2.5" />}
+                            {item.type === "video" && <Video className="w-2.5 h-2.5" />}
+                            {item.type === "audio" && <Music className="w-2.5 h-2.5" />}
+                            {item.type === "image" ? "IMG" : item.type === "video" ? "VID" : "AUD"}
+                          </span>
+
+                          {model && (
+                            <span className="text-[10px] text-muted-foreground">
+                              {model.brand} {model.name}
+                            </span>
+                          )}
+
+                          <div className="ml-auto flex items-center gap-1.5">
+                            {item.type === "image" && (
+                              <>
+                                <button
+                                  onClick={() => handleImageToVideo(item.data as GeneratedImage)}
+                                  className="w-7 h-7 rounded-lg bg-muted/30 flex items-center justify-center hover:bg-muted/50 transition-colors"
+                                  title="Animer en vidéo"
+                                >
+                                  <Film className="w-3.5 h-3.5 text-muted-foreground" />
+                                </button>
+                                <button
+                                  onClick={() => handleRecreateImage(item.data as GeneratedImage)}
+                                  className="w-7 h-7 rounded-lg bg-muted/30 flex items-center justify-center hover:bg-muted/50 transition-colors"
+                                  title="Recréer"
+                                >
+                                  <RefreshCw className="w-3.5 h-3.5 text-muted-foreground" />
+                                </button>
+                                <button
+                                  onClick={() => handleDeleteImage(item.data as GeneratedImage)}
+                                  className="w-7 h-7 rounded-lg bg-destructive/10 flex items-center justify-center hover:bg-destructive/20 transition-colors"
+                                  title="Supprimer"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5 text-destructive" />
+                                </button>
+                              </>
+                            )}
+                            <button
+                              onClick={() => handleDownload(
+                                item.type === "image" ? (item.data as GeneratedImage).url :
+                                item.type === "video" ? (item.data as GeneratedVideo).url :
+                                (item.data as GeneratedAudio).url,
+                                i
+                              )}
+                              className="w-7 h-7 rounded-lg bg-muted/30 flex items-center justify-center hover:bg-muted/50 transition-colors"
+                              title="Télécharger"
+                            >
+                              <Download className="w-3.5 h-3.5 text-muted-foreground" />
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Prompt / metadata */}
+                        {(item.data as any).prompt && (
+                          <div className="px-4 pb-3">
+                            <p className="text-xs text-muted-foreground line-clamp-2">{(item.data as any).prompt}</p>
+                          </div>
+                        )}
+                      </motion.div>
+                    );
+                  })}
                 </div>
               );
             }
