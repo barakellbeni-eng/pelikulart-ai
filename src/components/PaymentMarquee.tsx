@@ -1,3 +1,5 @@
+import { useState, useEffect, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import payMastercard from "@/assets/pay-mastercard.png";
 import payVisa from "@/assets/pay-visa.png";
 import payMixx from "@/assets/pay-mixx.png";
@@ -24,8 +26,32 @@ interface PaymentMarqueeProps {
   showSignupCTA?: boolean;
 }
 
+const VISIBLE_COUNT = 5;
+
 const PaymentMarquee = ({ size = "md", showAvailability = false, showSignupCTA = false }: PaymentMarqueeProps) => {
-  const logoSize = size === "sm" ? "h-20 w-20" : "h-40 w-40";
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const maxSize = size === "sm" ? 56 : 96;
+  const minSize = size === "sm" ? 24 : 36;
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % logos.length);
+    }, 1200);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Get visible logos centered around currentIndex
+  const getVisibleLogos = () => {
+    const half = Math.floor(VISIBLE_COUNT / 2);
+    const items = [];
+    for (let i = -half; i <= half; i++) {
+      const idx = (currentIndex + i + logos.length) % logos.length;
+      items.push({ ...logos[idx], position: i });
+    }
+    return items;
+  };
+
+  const visibleLogos = getVisibleLogos();
 
   return (
     <div className="space-y-3">
@@ -46,17 +72,37 @@ const PaymentMarquee = ({ size = "md", showAvailability = false, showSignupCTA =
       )}
       <div className="relative overflow-hidden">
         {/* Fade edges */}
-        <div className="absolute left-0 top-0 bottom-0 w-32 sm:w-48 z-10 bg-gradient-to-r from-black via-black/80 to-transparent pointer-events-none" />
-        <div className="absolute right-0 top-0 bottom-0 w-32 sm:w-48 z-10 bg-gradient-to-l from-black via-black/80 to-transparent pointer-events-none" />
-        <div className="flex animate-marquee gap-12 w-max">
-          {[...logos, ...logos, ...logos].map((logo, i) => (
-            <img
-              key={i}
-              src={logo.src}
-              alt={logo.alt}
-              className={`${logoSize} rounded-full object-contain flex-shrink-0`}
-            />
-          ))}
+        <div className="absolute left-0 top-0 bottom-0 w-24 sm:w-40 z-10 bg-gradient-to-r from-black via-black/80 to-transparent pointer-events-none" />
+        <div className="absolute right-0 top-0 bottom-0 w-24 sm:w-40 z-10 bg-gradient-to-l from-black via-black/80 to-transparent pointer-events-none" />
+
+        <div className="flex items-center justify-center gap-6 sm:gap-10 py-4" style={{ minHeight: maxSize + 32 }}>
+          <AnimatePresence mode="popLayout">
+            {visibleLogos.map((logo) => {
+              const distance = Math.abs(logo.position);
+              const scale = distance === 0 ? 1 : distance === 1 ? 0.6 : 0.35;
+              const opacity = distance === 0 ? 1 : distance === 1 ? 0.6 : 0.3;
+              const computedSize = maxSize * scale;
+
+              return (
+                <motion.img
+                  key={`${logo.alt}-${logo.position}`}
+                  src={logo.src}
+                  alt={logo.alt}
+                  layout
+                  initial={{ opacity: 0, scale: 0.2, x: logo.position > 0 ? 80 : -80 }}
+                  animate={{
+                    opacity,
+                    scale,
+                    x: 0,
+                  }}
+                  exit={{ opacity: 0, scale: 0.2, x: logo.position > 0 ? 80 : -80 }}
+                  transition={{ type: "spring", stiffness: 200, damping: 25 }}
+                  className="rounded-full object-contain flex-shrink-0"
+                  style={{ width: computedSize, height: computedSize }}
+                />
+              );
+            })}
+          </AnimatePresence>
         </div>
       </div>
     </div>
