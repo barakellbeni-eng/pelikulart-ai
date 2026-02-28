@@ -927,8 +927,8 @@ const Dashboard = () => {
   return (
     <div className="flex h-full max-h-full overflow-hidden">
       {/* ===== LEFT SIDEBAR ===== */}
-      <div className="w-72 min-w-[288px] max-w-[288px] shrink-0 border-r border-border/30 bg-card/50 flex flex-col overflow-hidden">
-        <div className="p-4 space-y-4 flex-1 overflow-y-auto scrollbar-thin min-h-0">
+      <div className="w-72 min-w-[288px] max-w-[288px] shrink-0 border-r border-border/10 bg-card/50 flex flex-col overflow-hidden">
+        <div className="p-4 space-y-4 flex-1 overflow-y-auto scrollbar-none min-h-0">
           {/* Tabs: Image / Video / Audio */}
           <div className="flex rounded-xl bg-white/[0.04] p-1">
            {(["image", "video", "audio"] as const).map((tab) => (
@@ -1274,7 +1274,7 @@ const Dashboard = () => {
         </div>
 
         {/* ===== PINNED BOTTOM BAR ===== */}
-        <div className="shrink-0 border-t border-border/30 p-4 space-y-3 bg-card/80 backdrop-blur-sm">
+        <div className="shrink-0 border-t border-border/10 p-4 space-y-3 bg-card/80 backdrop-blur-sm">
           {/* Generate Button */}
           <button
             onClick={activeTab === "video" ? handleGenerateVideo : activeTab === "audio" ? handleGenerateAudio : handleGenerate}
@@ -1313,7 +1313,7 @@ const Dashboard = () => {
 
       {/* ===== RIGHT GALLERY (UNIFIED) ===== */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        <div className="flex items-center justify-between px-5 py-3 border-b border-border/30">
+        <div className="flex items-center justify-between px-5 py-3 border-b border-border/10">
           <div className="flex items-center gap-1 glass rounded-lg p-0.5">
             {([
               { value: "all" as const, label: "Tout", icon: null, count: galleryImages.length + galleryVideos.length + galleryAudios.length },
@@ -1414,7 +1414,7 @@ const Dashboard = () => {
                       key="loading-feed"
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
-                      className="rounded-xl border border-border/30 bg-card/50 overflow-hidden"
+                      className="rounded-xl border border-border/10 bg-card/30 overflow-hidden"
                     >
                       <div className="aspect-video flex items-center justify-center bg-muted/20">
                         <HourglassLoader size={32} />
@@ -1437,7 +1437,7 @@ const Dashboard = () => {
                         initial={{ opacity: 0, y: 15 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: i * 0.03 }}
-                        className="rounded-xl border border-border/30 bg-card/50 overflow-hidden"
+                        className="rounded-xl border border-border/10 bg-card/30 overflow-hidden"
                       >
                         {/* Media */}
                         {item.type === "image" && (
@@ -1469,7 +1469,7 @@ const Dashboard = () => {
                         )}
 
                         {/* Actions bar */}
-                        <div className="px-4 py-2.5 flex items-center gap-3 border-t border-border/20">
+                        <div className="px-4 py-2.5 flex items-center gap-3 border-t border-border/5">
                           <span className={`flex items-center gap-1 px-2 py-0.5 rounded-md text-[9px] font-bold uppercase ${
                             item.type === "image" ? "bg-blue-500/20 text-blue-400" :
                             item.type === "video" ? "bg-purple-500/20 text-purple-400" :
