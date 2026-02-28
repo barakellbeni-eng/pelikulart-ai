@@ -6,6 +6,7 @@ import { useCauris } from "@/hooks/useCauris";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { initiateKkiapayPayment } from "@/utils/kkiapayIntegration";
 
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
@@ -83,22 +84,6 @@ const packs = [
   },
 ];
 
-const KKIAPAY_KEY = import.meta.env.VITE_KKIAPAY_PUBLIC_KEY || "046751a99c664c3a1caf83a22a1f8068c568f24b";
-
-const loadKkiapayScript = (): Promise<void> => {
-  return new Promise<void>((resolve) => {
-    if (window.openKkiapayWidget) { resolve(); return; }
-    const existing = document.querySelector('script[src="https://cdn.kkiapay.me/k.js"]');
-    if (existing) { existing.addEventListener('load', () => resolve()); return; }
-    const script = document.createElement('script');
-    script.src = "https://cdn.kkiapay.me/k.js";
-    script.async = true;
-    script.onload = () => resolve();
-    script.onerror = (e) => console.error("Failed to load Kkiapay script", e);
-    document.body.appendChild(script);
-  });
-};
-
 const Pricing = () => {
   const { user } = useAuth();
   const { balance, refetch } = useCauris();
@@ -111,76 +96,33 @@ const Pricing = () => {
       return;
     }
 
-    await loadKkiapayScript();
+    try {
+      const paymentResult = await initiateKkiapayPayment({
+        amount: pack.priceNum,
+        email: user.email || "",
+        name: user.user_metadata?.display_name || user.email?.split("@")[0] || "Utilisateur",
+        trainingName: `cauris.ai - ${pack.cauris} Cauris`,
+      });
 
-    if (typeof window.openKkiapayWidget !== "function") {
-      console.error("KkiaPay widget failed to load");
-      setPaymentStatus("failed");
-      return;
-    }
+      const { data, error } = await supabase.functions.invoke("verify-payment", {
+        body: {
+          transaction_id: paymentResult.transactionId,
+          amount: pack.priceNum,
+        },
+      });
 
-    const cleanupListeners = () => {
-      if (typeof window.removeKkiapayListener === "function") {
-        window.removeKkiapayListener("success", onSuccess);
-        window.removeKkiapayListener("failed", onFailed);
-      }
-    };
-
-    const onSuccess = async (response: any) => {
-      console.log("KkiaPay success", response);
-      cleanupListeners();
-
-      try {
-        const transactionId = response?.transactionId || response?.transaction_id || response?.transaction?.id;
-
-        if (!transactionId) {
-          console.error("Missing transactionId in KkiaPay response", response);
-          setPaymentStatus("failed");
-          return;
-        }
-
-        const { data, error } = await supabase.functions.invoke("verify-payment", {
-          body: {
-            transaction_id: transactionId,
-            amount: pack.priceNum,
-          },
-        });
-
-        if (error || !data?.success) {
-          console.error("Verify-payment failed", { error, data });
-          setPaymentStatus("failed");
-          return;
-        }
-
-        setPaymentStatus("success");
-        refetch();
-      } catch (e) {
-        console.error("Verify error:", e);
+      if (error || !data?.success) {
+        console.error("Verify-payment failed", { error, data, paymentResult });
         setPaymentStatus("failed");
+        return;
       }
-    };
 
-    const onFailed = (response: any) => {
-      console.log("KkiaPay failed:", response);
-      cleanupListeners();
+      setPaymentStatus("success");
+      refetch();
+    } catch (e) {
+      console.error("Payment/verify error:", e);
       setPaymentStatus("failed");
-    };
-
-    if (typeof window.addKkiapayListener === "function") {
-      // Register listeners BEFORE opening widget to avoid race conditions
-      window.addKkiapayListener("success", onSuccess);
-      window.addKkiapayListener("failed", onFailed);
     }
-
-    window.openKkiapayWidget({
-      amount: pack.priceNum,
-      api_key: KKIAPAY_KEY,
-      sandbox: false,
-      callback: window.location.origin + "/pricing",
-      email: user.email,
-      name: `cauris.ai - ${pack.cauris} Cauris`,
-      theme: "#e67e00",
-    });
   };
 
   return (
