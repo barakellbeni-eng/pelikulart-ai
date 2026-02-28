@@ -89,7 +89,9 @@ export const initiateKkiapayPayment = async ({ amount, email, name, trainingName
       resolve(paymentData);
     };
 
-    if (window.addKkiapayListener) {
+    if (window.addSuccessListener) {
+      window.addSuccessListener(successHandler);
+    } else if (window.addKkiapayListener) {
       window.addKkiapayListener('success', successHandler);
     } else {
       window.addEventListener('success', (e: Event) => successHandler((e as CustomEvent).detail || {}));

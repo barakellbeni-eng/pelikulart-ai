@@ -28,6 +28,8 @@ declare global {
     openKkiapayWidget: (config: Record<string, any>) => void;
     addKkiapayListener: (event: string, cb: (response: any) => void) => void;
     removeKkiapayListener: (event: string, cb: (response: any) => void) => void;
+    addSuccessListener: (cb: (response: any) => void) => void;
+    addFailedListener: (cb: (error: any) => void) => void;
   }
 }
 
