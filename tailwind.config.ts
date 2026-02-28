@@ -14,9 +14,7 @@ export default {
     },
     extend: {
       fontFamily: {
-        sans: ["Space Mono", "monospace"],
-        display: ["Syne", "sans-serif"],
-        mono: ["Space Mono", "monospace"],
+        sans: ["Space Grotesk", "system-ui", "sans-serif"],
       },
       colors: {
         border: "hsl(var(--border))",
