@@ -30,13 +30,15 @@ const HomePage = () => {
               className="absolute inset-0 w-full h-full border-0"
               referrerPolicy="unsafe-url"
             />
+            <div className="absolute inset-0 flex items-end justify-center pb-8 pointer-events-none">
+              <Link
+                to="/auth"
+                className="pointer-events-auto bg-lime text-black font-bold px-8 py-3 rounded-xl text-sm hover:bg-lime/90 transition-all shadow-lg backdrop-blur-sm"
+              >
+                Essayer le Studio gratuitement →
+              </Link>
+            </div>
           </div>
-          <Link
-            to="/auth"
-            className="inline-block bg-lime text-black font-bold px-8 py-3 rounded-xl text-sm hover:bg-lime/90 transition-all"
-          >
-            Essayer le Studio gratuitement →
-          </Link>
         </div>
       </section>
 
