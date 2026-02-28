@@ -5,6 +5,7 @@ import { Loader2, Eye, EyeOff } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { lovable } from "@/integrations/lovable/index";
 import { supabase } from "@/integrations/supabase/client";
+import pelikulartLogo from "@/assets/pelikulart-logo.jpeg";
 
 const VIDEO_URLS = [
   "https://app.videas.fr/embed/media/c0811c06-78fb-45d2-95a0-66f2c7658863/?title=false&logo=false&thumbnail_duration=false&controls=false&autoplay=true&loop=true&info=true&thumbnail=video",
@@ -104,6 +105,12 @@ const Auth = () => {
           transition={{ duration: 0.5 }}
           className="w-full max-w-[400px]"
         >
+          {/* Logo */}
+          <Link to="/" className="flex items-center gap-2 mb-8">
+            <img src={pelikulartLogo} alt="Pelikulart" className="w-9 h-9 rounded-lg" />
+            <span className="text-white font-bold text-lg tracking-tight">Pelikulart</span>
+          </Link>
+
           {/* Title */}
           <h1 className="text-3xl font-bold text-white text-center mb-2">
             {isLogin ? "Se connecter" : "Créer un compte"}
