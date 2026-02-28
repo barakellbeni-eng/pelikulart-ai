@@ -30,19 +30,13 @@ const HomePage = () => {
               className="absolute inset-0 w-full h-full border-0"
               referrerPolicy="unsafe-url"
             />
-            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none bg-black/40">
+           <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none bg-black/40">
               <p className="text-white text-lg sm:text-2xl md:text-3xl font-bold mb-1 drop-shadow-xl tracking-tight">
                 🎁 Inscription gratuite
               </p>
-              <p className="text-lime text-2xl sm:text-4xl md:text-5xl font-black mb-6 drop-shadow-xl tracking-tight">
+              <p className="text-lime text-2xl sm:text-4xl md:text-5xl font-black drop-shadow-xl tracking-tight">
                 Recevez 50 Cauris offerts !
               </p>
-              <Link
-                to="/auth"
-                className="pointer-events-auto bg-lime text-black font-extrabold px-10 py-4 rounded-2xl text-base sm:text-lg md:text-xl hover:bg-lime/90 hover:scale-105 transition-all shadow-2xl"
-              >
-                Essayer le Studio gratuitement →
-              </Link>
             </div>
           </div>
         </div>
