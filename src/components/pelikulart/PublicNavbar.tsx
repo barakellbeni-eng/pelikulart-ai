@@ -53,7 +53,7 @@ const PublicNavbar = () => {
             to="/studio"
             className="px-5 py-2 bg-white text-black rounded-lg text-[13px] font-semibold hover:bg-white/90 transition-all"
           >
-            Studio
+            Essayer notre studio
           </Link>
         </div>
 
@@ -93,7 +93,7 @@ const PublicNavbar = () => {
                 to="/studio"
                 className="text-sm font-medium uppercase tracking-widest py-2 text-lime"
               >
-                Studio
+                Essayer notre studio
               </Link>
             </div>
           </motion.div>
