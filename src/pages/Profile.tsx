@@ -1,4 +1,5 @@
 import { User, Image, Video, LogOut, Shield, Coins, Camera, Settings, HelpCircle } from "lucide-react";
+import TransactionHistory from "@/components/TransactionHistory";
 import { motion } from "framer-motion";
 import { useAuth } from "@/hooks/useAuth";
 import { useCauris } from "@/hooks/useCauris";
@@ -158,6 +159,15 @@ const Profile = () => {
             <span>Solde : <span className="text-foreground font-bold">{balance}</span></span>
           </div>
           <Progress value={usagePercent} className="h-2" />
+        </motion.div>
+
+        {/* Transaction History */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.18 }}
+        >
+          <TransactionHistory />
         </motion.div>
 
         {/* Menu Items */}
