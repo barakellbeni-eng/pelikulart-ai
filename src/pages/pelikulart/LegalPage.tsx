@@ -14,7 +14,7 @@ const LegalPage = () => {
 
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }} className="space-y-10 text-white/80 font-light">
           {[
-            { title: "1. Éditeur du site", content: <>Le site <strong>PELIKULART.AI</strong> est édité par <strong>Barakell Beni Creativity</strong>.<br/>Siège social : Cotonou, Bénin | Antenne : Abidjan, Côte d'Ivoire<br/>Tél : +225 07 99 33 23 38 / +229 01 96 40 29 20<br/>Email : <a href="mailto:contact@barakellbeni.com" className="text-lime hover:underline">contact@barakellbeni.com</a><br/>IFU : 0201910826918 | RCCM : RCCM_RB_COT_19_A_49128</> },
+            { title: "1. Éditeur du site", content: <>Le site <strong>Pelikulart AI</strong> est édité par <strong>Barakell Beni Creativity</strong>.<br/>Siège social : Cotonou, Bénin | Antenne : Abidjan, Côte d'Ivoire<br/>Tél : +225 07 99 33 23 38 / +229 01 96 40 29 20<br/>Email : <a href="mailto:contact@barakellbeni.com" className="text-lime hover:underline">contact@barakellbeni.com</a><br/>IFU : 0201910826918 | RCCM : RCCM_RB_COT_19_A_49128</> },
             { title: "2. Propriété intellectuelle", content: "Tout le contenu est protégé par les lois internationales sur le droit d'auteur. Toute reproduction est interdite sauf autorisation écrite." },
             { title: "3. Limitation de responsabilité", content: "Barakell Beni Creativity ne pourra être tenu responsable des dommages directs et indirects causés lors de l'accès au site." },
             { title: "4. Droit applicable", content: "Tout litige est soumis au droit de la République du Bénin. Juridiction exclusive : tribunaux de Cotonou." },
