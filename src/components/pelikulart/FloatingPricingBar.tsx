@@ -1,5 +1,6 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { ShieldCheck } from "lucide-react";
+import paymentMethodsImg from "@/assets/payment-methods.png";
 import type { LucideIcon } from "lucide-react";
 
 interface Plan {
@@ -66,9 +67,8 @@ const FloatingPricingBar = ({ plans, selectedPlanId, onSelectPlan, onBuy, isVisi
             </button>
           </div>
 
-          <div className="flex items-center justify-center gap-1.5 text-[9px] text-white/30 uppercase tracking-wider mt-2">
-            <ShieldCheck size={10} />
-            Paiement sécurisé Kkiapay
+          <div className="mt-2">
+            <img src={paymentMethodsImg} alt="Moyens de paiement acceptés" className="h-5 w-auto mx-auto opacity-50" />
           </div>
         </motion.div>
       )}

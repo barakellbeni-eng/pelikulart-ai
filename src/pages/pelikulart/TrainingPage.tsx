@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Zap, Star, Crown, GraduationCap, ShieldCheck, Clock, Gem, Layers, Quote, Check, Hourglass } from "lucide-react";
+import paymentMethodsImg from "@/assets/payment-methods.png";
 import { Button } from "@/components/ui/button";
 import PaymentModal from "@/components/pelikulart/PaymentModal";
 import TrainingFAQ from "@/components/pelikulart/TrainingFAQ";
@@ -196,6 +197,9 @@ const TrainingPage = () => {
                   </Button>
                   <div className="flex items-center justify-center gap-1.5 text-[9px] text-white/40 uppercase tracking-wider mt-2">
                     <ShieldCheck size={10} />Paiement sécurisé Kkiapay
+                  </div>
+                  <div className="mt-3 pt-3 border-t border-white/5">
+                    <img src={paymentMethodsImg} alt="Moyens de paiement : MTN, Moov, Wave, Mixx, Visa, Mastercard" className="w-full h-auto opacity-70" />
                   </div>
                 </div>
               </div>
