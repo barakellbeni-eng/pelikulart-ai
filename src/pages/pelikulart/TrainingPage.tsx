@@ -1,4 +1,5 @@
 import { useState } from "react";
+import kkiapayLogo from "@/assets/kkiapay-logo.png";
 import { useNavigate } from "react-router-dom";
 import { Zap, Star, Crown, GraduationCap, ShieldCheck, Clock, Gem, Layers, Quote, Check, Hourglass } from "lucide-react";
 import PaymentMarquee from "@/components/PaymentMarquee";
@@ -196,7 +197,8 @@ const TrainingPage = () => {
                     PAYER MAINTENANT
                   </Button>
                   <div className="flex items-center justify-center gap-1.5 text-[9px] text-white/40 uppercase tracking-wider mt-2">
-                    <ShieldCheck size={10} />Paiement sécurisé Kkiapay
+                    <ShieldCheck size={10} />Paiement sécurisé par
+                    <img src={kkiapayLogo} alt="KkiaPay" className="h-3.5 object-contain" />
                   </div>
                   <div className="mt-3 pt-3 border-t border-white/5">
                     <PaymentMarquee size="sm" showAvailability />

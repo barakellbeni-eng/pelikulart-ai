@@ -7,6 +7,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { initiateKkiapayPayment } from "@/utils/kkiapayIntegration";
 import { sendPaymentConfirmationEmail } from "@/utils/googleScriptWebhook";
 import PaymentMarquee from "@/components/PaymentMarquee";
+import kkiapayLogo from "@/assets/kkiapay-logo.png";
 
 interface TrainingPlan {
   name: string;
@@ -202,6 +203,10 @@ const PaymentModal = ({ isOpen, onClose, trainingPlan, onSuccess }: PaymentModal
                   className="w-full h-14 bg-[#ec4899] text-white font-bold text-lg rounded-xl hover:bg-[#db2777] transition-all shadow-[0_0_20px_rgba(236,72,153,0.3)] flex items-center justify-center gap-2 disabled:opacity-70">
                   {isProcessing ? <><Loader2 size={24} className="animate-spin" />{status === "processing_payment" ? "Paiement en cours..." : "Envoi de l'email..."}</> : `Payer ${formatPrice(finalPrice)} FCFA`}
                 </button>
+                <div className="flex items-center justify-center gap-1.5 text-[9px] text-white/40 uppercase tracking-wider mt-2">
+                  <Lock size={10} /> Paiement sécurisé par
+                  <img src={kkiapayLogo} alt="KkiaPay" className="h-3.5 object-contain" />
+                </div>
                 <div className="mt-3">
                   <PaymentMarquee size="sm" />
                 </div>
