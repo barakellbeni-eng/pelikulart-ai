@@ -963,9 +963,9 @@ const Dashboard = () => {
                 className="w-full flex items-center gap-2.5 glass glass-hover rounded-xl px-3 py-2.5"
               >
                 {getBrandLogo(selectedModel.brand) ? (
-                  <img src={getBrandLogo(selectedModel.brand)!} alt={selectedModel.brand} className="w-14 h-14 rounded-xl object-contain shrink-0" />
+                  <img src={getBrandLogo(selectedModel.brand)!} alt={selectedModel.brand} className={`rounded-xl object-contain shrink-0 ${selectedModel.brand === "Pelikulart" ? "w-8 h-8" : "w-14 h-14"}`} />
                 ) : (
-                  <span className="w-6 h-6 rounded-md bg-white/[0.06] flex items-center justify-center text-[10px] font-bold text-muted-foreground shrink-0 uppercase">
+                  <span className="w-8 h-8 rounded-md bg-white/[0.06] flex items-center justify-center text-[11px] font-bold text-muted-foreground shrink-0 uppercase">
                     {selectedModel.brand.slice(0, 2)}
                   </span>
                 )}
@@ -1017,9 +1017,9 @@ const Dashboard = () => {
                             }`}
                           >
                             {getBrandLogo(model.brand) ? (
-                              <img src={getBrandLogo(model.brand)!} alt={model.brand} className="w-12 h-12 rounded-xl object-contain shrink-0" />
+                              <img src={getBrandLogo(model.brand)!} alt={model.brand} className={`rounded-xl object-contain shrink-0 ${model.brand === "Pelikulart" ? "w-7 h-7" : "w-12 h-12"}`} />
                             ) : (
-                              <span className="w-5 h-5 rounded bg-white/[0.06] flex items-center justify-center text-[9px] font-bold text-muted-foreground shrink-0 uppercase">
+                              <span className="w-7 h-7 rounded bg-white/[0.06] flex items-center justify-center text-[10px] font-bold text-muted-foreground shrink-0 uppercase">
                                 {model.brand.slice(0, 2)}
                               </span>
                             )}
