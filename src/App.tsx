@@ -59,9 +59,9 @@ const AuthenticatedLayout = ({ children }: { children: React.ReactNode }) => {
         <main className="flex-1 flex flex-col min-h-screen overflow-auto">
           <header className="sticky top-0 z-50 glass border-b border-sidebar-border px-4 py-2 flex items-center gap-3">
             <SidebarTrigger />
-            <h1 className="text-sm font-bold tracking-tight">
-              <span className="text-gradient-primary">pelikulart</span>
-              <span className="text-foreground">.ai</span>
+            <h1 className="text-sm font-bold tracking-tight uppercase">
+              <span className="text-foreground">PELIKULART</span>
+              <span className="text-primary">.AI</span>
             </h1>
             <div className="ml-auto flex items-center gap-2">
               <ThemeToggle />
