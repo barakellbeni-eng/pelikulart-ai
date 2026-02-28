@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { motion, AnimatePresence } from "framer-motion";
-import { Receipt, ChevronDown, ChevronUp, Coins } from "lucide-react";
+import { Receipt, ChevronDown, ChevronUp, Coins, RefreshCw } from "lucide-react";
 
 interface Transaction {
   id: string;
@@ -16,22 +16,30 @@ const TransactionHistory = () => {
   const { user } = useAuth();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [expanded, setExpanded] = useState(false);
+
+  const fetchTransactions = async () => {
+    if (!user) return;
+    const { data, error } = await supabase
+      .from("payment_transactions")
+      .select("*")
+      .eq("user_id", user.id)
+      .order("processed_at", { ascending: false })
+      .limit(20);
+    if (!error && data) setTransactions(data);
+  };
 
   useEffect(() => {
     if (!user) return;
-    const fetch = async () => {
-      const { data, error } = await supabase
-        .from("payment_transactions")
-        .select("*")
-        .eq("user_id", user.id)
-        .order("processed_at", { ascending: false })
-        .limit(20);
-      if (!error && data) setTransactions(data);
-      setLoading(false);
-    };
-    fetch();
+    fetchTransactions().finally(() => setLoading(false));
   }, [user]);
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await fetchTransactions();
+    setRefreshing(false);
+  };
 
   if (loading) {
     return (
@@ -69,6 +77,14 @@ const TransactionHistory = () => {
         <Receipt className="w-5 h-5 text-primary" />
         <span className="font-semibold text-foreground">Historique des transactions</span>
         <span className="text-[10px] text-muted-foreground ml-auto">{transactions.length} transaction{transactions.length > 1 ? "s" : ""}</span>
+        <button
+          onClick={handleRefresh}
+          disabled={refreshing}
+          className="p-1.5 rounded-lg hover:bg-muted/20 transition-colors text-muted-foreground hover:text-foreground disabled:opacity-50"
+          title="Actualiser"
+        >
+          <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
+        </button>
       </div>
 
       <div className="space-y-2">
