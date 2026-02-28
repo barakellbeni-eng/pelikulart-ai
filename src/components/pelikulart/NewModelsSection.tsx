@@ -3,7 +3,6 @@ import { Sparkles } from "lucide-react";
 import logoGoogle from "@/assets/logo-google.png";
 import logoFlux from "@/assets/logo-flux.png";
 import logoSeedream from "@/assets/logo-seedream.png";
-import logoIdeogram from "@/assets/logo-ideogram.png";
 import logoPelikulart from "@/assets/pelikulart-logo.jpeg";
 
 interface NewModel {
@@ -20,7 +19,6 @@ const newModels: NewModel[] = [
   { name: "Veo 3", brand: "Google", tag: "VIDÉO", description: "Vidéo IA de Google avec audio synchronisé", logo: logoGoogle },
   { name: "Seedream v4.5", brand: "ByteDance", tag: "NOUVEAU", description: "Ultra réaliste en 2-3s, dernière génération", logo: logoSeedream },
   { name: "FLUX Kontext Max", brand: "FLUX", tag: "ÉDITION", description: "Typographie améliorée et édition contextuelle", logo: logoFlux },
-  { name: "Ideogram 3", brand: "Ideogram", tag: "NOUVEAU", description: "Texte dans l'image, design graphique avancé", logo: logoIdeogram },
   { name: "Pelikulart Studio", brand: "Pelikulart", tag: "MAISON", description: "Notre moteur IA maison pour des créations uniques", logo: logoPelikulart },
 ];
 
