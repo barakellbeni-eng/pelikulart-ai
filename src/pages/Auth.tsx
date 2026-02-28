@@ -57,13 +57,13 @@ const Auth = () => {
     <div className="min-h-screen flex bg-black">
       {/* Left — Video showcase */}
       <div className="hidden lg:flex lg:w-[55%] relative overflow-hidden">
-        <video
-          src={heroVideo}
-          autoPlay
-          loop
-          muted
-          playsInline
-          className="absolute inset-0 w-full h-full object-cover"
+        <iframe
+          src="https://app.videas.fr/embed/media/c0811c06-78fb-45d2-95a0-66f2c7658863/?title=false&logo=false&thumbnail_duration=false&controls=false&autoplay=true&loop=true&info=true&thumbnail=video"
+          allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+          className="absolute inset-0 w-full h-full border-0"
+          style={{ objectFit: 'cover' }}
+          referrerPolicy="unsafe-url"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/20" />
 
