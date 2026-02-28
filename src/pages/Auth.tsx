@@ -97,6 +97,12 @@ const Auth = () => {
         </div>
       </div>
 
+      {/* Logo top-left */}
+      <Link to="/" className="absolute top-6 left-6 z-20 flex items-center gap-2">
+        <img src={pelikulartLogo} alt="Pelikulart" className="w-9 h-9 rounded-lg" />
+        <span className="text-white font-bold text-lg tracking-tight">Pelikulart</span>
+      </Link>
+
       {/* Right — Auth form */}
       <div className="flex-1 flex items-center justify-center px-6 sm:px-12 py-10">
         <motion.div
@@ -105,11 +111,6 @@ const Auth = () => {
           transition={{ duration: 0.5 }}
           className="w-full max-w-[400px]"
         >
-          {/* Logo */}
-          <Link to="/" className="flex items-center gap-2 mb-8">
-            <img src={pelikulartLogo} alt="Pelikulart" className="w-9 h-9 rounded-lg" />
-            <span className="text-white font-bold text-lg tracking-tight">Pelikulart</span>
-          </Link>
 
           {/* Title */}
           <h1 className="text-3xl font-bold text-white text-center mb-2">
