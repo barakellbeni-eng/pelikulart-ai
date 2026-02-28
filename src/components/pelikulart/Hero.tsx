@@ -52,7 +52,7 @@ const Hero = () => {
             to="/studio"
             className="group px-7 py-3.5 bg-lime text-black rounded-lg font-semibold text-sm hover:bg-lime/90 transition-all flex items-center gap-2"
           >
-            Essayer notre studio
+            Essayer notre Studio IA
             <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
           </Link>
           <Link
