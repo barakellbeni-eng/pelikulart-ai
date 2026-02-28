@@ -6,6 +6,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { lovable } from "@/integrations/lovable/index";
 import { supabase } from "@/integrations/supabase/client";
 import pelikulartLogo from "@/assets/pelikulart-logo.jpeg";
+import PaymentMarquee from "@/components/PaymentMarquee";
 
 const VIDEO_URLS = [
   "https://app.videas.fr/embed/media/c0811c06-78fb-45d2-95a0-66f2c7658863/?title=false&logo=false&thumbnail_duration=false&controls=false&autoplay=true&loop=true&info=true&thumbnail=video",
@@ -266,8 +267,13 @@ const Auth = () => {
             {isLogin ? "Se connecter avec Google" : "S'inscrire avec Google"}
           </button>
 
+          {/* Payment logos */}
+          <div className="mt-6">
+            <PaymentMarquee size="sm" showSignupCTA />
+          </div>
+
           {/* Legal */}
-          <p className="text-center text-[11px] text-white/25 mt-8 leading-relaxed">
+          <p className="text-center text-[11px] text-white/25 mt-6 leading-relaxed">
             En cliquant sur "S'inscrire avec Google" vous acceptez nos{" "}
             <Link to="/conditions-utilisation" className="text-white/40 hover:text-white/60 underline">Conditions d'utilisation</Link>
             {" "}et reconnaissez avoir lu notre{" "}

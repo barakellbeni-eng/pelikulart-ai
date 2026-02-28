@@ -21,24 +21,33 @@ const logos = [
 interface PaymentMarqueeProps {
   size?: "sm" | "md";
   showAvailability?: boolean;
+  showSignupCTA?: boolean;
 }
 
-const PaymentMarquee = ({ size = "md", showAvailability = false }: PaymentMarqueeProps) => {
+const PaymentMarquee = ({ size = "md", showAvailability = false, showSignupCTA = false }: PaymentMarqueeProps) => {
   const logoSize = size === "sm" ? "h-8 w-8" : "h-12 w-12";
 
   return (
     <div className="space-y-3">
+      {showSignupCTA && (
+        <p className="text-center text-sm font-semibold text-white">
+          Inscription gratuite • Recevez <span className="text-lime font-bold">50 Cauris gratuits</span> 🐚
+        </p>
+      )}
       {showAvailability && (
         <div className="text-center space-y-1">
-          <p className="text-xs text-muted-foreground">
-            🇧🇯 Bénin · 🇨🇮 Côte d'Ivoire · 🇹🇬 Togo · 🇸🇳 Sénégal — <span className="text-foreground font-medium">Mobile Money</span>
+          <p className="text-xs text-white/50">
+            🇧🇯 Bénin · 🇨🇮 Côte d'Ivoire · 🇹🇬 Togo · 🇸🇳 Sénégal — <span className="text-white/80 font-medium">Mobile Money</span>
           </p>
-          <p className="text-xs text-muted-foreground">
-            🌍 Autres pays — <span className="text-foreground font-medium">Visa & Mastercard</span>
+          <p className="text-xs text-white/50">
+            🌍 Autres pays — <span className="text-white/80 font-medium">Visa & Mastercard</span>
           </p>
         </div>
       )}
       <div className="relative overflow-hidden">
+        {/* Fade edges */}
+        <div className="absolute left-0 top-0 bottom-0 w-16 z-10 bg-gradient-to-r from-black to-transparent pointer-events-none" />
+        <div className="absolute right-0 top-0 bottom-0 w-16 z-10 bg-gradient-to-l from-black to-transparent pointer-events-none" />
         <div className="flex animate-marquee gap-8 w-max">
           {[...logos, ...logos, ...logos].map((logo, i) => (
             <img
