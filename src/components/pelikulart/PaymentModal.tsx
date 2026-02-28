@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { initiateKkiapayPayment } from "@/utils/kkiapayIntegration";
 import { sendPaymentConfirmationEmail } from "@/utils/googleScriptWebhook";
-import paymentMethodsImg from "@/assets/payment-methods.png";
+import PaymentMarquee from "@/components/PaymentMarquee";
 
 interface TrainingPlan {
   name: string;
@@ -203,7 +203,7 @@ const PaymentModal = ({ isOpen, onClose, trainingPlan, onSuccess }: PaymentModal
                   {isProcessing ? <><Loader2 size={24} className="animate-spin" />{status === "processing_payment" ? "Paiement en cours..." : "Envoi de l'email..."}</> : `Payer ${formatPrice(finalPrice)} FCFA`}
                 </button>
                 <div className="mt-3">
-                  <img src={paymentMethodsImg} alt="Moyens de paiement acceptés" className="h-6 w-auto mx-auto opacity-50" />
+                  <PaymentMarquee size="sm" />
                 </div>
               </div>
             </form>
