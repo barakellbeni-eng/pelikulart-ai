@@ -3,6 +3,9 @@ project_id = "myazlrsfxugaevziixfh"
 [functions.generate-image]
 verify_jwt = false
 
+[functions.generate-image-google]
+verify_jwt = false
+
 [functions.enhance-prompt]
 verify_jwt = false
 
