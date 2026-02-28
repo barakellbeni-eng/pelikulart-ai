@@ -50,7 +50,7 @@ const Hero = () => {
         >
           <Link
             to="/studio"
-            className="group px-7 py-3.5 bg-white text-black rounded-lg font-semibold text-sm hover:bg-white/90 transition-all flex items-center gap-2"
+            className="group px-7 py-3.5 bg-lime text-black rounded-lg font-semibold text-sm hover:bg-lime/90 transition-all flex items-center gap-2"
           >
             Essayer notre studio
             <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
