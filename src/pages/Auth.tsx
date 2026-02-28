@@ -1,12 +1,15 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Navigate, Link } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Loader2, Eye, EyeOff } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { lovable } from "@/integrations/lovable/index";
 import { supabase } from "@/integrations/supabase/client";
-import heroVideo from "@/assets/hero-video.mp4";
 
+const VIDEO_URLS = [
+  "https://app.videas.fr/embed/media/c0811c06-78fb-45d2-95a0-66f2c7658863/?title=false&logo=false&thumbnail_duration=false&controls=false&autoplay=true&loop=true&info=true&thumbnail=video",
+  "https://app.videas.fr/embed/media/afcdb619-1b97-481b-b5af-0ddd44fc37b1/?title=false&logo=false&thumbnail_duration=false&controls=false&autoplay=true&loop=true&info=true&thumbnail=video",
+];
 const Auth = () => {
   const { user, loading, signIn, signUp } = useAuth();
   const [isLogin, setIsLogin] = useState(false);
@@ -22,6 +25,14 @@ const Auth = () => {
   const [forgotError, setForgotError] = useState("");
   const [forgotSuccess, setForgotSuccess] = useState("");
   const [forgotSubmitting, setForgotSubmitting] = useState(false);
+  const [videoIndex, setVideoIndex] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setVideoIndex((prev) => (prev + 1) % VIDEO_URLS.length);
+    }, 15000);
+    return () => clearInterval(interval);
+  }, []);
 
   if (loading) {
     return (
@@ -57,14 +68,21 @@ const Auth = () => {
     <div className="min-h-screen flex bg-black">
       {/* Left — Video showcase */}
       <div className="hidden lg:flex lg:w-[55%] relative overflow-hidden">
-        <iframe
-          src="https://app.videas.fr/embed/media/afcdb619-1b97-481b-b5af-0ddd44fc37b1/?title=false&logo=false&thumbnail_duration=false&controls=false&autoplay=true&loop=true&info=true&thumbnail=video"
-          allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
-          allowFullScreen
-          className="absolute inset-0 w-full h-full border-0 scale-[1.8]"
-          style={{ objectFit: 'cover' }}
-          referrerPolicy="unsafe-url"
-        />
+        <AnimatePresence mode="wait">
+          <motion.iframe
+            key={videoIndex}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 1.5 }}
+            src={VIDEO_URLS[videoIndex]}
+            allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+            className="absolute inset-0 w-full h-full border-0 scale-[1.8]"
+            style={{ objectFit: 'cover' }}
+            referrerPolicy="unsafe-url"
+          />
+        </AnimatePresence>
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/20" />
 
         {/* Bottom text overlay */}
