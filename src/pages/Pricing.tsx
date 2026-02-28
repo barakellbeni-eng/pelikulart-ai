@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Check, X, Smartphone, Coins } from "lucide-react";
+import { Check, X, Coins } from "lucide-react";
+import paymentMethodsImg from "@/assets/payment-methods.png";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCauris } from "@/hooks/useCauris";
 import { useAuth } from "@/hooks/useAuth";
@@ -80,12 +81,6 @@ const packs = [
     description: "Volume maximal",
     examples: ["~1300 images HD", "~80 vidéos 5s"],
   },
-];
-
-const paymentMethods = [
-  { name: "MTN MoMo", color: "#ffcc00" },
-  { name: "Wave", color: "#1dc3e5" },
-  { name: "Orange Money", color: "#ff6600" },
 ];
 
 const KKIAPAY_KEY = import.meta.env.VITE_KKIAPAY_PUBLIC_KEY || "046751a99c664c3a1caf83a22a1f8068c568f24b";
@@ -270,26 +265,8 @@ const Pricing = () => {
 
         {/* Payment Methods */}
         <div className="glass-card p-5 space-y-4">
-          <div className="flex items-center gap-2">
-            <Smartphone className="w-5 h-5 text-primary" />
-            <h3 className="font-semibold text-foreground">Moyens de paiement acceptés</h3>
-          </div>
-          <div className="grid grid-cols-3 gap-3">
-            {paymentMethods.map((pm) => (
-              <div
-                key={pm.name}
-                className="glass glass-hover rounded-xl p-4 flex flex-col items-center gap-2 cursor-pointer"
-              >
-                <div
-                  className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-xs"
-                  style={{ backgroundColor: pm.color + "20", color: pm.color }}
-                >
-                  {pm.name.charAt(0)}
-                </div>
-                <span className="text-xs text-muted-foreground font-medium">{pm.name}</span>
-              </div>
-            ))}
-          </div>
+          <h3 className="font-semibold text-foreground text-center text-sm">Moyens de paiement acceptés</h3>
+          <img src={paymentMethodsImg} alt="MTN, Moov Money, Wave, Mixx, Visa, Mastercard" className="w-full max-w-md mx-auto h-auto opacity-80" />
           <p className="text-[10px] text-muted-foreground text-center">
             Paiement sécurisé via KkiaPay • Cauris activés instantanément
           </p>

@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { initiateKkiapayPayment } from "@/utils/kkiapayIntegration";
 import { sendPaymentConfirmationEmail } from "@/utils/googleScriptWebhook";
+import paymentMethodsImg from "@/assets/payment-methods.png";
 
 interface TrainingPlan {
   name: string;
@@ -201,8 +202,8 @@ const PaymentModal = ({ isOpen, onClose, trainingPlan, onSuccess }: PaymentModal
                   className="w-full h-14 bg-[#ec4899] text-white font-bold text-lg rounded-xl hover:bg-[#db2777] transition-all shadow-[0_0_20px_rgba(236,72,153,0.3)] flex items-center justify-center gap-2 disabled:opacity-70">
                   {isProcessing ? <><Loader2 size={24} className="animate-spin" />{status === "processing_payment" ? "Paiement en cours..." : "Envoi de l'email..."}</> : `Payer ${formatPrice(finalPrice)} FCFA`}
                 </button>
-                <div className="mt-4 flex items-center justify-center gap-2 text-white/30">
-                  <Lock size={10} /><span className="text-[10px] uppercase tracking-wider font-medium">Paiement sécurisé par Kkiapay</span>
+                <div className="mt-3">
+                  <img src={paymentMethodsImg} alt="Moyens de paiement acceptés" className="h-6 w-auto mx-auto opacity-50" />
                 </div>
               </div>
             </form>
