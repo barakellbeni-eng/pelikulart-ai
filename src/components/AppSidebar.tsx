@@ -8,6 +8,7 @@ import {
   Video,
   Music,
   Sparkles,
+  Zap,
 } from "lucide-react";
 import {
   Sidebar,
@@ -22,7 +23,6 @@ import {
   SidebarFooter,
   SidebarSeparator,
 } from "@/components/ui/sidebar";
-import pelikulartLogo from "@/assets/pelikulart-logo.jpeg";
 
 const mainNav = [
   { title: "Accueil", url: "/studio", icon: Wand2 },
@@ -37,6 +37,7 @@ const creationTools = [
   { title: "Générer Audio", url: "/studio/create?mode=audio", icon: Music },
 ];
 
+
 const AppSidebar = () => {
   const location = useLocation();
   const currentPath = location.pathname;
@@ -49,13 +50,15 @@ const AppSidebar = () => {
 
   return (
     <Sidebar className="border-r border-sidebar-border">
+      {/* Logo Header */}
       <SidebarHeader className="px-4 py-5">
         <NavLink to="/studio" className="flex items-center gap-2">
-          <img src={pelikulartLogo} alt="Pelikulart AI" className="w-8 h-8 rounded-lg" />
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-destructive flex items-center justify-center">
+            <Zap className="w-4 h-4 text-primary-foreground" />
+          </div>
           <div>
-            <span className="text-sm font-bold tracking-[0.1em] uppercase text-foreground">PELIKULART</span>
-            <span className="text-sm font-bold text-primary">.</span>
-            <span className="text-sm font-bold text-sidebar-foreground">AI</span>
+            <span className="text-sm font-bold tracking-tight text-gradient-primary">cauris</span>
+            <span className="text-sm font-bold tracking-tight text-sidebar-foreground">.ai</span>
           </div>
         </NavLink>
       </SidebarHeader>
@@ -63,6 +66,7 @@ const AppSidebar = () => {
       <SidebarSeparator />
 
       <SidebarContent>
+        {/* Navigation principale */}
         <SidebarGroup>
           <SidebarGroupLabel className="text-[10px] uppercase tracking-widest text-sidebar-foreground/50">
             Navigation
@@ -89,6 +93,7 @@ const AppSidebar = () => {
 
         <SidebarSeparator />
 
+        {/* Outils de création */}
         <SidebarGroup>
           <SidebarGroupLabel className="text-[10px] uppercase tracking-widest text-sidebar-foreground/50">
             Création IA
@@ -111,8 +116,12 @@ const AppSidebar = () => {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+
+
+
       </SidebarContent>
 
+      {/* Footer avec crédits */}
       <SidebarFooter className="px-4 py-3" />
     </Sidebar>
   );

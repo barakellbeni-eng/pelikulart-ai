@@ -108,7 +108,7 @@ const Pricing = () => {
         key: KKIAPAY_KEY,
         sandbox: false,
         callback: window.location.origin + "/pricing",
-        name: `Pelikulart AI - ${pack.cauris} Cauris`,
+        name: `cauris.ai - ${pack.cauris} Cauris`,
         theme: "#e67e00",
       });
 

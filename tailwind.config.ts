@@ -14,7 +14,7 @@ export default {
     },
     extend: {
       fontFamily: {
-        sans: ["Space Grotesk", "Inter", "system-ui", "sans-serif"],
+        sans: ["Plus Jakarta Sans", "system-ui", "sans-serif"],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -53,7 +53,6 @@ export default {
         glass: "hsl(var(--glass))",
         "glass-border": "hsl(var(--glass-border))",
         gold: "hsl(var(--glow-gold))",
-        lime: "hsl(var(--glow-lime))",
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",

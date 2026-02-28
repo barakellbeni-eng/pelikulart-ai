@@ -30,7 +30,7 @@ const quickTools = [
   { icon: Image, label: "Générateur d'images", url: "/studio/create?mode=image", color: "from-blue-500/20 to-blue-600/10" },
   { icon: Video, label: "Générateur vidéo", url: "/studio/create?mode=video", color: "from-purple-500/20 to-purple-600/10" },
   { icon: Music, label: "Générateur audio", url: "/studio/create?mode=audio", color: "from-green-500/20 to-green-600/10" },
-  { icon: Sparkles, label: "Pelikulart Boost", url: "/studio/create?boost=true", color: "from-primary/20 to-primary/10" },
+  { icon: Sparkles, label: "Cauris Boost", url: "/studio/create?boost=true", color: "from-primary/20 to-primary/10" },
 ];
 
 interface RecentCreation {
@@ -77,8 +77,8 @@ const StudioHome = () => {
             <p className="text-xs font-semibold uppercase tracking-widest text-primary mb-2">
               Bienvenue, {displayName}
             </p>
-            <h1 className="text-2xl sm:text-3xl font-black text-foreground leading-tight mb-2 uppercase tracking-tight">
-              LA PLATEFORME N°1 DE CRÉATION IA EN AFRIQUE
+            <h1 className="text-2xl sm:text-3xl font-bold text-foreground leading-tight mb-2" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
+              La plateforme n°1 de création IA en Afrique
             </h1>
             <p className="text-sm text-muted-foreground max-w-xl mb-4">
               Générez des images, vidéos et sons avec l'intelligence artificielle. Payez uniquement ce que vous utilisez via <span className="font-semibold text-foreground">Mobile Money</span>, <span className="font-semibold text-foreground">Wave</span> ou <span className="font-semibold text-foreground">MoMo</span> — sans abonnement.
