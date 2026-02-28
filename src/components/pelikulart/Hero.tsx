@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
+import { playClickSound } from "@/utils/clickSound";
 
 const Hero = () => {
   return (
@@ -50,6 +51,7 @@ const Hero = () => {
         >
           <Link
             to="/studio"
+            onClick={playClickSound}
             className="group px-7 py-3.5 bg-lime text-black rounded-lg font-semibold text-sm hover:bg-lime/90 transition-all flex items-center gap-2"
           >
             Essayer notre Studio IA
