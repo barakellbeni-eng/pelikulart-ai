@@ -925,7 +925,7 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="flex h-full max-h-full overflow-hidden">
+    <div className="flex h-full min-h-0 overflow-hidden">
       {/* ===== LEFT SIDEBAR ===== */}
       <div className="w-72 min-w-[288px] max-w-[288px] shrink-0 bg-card/50 flex flex-col overflow-hidden">
         <div className="p-4 space-y-4 flex-1 overflow-hidden min-h-0">
