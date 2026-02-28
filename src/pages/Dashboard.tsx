@@ -962,8 +962,8 @@ const Dashboard = () => {
                 onClick={() => setShowModelDropdown(!showModelDropdown)}
                 className="w-full flex items-center gap-2.5 glass glass-hover rounded-xl px-3 py-2.5"
               >
-                {getBrandLogo(selectedModel.brand) ? (
-                  <img src={getBrandLogo(selectedModel.brand)!} alt={selectedModel.brand} className="w-8 h-8 rounded-md object-contain shrink-0 pointer-events-none select-none" draggable={false} onContextMenu={(e) => e.preventDefault()} />
+                {getBrandLogo(selectedModel.brand, selectedModel.id) ? (
+                  <img src={getBrandLogo(selectedModel.brand, selectedModel.id)!} alt={selectedModel.brand} className="w-8 h-8 rounded-md object-contain shrink-0 pointer-events-none select-none" draggable={false} onContextMenu={(e) => e.preventDefault()} />
                 ) : (
                   <span className="w-8 h-8 rounded-md bg-white/[0.06] flex items-center justify-center text-[11px] font-bold text-muted-foreground shrink-0 uppercase">
                     {selectedModel.brand.slice(0, 2)}
@@ -1016,8 +1016,8 @@ const Dashboard = () => {
                                 : "hover:bg-white/[0.04]"
                             }`}
                           >
-                            {getBrandLogo(model.brand) ? (
-                              <img src={getBrandLogo(model.brand)!} alt={model.brand} className="w-7 h-7 rounded-md object-contain shrink-0 pointer-events-none select-none" draggable={false} onContextMenu={(e) => e.preventDefault()} />
+                            {getBrandLogo(model.brand, model.id) ? (
+                              <img src={getBrandLogo(model.brand, model.id)!} alt={model.brand} className="w-7 h-7 rounded-md object-contain shrink-0 pointer-events-none select-none" draggable={false} onContextMenu={(e) => e.preventDefault()} />
                             ) : (
                               <span className="w-7 h-7 rounded bg-white/[0.06] flex items-center justify-center text-[10px] font-bold text-muted-foreground shrink-0 uppercase">
                                 {model.brand.slice(0, 2)}
