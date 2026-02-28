@@ -43,7 +43,7 @@ const PublicNavbar = () => {
               className={`text-[13px] font-medium uppercase tracking-widest transition-colors ${
                 location.pathname === link.to
                   ? "text-white"
-                  : "text-white/40 hover:text-white/80"
+                  : "text-white/80 hover:text-white"
               }`}
             >
               {link.label}
@@ -83,7 +83,7 @@ const PublicNavbar = () => {
                   className={`text-sm font-medium uppercase tracking-widest py-2 ${
                     location.pathname === link.to
                       ? "text-white"
-                      : "text-white/40"
+                      : "text-white/80"
                   }`}
                 >
                   {link.label}
