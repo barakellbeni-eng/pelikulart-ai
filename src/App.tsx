@@ -1,3 +1,4 @@
+import { useState, useCallback } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -13,6 +14,7 @@ import PublicNavbar from "@/components/pelikulart/PublicNavbar";
 import PublicFooter from "@/components/pelikulart/PublicFooter";
 import ScrollToTop from "@/components/pelikulart/ScrollToTop";
 import FloatingWhatsApp from "@/components/pelikulart/FloatingWhatsApp";
+import StudioSplash from "@/components/pelikulart/StudioSplash";
 
 // Studio pages
 import StudioHome from "./pages/StudioHome";
@@ -52,6 +54,13 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 };
 
 const AuthenticatedLayout = ({ children }: { children: React.ReactNode }) => {
+  const [showSplash, setShowSplash] = useState(true);
+  const handleSplashFinish = useCallback(() => setShowSplash(false), []);
+
+  if (showSplash) {
+    return <StudioSplash onFinish={handleSplashFinish} />;
+  }
+
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full">
