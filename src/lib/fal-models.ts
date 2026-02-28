@@ -139,7 +139,7 @@ export const FAL_MODELS: FalModel[] = [
 
   // ── Pelikulart Maison (Google AI Studio direct) ──
   {
-    id: "pelikulart-nano-banana", type: "image", brand: "Pelikulart", name: "Nano Banana",
+    id: "pelikulart-nano-banana", type: "image", brand: "Pelikulart", name: "Pelikulart Nano Banana",
     endpoint: "google-direct",
     description: "Gemini Flash Image — API maison, rapide", icon: "★", color: "from-primary/30 to-primary/10",
     maxImages: 4, supportsImageInput: true, maxInputImages: 1, caurisCost: 2, estimatedTime: "~3s", recommended: true,
@@ -152,7 +152,7 @@ export const FAL_MODELS: FalModel[] = [
   },
 
   {
-    id: "nano-banana-pro", type: "image", brand: "Google", name: "Nano Banana Pro",
+    id: "nano-banana-pro", type: "image", brand: "Google", name: "Google Nano Banana Pro",
     endpoint: "fal-ai/nano-banana-pro",
     description: "Gemini 3 Pro Image — rapide, polyvalent, multi-ratio", icon: "◆", color: "from-white/20 to-white/5",
     maxImages: 4, supportsImageInput: false, caurisCost: 3, estimatedTime: "~3s", recommended: true,
@@ -164,7 +164,7 @@ export const FAL_MODELS: FalModel[] = [
     ],
   },
   {
-    id: "nano-banana-pro-edit", type: "image", brand: "Google", name: "Nano Banana Pro Edit",
+    id: "nano-banana-pro-edit", type: "image", brand: "Google", name: "Google Nano Banana Pro Edit",
     endpoint: "fal-ai/nano-banana-pro/edit",
     description: "Édition multi-images avec Gemini 3 Pro", icon: "◫", color: "from-white/20 to-white/5",
     maxImages: 4, supportsImageInput: true, maxInputImages: 5, caurisCost: 4, estimatedTime: "~4s",
@@ -176,14 +176,14 @@ export const FAL_MODELS: FalModel[] = [
     ],
   },
   {
-    id: "flux-dev", type: "image", brand: "FLUX", name: "[dev]",
+    id: "flux-dev", type: "image", brand: "FLUX", name: "Flux.1 Dev",
     endpoint: "fal-ai/flux/dev",
     description: "Haute qualité, rendu détaillé", icon: "◇", color: "from-white/20 to-white/5",
     maxImages: 4, supportsImageInput: false, caurisCost: 5, estimatedTime: "~10s", recommended: true,
     settings: [IMAGE_SIZE_FLUX, INFERENCE_STEPS(), GUIDANCE_SCALE, SEED_SETTING],
   },
   {
-    id: "flux-schnell", type: "image", brand: "FLUX", name: "[schnell]",
+    id: "flux-schnell", type: "image", brand: "FLUX", name: "Flux.1 Schnell",
     endpoint: "fal-ai/flux/schnell",
     description: "Ultra rapide, 4 étapes", icon: "▹", color: "from-white/20 to-white/5",
     maxImages: 4, supportsImageInput: false, caurisCost: 2, estimatedTime: "~2s",
@@ -193,7 +193,7 @@ export const FAL_MODELS: FalModel[] = [
     ],
   },
   {
-    id: "flux-pro-ultra", type: "image", brand: "FLUX", name: "Pro v1.1 Ultra",
+    id: "flux-pro-ultra", type: "image", brand: "FLUX", name: "Flux Pro 1.1 Ultra",
     endpoint: "fal-ai/flux-pro/v1.1-ultra",
     description: "Qualité maximale, résolution 2K", icon: "◈", color: "from-white/20 to-white/5",
     maxImages: 1, supportsImageInput: false, caurisCost: 12, estimatedTime: "~15s",
@@ -204,7 +204,7 @@ export const FAL_MODELS: FalModel[] = [
     ],
   },
   {
-    id: "flux-kontext", type: "image", brand: "FLUX", name: "Kontext [pro]",
+    id: "flux-kontext", type: "image", brand: "FLUX", name: "Flux Kontext Pro",
     endpoint: "fal-ai/flux-pro/kontext",
     description: "Édition contextuelle (1 image)", icon: "◫", color: "from-white/20 to-white/5",
     maxImages: 1, supportsImageInput: true, maxInputImages: 1, caurisCost: 8, estimatedTime: "~10s",
@@ -218,7 +218,7 @@ export const FAL_MODELS: FalModel[] = [
     ],
   },
   {
-    id: "flux-kontext-max", type: "image", brand: "FLUX", name: "Kontext [max]",
+    id: "flux-kontext-max", type: "image", brand: "FLUX", name: "Flux Kontext Max",
     endpoint: "fal-ai/flux-pro/kontext/max",
     description: "Typographie améliorée (1 image)", icon: "◈", color: "from-white/20 to-white/5",
     maxImages: 1, supportsImageInput: true, maxInputImages: 1, caurisCost: 12, estimatedTime: "~15s",
@@ -232,14 +232,14 @@ export const FAL_MODELS: FalModel[] = [
     ],
   },
   {
-    id: "flux2-dev", type: "image", brand: "FLUX", name: "2 [dev]",
+    id: "flux2-dev", type: "image", brand: "FLUX", name: "Flux.2 Dev",
     endpoint: "fal-ai/flux-2/dev",
     description: "Dernière version, texte vers image", icon: "◆", color: "from-white/20 to-white/5",
     maxImages: 4, supportsImageInput: false, caurisCost: 5, estimatedTime: "~12s",
     settings: [IMAGE_SIZE_FLUX, INFERENCE_STEPS(), GUIDANCE_SCALE, SEED_SETTING],
   },
   {
-    id: "flux2-dev-edit", type: "image", brand: "FLUX", name: "2 [dev] Edit",
+    id: "flux2-dev-edit", type: "image", brand: "FLUX", name: "Flux.2 Dev Edit",
     endpoint: "fal-ai/flux-2/edit",
     description: "Édition multi-images avec FLUX 2", icon: "◫", color: "from-white/20 to-white/5",
     maxImages: 1, supportsImageInput: true, maxInputImages: 5, caurisCost: 6, estimatedTime: "~12s",
@@ -250,28 +250,28 @@ export const FAL_MODELS: FalModel[] = [
     ],
   },
   {
-    id: "imagen4", type: "image", brand: "Google", name: "Imagen 4",
+    id: "imagen4", type: "image", brand: "Google", name: "Google Imagen 4",
     endpoint: "fal-ai/imagen4/preview",
     description: "Images hyper-détaillées par Google", icon: "○", color: "from-white/20 to-white/5",
     maxImages: 4, supportsImageInput: false, caurisCost: 8, estimatedTime: "~8s", recommended: true,
     settings: [ASPECT_RATIO_IMAGEN4],
   },
   {
-    id: "imagen4-fast", type: "image", brand: "Google", name: "Imagen 4 Fast",
+    id: "imagen4-fast", type: "image", brand: "Google", name: "Google Imagen 4 Fast",
     endpoint: "fal-ai/imagen4/preview/fast",
     description: "Version rapide, meilleur rapport qualité/prix", icon: "▹", color: "from-white/20 to-white/5",
     maxImages: 4, supportsImageInput: false, caurisCost: 6, estimatedTime: "~4s",
     settings: [ASPECT_RATIO_IMAGEN4],
   },
   {
-    id: "imagen4-ultra", type: "image", brand: "Google", name: "Imagen 4 Ultra",
+    id: "imagen4-ultra", type: "image", brand: "Google", name: "Google Imagen 4 Ultra",
     endpoint: "fal-ai/imagen4/preview/ultra",
     description: "Qualité maximale, détails extrêmes", icon: "◈", color: "from-white/20 to-white/5",
     maxImages: 4, supportsImageInput: false, caurisCost: 10, estimatedTime: "~12s",
     settings: [ASPECT_RATIO_IMAGEN4],
   },
   {
-    id: "seedream-v4-t2i", type: "image", brand: "Seedream", name: "v4",
+    id: "seedream-v4-t2i", type: "image", brand: "Seedream", name: "Seedream 4",
     endpoint: "fal-ai/bytedance/seedream/v4/text-to-image",
     description: "Génération rapide et photoréaliste", icon: "◆", color: "from-white/20 to-white/5",
     maxImages: 4, supportsImageInput: false, caurisCost: 5, estimatedTime: "~4s",
@@ -288,7 +288,7 @@ export const FAL_MODELS: FalModel[] = [
     ],
   },
   {
-    id: "seedream-v4-edit", type: "image", brand: "Seedream", name: "v4 Edit",
+    id: "seedream-v4-edit", type: "image", brand: "Seedream", name: "Seedream 4 Edit",
     endpoint: "fal-ai/bytedance/seedream/v4/edit",
     description: "Édition multi-images intelligente", icon: "◫", color: "from-white/20 to-white/5",
     maxImages: 1, supportsImageInput: true, maxInputImages: 10, caurisCost: 5, estimatedTime: "~5s",
@@ -298,7 +298,7 @@ export const FAL_MODELS: FalModel[] = [
     ],
   },
   {
-    id: "seedream-v45-t2i", type: "image", brand: "Seedream", name: "v4.5",
+    id: "seedream-v45-t2i", type: "image", brand: "Seedream", name: "Seedream 4.5",
     endpoint: "fal-ai/bytedance/seedream/v4.5/text-to-image",
     description: "Dernière version, ultra réaliste 2-3s", icon: "◈", color: "from-white/20 to-white/5",
     maxImages: 4, supportsImageInput: false, caurisCost: 6, estimatedTime: "~3s", recommended: true,
@@ -315,7 +315,7 @@ export const FAL_MODELS: FalModel[] = [
     ],
   },
   {
-    id: "seedream-v45-edit", type: "image", brand: "Seedream", name: "v4.5 Edit",
+    id: "seedream-v45-edit", type: "image", brand: "Seedream", name: "Seedream 4.5 Edit",
     endpoint: "fal-ai/bytedance/seedream/v4.5/edit",
     description: "Édition multi-images dernière génération", icon: "▹", color: "from-white/20 to-white/5",
     maxImages: 1, supportsImageInput: true, maxInputImages: 10, caurisCost: 6, estimatedTime: "~4s",
@@ -330,7 +330,7 @@ export const FAL_MODELS: FalModel[] = [
   // ════════════════════════════════════════
 
   {
-    id: "veo3", type: "video", brand: "Google", name: "Veo 3",
+    id: "veo3", type: "video", brand: "Google", name: "Google Veo 3",
     endpoint: "fal-ai/veo3",
     description: "Vidéo haute qualité avec audio", icon: "○", color: "from-white/20 to-white/5",
     maxImages: 1, supportsImageInput: false, caurisCost: 150, caurisCost10s: 300, estimatedTime: "~2min", recommended: true,
@@ -341,7 +341,7 @@ export const FAL_MODELS: FalModel[] = [
     ],
   },
   {
-    id: "kling-v3-std-t2v", type: "video", brand: "Kling", name: "v3 Standard",
+    id: "kling-v3-std-t2v", type: "video", brand: "Kling", name: "Kling v3 Standard",
     endpoint: "fal-ai/kling-video/v3/standard/text-to-video",
     description: "Dernière génération, cinématique", icon: "◇", color: "from-white/20 to-white/5",
     maxImages: 1, supportsImageInput: false, caurisCost: 40, caurisCost10s: 80, estimatedTime: "~1min",
@@ -351,7 +351,7 @@ export const FAL_MODELS: FalModel[] = [
     ],
   },
   {
-    id: "kling-v3-pro-t2v", type: "video", brand: "Kling", name: "v3 Pro",
+    id: "kling-v3-pro-t2v", type: "video", brand: "Kling", name: "Kling v3 Pro",
     endpoint: "fal-ai/kling-video/v3/pro/text-to-video",
     description: "Qualité maximale, rendu cinéma", icon: "◈", color: "from-white/20 to-white/5",
     maxImages: 1, supportsImageInput: false, caurisCost: 200, caurisCost10s: 400, estimatedTime: "~3min",
@@ -361,42 +361,42 @@ export const FAL_MODELS: FalModel[] = [
     ],
   },
   {
-    id: "kling-v25-turbo-i2v", type: "video", brand: "Kling", name: "v2.5 Turbo (I2V)",
+    id: "kling-v25-turbo-i2v", type: "video", brand: "Kling", name: "Kling v2.5 Turbo I2V",
     endpoint: "fal-ai/kling-video/v2.5-turbo/pro/image-to-video",
     description: "Anime vos images en vidéo fluide", icon: "▹", color: "from-white/20 to-white/5",
     maxImages: 1, supportsImageInput: true, caurisCost: 50, caurisCost10s: 100, estimatedTime: "~30s",
     settings: [DURATION_5_10],
   },
   {
-    id: "kling-v21-std-i2v", type: "video", brand: "Kling", name: "v2.1 Standard (I2V)",
+    id: "kling-v21-std-i2v", type: "video", brand: "Kling", name: "Kling v2.1 Standard I2V",
     endpoint: "fal-ai/kling-video/v2.1/standard/image-to-video",
     description: "Image vers vidéo, bon rapport qualité/prix", icon: "◫", color: "from-white/20 to-white/5",
     maxImages: 1, supportsImageInput: true, caurisCost: 35, caurisCost10s: 70, estimatedTime: "~45s",
     settings: [DURATION_5_10],
   },
   {
-    id: "kling-v2-master-t2v", type: "video", brand: "Kling", name: "v2 Master",
+    id: "kling-v2-master-t2v", type: "video", brand: "Kling", name: "Kling v2 Master",
     endpoint: "fal-ai/kling-video/v2/master/text-to-video",
     description: "Texte vers vidéo haute qualité", icon: "◆", color: "from-white/20 to-white/5",
     maxImages: 1, supportsImageInput: false, caurisCost: 60, caurisCost10s: 120, estimatedTime: "~1min30",
     settings: [DURATION_5_10, { ...ASPECT_RATIO_STANDARD }],
   },
   {
-    id: "kling-v16-std-t2v", type: "video", brand: "Kling", name: "v1.6 Standard",
+    id: "kling-v16-std-t2v", type: "video", brand: "Kling", name: "Kling v1.6 Standard",
     endpoint: "fal-ai/kling-video/v1.6/standard/text-to-video",
     description: "Vidéos réalistes, mouvements naturels", icon: "□", color: "from-white/20 to-white/5",
     maxImages: 1, supportsImageInput: false, caurisCost: 25, caurisCost10s: 50, estimatedTime: "~40s",
     settings: [DURATION_5_10, { ...ASPECT_RATIO_STANDARD }],
   },
   {
-    id: "kling-v16-elements", type: "video", brand: "Kling", name: "v1.6 Elements (Multi-I2V)",
+    id: "kling-v16-elements", type: "video", brand: "Kling", name: "Kling v1.6 Elements Multi-I2V",
     endpoint: "fal-ai/kling-video/v1.6/standard/elements",
     description: "Combine jusqu'à 4 images en vidéo", icon: "▤", color: "from-white/20 to-white/5",
     maxImages: 1, supportsImageInput: true, caurisCost: 35, caurisCost10s: 70, estimatedTime: "~45s",
     settings: [DURATION_5_10],
   },
   {
-    id: "seedance-pro-t2v", type: "video", brand: "Seedance", name: "v1 Pro",
+    id: "seedance-pro-t2v", type: "video", brand: "Seedance", name: "Seedance v1 Pro",
     endpoint: "fal-ai/bytedance/seedance/v1/pro/text-to-video",
     description: "Haute qualité, multi-ratios", icon: "◇", color: "from-white/20 to-white/5",
     maxImages: 1, supportsImageInput: false, caurisCost: 70, caurisCost10s: 140, estimatedTime: "~1min30",
@@ -409,14 +409,14 @@ export const FAL_MODELS: FalModel[] = [
     ],
   },
   {
-    id: "seedance-pro-i2v", type: "video", brand: "Seedance", name: "v1 Pro (I2V)",
+    id: "seedance-pro-i2v", type: "video", brand: "Seedance", name: "Seedance v1 Pro I2V",
     endpoint: "fal-ai/bytedance/seedance/v1/pro/image-to-video",
     description: "Image vers vidéo haute qualité", icon: "◫", color: "from-white/20 to-white/5",
     maxImages: 1, supportsImageInput: true, caurisCost: 70, caurisCost10s: 140, estimatedTime: "~1min30",
     settings: [DURATION_5_10],
   },
   {
-    id: "seedance-pro-fast-t2v", type: "video", brand: "Seedance", name: "v1 Pro Fast",
+    id: "seedance-pro-fast-t2v", type: "video", brand: "Seedance", name: "Seedance v1 Pro Fast",
     endpoint: "fal-ai/bytedance/seedance/v1/pro/fast/text-to-video",
     description: "Génération rapide et efficace", icon: "▹", color: "from-white/20 to-white/5",
     maxImages: 1, supportsImageInput: false, caurisCost: 45, caurisCost10s: 90, estimatedTime: "~30s",
@@ -429,14 +429,14 @@ export const FAL_MODELS: FalModel[] = [
     ],
   },
   {
-    id: "seedance-pro-fast-i2v", type: "video", brand: "Seedance", name: "v1 Pro Fast (I2V)",
+    id: "seedance-pro-fast-i2v", type: "video", brand: "Seedance", name: "Seedance v1 Pro Fast I2V",
     endpoint: "fal-ai/bytedance/seedance/v1/pro/fast/image-to-video",
     description: "Anime vos images rapidement", icon: "△", color: "from-white/20 to-white/5",
     maxImages: 1, supportsImageInput: true, caurisCost: 45, caurisCost10s: 90, estimatedTime: "~30s",
     settings: [DURATION_5_10],
   },
   {
-    id: "seedance-15-pro-i2v", type: "video", brand: "Seedance", name: "v1.5 Pro (I2V + Audio)",
+    id: "seedance-15-pro-i2v", type: "video", brand: "Seedance", name: "Seedance v1.5 Pro I2V + Audio",
     endpoint: "fal-ai/bytedance/seedance/v1.5/pro/image-to-video",
     description: "Image vers vidéo avec audio", icon: "◈", color: "from-white/20 to-white/5",
     maxImages: 1, supportsImageInput: true, caurisCost: 70, caurisCost10s: 140, estimatedTime: "~1min30",
@@ -446,35 +446,35 @@ export const FAL_MODELS: FalModel[] = [
     ],
   },
   {
-    id: "seedance-lite-i2v", type: "video", brand: "Seedance", name: "v1 Lite (I2V)",
+    id: "seedance-lite-i2v", type: "video", brand: "Seedance", name: "Seedance v1 Lite I2V",
     endpoint: "fal-ai/bytedance/seedance/v1/lite/image-to-video",
     description: "Animation légère et économique", icon: "▽", color: "from-white/20 to-white/5",
     maxImages: 1, supportsImageInput: true, caurisCost: 30, caurisCost10s: 60, estimatedTime: "~20s",
     settings: [DURATION_5_10],
   },
   {
-    id: "seedance-lite-ref", type: "video", brand: "Seedance", name: "v1 Lite Reference (R2V)",
+    id: "seedance-lite-ref", type: "video", brand: "Seedance", name: "Seedance v1 Lite Reference R2V",
     endpoint: "fal-ai/bytedance/seedance/v1/lite/reference-to-video",
     description: "1-4 images de référence vers vidéo", icon: "▤", color: "from-white/20 to-white/5",
     maxImages: 1, supportsImageInput: true, caurisCost: 30, caurisCost10s: 60, estimatedTime: "~20s",
     settings: [DURATION_5_10],
   },
   {
-    id: "luma-ray2-t2v", type: "video", brand: "Luma", name: "Ray 2",
+    id: "luma-ray2-t2v", type: "video", brand: "Luma", name: "Luma Ray 2",
     endpoint: "fal-ai/luma-dream-machine/ray-2",
     description: "Visuels réalistes, mouvement cohérent", icon: "○", color: "from-white/20 to-white/5",
     maxImages: 1, supportsImageInput: false, caurisCost: 60, estimatedTime: "~1min",
     settings: [{ ...ASPECT_RATIO_STANDARD }],
   },
   {
-    id: "luma-ray2-i2v", type: "video", brand: "Luma", name: "Ray 2 (I2V)",
+    id: "luma-ray2-i2v", type: "video", brand: "Luma", name: "Luma Ray 2 I2V",
     endpoint: "fal-ai/luma-dream-machine/ray-2/image-to-video",
     description: "Anime vos images avec réalisme", icon: "◫", color: "from-white/20 to-white/5",
     maxImages: 1, supportsImageInput: true, caurisCost: 60, estimatedTime: "~1min",
     settings: [{ ...ASPECT_RATIO_STANDARD }],
   },
   {
-    id: "wan-26-t2v", type: "video", brand: "Wan", name: "v2.6",
+    id: "wan-26-t2v", type: "video", brand: "Wan", name: "Wan v2.6",
     endpoint: "fal-ai/wan/v2.6/1080p/text-to-video",
     description: "Jusqu'à 15s en 1080p", icon: "◆", color: "from-white/20 to-white/5",
     maxImages: 1, supportsImageInput: false, caurisCost: 45, caurisCost10s: 90, caurisCost15s: 135, estimatedTime: "~1min",
@@ -487,7 +487,7 @@ export const FAL_MODELS: FalModel[] = [
     ],
   },
   {
-    id: "wan-26-i2v", type: "video", brand: "Wan", name: "v2.6 (I2V)",
+    id: "wan-26-i2v", type: "video", brand: "Wan", name: "Wan v2.6 I2V",
     endpoint: "fal-ai/wan/v2.6/1080p/image-to-video",
     description: "Image vers vidéo jusqu'à 15s", icon: "◫", color: "from-white/20 to-white/5",
     maxImages: 1, supportsImageInput: true, caurisCost: 45, caurisCost10s: 90, caurisCost15s: 135, estimatedTime: "~1min",
@@ -499,7 +499,7 @@ export const FAL_MODELS: FalModel[] = [
     ],
   },
   {
-    id: "minimax-video", type: "video", brand: "MiniMax", name: "Video-01 Live",
+    id: "minimax-video", type: "video", brand: "MiniMax", name: "MiniMax Video-01 Live",
     endpoint: "fal-ai/minimax/video-01-live",
     description: "Vidéo fluide et expressive", icon: "◇", color: "from-white/20 to-white/5",
     maxImages: 1, supportsImageInput: false, caurisCost: 60, estimatedTime: "~1min",
@@ -508,7 +508,7 @@ export const FAL_MODELS: FalModel[] = [
     ],
   },
   {
-    id: "framepack-f1", type: "video", brand: "Framepack", name: "F1",
+    id: "framepack-f1", type: "video", brand: "Framepack", name: "Framepack F1",
     endpoint: "fal-ai/framepack/f1",
     description: "Animation réaliste d'images", icon: "□", color: "from-white/20 to-white/5",
     maxImages: 1, supportsImageInput: true, caurisCost: 15, estimatedTime: "~20s",
