@@ -22,10 +22,13 @@ serve(async (req) => {
   }
 
   try {
-    const KKIAPAY_SECRET = Deno.env.get("KKIAPAY_SECRET_KEY");
-    if (!KKIAPAY_SECRET) {
+    const KKIAPAY_PUBLIC_KEY = Deno.env.get("KKIAPAY_PUBLIC_KEY") || "046751a99c664c3a1caf83a22a1f8068c568f24b";
+    const KKIAPAY_PRIVATE_KEY = Deno.env.get("KKIAPAY_PRIVATE_KEY");
+    const KKIAPAY_SECRET_KEY = Deno.env.get("KKIAPAY_SECRET_KEY");
+
+    if (!KKIAPAY_PRIVATE_KEY || !KKIAPAY_SECRET_KEY) {
       return new Response(
-        JSON.stringify({ error: "Configuration de vérification de paiement manquante" }),
+        JSON.stringify({ error: "Configuration KkiaPay incomplète: clés privée et secrète requises" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -112,13 +115,16 @@ serve(async (req) => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "x-api-key": KKIAPAY_SECRET,
+          "x-api-key": KKIAPAY_PUBLIC_KEY,
+          "x-private-key": KKIAPAY_PRIVATE_KEY,
+          "x-secret-key": KKIAPAY_SECRET_KEY,
         },
         body: JSON.stringify({ transactionId: transaction_id }),
       });
 
       if (!verifyResp.ok) {
-        console.error("KkiaPay verification failed:", verifyResp.status);
+        const verifyErrorBody = await verifyResp.text().catch(() => "");
+        console.error("KkiaPay verification failed:", verifyResp.status, verifyErrorBody);
         return new Response(
           JSON.stringify({ error: "Impossible de vérifier le paiement auprès de KkiaPay" }),
           { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } }
