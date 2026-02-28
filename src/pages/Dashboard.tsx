@@ -33,6 +33,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { FAL_MODELS, getModelById, getDefaultSettings, getModelsByType, getModelsByTypeGrouped, calculateCaurisCost, type FalModel } from "@/lib/fal-models";
+import { getBrandLogo } from "@/lib/brandLogos";
 import GenerationProgress from "@/components/GenerationProgress";
 import { getGenerationJob, startGeneration, completeGeneration, failGeneration, subscribeGeneration } from "@/hooks/useGenerationStore";
 
@@ -961,9 +962,13 @@ const Dashboard = () => {
                 onClick={() => setShowModelDropdown(!showModelDropdown)}
                 className="w-full flex items-center gap-2.5 glass glass-hover rounded-xl px-3 py-2.5"
               >
-                <span className="w-6 h-6 rounded-md bg-white/[0.06] flex items-center justify-center text-[10px] font-bold text-muted-foreground shrink-0 uppercase">
-                  {selectedModel.brand.slice(0, 2)}
-                </span>
+                {getBrandLogo(selectedModel.brand) ? (
+                  <img src={getBrandLogo(selectedModel.brand)!} alt={selectedModel.brand} className="w-6 h-6 rounded-md object-contain shrink-0" />
+                ) : (
+                  <span className="w-6 h-6 rounded-md bg-white/[0.06] flex items-center justify-center text-[10px] font-bold text-muted-foreground shrink-0 uppercase">
+                    {selectedModel.brand.slice(0, 2)}
+                  </span>
+                )}
                 <div className="flex-1 text-left">
                   <div className="flex items-center gap-1.5">
                     <span className="text-sm font-medium text-foreground leading-tight">
@@ -1011,9 +1016,13 @@ const Dashboard = () => {
                                 : "hover:bg-white/[0.04]"
                             }`}
                           >
-                            <span className="w-5 h-5 rounded bg-white/[0.06] flex items-center justify-center text-[9px] font-bold text-muted-foreground shrink-0 uppercase">
-                              {model.brand.slice(0, 2)}
-                            </span>
+                            {getBrandLogo(model.brand) ? (
+                              <img src={getBrandLogo(model.brand)!} alt={model.brand} className="w-5 h-5 rounded object-contain shrink-0" />
+                            ) : (
+                              <span className="w-5 h-5 rounded bg-white/[0.06] flex items-center justify-center text-[9px] font-bold text-muted-foreground shrink-0 uppercase">
+                                {model.brand.slice(0, 2)}
+                              </span>
+                            )}
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-1.5">
                                 <span className="text-xs font-medium text-foreground truncate">
