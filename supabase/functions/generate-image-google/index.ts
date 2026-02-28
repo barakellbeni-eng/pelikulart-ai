@@ -11,17 +11,27 @@ const LOVABLE_AI_ENDPOINT = "https://ai.gateway.lovable.dev/v1/chat/completions"
 
 const ALLOWED_SETTINGS = new Set(["aspect_ratio", "resolution"]);
 
-async function uploadBase64Image(
+async function uploadGeneratedImage(
   supabase: any,
-  base64Data: string,
+  imageSource: string,
   userId: string,
 ): Promise<string> {
-  // Remove data URL prefix if present
-  const raw = base64Data.replace(/^data:image\/\w+;base64,/, "");
-  const binaryStr = atob(raw);
-  const bytes = new Uint8Array(binaryStr.length);
-  for (let i = 0; i < binaryStr.length; i++) {
-    bytes[i] = binaryStr.charCodeAt(i);
+  let bytes: Uint8Array;
+  let contentType = "image/png";
+
+  if (imageSource.startsWith("http://") || imageSource.startsWith("https://")) {
+    const resp = await fetch(imageSource);
+    if (!resp.ok) throw new Error("Failed to download generated image");
+    const arrayBuffer = await resp.arrayBuffer();
+    bytes = new Uint8Array(arrayBuffer);
+    contentType = resp.headers.get("content-type") || contentType;
+  } else {
+    const raw = imageSource.replace(/^data:image\/\w+;base64,/, "");
+    const binaryStr = atob(raw);
+    bytes = new Uint8Array(binaryStr.length);
+    for (let i = 0; i < binaryStr.length; i++) {
+      bytes[i] = binaryStr.charCodeAt(i);
+    }
   }
 
   const fileName = `${userId}/${crypto.randomUUID()}.png`;
@@ -29,7 +39,7 @@ async function uploadBase64Image(
   const { error: uploadError } = await supabase.storage
     .from("generations")
     .upload(fileName, bytes, {
-      contentType: "image/png",
+      contentType,
       upsert: false,
     });
 
@@ -142,17 +152,15 @@ serve(async (req) => {
     }
 
     // --- Build messages for Lovable AI gateway ---
-    const content: any[] = [];
-
+    const content: any[] = [{ type: "text", text: `Generate an image.\n${fullPrompt}` }];
     if (image_url) {
-      content.push({ type: "text", text: fullPrompt });
       content.push({ type: "image_url", image_url: { url: image_url } });
     }
 
     const messages = [
       {
         role: "user",
-        content: image_url ? content : fullPrompt,
+        content,
       },
     ];
 
@@ -187,24 +195,49 @@ serve(async (req) => {
               { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
             );
           }
-          return new Response(
-            JSON.stringify({ error: "Erreur du service de génération. Réessayez." }),
-            { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-          );
+          if (aiResp.status === 402) {
+            return new Response(
+              JSON.stringify({ error: "Crédits IA insuffisants pour effectuer la génération." }),
+              { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+            );
+          }
         }
         break;
       }
 
       const aiData = await aiResp.json();
-      const choice = aiData.choices?.[0];
-      const images = choice?.message?.images || [];
+      const choice = aiData?.choices?.[0];
+      const imageCandidates: string[] = [];
 
-      for (const img of images) {
+      const messageImages = choice?.message?.images;
+      if (Array.isArray(messageImages)) {
+        for (const img of messageImages) {
+          const url = img?.image_url?.url;
+          if (typeof url === "string" && url) imageCandidates.push(url);
+        }
+      }
+
+      const messageContent = choice?.message?.content;
+      if (Array.isArray(messageContent)) {
+        for (const part of messageContent) {
+          const url = part?.image_url?.url;
+          if (part?.type === "image_url" && typeof url === "string" && url) {
+            imageCandidates.push(url);
+          }
+        }
+      }
+
+      if (!imageCandidates.length) {
+        console.error("No image returned by Lovable AI", {
+          hasMessageImages: Array.isArray(messageImages),
+          contentIsArray: Array.isArray(messageContent),
+          finishReason: choice?.finish_reason ?? null,
+        });
+      }
+
+      for (const imageSource of imageCandidates) {
         try {
-          const base64Url = img.image_url?.url;
-          if (!base64Url) continue;
-
-          const storedUrl = await uploadBase64Image(adminClient, base64Url, userId);
+          const storedUrl = await uploadGeneratedImage(adminClient, imageSource, userId);
 
           await adminClient.from("generations").insert({
             user_id: userId,
