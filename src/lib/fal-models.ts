@@ -58,7 +58,7 @@ const ASPECT_RATIO_FLUX_PRO: ModelSetting = {
   defaultValue: "1:1",
 };
 
-// Aspect ratios for Nano Banana (Google AI Studio — full set from docs)
+// Aspect ratios for Nano Banana Pro (Google)
 const ASPECT_RATIO_NANO_BANANA: ModelSetting = {
   key: "aspect_ratio", label: "Ratio", type: "select",
   options: [
@@ -66,20 +66,9 @@ const ASPECT_RATIO_NANO_BANANA: ModelSetting = {
     { value: "4:3", label: "4:3 — Photo classique" }, { value: "3:4", label: "3:4 — Portrait" },
     { value: "3:2", label: "3:2 — Paysage photo" }, { value: "2:3", label: "2:3 — Portrait long" },
     { value: "4:5", label: "4:5 — Portrait social" }, { value: "5:4", label: "5:4 — Paysage doux" },
-    { value: "4:1", label: "4:1 — Panorama large" }, { value: "1:4", label: "1:4 — Bannière verticale" },
-    { value: "8:1", label: "8:1 — Ultra panorama" }, { value: "1:8", label: "1:8 — Ultra vertical" },
     { value: "21:9", label: "21:9 — Ultra-wide" },
   ],
   defaultValue: "1:1",
-};
-
-// Resolution for Nano Banana (Google AI Studio)
-const RESOLUTION_NANO_BANANA: ModelSetting = {
-  key: "resolution", label: "Résolution", type: "select",
-  options: [
-    { value: "512px", label: "512px" }, { value: "1K", label: "1K" }, { value: "2K", label: "2K" }, { value: "4K", label: "4K" },
-  ],
-  defaultValue: "1K",
 };
 
 // Aspect ratios for Imagen 4 (Google)
@@ -148,42 +137,43 @@ export const FAL_MODELS: FalModel[] = [
   //  IMAGE MODELS
   // ════════════════════════════════════════
 
-  // ── Pelikulart Maison (Lovable AI Gateway → Google) ──
+  // ── Pelikulart Maison (Google AI Studio direct) ──
   {
     id: "pelikulart-nano-banana", type: "image", brand: "Pelikulart", name: "Nano Banana",
     endpoint: "google-direct",
-    description: "Gemini 2.5 Flash Image — rapide, polyvalent", icon: "★", color: "from-primary/30 to-primary/10",
-    maxImages: 4, supportsImageInput: true, maxInputImages: 14, caurisCost: 2, estimatedTime: "~5s", recommended: true,
-    settings: [ASPECT_RATIO_NANO_BANANA, RESOLUTION_NANO_BANANA],
-  },
-  {
-    id: "pelikulart-nano-banana-pro", type: "image", brand: "Pelikulart", name: "Nano Banana Pro",
-    endpoint: "google-direct-pro",
-    description: "Gemini 3 Pro Image — qualité pro, raisonnement avancé", icon: "★", color: "from-primary/30 to-primary/10",
-    maxImages: 4, supportsImageInput: true, maxInputImages: 6, caurisCost: 5, estimatedTime: "~10s", recommended: true,
-    settings: [ASPECT_RATIO_NANO_BANANA, RESOLUTION_NANO_BANANA],
-  },
-  {
-    id: "pelikulart-nano-banana-2", type: "image", brand: "Pelikulart", name: "Nano Banana 2",
-    endpoint: "google-direct-v2",
-    description: "Gemini 3.1 Flash Image — plus rapide, 512px à 4K", icon: "★", color: "from-primary/30 to-primary/10",
-    maxImages: 4, supportsImageInput: true, maxInputImages: 14, caurisCost: 3, estimatedTime: "~4s",
-    settings: [ASPECT_RATIO_NANO_BANANA, RESOLUTION_NANO_BANANA],
+    description: "Gemini Flash Image — API maison, rapide", icon: "★", color: "from-primary/30 to-primary/10",
+    maxImages: 4, supportsImageInput: true, maxInputImages: 1, caurisCost: 2, estimatedTime: "~3s", recommended: true,
+    settings: [
+      ASPECT_RATIO_NANO_BANANA,
+      { key: "resolution", label: "Résolution", type: "select", options: [
+        { value: "1K", label: "1K" }, { value: "2K", label: "2K" }, { value: "4K", label: "4K" },
+      ], defaultValue: "2K" },
+    ],
   },
 
   {
     id: "nano-banana-pro", type: "image", brand: "Google", name: "Nano Banana Pro",
     endpoint: "fal-ai/nano-banana-pro",
-    description: "Gemini 3 Pro Image via Fal — rapide, polyvalent", icon: "◆", color: "from-white/20 to-white/5",
+    description: "Gemini 3 Pro Image — rapide, polyvalent, multi-ratio", icon: "◆", color: "from-white/20 to-white/5",
     maxImages: 4, supportsImageInput: false, caurisCost: 3, estimatedTime: "~3s", recommended: true,
-    settings: [ASPECT_RATIO_NANO_BANANA, RESOLUTION_NANO_BANANA],
+    settings: [
+      ASPECT_RATIO_NANO_BANANA,
+      { key: "resolution", label: "Résolution", type: "select", options: [
+        { value: "1K", label: "1K" }, { value: "2K", label: "2K" }, { value: "4K", label: "4K" },
+      ], defaultValue: "2K" },
+    ],
   },
   {
     id: "nano-banana-pro-edit", type: "image", brand: "Google", name: "Nano Banana Pro Edit",
     endpoint: "fal-ai/nano-banana-pro/edit",
     description: "Édition multi-images avec Gemini 3 Pro", icon: "◫", color: "from-white/20 to-white/5",
     maxImages: 4, supportsImageInput: true, maxInputImages: 5, caurisCost: 4, estimatedTime: "~4s",
-    settings: [ASPECT_RATIO_NANO_BANANA, RESOLUTION_NANO_BANANA],
+    settings: [
+      ASPECT_RATIO_NANO_BANANA,
+      { key: "resolution", label: "Résolution", type: "select", options: [
+        { value: "1K", label: "1K" }, { value: "2K", label: "2K" }, { value: "4K", label: "4K" },
+      ], defaultValue: "2K" },
+    ],
   },
   {
     id: "flux-dev", type: "image", brand: "FLUX", name: "[dev]",

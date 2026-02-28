@@ -446,8 +446,7 @@ const Dashboard = () => {
           }
         }
 
-        const isGoogleDirect = currentModel.endpoint === "google-direct" || currentModel.endpoint === "google-direct-pro" || currentModel.endpoint === "google-direct-v2";
-        const imageEndpoint = isGoogleDirect ? GENERATE_IMAGE_GOOGLE_URL : GENERATE_IMAGE_URL;
+        const imageEndpoint = currentModel.endpoint === "google-direct" ? GENERATE_IMAGE_GOOGLE_URL : GENERATE_IMAGE_URL;
         const resp = await fetch(imageEndpoint, {
           method: "POST",
           headers: {
