@@ -27,7 +27,7 @@ const HomePage = () => {
               src={STUDIO_VIDEO_URL}
               allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen
-              className="absolute inset-0 w-full h-full border-0"
+              className="absolute inset-0 w-full h-full border-0 pointer-events-none"
               referrerPolicy="unsafe-url"
             />
            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none bg-black/40">
