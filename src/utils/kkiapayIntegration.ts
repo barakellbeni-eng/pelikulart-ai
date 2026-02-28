@@ -1,4 +1,4 @@
-export const KKIAPAY_PUBLIC_KEY = "046751a99c664c3a1caf83a22a1f8068c568f24b";
+export const KKIAPAY_PUBLIC_KEY = "b381e02eaf555749572f1931be1b34fcac369cf5";
 
 const loadKkiapayScript = (): Promise<void> => {
   return new Promise<void>((resolve) => {
