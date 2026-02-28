@@ -61,12 +61,12 @@ const Auth = () => {
       >
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2.5 justify-center mb-8">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-destructive flex items-center justify-center">
+          <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
             <Zap className="w-5 h-5 text-primary-foreground" />
           </div>
-          <span className="text-2xl font-bold tracking-tight">
-            <span className="text-gradient-primary">cauris</span>
-            <span className="text-foreground">.ai</span>
+          <span className="text-2xl font-bold tracking-tight uppercase">
+            <span className="text-foreground">PELIKULART</span>
+            <span className="text-primary">.AI</span>
           </span>
         </Link>
 
