@@ -8,6 +8,7 @@ import payWari from "@/assets/pay-wari.png";
 import payMoov from "@/assets/pay-moov.png";
 import payKkiapay from "@/assets/pay-kkiapay.png";
 import payMtn from "@/assets/pay-mtn.png";
+import kkiapayLogo from "@/assets/kkiapay-logo.png";
 
 const logos = [
   { src: payMtn, alt: "MTN Mobile Money" },
@@ -55,18 +56,13 @@ const PaymentMarquee = ({ size = "md", showAvailability = false, showSignupCTA =
 
   return (
     <div className="space-y-3">
-      {showSignupCTA && (
-        <p className="text-center text-sm font-semibold text-white">
-          Inscription gratuite • Recevez <span className="text-lime font-bold">50 Cauris gratuits</span> 🐚
-        </p>
-      )}
       {showAvailability && (
         <div className="text-center space-y-1">
           <p className="text-xs text-white/50">
-            🇧🇯 Bénin · 🇨🇮 Côte d'Ivoire · 🇹🇬 Togo · 🇸🇳 Sénégal — <span className="text-white/80 font-medium">Mobile Money</span>
+            Bénin · Côte d'Ivoire · Togo · Sénégal — <span className="text-white/80 font-medium">Mobile Money</span>
           </p>
           <p className="text-xs text-white/50">
-            🌍 Autres pays — <span className="text-white/80 font-medium">Visa & Mastercard</span>
+            Autres pays — <span className="text-white/80 font-medium">Visa & Mastercard</span>
           </p>
         </div>
       )}
@@ -105,6 +101,12 @@ const PaymentMarquee = ({ size = "md", showAvailability = false, showSignupCTA =
           </AnimatePresence>
         </div>
       </div>
+      {showAvailability && (
+        <div className="flex items-center justify-center gap-2 mt-2">
+          <span className="text-[10px] text-white/40">Paiement sécurisé par</span>
+          <img src={kkiapayLogo} alt="KkiaPay" className="h-4 object-contain" />
+        </div>
+      )}
     </div>
   );
 };
