@@ -33,7 +33,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { FAL_MODELS, getModelById, getDefaultSettings, getModelsByType, getModelsByTypeGrouped, calculateCaurisCost, type FalModel } from "@/lib/fal-models";
-import HourglassLoader from "@/components/HourglassLoader";
+import GenerationProgress from "@/components/GenerationProgress";
 import { getGenerationJob, startGeneration, completeGeneration, failGeneration, subscribeGeneration } from "@/hooks/useGenerationStore";
 
 const GENERATE_IMAGE_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-image`;
@@ -1418,8 +1418,8 @@ const Dashboard = () => {
                       animate={{ opacity: 1, y: 0 }}
                       className="rounded-xl bg-muted/10 overflow-hidden"
                     >
-                      <div className="aspect-video flex items-center justify-center bg-muted/20">
-                        <HourglassLoader size={32} />
+                      <div className="aspect-video flex items-center justify-center bg-muted/20 py-8">
+                        <GenerationProgress estimatedTime={selectedModel.estimatedTime} />
                       </div>
                     </motion.div>
                   )}
@@ -1554,7 +1554,7 @@ const Dashboard = () => {
                       animate={{ opacity: 1, scale: 1 }}
                       className="col-span-full rounded-xl bg-muted/10 flex flex-col items-center justify-center p-6 space-y-3"
                     >
-                      <HourglassLoader size={28} />
+                      <GenerationProgress estimatedTime={selectedModel.estimatedTime} />
                     </motion.div>
                   ) : activeTab === "video" ? (
                     <motion.div
@@ -1563,7 +1563,7 @@ const Dashboard = () => {
                       animate={{ opacity: 1, scale: 1 }}
                       className="aspect-video rounded-xl bg-muted/10 flex flex-col items-center justify-center p-4 space-y-3"
                     >
-                      <HourglassLoader size={28} />
+                      <GenerationProgress estimatedTime={selectedModel.estimatedTime} />
                     </motion.div>
                   ) : (
                     Array.from({ length: numImages }).map((_, i) => (
@@ -1573,7 +1573,7 @@ const Dashboard = () => {
                         animate={{ opacity: 1, scale: 1 }}
                         className="aspect-square rounded-xl bg-muted/10 flex flex-col items-center justify-center p-4 space-y-3"
                       >
-                        <HourglassLoader size={24} />
+                        <GenerationProgress estimatedTime={selectedModel.estimatedTime} compact />
                       </motion.div>
                     ))
                   )
