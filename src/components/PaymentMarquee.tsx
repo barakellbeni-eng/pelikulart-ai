@@ -36,7 +36,7 @@ const PaymentMarquee = ({ size = "md", showAvailability = false, showSignupCTA =
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % logos.length);
-    }, 1200);
+    }, 2500);
     return () => clearInterval(interval);
   }, []);
 
@@ -96,7 +96,7 @@ const PaymentMarquee = ({ size = "md", showAvailability = false, showSignupCTA =
                     x: 0,
                   }}
                   exit={{ opacity: 0, scale: 0.2, x: logo.position > 0 ? 80 : -80 }}
-                  transition={{ type: "spring", stiffness: 200, damping: 25 }}
+                  transition={{ type: "spring", stiffness: 120, damping: 20, mass: 1.2 }}
                   className="rounded-full object-contain flex-shrink-0"
                   style={{ width: computedSize, height: computedSize }}
                 />
