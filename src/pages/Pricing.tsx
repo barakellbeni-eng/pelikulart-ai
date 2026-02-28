@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Check, X, Coins } from "lucide-react";
 import PaymentMarquee from "@/components/PaymentMarquee";
 import { motion, AnimatePresence } from "framer-motion";
@@ -7,6 +7,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { initiateKkiapayPayment } from "@/utils/kkiapayIntegration";
+import { launchConfetti, playSuccessSound } from "@/utils/celebrationEffects";
 
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
@@ -89,6 +90,41 @@ const Pricing = () => {
   const { balance, refetch } = useCauris();
   const navigate = useNavigate();
   const [paymentStatus, setPaymentStatus] = useState<"idle" | "success" | "failed">("idle");
+  const [displayBalance, setDisplayBalance] = useState(balance);
+  const [addedCauris, setAddedCauris] = useState(0);
+  const animFrameRef = useRef<number>();
+
+  useEffect(() => {
+    if (paymentStatus !== "success") {
+      setDisplayBalance(balance);
+    }
+  }, [balance, paymentStatus]);
+
+  const animateBalance = (from: number, added: number) => {
+    const to = from + added;
+    const duration = 1500;
+    const start = performance.now();
+
+    const tick = (now: number) => {
+      const elapsed = now - start;
+      const progress = Math.min(elapsed / duration, 1);
+      // Ease-out cubic
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setDisplayBalance(Math.round(from + (to - from) * eased));
+
+      if (progress < 1) {
+        animFrameRef.current = requestAnimationFrame(tick);
+      }
+    };
+
+    animFrameRef.current = requestAnimationFrame(tick);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
+    };
+  }, []);
 
   const handlePay = async (pack: typeof packs[0]) => {
     if (!user) {
@@ -108,6 +144,12 @@ const Pricing = () => {
         throw new Error("Transaction Kkiapay introuvable après paiement");
       }
 
+      // Close KkiaPay widget if possible
+      try {
+        const kkWidget = document.querySelector('.kkiapay-overlay, .kkiapay-popup, [id*="kkiapay"]');
+        if (kkWidget) (kkWidget as HTMLElement).style.display = "none";
+      } catch {}
+
       const { data, error } = await supabase.functions.invoke("verify-payment", {
         body: {
           transaction_id: paymentResult.transactionId,
@@ -121,7 +163,14 @@ const Pricing = () => {
         return;
       }
 
+      // 🎉 Celebration!
+      const previousBalance = balance;
+      const caurisAdded = data.cauris_added || pack.cauris;
+      setAddedCauris(caurisAdded);
       setPaymentStatus("success");
+      playSuccessSound();
+      launchConfetti();
+      animateBalance(previousBalance, caurisAdded);
       refetch();
     } catch (e) {
       console.error("Payment/verify error:", e);
@@ -144,7 +193,26 @@ const Pricing = () => {
             </div>
             <div>
               <p className="text-xs text-muted-foreground">Solde actuel</p>
-              <p className="text-2xl font-bold text-gradient-primary">{balance} <span className="text-sm">Cauris</span></p>
+              <div className="flex items-center gap-2">
+                <motion.p
+                  key={displayBalance}
+                  initial={paymentStatus === "success" ? { scale: 1.3 } : false}
+                  animate={{ scale: 1 }}
+                  transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                  className="text-2xl font-bold text-gradient-primary"
+                >
+                  {displayBalance} <span className="text-sm">Cauris</span>
+                </motion.p>
+                {paymentStatus === "success" && addedCauris > 0 && (
+                  <motion.span
+                    initial={{ opacity: 0, y: 10, scale: 0.5 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    className="text-sm font-bold text-green-400"
+                  >
+                    +{addedCauris} 🐚
+                  </motion.span>
+                )}
+              </div>
             </div>
           </div>
         </motion.div>
@@ -163,7 +231,7 @@ const Pricing = () => {
               }`}
             >
               {paymentStatus === "success"
-                ? "✅ Paiement réussi ! Vos Cauris ont été ajoutés."
+                ? `🎉 Paiement réussi ! +${addedCauris} Cauris ajoutés à votre solde.`
                 : "❌ Paiement échoué. Veuillez réessayer."}
               <button
                 onClick={() => setPaymentStatus("idle")}
