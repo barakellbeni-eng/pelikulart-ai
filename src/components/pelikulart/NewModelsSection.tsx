@@ -1,21 +1,27 @@
 import { motion } from "framer-motion";
 import { Sparkles } from "lucide-react";
+import logoGoogle from "@/assets/logo-google.png";
+import logoFlux from "@/assets/logo-flux.png";
+import logoSeedream from "@/assets/logo-seedream.png";
+import logoIdeogram from "@/assets/logo-ideogram.png";
+import logoPelikulart from "@/assets/pelikulart-logo.jpeg";
 
 interface NewModel {
   name: string;
   brand: string;
   tag: string;
   description: string;
-  icon: string;
+  logo: string;
 }
 
 const newModels: NewModel[] = [
-  { name: "Nano Banana Pro", brand: "Google", tag: "NOUVEAU", description: "Gemini 3 Pro Image — rapide, polyvalent, multi-ratio", icon: "◆" },
-  { name: "Imagen 4 Ultra", brand: "Google", tag: "NOUVEAU", description: "Qualité maximale, détails extrêmes par Google", icon: "◈" },
-  { name: "Seedream v4.5", brand: "ByteDance", tag: "NOUVEAU", description: "Ultra réaliste en 2-3s, dernière génération", icon: "◈" },
-  { name: "Kling 2.1", brand: "Kling", tag: "VIDÉO", description: "Génération vidéo cinématique de nouvelle génération", icon: "▶" },
-  { name: "FLUX Kontext Max", brand: "FLUX", tag: "ÉDITION", description: "Typographie améliorée et édition contextuelle", icon: "◫" },
-  { name: "Veo 3", brand: "Google", tag: "VIDÉO", description: "Vidéo IA de Google avec audio synchronisé", icon: "▶" },
+  { name: "Nano Banana Pro", brand: "Google", tag: "NOUVEAU", description: "Gemini 3 Pro Image — rapide, polyvalent, multi-ratio", logo: logoGoogle },
+  { name: "Imagen 4 Ultra", brand: "Google", tag: "NOUVEAU", description: "Qualité maximale, détails extrêmes par Google", logo: logoGoogle },
+  { name: "Veo 3", brand: "Google", tag: "VIDÉO", description: "Vidéo IA de Google avec audio synchronisé", logo: logoGoogle },
+  { name: "Seedream v4.5", brand: "ByteDance", tag: "NOUVEAU", description: "Ultra réaliste en 2-3s, dernière génération", logo: logoSeedream },
+  { name: "FLUX Kontext Max", brand: "FLUX", tag: "ÉDITION", description: "Typographie améliorée et édition contextuelle", logo: logoFlux },
+  { name: "Ideogram 3", brand: "Ideogram", tag: "NOUVEAU", description: "Texte dans l'image, design graphique avancé", logo: logoIdeogram },
+  { name: "Pelikulart Studio", brand: "Pelikulart", tag: "MAISON", description: "Notre moteur IA maison pour des créations uniques", logo: logoPelikulart },
 ];
 
 const NewModelsSection = () => {
@@ -46,9 +52,11 @@ const NewModelsSection = () => {
               className="p-4 rounded-xl border border-white/[0.06] bg-white/[0.02]"
             >
               <div className="flex items-start gap-3">
-                <span className="text-2xl leading-none mt-0.5 opacity-60">
-                  {model.icon}
-                </span>
+                <img
+                  src={model.logo}
+                  alt={model.brand}
+                  className="w-8 h-8 rounded-md object-contain mt-0.5"
+                />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
                     <span className="text-white font-semibold text-sm truncate">
