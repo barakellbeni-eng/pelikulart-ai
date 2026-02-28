@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Check, X, Coins } from "lucide-react";
-import paymentMethodsImg from "@/assets/payment-methods.png";
+import PaymentMarquee from "@/components/PaymentMarquee";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCauris } from "@/hooks/useCauris";
 import { useAuth } from "@/hooks/useAuth";
@@ -266,7 +266,7 @@ const Pricing = () => {
         {/* Payment Methods */}
         <div className="glass-card p-5 space-y-4">
           <h3 className="font-semibold text-foreground text-center text-sm">Moyens de paiement acceptés</h3>
-          <img src={paymentMethodsImg} alt="MTN, Moov Money, Wave, Mixx, Visa, Mastercard" className="w-full max-w-md mx-auto h-auto opacity-80" />
+          <PaymentMarquee showAvailability />
           <p className="text-[10px] text-muted-foreground text-center">
             Paiement sécurisé via KkiaPay • Cauris activés instantanément
           </p>

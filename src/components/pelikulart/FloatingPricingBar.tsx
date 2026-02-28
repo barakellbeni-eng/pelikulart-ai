@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { ShieldCheck } from "lucide-react";
-import paymentMethodsImg from "@/assets/payment-methods.png";
+import PaymentMarquee from "@/components/PaymentMarquee";
 import type { LucideIcon } from "lucide-react";
 
 interface Plan {
@@ -68,7 +68,7 @@ const FloatingPricingBar = ({ plans, selectedPlanId, onSelectPlan, onBuy, isVisi
           </div>
 
           <div className="mt-2">
-            <img src={paymentMethodsImg} alt="Moyens de paiement acceptés" className="h-5 w-auto mx-auto opacity-50" />
+            <PaymentMarquee size="sm" />
           </div>
         </motion.div>
       )}
