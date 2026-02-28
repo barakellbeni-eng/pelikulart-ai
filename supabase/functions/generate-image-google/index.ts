@@ -7,32 +7,29 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const GOOGLE_AI_ENDPOINT = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
+const LOVABLE_AI_ENDPOINT = "https://ai.gateway.lovable.dev/v1/chat/completions";
 
-const ALLOWED_SETTINGS = new Set([
-  "aspect_ratio", "resolution",
-]);
+const ALLOWED_SETTINGS = new Set(["aspect_ratio", "resolution"]);
 
-async function downloadAndUpload(
+async function uploadBase64Image(
   supabase: any,
-  imageData: string,
+  base64Data: string,
   userId: string,
-  format: string,
 ): Promise<string> {
-  // imageData is base64
-  const binaryStr = atob(imageData);
+  // Remove data URL prefix if present
+  const raw = base64Data.replace(/^data:image\/\w+;base64,/, "");
+  const binaryStr = atob(raw);
   const bytes = new Uint8Array(binaryStr.length);
   for (let i = 0; i < binaryStr.length; i++) {
     bytes[i] = binaryStr.charCodeAt(i);
   }
 
-  const ext = format === "jpeg" ? "jpg" : format;
-  const fileName = `${userId}/${crypto.randomUUID()}.${ext}`;
+  const fileName = `${userId}/${crypto.randomUUID()}.png`;
 
   const { error: uploadError } = await supabase.storage
     .from("generations")
     .upload(fileName, bytes, {
-      contentType: `image/${format}`,
+      contentType: "image/png",
       upsert: false,
     });
 
@@ -54,8 +51,8 @@ serve(async (req) => {
   }
 
   try {
-    const GOOGLE_AI_API_KEY = Deno.env.get("GOOGLE_AI_API_KEY");
-    if (!GOOGLE_AI_API_KEY) throw new Error("GOOGLE_AI_API_KEY is not configured");
+    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
@@ -135,8 +132,7 @@ serve(async (req) => {
       );
     }
 
-    // --- Build Google AI request ---
-    // Build the prompt with aspect ratio/resolution hints
+    // --- Build prompt with settings ---
     let fullPrompt = prompt;
     if (modelSettings.aspect_ratio) {
       fullPrompt += `\n\nAspect ratio: ${modelSettings.aspect_ratio}`;
@@ -145,130 +141,83 @@ serve(async (req) => {
       fullPrompt += `\nResolution: ${modelSettings.resolution}`;
     }
 
-    const contents: any[] = [];
+    // --- Build messages for Lovable AI gateway ---
+    const content: any[] = [];
 
-    // If there's a reference image, include it
     if (image_url) {
-      if (image_url.startsWith("data:")) {
-        // Base64 data URL
-        const match = image_url.match(/^data:image\/(\w+);base64,(.+)$/);
-        if (match) {
-          contents.push({
-            role: "user",
-            parts: [
-              {
-                inline_data: {
-                  mime_type: `image/${match[1]}`,
-                  data: match[2],
-                },
-              },
-              { text: fullPrompt },
-            ],
-          });
-        } else {
-          contents.push({ role: "user", parts: [{ text: fullPrompt }] });
-        }
-      } else {
-        // URL - download and convert to base64
-        try {
-          const imgResp = await fetch(image_url);
-          if (imgResp.ok) {
-            const imgBuf = await imgResp.arrayBuffer();
-            const imgBase64 = btoa(String.fromCharCode(...new Uint8Array(imgBuf)));
-            const ct = imgResp.headers.get("content-type") || "image/png";
-            contents.push({
-              role: "user",
-              parts: [
-                { inline_data: { mime_type: ct, data: imgBase64 } },
-                { text: fullPrompt },
-              ],
-            });
-          } else {
-            contents.push({ role: "user", parts: [{ text: fullPrompt }] });
-          }
-        } catch {
-          contents.push({ role: "user", parts: [{ text: fullPrompt }] });
-        }
-      }
-    } else {
-      contents.push({ role: "user", parts: [{ text: fullPrompt }] });
+      content.push({ type: "text", text: fullPrompt });
+      content.push({ type: "image_url", image_url: { url: image_url } });
     }
+
+    const messages = [
+      {
+        role: "user",
+        content: image_url ? content : fullPrompt,
+      },
+    ];
 
     const savedImages = [];
 
-    // Generate images one by one (Gemini generates one image per call)
     for (let i = 0; i < safeNumImages; i++) {
-      console.log(`Google AI: generating image ${i + 1}/${safeNumImages}`);
+      console.log(`Generating image ${i + 1}/${safeNumImages} via Lovable AI gateway`);
 
-      const googlePayload = {
-        contents,
-        generationConfig: {
-          responseModalities: ["TEXT", "IMAGE"],
+      const aiResp = await fetch(LOVABLE_AI_ENDPOINT, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${LOVABLE_API_KEY}`,
+          "Content-Type": "application/json",
         },
-      };
+        body: JSON.stringify({
+          model: "google/gemini-2.5-flash-image",
+          messages,
+          modalities: ["image", "text"],
+        }),
+      });
 
-      const googleResp = await fetch(
-        `${GOOGLE_AI_ENDPOINT}?key=${GOOGLE_AI_API_KEY}`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(googlePayload),
-        }
-      );
-
-      if (!googleResp.ok) {
-        const errText = await googleResp.text();
-        console.error("Google AI error:", googleResp.status, errText);
+      if (!aiResp.ok) {
+        const errText = await aiResp.text();
+        console.error("Lovable AI error:", aiResp.status, errText);
 
         if (savedImages.length === 0) {
-          // Refund on first failure
           await adminClient.rpc("add_cauris", { p_user_id: userId, p_amount: cost });
 
-          if (googleResp.status === 429) {
+          if (aiResp.status === 429) {
             return new Response(
               JSON.stringify({ error: "Limite de requêtes atteinte. Réessayez dans quelques secondes." }),
               { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
             );
           }
           return new Response(
-            JSON.stringify({ error: "Erreur du service Google AI. Réessayez." }),
+            JSON.stringify({ error: "Erreur du service de génération. Réessayez." }),
             { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
           );
         }
-        break; // Already got some images, return what we have
+        break;
       }
 
-      const googleData = await googleResp.json();
+      const aiData = await aiResp.json();
+      const choice = aiData.choices?.[0];
+      const images = choice?.message?.images || [];
 
-      // Extract images from response
-      const candidates = googleData.candidates || [];
-      for (const candidate of candidates) {
-        const parts = candidate.content?.parts || [];
-        for (const part of parts) {
-          if (part.inlineData?.mimeType?.startsWith("image/")) {
-            try {
-              const format = part.inlineData.mimeType.replace("image/", "");
-              const storedUrl = await downloadAndUpload(
-                adminClient,
-                part.inlineData.data,
-                userId,
-                format || "png"
-              );
+      for (const img of images) {
+        try {
+          const base64Url = img.image_url?.url;
+          if (!base64Url) continue;
 
-              await adminClient.from("generations").insert({
-                user_id: userId,
-                prompt: prompt.slice(0, 5000),
-                image_url: storedUrl,
-                aspect_ratio: modelSettings.aspect_ratio || null,
-                resolution: modelSettings.resolution || null,
-                output_format: format || "png",
-              });
+          const storedUrl = await uploadBase64Image(adminClient, base64Url, userId);
 
-              savedImages.push({ url: storedUrl });
-            } catch (uploadErr) {
-              console.error("Upload error:", uploadErr);
-            }
-          }
+          await adminClient.from("generations").insert({
+            user_id: userId,
+            prompt: prompt.slice(0, 5000),
+            image_url: storedUrl,
+            aspect_ratio: modelSettings.aspect_ratio || null,
+            resolution: modelSettings.resolution || null,
+            output_format: "png",
+          });
+
+          savedImages.push({ url: storedUrl });
+        } catch (uploadErr) {
+          console.error("Upload error:", uploadErr);
         }
       }
     }
