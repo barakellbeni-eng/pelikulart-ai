@@ -9,16 +9,32 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import AppSidebar from "@/components/AppSidebar";
 import ThemeToggle from "@/components/ThemeToggle";
 import ProfileRing from "@/components/ProfileRing";
-import LandingPage from "./pages/LandingPage";
-import Auth from "./pages/Auth";
+import PublicNavbar from "@/components/pelikulart/PublicNavbar";
+import PublicFooter from "@/components/pelikulart/PublicFooter";
+import ScrollToTop from "@/components/pelikulart/ScrollToTop";
+import FloatingWhatsApp from "@/components/pelikulart/FloatingWhatsApp";
+
+// Studio pages
 import StudioHome from "./pages/StudioHome";
 import Dashboard from "./pages/Dashboard";
-
 import Pricing from "./pages/Pricing";
 import Profile from "./pages/Profile";
 import ResetPassword from "./pages/ResetPassword";
+import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
-import { Loader2, PanelLeft } from "lucide-react";
+
+// Pelikulart public pages
+import HomePage from "./pages/pelikulart/HomePage";
+import CreationsPage from "./pages/pelikulart/CreationsPage";
+import TrainingPage from "./pages/pelikulart/TrainingPage";
+import DevisPage from "./pages/pelikulart/DevisPage";
+import SecretPage from "./pages/pelikulart/SecretPage";
+import LegalPage from "./pages/pelikulart/LegalPage";
+import TermsOfUsePage from "./pages/pelikulart/TermsOfUsePage";
+import PrivacyPolicyPage from "./pages/pelikulart/PrivacyPolicyPage";
+import CookiePolicyPage from "./pages/pelikulart/CookiePolicyPage";
+
+import { Loader2 } from "lucide-react";
 
 const queryClient = new QueryClient();
 
@@ -41,11 +57,10 @@ const AuthenticatedLayout = ({ children }: { children: React.ReactNode }) => {
       <div className="min-h-screen flex w-full">
         <AppSidebar />
         <main className="flex-1 flex flex-col min-h-screen overflow-auto">
-          {/* Top bar with sidebar trigger */}
           <header className="sticky top-0 z-50 glass border-b border-sidebar-border px-4 py-2 flex items-center gap-3">
             <SidebarTrigger />
             <h1 className="text-sm font-bold tracking-tight">
-              <span className="text-gradient-primary">cauris</span>
+              <span className="text-gradient-primary">pelikulart</span>
               <span className="text-foreground">.ai</span>
             </h1>
             <div className="ml-auto flex items-center gap-2">
@@ -60,54 +75,43 @@ const AuthenticatedLayout = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
-const AppContent = () => {
-  const location = useLocation();
-  const isPublic = location.pathname === "/" || location.pathname === "/auth";
+const PublicLayout = ({ children }: { children: React.ReactNode }) => {
+  return (
+    <>
+      <PublicNavbar />
+      <main>{children}</main>
+      <PublicFooter />
+      <FloatingWhatsApp />
+    </>
+  );
+};
 
+const AppContent = () => {
   return (
     <div className="min-h-screen bg-background">
+      <ScrollToTop />
       <Routes>
-        <Route path="/" element={<LandingPage />} />
+        {/* Public Pelikulart pages */}
+        <Route path="/" element={<PublicLayout><HomePage /></PublicLayout>} />
+        <Route path="/creations" element={<PublicLayout><CreationsPage /></PublicLayout>} />
+        <Route path="/training" element={<PublicLayout><TrainingPage /></PublicLayout>} />
+        <Route path="/devis" element={<PublicLayout><DevisPage /></PublicLayout>} />
+        <Route path="/secret-page" element={<SecretPage />} />
+        <Route path="/mentions-legales" element={<PublicLayout><LegalPage /></PublicLayout>} />
+        <Route path="/conditions-utilisation" element={<PublicLayout><TermsOfUsePage /></PublicLayout>} />
+        <Route path="/politique-confidentialite" element={<PublicLayout><PrivacyPolicyPage /></PublicLayout>} />
+        <Route path="/politique-cookies" element={<PublicLayout><CookiePolicyPage /></PublicLayout>} />
+
+        {/* Auth */}
         <Route path="/auth" element={<Auth />} />
-        <Route
-          path="/studio"
-          element={
-            <ProtectedRoute>
-              <AuthenticatedLayout>
-                <StudioHome />
-              </AuthenticatedLayout>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/studio/create"
-          element={
-            <ProtectedRoute>
-              <AuthenticatedLayout>
-                <Dashboard />
-              </AuthenticatedLayout>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/pricing"
-          element={
-            <AuthenticatedLayout>
-              <Pricing />
-            </AuthenticatedLayout>
-          }
-        />
-        <Route
-          path="/profile"
-          element={
-            <ProtectedRoute>
-              <AuthenticatedLayout>
-                <Profile />
-              </AuthenticatedLayout>
-            </ProtectedRoute>
-          }
-        />
         <Route path="/reset-password" element={<ResetPassword />} />
+
+        {/* Studio (authenticated) */}
+        <Route path="/studio" element={<ProtectedRoute><AuthenticatedLayout><StudioHome /></AuthenticatedLayout></ProtectedRoute>} />
+        <Route path="/studio/create" element={<ProtectedRoute><AuthenticatedLayout><Dashboard /></AuthenticatedLayout></ProtectedRoute>} />
+        <Route path="/pricing" element={<AuthenticatedLayout><Pricing /></AuthenticatedLayout>} />
+        <Route path="/profile" element={<ProtectedRoute><AuthenticatedLayout><Profile /></AuthenticatedLayout></ProtectedRoute>} />
+
         <Route path="*" element={<NotFound />} />
       </Routes>
     </div>
