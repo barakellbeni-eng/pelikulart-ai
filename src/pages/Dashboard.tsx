@@ -963,7 +963,7 @@ const Dashboard = () => {
                 className="w-full flex items-center gap-2.5 glass glass-hover rounded-xl px-3 py-2.5"
               >
                 {getBrandLogo(selectedModel.brand) ? (
-                  <img src={getBrandLogo(selectedModel.brand)!} alt={selectedModel.brand} className="w-8 h-8 rounded-lg object-contain shrink-0" />
+                  <img src={getBrandLogo(selectedModel.brand)!} alt={selectedModel.brand} className="w-10 h-10 rounded-xl object-contain shrink-0" />
                 ) : (
                   <span className="w-6 h-6 rounded-md bg-white/[0.06] flex items-center justify-center text-[10px] font-bold text-muted-foreground shrink-0 uppercase">
                     {selectedModel.brand.slice(0, 2)}
@@ -1017,7 +1017,7 @@ const Dashboard = () => {
                             }`}
                           >
                             {getBrandLogo(model.brand) ? (
-                              <img src={getBrandLogo(model.brand)!} alt={model.brand} className="w-7 h-7 rounded-lg object-contain shrink-0" />
+                              <img src={getBrandLogo(model.brand)!} alt={model.brand} className="w-9 h-9 rounded-xl object-contain shrink-0" />
                             ) : (
                               <span className="w-5 h-5 rounded bg-white/[0.06] flex items-center justify-center text-[9px] font-bold text-muted-foreground shrink-0 uppercase">
                                 {model.brand.slice(0, 2)}
