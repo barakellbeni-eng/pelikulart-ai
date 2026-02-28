@@ -104,6 +104,10 @@ const Pricing = () => {
         trainingName: `cauris.ai - ${pack.cauris} Cauris`,
       });
 
+      if (!paymentResult.transactionId) {
+        throw new Error("Transaction Kkiapay introuvable après paiement");
+      }
+
       const { data, error } = await supabase.functions.invoke("verify-payment", {
         body: {
           transaction_id: paymentResult.transactionId,
