@@ -29,7 +29,7 @@ import NotFound from "./pages/NotFound";
 import HomePage from "./pages/pelikulart/HomePage";
 import CreationsPage from "./pages/pelikulart/CreationsPage";
 import TrainingPage from "./pages/pelikulart/TrainingPage";
-import DevisPage from "./pages/pelikulart/DevisPage";
+// DevisPage removed
 import SecretPage from "./pages/pelikulart/SecretPage";
 import LegalPage from "./pages/pelikulart/LegalPage";
 import TermsOfUsePage from "./pages/pelikulart/TermsOfUsePage";
@@ -104,7 +104,7 @@ const AppContent = () => {
         <Route path="/" element={<PublicLayout><HomePage /></PublicLayout>} />
         <Route path="/creations" element={<PublicLayout><CreationsPage /></PublicLayout>} />
         <Route path="/training" element={<PublicLayout><TrainingPage /></PublicLayout>} />
-        <Route path="/devis" element={<PublicLayout><DevisPage /></PublicLayout>} />
+        {/* Devis removed */}
         <Route path="/secret-page" element={<SecretPage />} />
         <Route path="/mentions-legales" element={<PublicLayout><LegalPage /></PublicLayout>} />
         <Route path="/conditions-utilisation" element={<PublicLayout><TermsOfUsePage /></PublicLayout>} />

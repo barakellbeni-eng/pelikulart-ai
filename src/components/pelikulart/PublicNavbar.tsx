@@ -1,14 +1,11 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, Zap } from "lucide-react";
+import { Menu, X } from "lucide-react";
 
 const navLinks = [
-  { label: "Accueil", to: "/" },
   { label: "Créations", to: "/creations" },
   { label: "Formation", to: "/training" },
-  { label: "Devis", to: "/devis" },
-  { label: "Studio IA", to: "/studio" },
 ];
 
 const PublicNavbar = () => {
@@ -28,18 +25,13 @@ const PublicNavbar = () => {
 
   return (
     <nav
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        scrolled ? "bg-black/90 backdrop-blur-xl border-b border-white/5" : "bg-transparent"
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
+        scrolled ? "bg-black/80 backdrop-blur-xl" : "bg-transparent"
       }`}
     >
-      <div className="max-w-7xl mx-auto flex items-center justify-between px-4 sm:px-6 py-4">
-        <Link to="/" className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-lime flex items-center justify-center">
-            <Zap className="w-4 h-4 text-black" />
-          </div>
-          <span className="text-lg font-bold tracking-tight text-white">
-            PELIKULART<span className="text-lime">.AI</span>
-          </span>
+      <div className="max-w-7xl mx-auto flex items-center justify-between px-6 sm:px-8 py-5">
+        <Link to="/" className="text-lg font-bold tracking-tight text-white">
+          PELIKULART<span className="text-lime">.AI</span>
         </Link>
 
         {/* Desktop nav */}
@@ -48,15 +40,21 @@ const PublicNavbar = () => {
             <Link
               key={link.to}
               to={link.to}
-              className={`text-sm font-medium transition-colors ${
+              className={`text-[13px] font-medium uppercase tracking-widest transition-colors ${
                 location.pathname === link.to
-                  ? "text-lime"
-                  : "text-white/70 hover:text-white"
+                  ? "text-white"
+                  : "text-white/40 hover:text-white/80"
               }`}
             >
               {link.label}
             </Link>
           ))}
+          <Link
+            to="/studio"
+            className="px-5 py-2 bg-white text-black rounded-lg text-[13px] font-semibold hover:bg-white/90 transition-all"
+          >
+            Studio
+          </Link>
         </div>
 
         {/* Mobile toggle */}
@@ -64,7 +62,7 @@ const PublicNavbar = () => {
           onClick={() => setIsOpen(!isOpen)}
           className="md:hidden text-white p-2"
         >
-          {isOpen ? <X size={24} /> : <Menu size={24} />}
+          {isOpen ? <X size={22} /> : <Menu size={22} />}
         </button>
       </div>
 
@@ -75,22 +73,28 @@ const PublicNavbar = () => {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            className="md:hidden bg-black/95 backdrop-blur-xl border-t border-white/5 overflow-hidden"
+            className="md:hidden bg-black/95 backdrop-blur-xl overflow-hidden"
           >
             <div className="flex flex-col px-6 py-4 gap-4">
               {navLinks.map((link) => (
                 <Link
                   key={link.to}
                   to={link.to}
-                  className={`text-base font-medium py-2 ${
+                  className={`text-sm font-medium uppercase tracking-widest py-2 ${
                     location.pathname === link.to
-                      ? "text-lime"
-                      : "text-white/70"
+                      ? "text-white"
+                      : "text-white/40"
                   }`}
                 >
                   {link.label}
                 </Link>
               ))}
+              <Link
+                to="/studio"
+                className="text-sm font-medium uppercase tracking-widest py-2 text-lime"
+              >
+                Studio
+              </Link>
             </div>
           </motion.div>
         )}
