@@ -53,7 +53,9 @@ const NewModelsSection = () => {
                 <img
                   src={model.logo}
                   alt={model.brand}
-                  className="w-8 h-8 rounded-md object-contain mt-0.5"
+                  className="w-8 h-8 rounded-md object-contain mt-0.5 pointer-events-none select-none"
+                  draggable={false}
+                  onContextMenu={(e) => e.preventDefault()}
                 />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
