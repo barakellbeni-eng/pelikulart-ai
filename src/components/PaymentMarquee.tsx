@@ -25,7 +25,7 @@ interface PaymentMarqueeProps {
 }
 
 const PaymentMarquee = ({ size = "md", showAvailability = false, showSignupCTA = false }: PaymentMarqueeProps) => {
-  const logoSize = size === "sm" ? "h-8 w-8" : "h-12 w-12";
+  const logoSize = size === "sm" ? "h-10 w-10" : "h-16 w-16";
 
   return (
     <div className="space-y-3">
@@ -46,9 +46,9 @@ const PaymentMarquee = ({ size = "md", showAvailability = false, showSignupCTA =
       )}
       <div className="relative overflow-hidden">
         {/* Fade edges */}
-        <div className="absolute left-0 top-0 bottom-0 w-16 z-10 bg-gradient-to-r from-black to-transparent pointer-events-none" />
-        <div className="absolute right-0 top-0 bottom-0 w-16 z-10 bg-gradient-to-l from-black to-transparent pointer-events-none" />
-        <div className="flex animate-marquee gap-8 w-max">
+        <div className="absolute left-0 top-0 bottom-0 w-32 sm:w-48 z-10 bg-gradient-to-r from-black via-black/80 to-transparent pointer-events-none" />
+        <div className="absolute right-0 top-0 bottom-0 w-32 sm:w-48 z-10 bg-gradient-to-l from-black via-black/80 to-transparent pointer-events-none" />
+        <div className="flex animate-marquee gap-12 w-max">
           {[...logos, ...logos, ...logos].map((logo, i) => (
             <img
               key={i}
