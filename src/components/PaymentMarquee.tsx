@@ -25,7 +25,7 @@ interface PaymentMarqueeProps {
 }
 
 const PaymentMarquee = ({ size = "md", showAvailability = false, showSignupCTA = false }: PaymentMarqueeProps) => {
-  const logoSize = size === "sm" ? "h-14 w-14" : "h-24 w-24";
+  const logoSize = size === "sm" ? "h-20 w-20" : "h-40 w-40";
 
   return (
     <div className="space-y-3">
