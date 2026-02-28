@@ -5,6 +5,7 @@ import TrainingCTA from "@/components/pelikulart/TrainingCTA";
 import FAQ from "@/components/pelikulart/FAQ";
 import PaymentMarquee from "@/components/PaymentMarquee";
 import ScrollSection from "@/components/pelikulart/ScrollSection";
+import NewModelsSection from "@/components/pelikulart/NewModelsSection";
 
 const STUDIO_VIDEO_URL =
   "https://app.videas.fr/embed/media/2f752018-6649-465a-bac7-dcf94d9744ae/?title=false&logo=false&thumbnail_duration=false&controls=false&autoplay=true&loop=true&info=true&thumbnail=video";
@@ -43,6 +44,10 @@ const HomePage = () => {
             </div>
           </div>
         </section>
+      </ScrollSection>
+
+      <ScrollSection>
+        <NewModelsSection />
       </ScrollSection>
 
       <ScrollSection>
