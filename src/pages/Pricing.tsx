@@ -119,57 +119,68 @@ const Pricing = () => {
       return;
     }
 
-    window.openKkiapayWidget({
-      amount: pack.priceNum,
-      key: KKIAPAY_KEY,
-      sandbox: false,
-      callback: window.location.origin + "/pricing",
-      name: `cauris.ai - ${pack.cauris} Cauris`,
-      theme: "#e67e00",
-    });
+    const cleanupListeners = () => {
+      if (typeof window.removeKkiapayListener === "function") {
+        window.removeKkiapayListener("success", onSuccess);
+        window.removeKkiapayListener("failed", onFailed);
+      }
+    };
 
     const onSuccess = async (response: any) => {
       console.log("KkiaPay success", response);
+      cleanupListeners();
+
       try {
-        const { data: sessionData } = await supabase.auth.getSession();
-        const accessToken = sessionData?.session?.access_token;
-        const verifyUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/verify-payment`;
-        const resp = await fetch(verifyUrl, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${accessToken}`,
-          },
-          body: JSON.stringify({
-            transaction_id: response.transactionId,
-            amount: pack.priceNum,
-          }),
-        });
-        const data = await resp.json();
-        if (resp.ok && data.success) {
-          setPaymentStatus("success");
-          refetch();
-        } else {
-          console.error("Verify failed:", data);
+        const transactionId = response?.transactionId || response?.transaction_id || response?.transaction?.id;
+
+        if (!transactionId) {
+          console.error("Missing transactionId in KkiaPay response", response);
           setPaymentStatus("failed");
+          return;
         }
+
+        const { data, error } = await supabase.functions.invoke("verify-payment", {
+          body: {
+            transaction_id: transactionId,
+            amount: pack.priceNum,
+          },
+        });
+
+        if (error || !data?.success) {
+          console.error("Verify-payment failed", { error, data });
+          setPaymentStatus("failed");
+          return;
+        }
+
+        setPaymentStatus("success");
+        refetch();
       } catch (e) {
         console.error("Verify error:", e);
         setPaymentStatus("failed");
       }
-      window.removeKkiapayListener("success", onSuccess);
     };
 
     const onFailed = (response: any) => {
       console.log("KkiaPay failed:", response);
+      cleanupListeners();
       setPaymentStatus("failed");
-      window.removeKkiapayListener("failed", onFailed);
     };
 
     if (typeof window.addKkiapayListener === "function") {
+      // Register listeners BEFORE opening widget to avoid race conditions
       window.addKkiapayListener("success", onSuccess);
       window.addKkiapayListener("failed", onFailed);
     }
+
+    window.openKkiapayWidget({
+      amount: pack.priceNum,
+      api_key: KKIAPAY_KEY,
+      sandbox: false,
+      callback: window.location.origin + "/pricing",
+      email: user.email,
+      name: `cauris.ai - ${pack.cauris} Cauris`,
+      theme: "#e67e00",
+    });
   };
 
   return (
