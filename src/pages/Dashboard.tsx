@@ -37,6 +37,7 @@ import HourglassLoader from "@/components/HourglassLoader";
 import { getGenerationJob, startGeneration, completeGeneration, failGeneration, subscribeGeneration } from "@/hooks/useGenerationStore";
 
 const GENERATE_IMAGE_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-image`;
+const GENERATE_IMAGE_GOOGLE_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-image-google`;
 const GENERATE_VIDEO_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-video`;
 const GENERATE_AUDIO_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-audio`;
 
@@ -445,7 +446,8 @@ const Dashboard = () => {
           }
         }
 
-        const resp = await fetch(GENERATE_IMAGE_URL, {
+        const imageEndpoint = currentModel.endpoint === "google-direct" ? GENERATE_IMAGE_GOOGLE_URL : GENERATE_IMAGE_URL;
+        const resp = await fetch(imageEndpoint, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
