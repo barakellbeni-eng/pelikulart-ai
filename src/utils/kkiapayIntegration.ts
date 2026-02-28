@@ -51,8 +51,8 @@ const extractTransactionId = (response: Record<string, any>): string => {
     response?.id,
   ];
 
-  const found = candidates.find((value) => typeof value === "string" && value.trim().length > 0);
-  return found ? found.trim() : "";
+  const found = candidates.find((value) => value !== undefined && value !== null && String(value).trim().length > 0);
+  return found ? String(found).trim() : "";
 };
 
 export const initiateKkiapayPayment = async ({ amount, email, name, trainingName }: PaymentParams): Promise<PaymentResult> => {
