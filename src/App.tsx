@@ -13,7 +13,7 @@ import ProfileRing from "@/components/ProfileRing";
 import PublicNavbar from "@/components/pelikulart/PublicNavbar";
 import PublicFooter from "@/components/pelikulart/PublicFooter";
 import ScrollToTop from "@/components/pelikulart/ScrollToTop";
-import FloatingWhatsApp from "@/components/pelikulart/FloatingWhatsApp";
+
 import StudioSplash from "@/components/pelikulart/StudioSplash";
 
 // Studio pages
@@ -88,7 +88,7 @@ const PublicLayout = ({ children }: { children: React.ReactNode }) => {
       <PublicNavbar />
       <main>{children}</main>
       <PublicFooter />
-      <FloatingWhatsApp />
+      
     </>
   );
 };
