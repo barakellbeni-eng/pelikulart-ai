@@ -31,7 +31,7 @@ const PublicNavbar = () => {
     >
       <div className="max-w-7xl mx-auto flex items-center justify-between px-6 sm:px-8 py-5">
         <Link to="/" className="text-lg font-bold tracking-tight text-white">
-          PELIKULART<span className="text-lime">.AI</span>
+          Pelikulart <span className="text-lime">AI</span>
         </Link>
 
         {/* Desktop nav */}

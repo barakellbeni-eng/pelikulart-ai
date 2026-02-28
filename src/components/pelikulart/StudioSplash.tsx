@@ -51,7 +51,7 @@ const StudioSplash = ({ onFinish }: StudioSplashProps) => {
           className="text-center"
         >
           <h1 className="text-2xl font-bold uppercase tracking-widest text-white">
-            PELIKULART<span className="text-lime">.AI</span>
+            Pelikulart <span className="text-lime">AI</span>
           </h1>
           <p className="text-xs text-white/40 mt-2 tracking-wider uppercase">Studio IA</p>
         </motion.div>

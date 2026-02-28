@@ -20,10 +20,10 @@ const faqSections: FAQSection[] = [
     label: "Démarrer",
     items: [
       {
-        question: "C'est quoi Pelikulart.AI exactement ?",
+        question: "C'est quoi Pelikulart AI exactement ?",
         answer: (
           <>
-            <p>Pelikulart.AI est la première plateforme IA créative conçue pour l'Afrique francophone. En un seul endroit, tu génères des images, vidéos, musique et lip-sync grâce à l'intelligence artificielle — sans abonnement complexe, sans carte Visa internationale obligatoire, et sans attendre des heures.</p>
+            <p>Pelikulart AI est la première plateforme IA créative conçue pour l'Afrique francophone. En un seul endroit, tu génères des images, vidéos, musique et lip-sync grâce à l'intelligence artificielle — sans abonnement complexe, sans carte Visa internationale obligatoire, et sans attendre des heures.</p>
             <p className="mt-3">Tu paies en <strong>FCFA</strong> via Wave, Orange Money ou MTN. L'interface est 100% en français. Les crédits n'expirent jamais.</p>
           </>
         ),
@@ -47,7 +47,7 @@ const faqSections: FAQSection[] = [
         question: "Est-ce disponible sur mobile ?",
         answer: (
           <>
-            <p>Oui ! Pelikulart.AI est une Progressive Web App (PWA) — tu peux l'installer directement depuis ton navigateur sur Android ou iPhone, sans passer par le Play Store. Ça fonctionne comme une vraie application : icône sur l'écran d'accueil, notifications, mode hors-ligne partiel.</p>
+            <p>Oui ! Pelikulart AI est une Progressive Web App (PWA) — tu peux l'installer directement depuis ton navigateur sur Android ou iPhone, sans passer par le Play Store. Ça fonctionne comme une vraie application : icône sur l'écran d'accueil, notifications, mode hors-ligne partiel.</p>
             <p className="mt-3">Une application native Android est prévue dans les prochains mois.</p>
           </>
         ),
@@ -125,7 +125,7 @@ const faqSections: FAQSection[] = [
       {
         question: "Est-ce que mes crédits expirent ?",
         answer: (
-          <p><strong>Non, jamais.</strong> C'est l'une de nos différences majeures avec la concurrence. Chez Higgsfield ou Freepik, les crédits expirent en 90 jours. Chez Pelikulart.AI, les crédits que tu achètes restent sur ton compte indéfiniment, même si tu arrêtes ton abonnement.</p>
+          <p><strong>Non, jamais.</strong> C'est l'une de nos différences majeures avec la concurrence. Chez Higgsfield ou Freepik, les crédits expirent en 90 jours. Chez Pelikulart AI, les crédits que tu achètes restent sur ton compte indéfiniment, même si tu arrêtes ton abonnement.</p>
         ),
       },
       {
@@ -181,7 +181,7 @@ const faqSections: FAQSection[] = [
         question: "Puis-je utiliser les images et vidéos pour un usage commercial ?",
         answer: (
           <>
-            <p><strong>Oui.</strong> Tout ce que tu crées avec Pelikulart.AI t'appartient. Tu peux utiliser tes créations pour des campagnes publicitaires, des clips, des posts commerciaux, des formations — sans restriction.</p>
+            <p><strong>Oui.</strong> Tout ce que tu crées avec Pelikulart AI t'appartient. Tu peux utiliser tes créations pour des campagnes publicitaires, des clips, des posts commerciaux, des formations — sans restriction.</p>
             <p className="mt-3">Note : certains modèles tiers peuvent avoir leurs propres conditions. Nous t'informons dans ce cas.</p>
           </>
         ),
@@ -243,7 +243,7 @@ const faqSections: FAQSection[] = [
         ),
       },
       {
-        question: "Pelikulart.AI est-il disponible dans tout l'Afrique ?",
+        question: "Pelikulart AI est-il disponible dans tout l'Afrique ?",
         answer: (
           <>
             <p>La plateforme est accessible depuis n'importe quel pays avec une connexion internet. Le paiement Mobile Money est actuellement disponible dans les pays UEMOA principalement (Bénin, Côte d'Ivoire, Sénégal, Togo, Mali, Burkina Faso, Niger, Guinée-Bissau).</p>

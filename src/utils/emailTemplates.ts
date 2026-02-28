@@ -63,7 +63,7 @@ export const generateClientEmail = (data: ClientEmailData = {}): string => {
   return `
     <!DOCTYPE html>
     <html>
-    <head><meta charset="UTF-8"><title>Confirmation de Devis - Pelikulart.AI</title></head>
+    <head><meta charset="UTF-8"><title>Confirmation de Devis - Pelikulart AI</title></head>
     <body style="margin: 0; padding: 0; background-color: #f4f4f4; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;">
       <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
         <tr><td align="center" style="padding: 20px 0;">
@@ -101,7 +101,7 @@ export const generateClientEmail = (data: ClientEmailData = {}): string => {
               </table>
             </td></tr>
             <tr><td style="background-color: #111111; padding: 20px; text-align: center; border-top: 1px solid #222;">
-              <p style="margin: 0; font-size: 12px; color: #666666;">© ${new Date().getFullYear()} Pelikulart.AI - Tous droits réservés</p>
+              <p style="margin: 0; font-size: 12px; color: #666666;">© ${new Date().getFullYear()} Pelikulart AI - Tous droits réservés</p>
             </td></tr>
           </table>
         </td></tr>
@@ -135,7 +135,7 @@ export const generateAdminEmail = (data: AdminEmailData = {}): string => {
   return `
     <!DOCTYPE html>
     <html>
-    <head><meta charset="UTF-8"><title>Nouvelle Demande - Pelikulart.AI</title></head>
+    <head><meta charset="UTF-8"><title>Nouvelle Demande - Pelikulart AI</title></head>
     <body style="margin: 0; padding: 0; background-color: #f4f4f4; font-family: Arial, sans-serif;">
       <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
         <tr><td align="center" style="padding: 20px 0;">
@@ -166,7 +166,7 @@ export const generateAdminEmail = (data: AdminEmailData = {}): string => {
               </table>
             </td></tr>
             <tr><td style="background-color: #f1f1f1; padding: 12px; text-align: center; font-size: 11px; color: #999;">
-              Généré par Pelikulart.AI | ${new Date().toLocaleString('fr-FR')}
+              Généré par Pelikulart AI | ${new Date().toLocaleString('fr-FR')}
             </td></tr>
           </table>
         </td></tr>

@@ -6,7 +6,7 @@ const PublicFooter = () => {
       <div className="max-w-7xl mx-auto px-6 sm:px-8">
         <div className="flex flex-col md:flex-row items-center justify-between gap-6">
           <Link to="/" className="text-sm font-bold text-white tracking-tight">
-            PELIKULART<span className="text-lime">.AI</span>
+            Pelikulart <span className="text-lime">AI</span>
           </Link>
 
           <div className="flex flex-wrap items-center gap-6 text-xs text-white/30">
@@ -17,7 +17,7 @@ const PublicFooter = () => {
           </div>
 
           <p className="text-xs text-white/20">
-            © {new Date().getFullYear()} Pelikulart.AI
+            © {new Date().getFullYear()} Pelikulart AI
           </p>
         </div>
       </div>

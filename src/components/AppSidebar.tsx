@@ -55,8 +55,8 @@ const AppSidebar = () => {
         <NavLink to="/" className="flex items-center gap-2">
           <img src={pelikulartLogo} alt="Pelikulart" className="w-8 h-8 rounded-lg object-cover" />
           <div>
-            <span className="text-sm font-bold tracking-tight uppercase text-sidebar-foreground">PELIKULART</span>
-            <span className="text-sm font-bold tracking-tight text-primary">.AI</span>
+            <span className="text-sm font-bold tracking-tight text-sidebar-foreground">Pelikulart</span>
+            <span className="text-sm font-bold tracking-tight text-primary"> AI</span>
           </div>
         </NavLink>
       </SidebarHeader>
