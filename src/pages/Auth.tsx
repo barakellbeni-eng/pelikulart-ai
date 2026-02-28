@@ -1,16 +1,15 @@
 import { useState } from "react";
 import { Navigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Mail, Lock, User, ArrowRight, Loader2, Eye, EyeOff } from "lucide-react";
+import { Loader2, Eye, EyeOff } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { lovable } from "@/integrations/lovable/index";
 import { supabase } from "@/integrations/supabase/client";
-import pelikulartLogo from "@/assets/pelikulart-logo.jpeg";
 import heroVideo from "@/assets/hero-video.mp4";
 
 const Auth = () => {
   const { user, loading, signIn, signUp } = useAuth();
-  const [isLogin, setIsLogin] = useState(true);
+  const [isLogin, setIsLogin] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
@@ -56,8 +55,8 @@ const Auth = () => {
 
   return (
     <div className="min-h-screen flex bg-black">
-      {/* Left — Video + branding */}
-      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
+      {/* Left — Video showcase */}
+      <div className="hidden lg:flex lg:w-[55%] relative overflow-hidden">
         <video
           src={heroVideo}
           autoPlay
@@ -66,150 +65,108 @@ const Auth = () => {
           playsInline
           className="absolute inset-0 w-full h-full object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/40 to-black" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/40" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/20" />
 
-        <div className="relative z-10 flex flex-col justify-between p-12 w-full">
-          {/* Logo top */}
-          <Link to="/" className="flex items-center gap-3">
-            <img src={pelikulartLogo} alt="Pelikulart" className="w-10 h-10 rounded-xl" />
-            <span className="text-xl font-bold uppercase tracking-tight text-white">
-              PELIKULART<span className="text-lime">.AI</span>
-            </span>
-          </Link>
-
-          {/* Text bottom */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-          >
-            <h2 className="text-4xl xl:text-5xl font-bold text-white leading-tight mb-4">
-              Créez l'impossible<br />
-              avec l'<span className="text-lime">IA</span>
-            </h2>
-            <p className="text-white/60 text-lg max-w-md">
-              Images, vidéos et sons générés par intelligence artificielle. 
-              La plateforme n°1 de création IA en Afrique.
-            </p>
-            <div className="flex items-center gap-4 mt-6">
-              <div className="flex items-center gap-2 text-white/40 text-sm">
-                <div className="w-2 h-2 rounded-full bg-lime animate-pulse" />
-                Studio IA disponible
-              </div>
-            </div>
-          </motion.div>
+        {/* Bottom text overlay */}
+        <div className="absolute bottom-0 left-0 right-0 p-10 z-10">
+          <h2 className="text-3xl font-bold text-white leading-tight mb-2">
+            Les meilleures IA créatives
+          </h2>
+          <p className="text-white/60 text-base max-w-md">
+            Sans engagement, payable en Wave, Orange Money ou MoMo.
+          </p>
         </div>
       </div>
 
       {/* Right — Auth form */}
-      <div className="flex-1 flex items-center justify-center px-4 sm:px-8 py-8">
+      <div className="flex-1 flex items-center justify-center px-6 sm:px-12 py-10">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
-          className="w-full max-w-md"
+          transition={{ duration: 0.5 }}
+          className="w-full max-w-[400px]"
         >
-          {/* Mobile logo */}
-          <Link to="/" className="flex lg:hidden items-center gap-2.5 justify-center mb-8">
-            <img src={pelikulartLogo} alt="Pelikulart" className="w-10 h-10 rounded-xl" />
-            <span className="text-2xl font-bold tracking-tight uppercase">
-              <span className="text-white">PELIKULART</span>
-              <span className="text-lime">.AI</span>
-            </span>
-          </Link>
+          {/* Title */}
+          <h1 className="text-3xl font-bold text-white text-center mb-2">
+            {isLogin ? "Se connecter" : "Créer un compte"}
+          </h1>
+          <p className="text-center text-white/50 text-sm mb-8">
+            {isLogin ? (
+              <>Pas encore de compte ?{" "}
+                <button onClick={() => { setIsLogin(false); setError(""); setSuccess(""); }} className="text-lime font-semibold hover:underline">
+                  S'inscrire
+                </button>
+              </>
+            ) : (
+              <>Déjà un compte ?{" "}
+                <button onClick={() => { setIsLogin(true); setError(""); setSuccess(""); }} className="text-lime font-semibold hover:underline">
+                  Se connecter
+                </button>
+              </>
+            )}
+          </p>
 
-          <div className="bg-white/[0.04] backdrop-blur-xl border border-white/[0.06] rounded-2xl p-8">
-            {/* Tabs */}
-            <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-1 flex gap-1 mb-6">
+          {isLogin && showForgot ? (
+            <div className="space-y-4">
+              <p className="text-sm text-white/50">Entrez votre email pour recevoir un lien de réinitialisation.</p>
+              <input
+                type="email"
+                placeholder="Email"
+                required
+                value={forgotEmail}
+                onChange={(e) => setForgotEmail(e.target.value)}
+                className="w-full bg-transparent border border-white/15 rounded-lg px-4 py-3.5 text-sm text-white placeholder:text-white/30 outline-none focus:border-white/40 transition-colors"
+              />
+              {forgotSuccess && (
+                <p className="text-sm text-lime bg-lime/10 rounded-lg px-4 py-2">{forgotSuccess}</p>
+              )}
+              {forgotError && (
+                <p className="text-sm text-red-400 bg-red-400/10 rounded-lg px-4 py-2">{forgotError}</p>
+              )}
               <button
-                onClick={() => { setIsLogin(true); setError(""); setSuccess(""); }}
-                className={`flex-1 py-2.5 rounded-lg text-sm font-semibold transition-all ${
-                  isLogin ? "bg-lime text-black shadow-lg" : "text-white/50"
-                }`}
+                type="button"
+                disabled={forgotSubmitting}
+                onClick={async () => {
+                  setForgotError("");
+                  setForgotSuccess("");
+                  setForgotSubmitting(true);
+                  const { error } = await supabase.auth.resetPasswordForEmail(forgotEmail, {
+                    redirectTo: `${window.location.origin}/reset-password`,
+                  });
+                  if (error) setForgotError(error.message);
+                  else setForgotSuccess("Un email de réinitialisation a été envoyé !");
+                  setForgotSubmitting(false);
+                }}
+                className="w-full bg-white text-black font-semibold rounded-lg py-3.5 text-sm flex items-center justify-center gap-2 hover:bg-white/90 transition-all disabled:opacity-50"
               >
-                Connexion
+                {forgotSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : "Envoyer le lien"}
               </button>
-              <button
-                onClick={() => { setIsLogin(false); setError(""); setSuccess(""); }}
-                className={`flex-1 py-2.5 rounded-lg text-sm font-semibold transition-all ${
-                  !isLogin ? "bg-lime text-black shadow-lg" : "text-white/50"
-                }`}
-              >
-                Inscription
+              <button type="button" onClick={() => setShowForgot(false)} className="text-sm text-lime hover:underline w-full text-center">
+                Retour à la connexion
               </button>
             </div>
-
-            {isLogin && showForgot ? (
-              <div className="space-y-4">
-                <p className="text-sm text-white/50">Entrez votre email pour recevoir un lien de réinitialisation.</p>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
-                  <input
-                    type="email"
-                    placeholder="Email"
-                    required
-                    value={forgotEmail}
-                    onChange={(e) => setForgotEmail(e.target.value)}
-                    className="w-full bg-white/[0.05] border border-white/[0.08] rounded-xl pl-10 pr-4 py-3 text-sm text-white placeholder:text-white/30 outline-none focus:border-lime/50 transition-colors"
-                  />
-                </div>
-                {forgotSuccess && (
-                  <p className="text-sm text-lime bg-lime/10 rounded-xl px-4 py-2">{forgotSuccess}</p>
-                )}
-                {forgotError && (
-                  <p className="text-sm text-red-400 bg-red-400/10 rounded-xl px-4 py-2">{forgotError}</p>
-                )}
-                <button
-                  type="button"
-                  disabled={forgotSubmitting}
-                  onClick={async () => {
-                    setForgotError("");
-                    setForgotSuccess("");
-                    setForgotSubmitting(true);
-                    const { error } = await supabase.auth.resetPasswordForEmail(forgotEmail, {
-                      redirectTo: `${window.location.origin}/reset-password`,
-                    });
-                    if (error) setForgotError(error.message);
-                    else setForgotSuccess("Un email de réinitialisation a été envoyé !");
-                    setForgotSubmitting(false);
-                  }}
-                  className="w-full bg-lime text-black font-bold rounded-xl py-3 flex items-center justify-center gap-2 hover:brightness-110 transition-all disabled:opacity-50"
-                >
-                  {forgotSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : <>Envoyer le lien <ArrowRight className="w-4 h-4" /></>}
-                </button>
-                <button type="button" onClick={() => setShowForgot(false)} className="text-sm text-lime hover:underline w-full text-center">
-                  Retour à la connexion
-                </button>
-              </div>
-            ) : (
-            <form onSubmit={handleSubmit} className="space-y-4">
+          ) : (
+            <form onSubmit={handleSubmit} className="space-y-3">
               {!isLogin && (
-                <div className="relative">
-                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
-                  <input
-                    type="text"
-                    placeholder="Nom d'affichage"
-                    value={displayName}
-                    onChange={(e) => setDisplayName(e.target.value)}
-                    className="w-full bg-white/[0.05] border border-white/[0.08] rounded-xl pl-10 pr-4 py-3 text-sm text-white placeholder:text-white/30 outline-none focus:border-lime/50 transition-colors"
-                  />
-                </div>
+                <input
+                  type="text"
+                  placeholder="Nom complet"
+                  value={displayName}
+                  onChange={(e) => setDisplayName(e.target.value)}
+                  className="w-full bg-transparent border border-white/15 rounded-lg px-4 py-3.5 text-sm text-white placeholder:text-white/30 outline-none focus:border-white/40 transition-colors"
+                />
               )}
 
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
-                <input
-                  type="email"
-                  placeholder="Email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full bg-white/[0.05] border border-white/[0.08] rounded-xl pl-10 pr-4 py-3 text-sm text-white placeholder:text-white/30 outline-none focus:border-lime/50 transition-colors"
-                />
-              </div>
+              <input
+                type="email"
+                placeholder="Email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full bg-transparent border border-white/15 rounded-lg px-4 py-3.5 text-sm text-white placeholder:text-white/30 outline-none focus:border-white/40 transition-colors"
+              />
 
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
                 <input
                   type={showPassword ? "text" : "password"}
                   placeholder="Mot de passe"
@@ -217,7 +174,7 @@ const Auth = () => {
                   minLength={6}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full bg-white/[0.05] border border-white/[0.08] rounded-xl pl-10 pr-10 py-3 text-sm text-white placeholder:text-white/30 outline-none focus:border-lime/50 transition-colors"
+                  className="w-full bg-transparent border border-white/15 rounded-lg px-4 pr-10 py-3.5 text-sm text-white placeholder:text-white/30 outline-none focus:border-white/40 transition-colors"
                 />
                 <button
                   type="button"
@@ -230,66 +187,65 @@ const Auth = () => {
               </div>
 
               {error && (
-                <p className="text-sm text-red-400 bg-red-400/10 rounded-xl px-4 py-2">{error}</p>
+                <p className="text-sm text-red-400 bg-red-400/10 rounded-lg px-4 py-2">{error}</p>
               )}
               {success && (
-                <p className="text-sm text-lime bg-lime/10 rounded-xl px-4 py-2">{success}</p>
+                <p className="text-sm text-lime bg-lime/10 rounded-lg px-4 py-2">{success}</p>
               )}
 
               <button
                 type="submit"
                 disabled={submitting}
-                className="w-full bg-lime text-black font-bold rounded-xl py-3 flex items-center justify-center gap-2 hover:brightness-110 transition-all disabled:opacity-50"
+                className="w-full bg-white text-black font-semibold rounded-lg py-3.5 text-sm flex items-center justify-center gap-2 hover:bg-white/90 transition-all disabled:opacity-50 mt-2"
               >
                 {submitting ? (
                   <Loader2 className="w-5 h-5 animate-spin" />
                 ) : (
-                  <>
-                    {isLogin ? "Se connecter" : "Créer un compte"}
-                    <ArrowRight className="w-4 h-4" />
-                  </>
+                  isLogin ? "Se connecter" : "Suivant"
                 )}
               </button>
 
               {isLogin && (
-                <button type="button" onClick={() => setShowForgot(true)} className="text-sm text-lime hover:underline w-full text-center">
+                <button type="button" onClick={() => setShowForgot(true)} className="text-sm text-white/40 hover:text-white/60 w-full text-center transition-colors">
                   Mot de passe oublié ?
                 </button>
               )}
             </form>
-            )}
+          )}
 
-            {/* Divider */}
-            <div className="flex items-center gap-3 my-5">
-              <div className="flex-1 h-px bg-white/[0.08]" />
-              <span className="text-xs text-white/30">ou</span>
-              <div className="flex-1 h-px bg-white/[0.08]" />
-            </div>
-
-            {/* Google Sign-In */}
-            <button
-              onClick={async () => {
-                setError("");
-                const { error } = await lovable.auth.signInWithOAuth("google", {
-                  redirect_uri: window.location.origin,
-                });
-                if (error) setError(error.message);
-              }}
-              className="w-full flex items-center justify-center gap-3 bg-white/[0.05] border border-white/[0.08] rounded-xl py-3 text-sm font-medium text-white hover:bg-white/[0.08] transition-colors"
-            >
-              <svg className="w-5 h-5" viewBox="0 0 24 24">
-                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/>
-                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-                <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
-                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-              </svg>
-              Continuer avec Google
-            </button>
+          {/* Divider */}
+          <div className="flex items-center gap-4 my-6">
+            <div className="flex-1 h-px bg-white/10" />
+            <span className="text-xs text-white/30 uppercase tracking-wider">ou</span>
+            <div className="flex-1 h-px bg-white/10" />
           </div>
 
-          <p className="text-center text-xs text-white/30 mt-6">
-            En continuant, vous acceptez nos{" "}
-            <Link to="/conditions-utilisation" className="text-lime hover:underline">conditions d'utilisation</Link>.
+          {/* Google */}
+          <button
+            onClick={async () => {
+              setError("");
+              const { error } = await lovable.auth.signInWithOAuth("google", {
+                redirect_uri: window.location.origin,
+              });
+              if (error) setError(error.message);
+            }}
+            className="w-full flex items-center justify-center gap-3 border border-white/15 rounded-lg py-3.5 text-sm font-medium text-white hover:bg-white/5 transition-colors"
+          >
+            <svg className="w-5 h-5" viewBox="0 0 24 24">
+              <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/>
+              <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+              <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+              <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+            </svg>
+            {isLogin ? "Se connecter avec Google" : "S'inscrire avec Google"}
+          </button>
+
+          {/* Legal */}
+          <p className="text-center text-[11px] text-white/25 mt-8 leading-relaxed">
+            En cliquant sur "S'inscrire avec Google" vous acceptez nos{" "}
+            <Link to="/conditions-utilisation" className="text-white/40 hover:text-white/60 underline">Conditions d'utilisation</Link>
+            {" "}et reconnaissez avoir lu notre{" "}
+            <Link to="/politique-confidentialite" className="text-white/40 hover:text-white/60 underline">Politique de confidentialité</Link>.
           </p>
         </motion.div>
       </div>
