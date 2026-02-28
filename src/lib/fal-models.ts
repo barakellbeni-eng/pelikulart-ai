@@ -271,64 +271,6 @@ export const FAL_MODELS: FalModel[] = [
     settings: [ASPECT_RATIO_IMAGEN4],
   },
   {
-    id: "recraft-v3", type: "image", brand: "Recraft", name: "V3",
-    endpoint: "fal-ai/recraft/v3",
-    description: "Styles variés, texte dans l'image", icon: "□", color: "from-white/20 to-white/5",
-    maxImages: 2, supportsImageInput: false, caurisCost: 8, estimatedTime: "~8s",
-    settings: [
-      { key: "style", label: "Style", type: "select", options: [
-        { value: "realistic_image", label: "Réaliste" }, { value: "digital_illustration", label: "Illustration digitale" },
-        { value: "vector_illustration", label: "Illustration vectorielle" }, { value: "icon", label: "Icône" },
-      ], defaultValue: "realistic_image" },
-      { key: "image_size", label: "Taille", type: "select", options: [
-        { value: "1024x1024", label: "1024×1024" }, { value: "1365x1024", label: "1365×1024" },
-        { value: "1024x1365", label: "1024×1365" }, { value: "1536x1024", label: "1536×1024" }, { value: "1024x1536", label: "1024×1536" },
-      ], defaultValue: "1024x1024" },
-    ],
-  },
-  {
-    id: "ideogram-v2", type: "image", brand: "Ideogram", name: "V2",
-    endpoint: "fal-ai/ideogram/v2",
-    description: "Excellent pour le texte dans les images", icon: "▤", color: "from-white/20 to-white/5",
-    maxImages: 1, supportsImageInput: false, caurisCost: 15, estimatedTime: "~12s",
-    settings: [
-      ASPECT_RATIO_IDEOGRAM,
-      { key: "style", label: "Style", type: "select", options: [
-        { value: "auto", label: "Auto" }, { value: "general", label: "Général" }, { value: "realistic", label: "Réaliste" },
-        { value: "design", label: "Design" }, { value: "render_3D", label: "Rendu 3D" }, { value: "anime", label: "Anime" },
-      ], defaultValue: "auto" },
-      { key: "rendering_speed", label: "Vitesse de rendu", type: "select", options: [
-        { value: "TURBO", label: "Turbo (rapide)" }, { value: "BALANCED", label: "Équilibré" }, { value: "QUALITY", label: "Qualité (lent)" },
-      ], defaultValue: "BALANCED" },
-      { key: "expand_prompt", label: "MagicPrompt (enrichir)", type: "toggle", defaultValue: true },
-      { key: "negative_prompt", label: "Prompt négatif", type: "text", defaultValue: "", description: "Ce que vous ne voulez PAS" },
-      SEED_SETTING,
-    ],
-  },
-  {
-    id: "fast-sdxl", type: "image", brand: "Stable Diffusion", name: "XL",
-    endpoint: "fal-ai/fast-sdxl",
-    description: "Rapide et très personnalisable", icon: "△", color: "from-white/20 to-white/5",
-    maxImages: 4, supportsImageInput: false, caurisCost: 3, estimatedTime: "~4s",
-    settings: [
-      IMAGE_SIZE_FLUX, INFERENCE_STEPS(25),
-      { key: "guidance_scale", label: "Guidance Scale", type: "slider", min: 1, max: 20, step: 0.5, defaultValue: 7.5 },
-      { key: "negative_prompt", label: "Prompt négatif", type: "text", defaultValue: "", description: "Ce que vous ne voulez PAS" },
-      SEED_SETTING,
-    ],
-  },
-  {
-    id: "hidream-i1", type: "image", brand: "HiDream", name: "I1 Full",
-    endpoint: "fal-ai/hidream-i1-full",
-    description: "Open-source haute qualité", icon: "▽", color: "from-white/20 to-white/5",
-    maxImages: 1, supportsImageInput: false, caurisCost: 6, estimatedTime: "~15s",
-    settings: [
-      IMAGE_SIZE_FLUX, INFERENCE_STEPS(),
-      { key: "guidance_scale", label: "Guidance Scale", type: "slider", min: 1, max: 15, step: 0.5, defaultValue: 5 },
-      SEED_SETTING,
-    ],
-  },
-  {
     id: "seedream-v4-t2i", type: "image", brand: "Seedream", name: "v4",
     endpoint: "fal-ai/bytedance/seedream/v4/text-to-image",
     description: "Génération rapide et photoréaliste", icon: "◆", color: "from-white/20 to-white/5",
