@@ -39,7 +39,7 @@ const Hero = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.5 }}
         >
-          Production vidéo, images et audio générés par intelligence artificielle.
+          Les meilleures IA créatives disponibles en Afrique — sans engagement, payable en Wave, Orange Money ou MoMo.
         </motion.p>
 
         <motion.div
@@ -52,7 +52,7 @@ const Hero = () => {
             to="/studio"
             className="group px-7 py-3.5 bg-white text-black rounded-lg font-semibold text-sm hover:bg-white/90 transition-all flex items-center gap-2"
           >
-            Commencer
+            Essayer notre studio
             <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
           </Link>
           <Link
