@@ -928,7 +928,7 @@ const Dashboard = () => {
     <div className="flex h-full max-h-full overflow-hidden">
       {/* ===== LEFT SIDEBAR ===== */}
       <div className="w-72 min-w-[288px] max-w-[288px] shrink-0 bg-card/50 flex flex-col overflow-hidden">
-        <div className="p-4 space-y-4 flex-1 overflow-y-auto scrollbar-none min-h-0">
+        <div className="p-4 space-y-4 flex-1 overflow-hidden min-h-0">
           {/* Tabs: Image / Video / Audio */}
           <div className="flex rounded-xl bg-white/[0.04] p-1">
            {(["image", "video", "audio"] as const).map((tab) => (
