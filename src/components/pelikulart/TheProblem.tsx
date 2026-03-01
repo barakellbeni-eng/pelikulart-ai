@@ -2,9 +2,9 @@ import { motion } from "framer-motion";
 import { X } from "lucide-react";
 
 const problems = [
-  { icon: "🌍", title: "Interfaces en anglais", desc: "Les outils IA existants ne parlent pas ta langue." },
-  { icon: "💳", title: "Paiement carte impossible", desc: "Visa internationale obligatoire. Impossible avec Mobile Money." },
-  { icon: "💸", title: "Prix en dollars", desc: "Trop cher, avec des conversions floues et des frais cachés." },
+  { title: "Interfaces en anglais", desc: "Les outils IA existants ne parlent pas ta langue." },
+  { title: "Paiement carte impossible", desc: "Visa internationale obligatoire. Impossible avec Mobile Money." },
+  { title: "Prix en dollars", desc: "Trop cher, avec des conversions floues et des frais cachés." },
 ];
 
 const TheProblem = () => {
@@ -17,7 +17,6 @@ const TheProblem = () => {
           viewport={{ once: true }}
           className="text-center mb-14"
         >
-          <p className="font-mono text-[11px] tracking-[0.3em] uppercase text-red-400/70 mb-4">// Le problème</p>
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white leading-tight">
             Le créateur africain est <span className="text-red-400">exclu</span>
           </h2>
@@ -36,7 +35,6 @@ const TheProblem = () => {
               transition={{ delay: i * 0.1 }}
               className="bg-white/[0.03] border border-red-400/10 rounded-xl p-6 text-center"
             >
-              <div className="text-3xl mb-3">{p.icon}</div>
               <div className="flex items-center justify-center gap-2 mb-2">
                 <X className="w-4 h-4 text-red-400" />
                 <h3 className="text-white font-semibold text-sm">{p.title}</h3>
