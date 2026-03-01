@@ -5,7 +5,7 @@ import { playClickSound } from "@/utils/clickSound";
 
 const Hero = () => {
   return (
-    <section className="relative h-screen flex items-end overflow-hidden bg-black">
+    <section className="relative h-screen flex items-end overflow-hidden" style={{ backgroundColor: "#0A0A0A" }}>
       {/* Background Video */}
       <div className="absolute inset-0 z-0">
         <iframe
@@ -17,7 +17,7 @@ const Hero = () => {
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
           tabIndex={-1}
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent z-10 pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0A0A0A] via-black/40 to-transparent z-10 pointer-events-none" />
       </div>
 
       {/* Content */}
@@ -52,7 +52,7 @@ const Hero = () => {
         >
           <Smartphone className="w-4 h-4 text-lime" />
           <span className="text-xs text-white/40 font-mono tracking-wide">
-            Wave • Orange Money • MTN MoMo • Carte bancaire
+            Wave · Orange Money · MTN MoMo · Carte bancaire
           </span>
         </motion.div>
 
@@ -65,7 +65,7 @@ const Hero = () => {
           <Link
             to="/studio"
             onClick={playClickSound}
-            className="group px-7 py-3.5 bg-lime text-black rounded-lg font-semibold text-sm hover:bg-lime/90 transition-all flex items-center gap-2"
+            className="group px-7 py-3.5 bg-lime text-white rounded-lg font-semibold text-sm hover:bg-lime/90 transition-all flex items-center gap-2"
           >
             Commencer maintenant
             <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />

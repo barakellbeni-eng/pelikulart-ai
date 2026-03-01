@@ -20,7 +20,7 @@ const testimonials = [
 
 const Testimonials = () => {
   return (
-    <section className="py-20 md:py-28 bg-black">
+    <section className="py-20 md:py-28" style={{ backgroundColor: "#0A0A0A" }}>
       <div className="max-w-5xl mx-auto px-6 sm:px-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -41,7 +41,7 @@ const Testimonials = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.1 }}
-              className="bg-white/[0.03] border border-white/5 rounded-xl p-6"
+              className="bg-dark-lighter border border-white/5 rounded-xl p-6"
             >
               <p className="text-white/60 text-sm leading-relaxed italic mb-5">"{t.quote}"</p>
               <div>

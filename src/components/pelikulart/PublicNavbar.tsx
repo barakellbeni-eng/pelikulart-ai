@@ -51,7 +51,7 @@ const PublicNavbar = () => {
           ))}
           <Link
             to="/studio"
-            className="px-5 py-2 bg-lime text-black rounded-lg text-[13px] font-semibold hover:bg-lime/90 transition-all"
+            className="px-5 py-2 bg-lime text-white rounded-lg text-[13px] font-semibold hover:bg-lime/90 transition-all"
           >
             Essayer notre studio
           </Link>

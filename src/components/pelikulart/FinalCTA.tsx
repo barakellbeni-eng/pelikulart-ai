@@ -5,7 +5,7 @@ import { playClickSound } from "@/utils/clickSound";
 
 const FinalCTA = () => {
   return (
-    <section className="py-20 md:py-28 bg-black">
+    <section className="py-20 md:py-28" style={{ backgroundColor: "#0A0A0A" }}>
       <div className="max-w-3xl mx-auto px-6 sm:px-8 text-center">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -25,7 +25,7 @@ const FinalCTA = () => {
           <Link
             to="/auth"
             onClick={playClickSound}
-            className="inline-flex items-center gap-2 px-8 py-4 bg-lime text-black rounded-lg font-bold text-sm hover:bg-lime/90 transition-all"
+            className="inline-flex items-center gap-2 px-8 py-4 bg-lime text-white rounded-lg font-bold text-sm hover:bg-lime/90 transition-all"
           >
             Créer mon compte gratuit
             <ArrowRight className="w-4 h-4" />

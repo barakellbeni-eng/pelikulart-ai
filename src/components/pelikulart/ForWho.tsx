@@ -12,7 +12,7 @@ const profiles = [
 
 const ForWho = () => {
   return (
-    <section className="py-20 md:py-28 bg-black">
+    <section className="py-20 md:py-28" style={{ backgroundColor: "#0A0A0A" }}>
       <div className="max-w-5xl mx-auto px-6 sm:px-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}

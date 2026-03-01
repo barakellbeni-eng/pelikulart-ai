@@ -53,8 +53,8 @@ export default {
         glass: "hsl(var(--glass))",
         "glass-border": "hsl(var(--glass-border))",
         gold: "hsl(var(--glow-gold))",
-        lime: "#CCFF00",
-        "dark-lighter": "#1a1a1a",
+        lime: "#FF6200",
+        "dark-lighter": "#1A1A1A",
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",

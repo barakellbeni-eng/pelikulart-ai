@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 
 const PublicFooter = () => {
   return (
-    <footer className="bg-black border-t border-white/5 py-10">
+    <footer className="border-t border-white/5 py-10" style={{ backgroundColor: "#0A0A0A" }}>
       <div className="max-w-7xl mx-auto px-6 sm:px-8">
         <div className="flex flex-col md:flex-row items-center justify-between gap-6">
           <Link to="/" className="text-sm font-bold text-white tracking-tight">
