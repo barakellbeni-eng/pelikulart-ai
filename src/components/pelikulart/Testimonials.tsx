@@ -3,17 +3,17 @@ import { motion } from "framer-motion";
 const testimonials = [
   {
     name: "Koffi A.",
-    role: "Rappeur — Abidjan 🇨🇮",
+    role: "Rappeur — Abidjan",
     quote: "J'ai sorti mon premier clip visuel en 24h avec Pelikulart. Avant, il me fallait un budget de 500 000 FCFA minimum.",
   },
   {
     name: "Aminata D.",
-    role: "Community Manager — Dakar 🇸🇳",
+    role: "Community Manager — Dakar",
     quote: "Les visuels IA que je crée pour mes clients sont bluffants. Ils pensent que j'ai une équipe de graphistes.",
   },
   {
     name: "Boris T.",
-    role: "Réalisateur — Cotonou 🇧🇯",
+    role: "Réalisateur — Cotonou",
     quote: "Le paiement Wave m'a convaincu direct. Pas de Visa, pas de galère. En 30 secondes, mes Cauris étaient prêts.",
   },
 ];
@@ -28,7 +28,6 @@ const Testimonials = () => {
           viewport={{ once: true }}
           className="text-center mb-14"
         >
-          <p className="font-mono text-[11px] tracking-[0.3em] uppercase text-lime/70 mb-4">// Témoignages</p>
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white leading-tight">
             Ils créent avec <span className="text-lime">Pelikulart AI</span>
           </h2>

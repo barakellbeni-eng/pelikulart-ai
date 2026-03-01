@@ -19,7 +19,6 @@ const LandingPricing = () => {
           viewport={{ once: true }}
           className="text-center mb-14"
         >
-          <p className="font-mono text-[11px] tracking-[0.3em] uppercase text-lime/70 mb-4">// Tarifs</p>
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white leading-tight">
             Des prix clairs, <span className="text-lime">en FCFA</span>
           </h2>
@@ -49,7 +48,7 @@ const LandingPricing = () => {
               <div className="mt-3 mb-4">
                 <span className="text-3xl font-bold text-lime">{pack.price}</span>
                 <span className="text-white/40 text-xs ml-1">FCFA</span>
-                <p className="text-white/30 text-xs mt-1">{pack.cauris} Cauris 🐚</p>
+                <p className="text-white/30 text-xs mt-1">{pack.cauris} Cauris</p>
               </div>
               <ul className="space-y-2 mb-5">
                 {pack.features.map((f) => (

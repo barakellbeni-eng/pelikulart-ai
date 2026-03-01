@@ -6,7 +6,7 @@ const stats = [
   { value: "8", label: "Pays couverts" },
 ];
 
-const countries = ["🇧🇯 Bénin", "🇨🇮 Côte d'Ivoire", "🇸🇳 Sénégal", "🇹🇬 Togo", "🇲🇱 Mali", "🇧🇫 Burkina Faso", "🇳🇪 Niger", "🇬🇼 Guinée-Bissau"];
+const countries = ["Bénin", "Côte d'Ivoire", "Sénégal", "Togo", "Mali", "Burkina Faso", "Niger", "Guinée-Bissau"];
 
 const SocialProof = () => {
   return (

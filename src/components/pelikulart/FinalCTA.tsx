@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { ArrowRight, Gift } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { playClickSound } from "@/utils/clickSound";
 
@@ -13,7 +13,6 @@ const FinalCTA = () => {
           viewport={{ once: true }}
           className="bg-gradient-to-br from-lime/5 to-transparent border border-lime/10 rounded-2xl p-10 md:p-16"
         >
-          <Gift className="w-10 h-10 text-lime mx-auto mb-5" />
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white leading-tight mb-4">
             Prêt à créer ?
           </h2>
