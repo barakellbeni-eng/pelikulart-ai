@@ -10,9 +10,8 @@ const countries = ["Bénin", "Côte d'Ivoire", "Sénégal", "Togo", "Mali", "Bur
 
 const SocialProof = () => {
   return (
-    <section className="py-16 bg-black border-t border-white/5">
+    <section className="py-16 border-t border-white/5" style={{ backgroundColor: "#0A0A0A" }}>
       <div className="max-w-5xl mx-auto px-6 sm:px-8">
-        {/* Stats */}
         <div className="grid grid-cols-3 gap-6 mb-10">
           {stats.map((stat, i) => (
             <motion.div
@@ -29,7 +28,6 @@ const SocialProof = () => {
           ))}
         </div>
 
-        {/* Countries */}
         <motion.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}

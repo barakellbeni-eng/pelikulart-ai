@@ -11,7 +11,7 @@ const packs = [
 
 const LandingPricing = () => {
   return (
-    <section className="py-20 md:py-28 bg-black">
+    <section className="py-20 md:py-28" style={{ backgroundColor: "#0A0A0A" }}>
       <div className="max-w-5xl mx-auto px-6 sm:px-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -40,7 +40,7 @@ const LandingPricing = () => {
               }`}
             >
               {pack.popular && (
-                <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-lime text-black text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+                <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-lime text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">
                   Populaire
                 </span>
               )}
@@ -62,7 +62,7 @@ const LandingPricing = () => {
                 to="/pricing"
                 className={`block w-full text-center py-2.5 rounded-lg text-xs font-semibold transition-all ${
                   pack.popular
-                    ? "bg-lime text-black hover:bg-lime/90"
+                    ? "bg-lime text-white hover:bg-lime/90"
                     : "bg-white/5 text-white hover:bg-white/10 border border-white/10"
                 }`}
               >

@@ -14,66 +14,23 @@ import ScrollSection from "@/components/pelikulart/ScrollSection";
 
 const HomePage = () => {
   return (
-    <div className="w-full overflow-x-hidden bg-black relative">
-      {/* 1. HERO */}
+    <div className="w-full overflow-x-hidden relative" style={{ backgroundColor: "#0A0A0A" }}>
       <Hero />
-
-      {/* 2. SOCIAL PROOF */}
       <SocialProof />
-
-      {/* 3. THE PROBLEM */}
+      <ScrollSection><TheProblem /></ScrollSection>
+      <ScrollSection><TheSolution /></ScrollSection>
+      <ScrollSection><HowItWorks /></ScrollSection>
+      <ScrollSection><VideoGallery /></ScrollSection>
+      <ScrollSection><ForWho /></ScrollSection>
+      <ScrollSection><LandingPricing /></ScrollSection>
       <ScrollSection>
-        <TheProblem />
-      </ScrollSection>
-
-      {/* 4. THE SOLUTION */}
-      <ScrollSection>
-        <TheSolution />
-      </ScrollSection>
-
-      {/* 5. HOW IT WORKS */}
-      <ScrollSection>
-        <HowItWorks />
-      </ScrollSection>
-
-      {/* 6. GALERIE / DÉMO */}
-      <ScrollSection>
-        <VideoGallery />
-      </ScrollSection>
-
-      {/* 7. FOR WHO */}
-      <ScrollSection>
-        <ForWho />
-      </ScrollSection>
-
-      {/* 8. PRICING */}
-      <ScrollSection>
-        <LandingPricing />
-      </ScrollSection>
-
-      {/* Payment Methods */}
-      <ScrollSection>
-        <div className="py-10 bg-black">
+        <div className="py-10" style={{ backgroundColor: "#0A0A0A" }}>
           <PaymentMarquee showAvailability showSignupCTA />
         </div>
       </ScrollSection>
-
-      {/* 9. TESTIMONIALS */}
-      <ScrollSection>
-        <Testimonials />
-      </ScrollSection>
-
-      {/* 10. FAQ */}
-      <ScrollSection>
-        <FAQ />
-      </ScrollSection>
-
-      {/* 11. CTA FINAL */}
-      <ScrollSection>
-        <FinalCTA />
-      </ScrollSection>
-
-      {/* 12. FOOTER is handled by the layout */}
+      <ScrollSection><Testimonials /></ScrollSection>
+      <ScrollSection><FAQ /></ScrollSection>
+      <ScrollSection><FinalCTA /></ScrollSection>
     </div>
   );
 };
