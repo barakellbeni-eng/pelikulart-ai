@@ -15,6 +15,7 @@
   "dependencies": {
     "@fontsource/dm-sans": "^5.2.8",
     "@fontsource/geist-mono": "^5.2.7",
+    "@fontsource/inter": "^5.2.8",
     "@fontsource/plus-jakarta-sans": "^5.2.8",
     "@hookform/resolvers": "^3.10.0",
     "@lovable.dev/cloud-auth-js": "^0.0.3",
