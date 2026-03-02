@@ -10,7 +10,7 @@ const ProofSection = () => {
         <iframe
           src="https://app.videas.fr/embed/media/2f752018-6649-465a-bac7-dcf94d9744ae/?autoplay=1&muted=1&loop=1&controls=0"
           className="absolute inset-0 w-full h-full border-0"
-          style={{ transform: "scale(1.15)" }}
+          style={{ transform: "scale(1.5)" }}
           allow="autoplay; encrypted-media"
           referrerPolicy="unsafe-url"
         />
