@@ -65,9 +65,10 @@ const QuoteManifesto = () => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8, delay: 0.3 }}
-          className="text-lg sm:text-xl md:text-2xl text-white/40 font-display mt-8"
+          className="text-lg sm:text-xl md:text-2xl text-white/40 font-display mt-8 text-center max-w-3xl px-4"
         >
-          Pelikulart simplifie tout.
+          <span className="text-white/60 font-bold">Pelikulart AI simplifie tout.</span>{" "}
+          On te forme, on te donne les meilleurs outils pour créer tes clips, pubs et films payable en FCFA, sans abonnement.
         </motion.p>
       </div>
     </section>
