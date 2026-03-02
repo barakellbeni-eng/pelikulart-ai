@@ -109,8 +109,14 @@ const Hero = () => {
             onClick={playClickSound}
             className="group px-6 sm:px-8 py-3.5 sm:py-4 bg-primary text-primary-foreground rounded-pill font-ui text-sm sm:text-base font-semibold tracking-wider hover:bg-primary/90 transition-all flex items-center gap-2 glow-accent"
           >
-            Lancer ma première génération
-            <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+            <motion.span
+              className="flex items-center gap-2"
+              animate={{ scale: [1, 1.05, 1], opacity: [1, 0.7, 1] }}
+              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+            >
+              Lancer ma première génération
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+            </motion.span>
           </Link>
         </motion.div>
 
