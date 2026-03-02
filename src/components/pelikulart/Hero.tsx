@@ -75,28 +75,29 @@ const Hero = () => {
         >
           <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-primary/20 bg-primary/5 text-primary font-mono text-xs tracking-wider animate-pulse-glow">
             <Sparkles className="w-3.5 h-3.5" />
-            Le moteur créatif de Barakell BENI
+            Plateforme IA créative #1 en Afrique
           </span>
         </motion.div>
 
         <motion.h1
-          className="text-4xl sm:text-5xl md:text-7xl font-bold leading-[1.05] tracking-tight text-white max-w-4xl font-display"
+          className="text-4xl sm:text-5xl md:text-7xl font-bold leading-[1.05] tracking-tight text-white max-w-3xl font-display"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.3 }}
         >
-          Le premier studio IA premium{" "}
+          Créer l'impossible
           <br />
-          <span className="text-primary">pour tes clips et visuels.</span>
+          avec l'
+          <span className="text-primary">IA</span>
         </motion.h1>
 
         <motion.p
-          className="text-base md:text-lg text-white/50 mt-6 max-w-2xl leading-relaxed"
+          className="text-lg md:text-xl text-white/50 mt-5 max-w-xl"
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.5 }}
         >
-          Ton imagination n'a plus de limite technique. Produis, réalise et impose ta vision avec une qualité cinématographique. Sans abonnement, paye juste ce que tu crées.
+          Génère des clips, images et vidéos IA de qualité pro — payable en FCFA via Mobile Money.
         </motion.p>
 
         {/* Single CTA */}
