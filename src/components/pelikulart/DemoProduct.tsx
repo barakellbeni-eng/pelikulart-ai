@@ -64,17 +64,6 @@ const DemoProduct = () => {
             viewport={{ once: true }}
             transition={{ duration: 0.7, delay: 0.15 }}
           >
-            <p className="text-xs uppercase tracking-[0.3em] text-white/30 font-mono mb-4">
-              Conçu pour l'Afrique
-            </p>
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white font-display leading-tight mb-6">
-              Tout ce qu'il faut.
-              <br />
-              <span className="text-lime">Rien de superflu.</span>
-            </h2>
-            <p className="text-white/40 text-base md:text-lg mb-10 max-w-md">
-              Une interface pensée pour les créateurs africains — simple, rapide, payable en monnaie locale.
-            </p>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
               {features.map((f, i) => (
