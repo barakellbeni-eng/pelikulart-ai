@@ -102,13 +102,14 @@ const AppContent = () => {
         {/* Public Pelikulart pages */}
         <Route path="/" element={<ComingSoon />} />
         <Route path="/previewbarakellsecret" element={<PublicLayout><HomePage /></PublicLayout>} />
-        <Route path="/creations" element={<Navigate to="/" replace />} />
-        <Route path="/training" element={<Navigate to="/" replace />} />
-        <Route path="/secret-page" element={<Navigate to="/" replace />} />
-        <Route path="/mentions-legales" element={<Navigate to="/" replace />} />
-        <Route path="/conditions-utilisation" element={<Navigate to="/" replace />} />
-        <Route path="/politique-confidentialite" element={<Navigate to="/" replace />} />
-        <Route path="/politique-cookies" element={<Navigate to="/" replace />} />
+        <Route path="/creations" element={<PublicLayout><CreationsPage /></PublicLayout>} />
+        <Route path="/training" element={<PublicLayout><TrainingPage /></PublicLayout>} />
+        {/* Devis removed */}
+        <Route path="/secret-page" element={<SecretPage />} />
+        <Route path="/mentions-legales" element={<PublicLayout><LegalPage /></PublicLayout>} />
+        <Route path="/conditions-utilisation" element={<PublicLayout><TermsOfUsePage /></PublicLayout>} />
+        <Route path="/politique-confidentialite" element={<PublicLayout><PrivacyPolicyPage /></PublicLayout>} />
+        <Route path="/politique-cookies" element={<PublicLayout><CookiePolicyPage /></PublicLayout>} />
 
         {/* Auth */}
         <Route path="/auth" element={<Auth />} />
