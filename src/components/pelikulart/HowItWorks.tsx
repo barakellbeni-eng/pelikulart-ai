@@ -32,14 +32,14 @@ const HowItWorks = () => {
   return (
     <section className="py-16 sm:py-20 md:py-28">
       <div className="max-w-5xl mx-auto px-4 sm:px-8">
-        <motion.p
+        <motion.h2
           initial={{ opacity: 0, y: 10 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="text-xs uppercase tracking-[0.3em] text-white/30 font-mono text-center mb-3"
+          className="text-2xl sm:text-4xl md:text-5xl font-bold font-sans text-center text-white tracking-tight"
         >
           Comment ça marche ?
-        </motion.p>
+        </motion.h2>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-8 mt-8 sm:mt-12">
           {steps.map((step, i) => (
