@@ -65,7 +65,7 @@ const QuoteManifesto = () => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8, delay: 0.3 }}
-          className="mt-20 text-center max-w-4xl px-4"
+          className="mt-32 text-center max-w-4xl px-4"
         >
           <p className="text-2xl sm:text-3xl md:text-5xl text-white font-display font-bold tracking-tight leading-tight">
             Pelikulart AI simplifie tout.
