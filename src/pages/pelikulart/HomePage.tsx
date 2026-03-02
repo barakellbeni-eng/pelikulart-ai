@@ -6,7 +6,7 @@ import DemoProduct from "@/components/pelikulart/DemoProduct";
 
 import TheSolution from "@/components/pelikulart/TheSolution";
 import HowItWorks from "@/components/pelikulart/HowItWorks";
-import VideoGallery from "@/components/pelikulart/VideoGallery";
+
 
 import LandingPricing from "@/components/pelikulart/LandingPricing";
 import PaymentMarquee from "@/components/PaymentMarquee";
@@ -24,7 +24,7 @@ const HomePage = () => {
       
       <ScrollSection><TheSolution /></ScrollSection>
       <ScrollSection><HowItWorks /></ScrollSection>
-      <ScrollSection><VideoGallery /></ScrollSection>
+      
       
       <ScrollSection><LandingPricing /></ScrollSection>
       <ScrollSection>
