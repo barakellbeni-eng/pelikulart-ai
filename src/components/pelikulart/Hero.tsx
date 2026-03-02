@@ -71,7 +71,7 @@ const Hero = () => {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.1 }}
-          className="mb-4 sm:mb-6 text-[10px] sm:text-[11px] uppercase tracking-[0.25em] sm:tracking-[0.35em] text-white/30 font-mono"
+          className="mb-4 sm:mb-6 text-xs sm:text-sm md:text-base uppercase tracking-[0.25em] sm:tracking-[0.35em] text-white/40 font-mono font-semibold"
         >
           Plateforme IA créative #1 en Afrique
         </motion.p>
