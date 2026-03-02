@@ -14,9 +14,10 @@ export default {
     },
     extend: {
       fontFamily: {
-        sans: ["Outfit", "system-ui", "sans-serif"],
-        display: ["Syne", "system-ui", "sans-serif"],
-        label: ["Bebas Neue", "system-ui", "sans-serif"],
+        sans: ["DM Sans", "system-ui", "sans-serif"],
+        display: ["Satoshi", "system-ui", "sans-serif"],
+        label: ["Plus Jakarta Sans", "system-ui", "sans-serif"],
+        mono: ["Geist Mono", "monospace"],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -56,7 +57,7 @@ export default {
         "glass-border": "hsl(var(--glass-border))",
         gold: "hsl(var(--glow-gold))",
         lime: "#FF6200",
-        "dark-lighter": "#1A1A1A",
+        "dark-lighter": "#141414",
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",
@@ -72,6 +73,7 @@ export default {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
+        pill: "100px",
       },
       keyframes: {
         "accordion-down": {
