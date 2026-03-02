@@ -52,7 +52,7 @@ const QuoteManifesto = () => {
             <path
               d="M 15 38 Q 250 -5 485 38"
               stroke="hsl(var(--primary))"
-              strokeWidth="5"
+              strokeWidth="3"
               strokeLinecap="round"
               fill="none"
               opacity="1"
