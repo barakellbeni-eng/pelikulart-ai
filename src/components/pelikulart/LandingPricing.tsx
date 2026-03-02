@@ -40,15 +40,15 @@ const LandingPricing = () => {
               }`}
             >
               {pack.popular && (
-                <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-lime text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+                <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-lime text-white text-[10px] font-mono font-bold px-3 py-1 rounded-full uppercase tracking-wider">
                   Populaire
                 </span>
               )}
-              <h3 className="text-white font-semibold text-sm">{pack.name}</h3>
+              <h3 className="text-white font-semibold text-sm font-display">{pack.name}</h3>
               <div className="mt-3 mb-4">
-                <span className="text-3xl font-bold text-lime">{pack.price}</span>
-                <span className="text-white/40 text-xs ml-1">FCFA</span>
-                <p className="text-white/30 text-xs mt-1">{pack.cauris} Cauris</p>
+                <span className="text-3xl font-bold text-lime font-mono">{pack.price}</span>
+                <span className="text-white/40 text-xs ml-1 font-mono">FCFA</span>
+                <p className="text-white/30 text-xs mt-1 font-mono">{pack.cauris} Cauris</p>
               </div>
               <ul className="space-y-2 mb-5">
                 {pack.features.map((f) => (
@@ -60,9 +60,9 @@ const LandingPricing = () => {
               </ul>
               <Link
                 to="/pricing"
-                className={`block w-full text-center py-2.5 rounded-lg text-xs font-semibold transition-all ${
+                className={`block w-full text-center py-2.5 rounded-pill text-xs font-label font-semibold uppercase tracking-wider transition-all ${
                   pack.popular
-                    ? "bg-lime text-white hover:bg-lime/90"
+                    ? "bg-lime text-white hover:bg-lime/90 glow-accent"
                     : "bg-white/5 text-white hover:bg-white/10 border border-white/10"
                 }`}
               >

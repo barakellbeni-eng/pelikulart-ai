@@ -26,7 +26,7 @@ const PublicNavbar = () => {
   return (
     <nav
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-        scrolled ? "bg-black/80 backdrop-blur-xl" : "bg-transparent"
+        scrolled ? "bg-[#080808]/90 backdrop-blur-xl border-b border-white/5" : "bg-transparent"
       }`}
     >
       <div className="max-w-7xl mx-auto flex items-center justify-between px-6 sm:px-8 py-5">
@@ -40,10 +40,10 @@ const PublicNavbar = () => {
             <Link
               key={link.to}
               to={link.to}
-              className={`text-[13px] font-medium uppercase tracking-widest transition-colors px-4 py-2 rounded-lg ${
+              className={`text-[13px] font-label font-medium uppercase tracking-widest transition-colors px-4 py-2 rounded-pill ${
                 location.pathname === link.to
                   ? "bg-white text-black"
-                  : "bg-white/90 text-black hover:bg-white"
+                  : "bg-white/10 text-white/70 hover:bg-white/15 hover:text-white"
               }`}
             >
               {link.label}
@@ -51,7 +51,7 @@ const PublicNavbar = () => {
           ))}
           <Link
             to="/studio"
-            className="px-5 py-2 bg-lime text-white rounded-lg text-[13px] font-semibold hover:bg-lime/90 transition-all"
+            className="px-5 py-2 bg-lime text-white rounded-pill text-[13px] font-label font-semibold hover:bg-lime/90 transition-all glow-accent"
           >
             Essayer notre studio
           </Link>
@@ -80,10 +80,10 @@ const PublicNavbar = () => {
                 <Link
                   key={link.to}
                   to={link.to}
-                  className={`text-sm font-medium uppercase tracking-widest py-2 ${
+                  className={`text-sm font-label font-medium uppercase tracking-widest py-2 ${
                     location.pathname === link.to
                       ? "text-white"
-                      : "text-white/80"
+                      : "text-white/60"
                   }`}
                 >
                   {link.label}
@@ -91,7 +91,7 @@ const PublicNavbar = () => {
               ))}
               <Link
                 to="/studio"
-                className="text-sm font-medium uppercase tracking-widest py-2 text-lime"
+                className="text-sm font-label font-medium uppercase tracking-widest py-2 text-lime"
               >
                 Essayer notre studio
               </Link>

@@ -15,7 +15,7 @@ const VideoGallery = () => {
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
-          className="text-xs uppercase tracking-[0.3em] text-white/40 font-medium mb-12 text-center"
+          className="text-xs uppercase tracking-[0.3em] text-white/40 font-mono mb-12 text-center"
         >
           Nos créations
         </motion.p>

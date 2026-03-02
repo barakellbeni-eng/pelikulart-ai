@@ -32,7 +32,7 @@ const HowItWorks = () => {
               className="text-center relative"
             >
               <span className="font-mono text-lime/30 text-xs tracking-widest">{step.num}</span>
-              <h3 className="text-white font-bold text-lg mt-2 mb-2">{step.title}</h3>
+              <h3 className="text-white font-bold text-lg mt-2 mb-2 font-display">{step.title}</h3>
               <p className="text-white/40 text-sm leading-relaxed">{step.desc}</p>
               {i < steps.length - 1 && (
                 <div className="hidden md:block absolute top-6 -right-4 text-white/10 text-2xl">→</div>
