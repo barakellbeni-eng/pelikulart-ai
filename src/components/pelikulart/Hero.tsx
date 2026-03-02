@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { ArrowRight, Sparkles } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { playClickSound } from "@/utils/clickSound";
 
@@ -21,7 +21,7 @@ const Hero = () => {
   }, []);
 
   return (
-    <section className="relative min-h-screen flex items-center overflow-hidden">
+    <section className="relative min-h-[100svh] flex items-center overflow-hidden">
       {/* Background video iframes */}
       <div className="absolute inset-0 z-0">
         {VIDEO_URLS.map((url, i) => (
@@ -49,7 +49,7 @@ const Hero = () => {
 
       {/* Orange glow */}
       <div
-        className="absolute top-[-200px] left-1/2 -translate-x-1/2 w-[800px] h-[600px] rounded-full pointer-events-none z-[2]"
+        className="absolute top-[-100px] sm:top-[-200px] left-1/2 -translate-x-1/2 w-[400px] sm:w-[800px] h-[300px] sm:h-[600px] rounded-full pointer-events-none z-[2]"
         style={{
           background: "radial-gradient(ellipse at center, hsl(23 100% 50% / 0.15) 0%, hsl(23 100% 50% / 0.05) 40%, transparent 70%)",
           filter: "blur(60px)",
@@ -65,19 +65,19 @@ const Hero = () => {
       />
 
       {/* Content */}
-      <div className="relative z-20 max-w-7xl w-full mx-auto px-6 sm:px-8 py-32 md:py-40 flex flex-col items-center text-center">
+      <div className="relative z-20 max-w-7xl w-full mx-auto px-4 sm:px-8 py-24 sm:py-32 md:py-40 flex flex-col items-center text-center">
         {/* Tagline */}
         <motion.p
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.1 }}
-          className="mb-6 text-[11px] uppercase tracking-[0.35em] text-white/30 font-mono"
+          className="mb-4 sm:mb-6 text-[10px] sm:text-[11px] uppercase tracking-[0.25em] sm:tracking-[0.35em] text-white/30 font-mono"
         >
           Plateforme IA créative #1 en Afrique
         </motion.p>
 
         <motion.h1
-          className="text-4xl sm:text-5xl md:text-7xl font-bold leading-[1.05] tracking-tight text-white max-w-3xl font-display"
+          className="text-3xl sm:text-5xl md:text-7xl font-bold leading-[1.08] tracking-tight text-white max-w-3xl font-display"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.3 }}
@@ -89,7 +89,7 @@ const Hero = () => {
         </motion.h1>
 
         <motion.p
-          className="text-lg md:text-xl text-white/50 mt-5 max-w-xl"
+          className="text-base sm:text-lg md:text-xl text-white/50 mt-4 sm:mt-5 max-w-md sm:max-w-xl px-2"
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.5 }}
@@ -99,7 +99,7 @@ const Hero = () => {
 
         {/* Single CTA */}
         <motion.div
-          className="flex flex-wrap justify-center gap-4 mt-10"
+          className="flex flex-wrap justify-center gap-4 mt-8 sm:mt-10"
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.7 }}
@@ -107,7 +107,7 @@ const Hero = () => {
           <Link
             to="/studio"
             onClick={playClickSound}
-            className="group px-8 py-4 bg-primary text-primary-foreground rounded-pill font-ui text-base font-semibold tracking-wider hover:bg-primary/90 transition-all flex items-center gap-2 glow-accent"
+            className="group px-6 sm:px-8 py-3.5 sm:py-4 bg-primary text-primary-foreground rounded-pill font-ui text-sm sm:text-base font-semibold tracking-wider hover:bg-primary/90 transition-all flex items-center gap-2 glow-accent"
           >
             Lancer ma première génération
             <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
@@ -116,19 +116,19 @@ const Hero = () => {
 
         {/* Payment methods */}
         <motion.div
-          className="flex flex-col items-center gap-2 mt-8"
+          className="flex flex-col items-center gap-2 mt-6 sm:mt-8"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.8, delay: 0.9 }}
         >
-          <span className="text-[11px] text-white/25 font-mono tracking-widest uppercase">
-            Paiements locaux et internationaux acceptés
+          <span className="text-[10px] sm:text-[11px] text-white/25 font-mono tracking-widest uppercase">
+            Paiements locaux et internationaux
           </span>
-          <div className="flex items-center gap-3 text-xs text-white/35 font-mono">
-            <span className="px-2.5 py-1 rounded-full border border-white/[0.06] bg-white/[0.03]">Wave</span>
-            <span className="px-2.5 py-1 rounded-full border border-white/[0.06] bg-white/[0.03]">Orange Money</span>
-            <span className="px-2.5 py-1 rounded-full border border-white/[0.06] bg-white/[0.03]">MTN MoMo</span>
-            <span className="px-2.5 py-1 rounded-full border border-white/[0.06] bg-white/[0.03]">Carte bancaire</span>
+          <div className="flex flex-wrap items-center justify-center gap-2 text-[10px] sm:text-xs text-white/35 font-mono">
+            <span className="px-2 sm:px-2.5 py-1 rounded-full border border-white/[0.06] bg-white/[0.03]">Wave</span>
+            <span className="px-2 sm:px-2.5 py-1 rounded-full border border-white/[0.06] bg-white/[0.03]">Orange Money</span>
+            <span className="px-2 sm:px-2.5 py-1 rounded-full border border-white/[0.06] bg-white/[0.03]">MTN MoMo</span>
+            <span className="px-2 sm:px-2.5 py-1 rounded-full border border-white/[0.06] bg-white/[0.03]">Carte bancaire</span>
           </div>
         </motion.div>
       </div>

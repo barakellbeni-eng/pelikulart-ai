@@ -4,7 +4,7 @@ import { Play } from "lucide-react";
 
 const ProofSection = () => {
   return (
-    <section className="relative py-32 md:py-44 overflow-hidden">
+    <section className="relative py-20 sm:py-32 md:py-44 overflow-hidden">
       {/* Background video via Videas embed */}
       <div className="absolute inset-0">
         <iframe
@@ -20,17 +20,17 @@ const ProofSection = () => {
       <div className="absolute inset-0 bg-black/70" />
 
       {/* Top & bottom gradient masks */}
-      <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-background to-transparent" />
-      <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-background to-transparent" />
+      <div className="absolute inset-x-0 top-0 h-20 sm:h-32 bg-gradient-to-b from-background to-transparent" />
+      <div className="absolute inset-x-0 bottom-0 h-20 sm:h-32 bg-gradient-to-t from-background to-transparent" />
 
       {/* Content */}
-      <div className="relative z-10 flex flex-col items-center justify-center text-center px-6">
+      <div className="relative z-10 flex flex-col items-center justify-center text-center px-4 sm:px-6">
         <motion.h2
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ delay: 0.1 }}
-          className="text-3xl sm:text-4xl md:text-5xl font-bold text-white font-sans leading-tight max-w-3xl"
+          className="text-2xl sm:text-4xl md:text-5xl font-bold text-white font-sans leading-tight max-w-3xl"
         >
           Découvre ce que Pelikulart a déjà rendu possible.
         </motion.h2>
@@ -40,13 +40,13 @@ const ProofSection = () => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ delay: 0.25 }}
-          className="mt-10"
+          className="mt-8 sm:mt-10"
         >
           <Link
             to="/creations"
-            className="inline-flex items-center gap-3 px-8 py-4 rounded-full bg-primary text-primary-foreground font-sans font-bold text-lg hover:brightness-110 transition-all duration-300 shadow-[0_0_40px_hsl(23_100%_50%/0.3)] hover:shadow-[0_0_60px_hsl(23_100%_50%/0.5)]"
+            className="inline-flex items-center gap-2.5 sm:gap-3 px-6 sm:px-8 py-3.5 sm:py-4 rounded-full bg-primary text-primary-foreground font-sans font-bold text-base sm:text-lg hover:brightness-110 transition-all duration-300 shadow-[0_0_40px_hsl(23_100%_50%/0.3)] hover:shadow-[0_0_60px_hsl(23_100%_50%/0.5)]"
           >
-            <Play className="w-5 h-5 text-primary" />
+            <Play className="w-4 h-4 sm:w-5 sm:h-5" />
             Voir nos créations
           </Link>
         </motion.div>
