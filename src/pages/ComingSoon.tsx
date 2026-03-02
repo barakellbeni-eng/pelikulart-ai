@@ -149,6 +149,20 @@ const ComingSoon = () => {
             </>
           )}
         </motion.form>
+
+        {/* Formation button */}
+        <motion.a
+          href="https://barakellbeni.store"
+          target="_blank"
+          rel="noopener noreferrer"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1, duration: 0.5 }}
+          className="mt-6 text-xs sm:text-sm font-medium transition-all duration-200 hover:opacity-80"
+          style={{ color: "hsl(0 0% 50%)", textDecoration: "underline", textUnderlineOffset: "4px" }}
+        >
+          Découvrir nos formations →
+        </motion.a>
       </motion.div>
     </div>
   );
