@@ -16,9 +16,9 @@ const QuoteManifesto = () => {
   return (
     <section className="py-28 md:py-40 relative overflow-hidden">
       <div className="w-full flex flex-col items-center justify-center">
-          <div className="relative inline-block font-display" style={{ fontWeight: 700, lineHeight: 1.1 }}>
-            <span className="text-5xl sm:text-6xl md:text-[75px] text-white tracking-tight font-bold">Trop </span>
-            <span className="text-5xl sm:text-6xl md:text-[75px] tracking-tight invisible font-bold" aria-hidden="true">d'abonnement</span>
+          <div className="relative inline-block font-display" style={{ fontWeight: 500, lineHeight: 1.1 }}>
+            <span className="text-5xl sm:text-7xl md:text-[100px] text-white tracking-tight font-medium">Trop </span>
+            <span className="text-5xl sm:text-7xl md:text-[100px] tracking-tight invisible font-medium" aria-hidden="true">d'abonnement</span>
             <AnimatePresence mode="wait">
               <motion.span
                 key={words[index]}
@@ -26,7 +26,7 @@ const QuoteManifesto = () => {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.4, ease: "easeInOut" }}
-                className="absolute top-0 text-5xl sm:text-6xl md:text-[75px] text-primary tracking-tight whitespace-nowrap font-bold"
+                className="absolute top-0 text-5xl sm:text-7xl md:text-[100px] text-primary tracking-tight whitespace-nowrap font-medium"
                 style={{ left: "4.2ch" }}
               >
                 {words[index]}
