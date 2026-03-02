@@ -40,10 +40,10 @@ const PublicNavbar = () => {
             <Link
               key={link.to}
               to={link.to}
-              className={`text-[13px] font-label font-medium uppercase tracking-widest transition-colors px-4 py-2 rounded-pill ${
+              className={`text-[13px] font-label font-medium uppercase tracking-widest transition-colors px-4 py-2 ${
                 location.pathname === link.to
-                  ? "bg-white text-black"
-                  : "bg-white/10 text-white/70 hover:bg-white/15 hover:text-white"
+                  ? "text-white"
+                  : "text-white/70 hover:text-white"
               }`}
             >
               {link.label}
