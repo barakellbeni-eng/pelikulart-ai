@@ -122,7 +122,7 @@ const LandingPricing = () => {
             <ShieldCheck className="w-4 h-4 text-primary" />
             <span className="text-[11px] sm:text-xs font-mono tracking-wide">Paiement sécurisé par</span>
           </div>
-          <img src={kkiapayLogo} alt="KkiaPay" className="h-6 sm:h-7 opacity-50" />
+          <img src={kkiapayLogo} alt="KkiaPay" className="h-8 sm:h-10 opacity-80" />
         </motion.div>
       </div>
     </section>
