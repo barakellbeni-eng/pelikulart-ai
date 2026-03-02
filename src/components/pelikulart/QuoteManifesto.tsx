@@ -16,23 +16,23 @@ const QuoteManifesto = () => {
   return (
     <section className="py-28 md:py-40 relative overflow-hidden">
       <div className="max-w-5xl mx-auto px-6 sm:px-8 flex flex-col items-center justify-center text-center">
-        <h2 className="text-5xl sm:text-7xl md:text-[90px] tracking-tight" style={{ fontFamily: "'Neue Haas Grotesk Display Pro', 'Helvetica Neue', Arial, sans-serif", fontWeight: 500, lineHeight: 1.1 }}>
-          <span className="text-white">Trop </span>
-          <span className="inline-block relative align-baseline">
-            <AnimatePresence mode="wait">
-              <motion.span
-                key={words[index]}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.4, ease: "easeInOut" }}
-                className="text-primary"
-              >
-                {words[index]}
-              </motion.span>
-            </AnimatePresence>
+        <div className="relative inline-flex items-baseline" style={{ fontFamily: "'Neue Haas Grotesk Display Pro', 'Helvetica Neue', Arial, sans-serif", fontWeight: 500, lineHeight: 1.1 }}>
+          <span className="text-5xl sm:text-7xl md:text-[90px] text-white tracking-tight shrink-0">
+            Trop&nbsp;
           </span>
-        </h2>
+          <AnimatePresence mode="wait">
+            <motion.span
+              key={words[index]}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.4, ease: "easeInOut" }}
+              className="text-5xl sm:text-7xl md:text-[90px] text-primary tracking-tight whitespace-nowrap"
+            >
+              {words[index]}
+            </motion.span>
+          </AnimatePresence>
+        </div>
 
         {/* Orange arc with glow */}
         <div className="relative w-full max-w-xl -mt-2">
