@@ -19,9 +19,9 @@ const LandingPricing = () => {
           viewport={{ once: true }}
           className="text-center mb-14"
         >
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white leading-tight">
-            Des prix clairs, <span className="text-lime">en FCFA</span>
-          </h2>
+           <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white leading-tight font-display">
+             Des prix clairs, <span className="text-lime">en FCFA</span>
+           </h2>
           <p className="text-white/40 mt-4 max-w-md mx-auto text-sm">
             Pas d'abonnement. Achète des Cauris, utilise-les quand tu veux. Ils n'expirent jamais.
           </p>

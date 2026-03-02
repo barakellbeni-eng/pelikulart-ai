@@ -17,9 +17,9 @@ const TheProblem = () => {
           viewport={{ once: true }}
           className="text-center mb-14"
         >
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white leading-tight">
-            Le créateur africain est <span className="text-red-400">exclu</span>
-          </h2>
+           <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white leading-tight font-display">
+             Le créateur africain est <span className="text-red-400">exclu</span>
+           </h2>
           <p className="text-white/40 mt-4 max-w-lg mx-auto text-sm">
             Les meilleurs outils IA du monde ne sont pas pensés pour toi.
           </p>

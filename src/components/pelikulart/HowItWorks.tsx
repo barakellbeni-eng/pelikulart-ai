@@ -16,9 +16,9 @@ const HowItWorks = () => {
           viewport={{ once: true }}
           className="text-center mb-14"
         >
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white leading-tight">
-            3 étapes. <span className="text-lime">C'est tout.</span>
-          </h2>
+           <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white leading-tight font-display">
+             3 étapes. <span className="text-lime">C'est tout.</span>
+           </h2>
         </motion.div>
 
         <div className="grid md:grid-cols-3 gap-8">

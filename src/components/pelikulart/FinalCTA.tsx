@@ -13,9 +13,9 @@ const FinalCTA = () => {
           viewport={{ once: true }}
           className="bg-gradient-to-br from-lime/5 to-transparent border border-lime/10 rounded-2xl p-10 md:p-16"
         >
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white leading-tight mb-4">
-            Prêt à créer ?
-          </h2>
+           <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white leading-tight mb-4 font-display">
+             Prêt à créer ?
+           </h2>
           <p className="text-white/50 text-sm max-w-md mx-auto mb-3">
             Inscris-toi gratuitement et reçois <span className="text-lime font-bold">50 Cauris offerts</span> pour tester le studio IA.
           </p>
@@ -25,7 +25,7 @@ const FinalCTA = () => {
           <Link
             to="/auth"
             onClick={playClickSound}
-            className="inline-flex items-center gap-2 px-8 py-4 bg-lime text-white rounded-lg font-bold text-sm hover:bg-lime/90 transition-all"
+            className="inline-flex items-center gap-2 px-8 py-4 bg-lime text-white rounded-lg font-label text-lg tracking-wider uppercase hover:bg-lime/90 transition-all"
           >
             Créer mon compte gratuit
             <ArrowRight className="w-4 h-4" />

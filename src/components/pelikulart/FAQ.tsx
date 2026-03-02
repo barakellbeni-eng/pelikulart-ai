@@ -292,7 +292,7 @@ const FAQ = () => {
           <p className="font-mono text-[11px] tracking-[0.3em] uppercase text-lime opacity-80 mb-5">
             // Centre d'aide
           </p>
-          <h2 className="text-[clamp(42px,7vw,90px)] font-extrabold leading-[0.95] tracking-[-0.03em] text-white mb-6">
+          <h2 className="text-[clamp(42px,7vw,90px)] font-extrabold leading-[0.95] tracking-[-0.03em] text-white mb-6 font-display">
             Questions
             <span className="text-lime block">fréquentes</span>
           </h2>

@@ -23,7 +23,7 @@ const Hero = () => {
       {/* Content */}
       <div className="relative z-20 max-w-7xl w-full mx-auto px-6 sm:px-8 pb-16 md:pb-24">
         <motion.h1
-          className="text-4xl sm:text-5xl md:text-7xl font-bold leading-[1.05] tracking-tight text-white max-w-3xl"
+          className="text-4xl sm:text-5xl md:text-7xl font-bold leading-[1.05] tracking-tight text-white max-w-3xl font-display"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.3 }}
@@ -65,14 +65,14 @@ const Hero = () => {
           <Link
             to="/studio"
             onClick={playClickSound}
-            className="group px-7 py-3.5 bg-lime text-white rounded-lg font-semibold text-sm hover:bg-lime/90 transition-all flex items-center gap-2"
+            className="group px-7 py-3.5 bg-lime text-white rounded-lg font-label text-base tracking-wider uppercase hover:bg-lime/90 transition-all flex items-center gap-2"
           >
             Commencer maintenant
             <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
           </Link>
           <Link
             to="/creations"
-            className="px-7 py-3.5 bg-white/10 text-white rounded-lg font-semibold text-sm hover:bg-white/15 transition-all border border-white/10"
+            className="px-7 py-3.5 bg-white/10 text-white rounded-lg font-label text-base tracking-wider uppercase hover:bg-white/15 transition-all border border-white/10"
           >
             Voir nos créations
           </Link>

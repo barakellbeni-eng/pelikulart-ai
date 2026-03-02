@@ -11,7 +11,7 @@ const ForWho = () => {
           transition={{ duration: 0.8 }}
           className="text-center"
         >
-          <h2 className="text-5xl sm:text-7xl md:text-9xl font-black text-white leading-[0.9] tracking-tight uppercase">
+          <h2 className="text-5xl sm:text-7xl md:text-9xl font-black text-white leading-[0.9] tracking-tight uppercase font-display">
             Fait pour les
             <br />
             <span className="text-lime">créateurs</span>

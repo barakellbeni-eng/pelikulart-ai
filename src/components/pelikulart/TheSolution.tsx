@@ -17,9 +17,9 @@ const TheSolution = () => {
           viewport={{ once: true }}
           className="text-center mb-14"
         >
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white leading-tight">
-            Pelikulart <span className="text-lime">AI</span> change la donne
-          </h2>
+           <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white leading-tight font-display">
+             Pelikulart <span className="text-lime">AI</span> change la donne
+           </h2>
           <p className="text-white/40 mt-4 max-w-lg mx-auto text-sm">
             Chaque problème a sa réponse. On a tout repensé pour toi.
           </p>
