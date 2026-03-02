@@ -5,7 +5,7 @@ import { Loader2, Eye, EyeOff } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { lovable } from "@/integrations/lovable/index";
 import { supabase } from "@/integrations/supabase/client";
-import pelikulartLogo from "@/assets/pelikulart-logo.jpeg";
+import pelikulartLogo from "@/assets/pelikulart-logo.png";
 import PaymentMarquee from "@/components/PaymentMarquee";
 
 const VIDEO_URLS = [

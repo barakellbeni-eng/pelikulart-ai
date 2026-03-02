@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import pelikulartLogo from "@/assets/pelikulart-logo.jpeg";
+import pelikulartLogo from "@/assets/pelikulart-logo.png";
 
 interface StudioSplashProps {
   onFinish: () => void;

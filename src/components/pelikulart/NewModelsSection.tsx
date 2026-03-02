@@ -3,7 +3,7 @@ import { Sparkles } from "lucide-react";
 import logoGoogle from "@/assets/logo-google.png";
 import logoFlux from "@/assets/logo-flux.png";
 import logoSeedream from "@/assets/logo-seedream.png";
-import logoPelikulart from "@/assets/pelikulart-logo.jpeg";
+import logoPelikulart from "@/assets/pelikulart-logo.png";
 
 interface NewModel {
   name: string;
