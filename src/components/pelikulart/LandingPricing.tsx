@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
-import { Check } from "lucide-react";
+import { Check, ShieldCheck } from "lucide-react";
+import kkiapayLogo from "@/assets/kkiapay-logo.png";
 import { Link } from "react-router-dom";
 
 const packs = [
@@ -108,6 +109,21 @@ const LandingPricing = () => {
             </motion.div>
           ))}
         </div>
+
+        {/* Sécurité KkiaPay */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ delay: 0.4 }}
+          className="flex flex-col items-center gap-2 mt-8 sm:mt-12"
+        >
+          <div className="flex items-center gap-2 text-white/40">
+            <ShieldCheck className="w-4 h-4 text-primary" />
+            <span className="text-[11px] sm:text-xs font-mono tracking-wide">Paiement sécurisé par</span>
+          </div>
+          <img src={kkiapayLogo} alt="KkiaPay" className="h-6 sm:h-7 opacity-50" />
+        </motion.div>
       </div>
     </section>
   );
