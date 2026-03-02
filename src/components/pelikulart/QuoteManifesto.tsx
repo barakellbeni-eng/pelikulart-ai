@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 const words = ["d'outils", "compliqué", "inaccessible", "d'abonnement"];
 
@@ -16,16 +16,11 @@ const QuoteManifesto = () => {
   return (
     <section className="py-28 md:py-40 relative overflow-hidden">
       <div className="max-w-5xl mx-auto px-6 sm:px-8 flex flex-col items-center justify-center text-center">
-        <div className="flex flex-col items-center justify-center text-center">
-          <div className="relative" style={{ fontFamily: "'Neue Haas Grotesk Display Pro', 'Helvetica Neue', Arial, sans-serif", fontWeight: 500, lineHeight: 1.1 }}>
-            <span className="text-5xl sm:text-7xl md:text-[90px] text-white tracking-tight">
-              Trop&nbsp;
-            </span>
-            {/* Invisible spacer: widest word to reserve space */}
-            <span className="text-5xl sm:text-7xl md:text-[90px] tracking-tight invisible" aria-hidden="true">
-              d'abonnement
-            </span>
-            {/* Animated word positioned over the spacer */}
+          <div className="relative inline-block" style={{ fontFamily: "'Neue Haas Grotesk Display Pro', 'Helvetica Neue', Arial, sans-serif", fontWeight: 500, lineHeight: 1.1 }}>
+            {/* "Trop " is fixed, followed by invisible spacer for the widest word */}
+            <span className="text-5xl sm:text-7xl md:text-[90px] text-white tracking-tight">Trop </span>
+            <span className="text-5xl sm:text-7xl md:text-[90px] tracking-tight invisible" aria-hidden="true">d'abonnement</span>
+            {/* Animated word overlays exactly where the spacer is */}
             <AnimatePresence mode="wait">
               <motion.span
                 key={words[index]}
@@ -34,13 +29,12 @@ const QuoteManifesto = () => {
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.4, ease: "easeInOut" }}
                 className="absolute top-0 text-5xl sm:text-7xl md:text-[90px] text-primary tracking-tight whitespace-nowrap"
-                style={{ left: "auto" }}
+                style={{ left: "4.8ch" }}
               >
                 {words[index]}
               </motion.span>
             </AnimatePresence>
           </div>
-        </div>
 
         {/* Orange arc with glow */}
         <div className="relative w-full max-w-xl -mt-2">
