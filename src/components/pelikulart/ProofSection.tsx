@@ -25,21 +25,12 @@ const ProofSection = () => {
 
       {/* Content */}
       <div className="relative z-10 flex flex-col items-center justify-center text-center px-6">
-        <motion.p
-          initial={{ opacity: 0, y: 10 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="text-xs uppercase tracking-[0.3em] text-white/30 font-mono mb-4"
-        >
-          Preuve
-        </motion.p>
-
         <motion.h2
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ delay: 0.1 }}
-          className="text-3xl sm:text-4xl md:text-5xl font-bold text-white font-display leading-tight max-w-3xl"
+          className="text-3xl sm:text-4xl md:text-5xl font-bold text-white font-sans leading-tight max-w-3xl"
         >
           Découvre ce que Pelikulart a déjà rendu possible.
         </motion.h2>
