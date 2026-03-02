@@ -7,7 +7,7 @@ import DemoProduct from "@/components/pelikulart/DemoProduct";
 import TheSolution from "@/components/pelikulart/TheSolution";
 import HowItWorks from "@/components/pelikulart/HowItWorks";
 import VideoGallery from "@/components/pelikulart/VideoGallery";
-import ForWho from "@/components/pelikulart/ForWho";
+
 import LandingPricing from "@/components/pelikulart/LandingPricing";
 import PaymentMarquee from "@/components/PaymentMarquee";
 
@@ -25,7 +25,7 @@ const HomePage = () => {
       <ScrollSection><TheSolution /></ScrollSection>
       <ScrollSection><HowItWorks /></ScrollSection>
       <ScrollSection><VideoGallery /></ScrollSection>
-      <ScrollSection><ForWho /></ScrollSection>
+      
       <ScrollSection><LandingPricing /></ScrollSection>
       <ScrollSection>
         <div className="py-10" style={{ backgroundColor: "#0A0A0A" }}>
