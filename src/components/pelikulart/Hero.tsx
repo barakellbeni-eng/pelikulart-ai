@@ -23,32 +23,28 @@ const Hero = () => {
   return (
     <section className="relative min-h-screen flex items-center overflow-hidden">
       {/* Background video iframes */}
-        <div className="absolute inset-0 z-0 flex items-center justify-center">
+      <div className="absolute inset-0 z-0">
         {VIDEO_URLS.map((url, i) => (
           <div
             key={i}
-            className="absolute inset-0 flex items-center justify-center transition-opacity duration-[2000ms] ease-in-out"
+            className="absolute inset-0 transition-opacity duration-[2000ms] ease-in-out"
             style={{ opacity: activeVideo === i ? 1 : 0 }}
           >
-            <div className="w-full" style={{ aspectRatio: "21/9" }}>
-              <iframe
-                src={url}
-                title={`Hero bg ${i + 1}`}
-                className="w-full h-full border-0 pointer-events-none"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                tabIndex={-1}
-              />
-            </div>
+            <iframe
+              src={url}
+              title={`Hero bg ${i + 1}`}
+              className="w-full h-full border-0 pointer-events-none scale-[1.35]"
+              style={{ objectFit: "cover" }}
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              tabIndex={-1}
+            />
           </div>
         ))}
       </div>
 
-      {/* Gradient masks — stronger top/bottom + side fades to hide 21:9 letterbox edges */}
+      {/* Gradient masks */}
       <div className="absolute inset-0 z-[1] pointer-events-none" style={{
-        background: `
-          linear-gradient(to bottom, #080808 0%, rgba(8,8,8,0.85) 12%, rgba(8,8,8,0.3) 30%, rgba(8,8,8,0.3) 70%, rgba(8,8,8,0.85) 88%, #080808 100%),
-          linear-gradient(to right, #080808 0%, transparent 8%, transparent 92%, #080808 100%)
-        `
+        background: "linear-gradient(to bottom, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.50) 18%, rgba(0,0,0,0.40) 50%, rgba(0,0,0,0.50) 82%, rgba(0,0,0,0.95) 100%)"
       }} />
 
       {/* Orange glow */}
