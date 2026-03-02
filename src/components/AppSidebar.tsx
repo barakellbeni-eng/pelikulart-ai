@@ -9,7 +9,7 @@ import {
   Music,
   Sparkles,
 } from "lucide-react";
-import pelikulartLogo from "@/assets/pelikulart-logo.jpeg";
+import pelikulartLogo from "@/assets/pelikulart-logo.png";
 import {
   Sidebar,
   SidebarContent,
