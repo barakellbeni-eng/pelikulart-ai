@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import { playClickSound } from "@/utils/clickSound";
 
 const VIDEO_URLS = [
+  "https://app.videas.fr/embed/media/09972d8e-02b2-4f0b-a629-6d1832429455/?title=false&logo=false&thumbnail_duration=false&controls=false&autoplay=true&loop=true&info=false&thumbnail=video",
   "https://app.videas.fr/embed/media/c0811c06-78fb-45d2-95a0-66f2c7658863/?title=false&logo=false&thumbnail_duration=false&controls=false&autoplay=true&loop=true&info=false&thumbnail=video",
   "https://app.videas.fr/embed/media/afcdb619-1b97-481b-b5af-0ddd44fc37b1/?title=false&logo=false&thumbnail_duration=false&controls=false&autoplay=true&loop=true&info=false&thumbnail=video",
 ];
@@ -14,7 +15,7 @@ const Hero = () => {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setActiveVideo((prev) => (prev === 0 ? 1 : 0));
+      setActiveVideo((prev) => (prev + 1) % VIDEO_URLS.length);
     }, 8000);
     return () => clearInterval(interval);
   }, []);
@@ -42,7 +43,7 @@ const Hero = () => {
       </div>
 
       {/* Dark overlay */}
-      <div className="absolute inset-0 z-[1]" style={{ backgroundColor: "rgba(0,0,0,0.65)" }} />
+      <div className="absolute inset-0 z-[1]" style={{ backgroundColor: "rgba(0,0,0,0.50)" }} />
 
       {/* Orange glow at top center */}
       <div
