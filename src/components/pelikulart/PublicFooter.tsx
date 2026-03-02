@@ -16,6 +16,13 @@ const PublicFooter = () => {
             <Link to="/devis" className="hover:text-white transition-colors">Contact</Link>
           </nav>
 
+          <nav className="flex items-center gap-4 text-[10px] text-white/30 font-mono">
+            <Link to="/mentions-legales" className="hover:text-white/60 transition-colors">Mentions légales</Link>
+            <Link to="/politique-confidentialite" className="hover:text-white/60 transition-colors">Confidentialité</Link>
+            <Link to="/politique-cookies" className="hover:text-white/60 transition-colors">Cookies</Link>
+            <Link to="/conditions-utilisation" className="hover:text-white/60 transition-colors">CGU</Link>
+          </nav>
+
           <p className="text-xs text-white/20 font-mono">
             © 2026 Pelikulart.AI
           </p>
