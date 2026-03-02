@@ -1,5 +1,6 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
+import heroVideo from "@/assets/hero-video.mp4";
 
 const words = ["d'outils", "compliqué", "inaccessible", "d'abonnement"];
 
@@ -15,7 +16,20 @@ const QuoteManifesto = () => {
 
   return (
     <section className="py-28 md:py-40 relative overflow-hidden">
-      <div className="w-full flex flex-col items-center justify-center">
+      {/* Video background */}
+      <div className="absolute inset-0 z-0">
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="w-full h-full object-cover"
+          style={{ transform: "scale(1.4)" }}
+          src={heroVideo}
+        />
+        <div className="absolute inset-0 bg-background/70" />
+      </div>
+      <div className="w-full flex flex-col items-center justify-center relative z-10">
         <p className="text-lg sm:text-xl md:text-2xl text-white/50 font-display mb-4 tracking-wide">En Afrique, créer avec l'IA c'est</p>
         <div className="relative inline-block" style={{ fontFamily: "'Neue Haas Grotesk Display Pro', 'Helvetica Neue', Arial, sans-serif", fontWeight: 500, lineHeight: 1.1 }}>
             {/* "Trop " is fixed, followed by invisible spacer for the widest word */}
