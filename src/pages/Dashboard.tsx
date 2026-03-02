@@ -36,6 +36,7 @@ import { FAL_MODELS, getModelById, getDefaultSettings, getModelsByType, getModel
 import { getBrandLogo } from "@/lib/brandLogos";
 import GenerationProgress from "@/components/GenerationProgress";
 import { getGenerationJob, startGeneration, completeGeneration, failGeneration, subscribeGeneration } from "@/hooks/useGenerationStore";
+import { getSignedUrl, getSignedUrls } from "@/lib/storage";
 
 const GENERATE_IMAGE_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-image`;
 const GENERATE_IMAGE_GOOGLE_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-image-google`;
@@ -231,15 +232,16 @@ const Dashboard = () => {
         .from("generations")
         .upload(fileName, new Uint8Array(arrayBuffer), { contentType, upsert: false });
       if (uploadError) { console.error("Upload error:", uploadError); return remoteUrl; }
-      const { data: publicUrlData } = supabase.storage.from("generations").getPublicUrl(fileName);
-      const storedUrl = publicUrlData.publicUrl;
+      // Store the file path (not public URL) for signed URL generation
       await supabase.from("generations").insert({
         user_id: user.id,
         prompt: promptText,
-        image_url: storedUrl,
+        image_url: fileName,
         media_type: mediaType,
       } as any);
-      return storedUrl;
+      // Return a signed URL for immediate display
+      const signedUrl = await getSignedUrl(fileName);
+      return signedUrl;
     } catch (e) {
       console.error("persistMedia error:", e);
       return remoteUrl;
@@ -256,12 +258,17 @@ const Dashboard = () => {
         .order("created_at", { ascending: false })
         .limit(50);
       if (!error && data) {
+        // Resolve signed URLs for all items
+        const allUrls = (data as any[]).map((g: any) => g.image_url as string);
+        const signedUrlList = await getSignedUrls(allUrls);
+
         const images: GeneratedImage[] = [];
         const videos: GeneratedVideo[] = [];
         const audios: GeneratedAudio[] = [];
-        for (const g of data as any[]) {
+        for (let idx = 0; idx < (data as any[]).length; idx++) {
+          const g = (data as any[])[idx];
           const item = {
-            url: g.image_url,
+            url: signedUrlList[idx],
             prompt: g.prompt,
             timestamp: new Date(g.created_at).getTime(),
           };
