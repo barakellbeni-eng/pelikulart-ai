@@ -29,7 +29,7 @@ const QuoteManifesto = () => {
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.4, ease: "easeInOut" }}
                 className="absolute top-0 text-5xl sm:text-7xl md:text-[90px] text-primary tracking-tight whitespace-nowrap"
-                style={{ left: "4.8ch" }}
+                style={{ left: "4.2ch" }}
               >
                 {words[index]}
               </motion.span>
