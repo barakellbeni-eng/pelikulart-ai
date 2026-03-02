@@ -14,7 +14,9 @@ export default {
     },
     extend: {
       fontFamily: {
-        sans: ["Space Grotesk", "system-ui", "sans-serif"],
+        sans: ["Outfit", "system-ui", "sans-serif"],
+        display: ["Syne", "system-ui", "sans-serif"],
+        label: ["Bebas Neue", "system-ui", "sans-serif"],
       },
       colors: {
         border: "hsl(var(--border))",
