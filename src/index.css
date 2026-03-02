@@ -1,4 +1,7 @@
-/* Fonts: Satoshi via Fontshare CDN, DM Sans / Plus Jakarta Sans / Geist Mono via @fontsource in main.tsx */
+/* Neue Haas Grotesk Display Pro via CDN */
+@import url('https://fonts.cdnfonts.com/css/neue-haas-grotesk-display-pro');
+
+/* Fonts: DM Sans / Plus Jakarta Sans / Geist Mono via @fontsource in main.tsx */
 
 @tailwind base;
 @tailwind components;
