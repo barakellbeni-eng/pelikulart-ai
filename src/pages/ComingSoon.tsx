@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import pelikulartLogo from "@/assets/pelikulart-logo.png";
+import pelikulartLogo from "@/assets/pelikulart-logo.jpeg";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -52,13 +52,29 @@ const ComingSoon = () => {
         transition={{ duration: 0.6, ease: "easeOut" }}
         className="relative z-10 flex flex-col items-center text-center w-full max-w-lg"
       >
-        {/* Logo */}
-        <img
-          src={pelikulartLogo}
-          alt="Pelikulart AI"
-          className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl mb-6 sm:mb-8"
-          style={{ boxShadow: "0 0 60px hsl(23 100% 50% / 0.35)" }}
-        />
+        {/* Logo with continuous floating + glow pulse */}
+        <motion.div
+          animate={{
+            y: [0, -8, 0],
+            boxShadow: [
+              "0 0 40px hsl(23 100% 50% / 0.25)",
+              "0 0 80px hsl(23 100% 50% / 0.5)",
+              "0 0 40px hsl(23 100% 50% / 0.25)",
+            ],
+          }}
+          transition={{
+            duration: 3,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+          className="mb-6 sm:mb-8 rounded-2xl"
+        >
+          <img
+            src={pelikulartLogo}
+            alt="Pelikulart AI"
+            className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl"
+          />
+        </motion.div>
 
         {/* Title */}
         <motion.h1
