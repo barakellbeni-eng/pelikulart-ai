@@ -66,18 +66,15 @@ const Hero = () => {
 
       {/* Content */}
       <div className="relative z-20 max-w-7xl w-full mx-auto px-6 sm:px-8 py-32 md:py-40 flex flex-col items-center text-center">
-        {/* Badge */}
-        <motion.div
+        {/* Tagline */}
+        <motion.p
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.1 }}
-          className="mb-6"
+          className="mb-6 text-[11px] uppercase tracking-[0.35em] text-white/30 font-mono"
         >
-          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-primary/20 bg-primary/5 text-primary font-mono text-xs tracking-wider animate-pulse-glow">
-            <Sparkles className="w-3.5 h-3.5" />
-            Plateforme IA créative #1 en Afrique
-          </span>
-        </motion.div>
+          Plateforme IA créative #1 en Afrique
+        </motion.p>
 
         <motion.h1
           className="text-4xl sm:text-5xl md:text-7xl font-bold leading-[1.05] tracking-tight text-white max-w-3xl font-display"
