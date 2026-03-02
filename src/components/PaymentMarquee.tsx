@@ -26,7 +26,7 @@ interface PaymentMarqueeProps {
 }
 
 const PaymentMarquee = ({ size = "md", showAvailability = false }: PaymentMarqueeProps) => {
-  const logoSize = size === "sm" ? 32 : 48;
+  const logoSize = size === "sm" ? 56 : 80;
 
   return (
     <div className="space-y-6">
@@ -41,7 +41,7 @@ const PaymentMarquee = ({ size = "md", showAvailability = false }: PaymentMarque
         </div>
       )}
 
-      <div className="flex items-center justify-center gap-5 sm:gap-8 py-2">
+      <div className="flex items-center justify-center gap-2 sm:gap-3 py-2 flex-wrap">
         {logos.map((logo) => (
           <img
             key={logo.alt}
