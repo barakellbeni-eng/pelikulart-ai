@@ -927,11 +927,30 @@ const Dashboard = () => {
     return null;
   };
 
+  const [mobileSettingsOpen, setMobileSettingsOpen] = useState(false);
+
   return (
-    <div className="flex h-full min-h-0 overflow-hidden">
-      {/* ===== LEFT SIDEBAR ===== */}
-      <div className="w-72 min-w-[288px] max-w-[288px] shrink-0 bg-card/50 flex flex-col overflow-hidden">
-        <div className="p-4 space-y-4 flex-1 overflow-hidden min-h-0">
+    <div className="flex h-full min-h-0 overflow-hidden relative">
+      {/* Mobile settings toggle */}
+      <button
+        onClick={() => setMobileSettingsOpen(!mobileSettingsOpen)}
+        className="md:hidden fixed bottom-20 right-4 z-40 w-14 h-14 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-lg glow-accent"
+      >
+        <SlidersHorizontal className="w-5 h-5" />
+      </button>
+
+      {/* ===== LEFT SIDEBAR (desktop always visible, mobile as overlay) ===== */}
+      <div className={`
+        fixed inset-0 z-30 md:relative md:z-auto
+        ${mobileSettingsOpen ? "block" : "hidden md:block"}
+      `}>
+        {/* Mobile backdrop */}
+        <div
+          className="absolute inset-0 bg-black/60 md:hidden"
+          onClick={() => setMobileSettingsOpen(false)}
+        />
+        <div className="absolute right-0 top-0 bottom-0 w-[85vw] max-w-sm md:relative md:w-72 md:min-w-[288px] md:max-w-[288px] shrink-0 bg-card/95 md:bg-card/50 backdrop-blur-xl md:backdrop-blur-none flex flex-col overflow-hidden">
+        <div className="p-3 sm:p-4 space-y-3 sm:space-y-4 flex-1 overflow-y-auto min-h-0">
           {/* Tabs: Image / Video / Audio */}
           <div className="flex rounded-xl bg-white/[0.04] p-1">
            {(["image", "video", "audio"] as const).map((tab) => (
@@ -999,7 +1018,7 @@ const Dashboard = () => {
                     initial={{ opacity: 0, x: -8 }}
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: -8 }}
-                    className="fixed left-[288px] top-[120px] w-72 bg-card border border-white/[0.08] rounded-xl p-1 z-[100] max-h-[70vh] overflow-y-auto shadow-2xl"
+                    className="fixed left-4 right-4 md:left-[288px] md:right-auto top-[120px] md:w-72 bg-card border border-white/[0.08] rounded-xl p-1 z-[100] max-h-[70vh] overflow-y-auto shadow-2xl"
                   >
                     {getModelsByTypeGrouped(activeTab === "video" ? "video" : activeTab === "audio" ? "audio" : "image").map((group) => (
                       <div key={group.brand}>
@@ -1288,7 +1307,12 @@ const Dashboard = () => {
         <div className="shrink-0 p-4 space-y-3 bg-card/80 backdrop-blur-sm">
           {/* Generate Button */}
           <button
-            onClick={activeTab === "video" ? handleGenerateVideo : activeTab === "audio" ? handleGenerateAudio : handleGenerate}
+            onClick={() => {
+              setMobileSettingsOpen(false);
+              if (activeTab === "video") handleGenerateVideo();
+              else if (activeTab === "audio") handleGenerateAudio();
+              else handleGenerate();
+            }}
             disabled={isSubmitting || !prompt.trim()}
             className="btn-generate w-full flex items-center justify-between text-sm disabled:opacity-50 disabled:animate-none"
           >
@@ -1320,12 +1344,13 @@ const Dashboard = () => {
             </span>
           </div>
         </div>
+        </div>
       </div>
 
       {/* ===== RIGHT GALLERY (UNIFIED) ===== */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        <div className="flex items-center justify-between px-5 py-3">
-          <div className="flex items-center gap-1 glass rounded-lg p-0.5">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 px-3 sm:px-5 py-2 sm:py-3">
+          <div className="flex items-center gap-1 glass rounded-lg p-0.5 overflow-x-auto max-w-full scrollbar-hide">
             {([
               { value: "all" as const, label: "Tout", icon: null, count: galleryImages.length + galleryVideos.length + galleryAudios.length },
               { value: "image" as const, label: "Images", icon: Image, count: galleryImages.length },
@@ -1383,7 +1408,7 @@ const Dashboard = () => {
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-4">
+        <div className="flex-1 overflow-y-auto p-2 sm:p-4 pb-24 md:pb-4">
           {(() => {
             // Build unified gallery items
             type UnifiedItem = { type: "image"; data: GeneratedImage; ts: number } | { type: "video"; data: GeneratedVideo; ts: number } | { type: "audio"; data: GeneratedAudio; ts: number };
