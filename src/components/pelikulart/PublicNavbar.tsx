@@ -6,8 +6,6 @@ import { Menu, X } from "lucide-react";
 const navLinks = [
   { label: "Créations", to: "/creations" },
   { label: "Formation", to: "/training" },
-  { label: "Tarifs", to: "/#pricing" },
-  { label: "Connexion", to: "/auth" },
 ];
 
 const PublicNavbar = () => {
