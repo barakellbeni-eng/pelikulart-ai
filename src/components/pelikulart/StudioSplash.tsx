@@ -38,8 +38,8 @@ const StudioSplash = ({ onFinish }: StudioSplashProps) => {
           <img
             src={pelikulartLogo}
             alt="Pelikulart AI"
-            className="w-24 h-24 rounded-2xl shadow-2xl"
-            style={{ boxShadow: "0 0 60px hsl(72 100% 50% / 0.3)" }}
+            className="w-16 h-16 rounded-xl shadow-2xl"
+            style={{ boxShadow: "0 0 50px hsl(23 100% 50% / 0.4)" }}
           />
         </motion.div>
 
