@@ -24,7 +24,7 @@ const Hero = () => {
       />
 
       {/* Content */}
-      <div className="relative z-20 max-w-7xl w-full mx-auto px-6 sm:px-8 py-32 md:py-40">
+      <div className="relative z-20 max-w-7xl w-full mx-auto px-6 sm:px-8 py-32 md:py-40 flex flex-col items-center text-center">
         {/* Animated badge */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
@@ -61,7 +61,7 @@ const Hero = () => {
 
         {/* Mobile Money badge */}
         <motion.div
-          className="flex items-center gap-2 mt-4"
+          className="flex items-center justify-center gap-2 mt-4"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.8, delay: 0.6 }}
@@ -73,7 +73,7 @@ const Hero = () => {
         </motion.div>
 
         <motion.div
-          className="flex flex-wrap gap-4 mt-8"
+          className="flex flex-wrap justify-center gap-4 mt-8"
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.7 }}
