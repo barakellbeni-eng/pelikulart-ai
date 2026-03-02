@@ -48,11 +48,8 @@ async function uploadGeneratedImage(
     throw new Error("Failed to upload image to storage");
   }
 
-  const { data: publicUrlData } = supabase.storage
-    .from("generations")
-    .getPublicUrl(fileName);
-
-  return publicUrlData.publicUrl;
+  // Return the storage path (not public URL) for signed URL generation
+  return fileName;
 }
 
 serve(async (req) => {
@@ -237,18 +234,23 @@ serve(async (req) => {
 
       for (const imageSource of imageCandidates) {
         try {
-          const storedUrl = await uploadGeneratedImage(adminClient, imageSource, userId);
+          const storedPath = await uploadGeneratedImage(adminClient, imageSource, userId);
 
           await adminClient.from("generations").insert({
             user_id: userId,
             prompt: prompt.slice(0, 5000),
-            image_url: storedUrl,
+            image_url: storedPath,
             aspect_ratio: modelSettings.aspect_ratio || null,
             resolution: modelSettings.resolution || null,
             output_format: "png",
           });
 
-          savedImages.push({ url: storedUrl });
+          // Generate a signed URL for immediate display
+          const { data: signedData } = await adminClient.storage
+            .from("generations")
+            .createSignedUrl(storedPath, 3600);
+
+          savedImages.push({ url: signedData?.signedUrl || storedPath });
         } catch (uploadErr) {
           console.error("Upload error:", uploadErr);
         }

@@ -67,11 +67,8 @@ async function downloadAndUpload(
     throw new Error("Failed to upload image to storage");
   }
 
-  const { data: publicUrlData } = supabase.storage
-    .from("generations")
-    .getPublicUrl(fileName);
-
-  return publicUrlData.publicUrl;
+  // Return the storage path (not public URL) for signed URL generation
+  return fileName;
 }
 
 serve(async (req) => {
@@ -255,18 +252,23 @@ serve(async (req) => {
     const savedImages = [];
     for (const img of falImages) {
       try {
-        const storedUrl = await downloadAndUpload(adminClient, img.url, userId, output_format);
+        const storedPath = await downloadAndUpload(adminClient, img.url, userId, output_format);
 
         await adminClient.from("generations").insert({
           user_id: userId,
           prompt: prompt.slice(0, 5000),
-          image_url: storedUrl,
+          image_url: storedPath,
           aspect_ratio: modelSettings.aspect_ratio || null,
           resolution: modelSettings.resolution || modelSettings.image_size || null,
           output_format,
         });
 
-        savedImages.push({ url: storedUrl, width: img.width, height: img.height });
+        // Generate a signed URL for immediate display
+        const { data: signedData } = await adminClient.storage
+          .from("generations")
+          .createSignedUrl(storedPath, 3600);
+
+        savedImages.push({ url: signedData?.signedUrl || storedPath, width: img.width, height: img.height });
       } catch (uploadErr) {
         console.error("Upload/save error:", uploadErr);
         savedImages.push({ url: img.url, width: img.width, height: img.height });

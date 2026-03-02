@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { getSignedUrls } from "@/lib/storage";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
@@ -56,7 +57,11 @@ const StudioHome = () => {
         .eq("user_id", user.id)
         .order("created_at", { ascending: false })
         .limit(10);
-      if (data) setRecentCreations(data);
+      if (data && data.length > 0) {
+        const urls = data.map(d => d.image_url);
+        const signedUrls = await getSignedUrls(urls);
+        setRecentCreations(data.map((d, i) => ({ ...d, image_url: signedUrls[i] })));
+      }
     };
     load();
   }, [user]);
