@@ -41,9 +41,10 @@ const QuoteManifesto = () => {
         <div className="relative w-full max-w-xs sm:max-w-xl -mt-1 sm:-mt-2">
           <svg viewBox="0 0 500 40" fill="none" className="w-full">
             <defs>
-              <filter id="arc-glow" x="-20%" y="-40%" width="140%" height="180%">
-                <feGaussianBlur stdDeviation="6" result="blur" />
+              <filter id="arc-glow" x="-30%" y="-60%" width="160%" height="220%">
+                <feGaussianBlur stdDeviation="14" result="blur" />
                 <feMerge>
+                  <feMergeNode in="blur" />
                   <feMergeNode in="blur" />
                   <feMergeNode in="SourceGraphic" />
                 </feMerge>
