@@ -1,14 +1,52 @@
-import { motion } from "framer-motion";
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, Smartphone, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
 import { playClickSound } from "@/utils/clickSound";
 
+const VIDEO_URLS = [
+  "https://app.videas.fr/embed/media/c0811c06-78fb-45d2-95a0-66f2c7658863/?title=false&logo=false&thumbnail_duration=false&controls=false&autoplay=true&loop=true&info=false&thumbnail=video",
+  "https://app.videas.fr/embed/media/afcdb619-1b97-481b-b5af-0ddd44fc37b1/?title=false&logo=false&thumbnail_duration=false&controls=false&autoplay=true&loop=true&info=false&thumbnail=video",
+];
+
 const Hero = () => {
+  const [activeVideo, setActiveVideo] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setActiveVideo((prev) => (prev === 0 ? 1 : 0));
+    }, 8000);
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <section className="relative min-h-screen flex items-center overflow-hidden" style={{ backgroundColor: "#080808" }}>
+      {/* Background video iframes */}
+      <div className="absolute inset-0 z-0">
+        {VIDEO_URLS.map((url, i) => (
+          <div
+            key={i}
+            className="absolute inset-0 transition-opacity duration-[2000ms] ease-in-out"
+            style={{ opacity: activeVideo === i ? 1 : 0 }}
+          >
+            <iframe
+              src={url}
+              title={`Hero bg ${i + 1}`}
+              className="w-full h-full border-0 pointer-events-none scale-[1.15]"
+              style={{ objectFit: "cover" }}
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              tabIndex={-1}
+            />
+          </div>
+        ))}
+      </div>
+
+      {/* Dark overlay */}
+      <div className="absolute inset-0 z-[1]" style={{ backgroundColor: "rgba(0,0,0,0.65)" }} />
+
       {/* Orange glow at top center */}
       <div
-        className="absolute top-[-200px] left-1/2 -translate-x-1/2 w-[800px] h-[600px] rounded-full pointer-events-none z-0"
+        className="absolute top-[-200px] left-1/2 -translate-x-1/2 w-[800px] h-[600px] rounded-full pointer-events-none z-[2]"
         style={{
           background: "radial-gradient(ellipse at center, hsl(23 100% 50% / 0.15) 0%, hsl(23 100% 50% / 0.05) 40%, transparent 70%)",
           filter: "blur(60px)",
@@ -17,7 +55,7 @@ const Hero = () => {
 
       {/* Grain texture */}
       <div
-        className="absolute inset-0 pointer-events-none z-[1] opacity-40"
+        className="absolute inset-0 pointer-events-none z-[3] opacity-40"
         style={{
           backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E")`,
         }}
