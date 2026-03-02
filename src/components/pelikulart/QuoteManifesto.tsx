@@ -16,11 +16,9 @@ const QuoteManifesto = () => {
   return (
     <section className="py-28 md:py-40 relative overflow-hidden">
       <div className="max-w-5xl mx-auto px-6 sm:px-8 flex flex-col items-center justify-center text-center">
-        <div className="flex items-baseline justify-center gap-3 sm:gap-4" style={{ fontFamily: "'Neue Haas Grotesk Display Pro', 'Helvetica Neue', Arial, sans-serif", fontWeight: 500, lineHeight: 1.1 }}>
-          <span className="text-4xl sm:text-6xl md:text-[65px] text-white tracking-tight">
-            Trop
-          </span>
-          <div className="relative" style={{ width: "320px", height: "1em" }}>
+        <h2 className="text-4xl sm:text-6xl md:text-[65px] tracking-tight whitespace-nowrap" style={{ fontFamily: "'Neue Haas Grotesk Display Pro', 'Helvetica Neue', Arial, sans-serif", fontWeight: 500, lineHeight: 1.1 }}>
+          <span className="text-white">Trop </span>
+          <span className="inline-block relative align-baseline">
             <AnimatePresence mode="wait">
               <motion.span
                 key={words[index]}
@@ -28,14 +26,13 @@ const QuoteManifesto = () => {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.4, ease: "easeInOut" }}
-                className="absolute left-0 top-0 text-4xl sm:text-6xl md:text-[65px] text-primary tracking-tight whitespace-nowrap"
-                style={{ fontWeight: 500 }}
+                className="text-primary"
               >
                 {words[index]}
               </motion.span>
             </AnimatePresence>
-          </div>
-        </div>
+          </span>
+        </h2>
 
         {/* Orange arc with glow */}
         <div className="relative w-full max-w-md mt-4">
