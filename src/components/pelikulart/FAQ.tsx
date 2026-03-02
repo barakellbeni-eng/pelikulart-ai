@@ -256,7 +256,7 @@ const faqSections: FAQSection[] = [
 ];
 
 const categoryButtons: { id: FAQCategory; label: string }[] = [
-  { id: "all", label: "Tout voir" },
+  
   { id: "demarrer", label: "Démarrer" },
   { id: "paiement", label: "Paiement" },
   { id: "credits", label: "Crédits" },
