@@ -42,8 +42,10 @@ const Hero = () => {
         ))}
       </div>
 
-      {/* Dark overlay */}
-      <div className="absolute inset-0 z-[1]" style={{ backgroundColor: "rgba(0,0,0,0.50)" }} />
+      {/* Gradient masks top & bottom to hide video edges */}
+      <div className="absolute inset-0 z-[1] pointer-events-none" style={{
+        background: "linear-gradient(to bottom, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.50) 18%, rgba(0,0,0,0.40) 50%, rgba(0,0,0,0.50) 82%, rgba(0,0,0,0.95) 100%)"
+      }} />
 
       {/* Orange glow at top center */}
       <div
