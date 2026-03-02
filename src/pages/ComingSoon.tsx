@@ -53,53 +53,35 @@ const ComingSoon = () => {
         transition={{ duration: 0.6, ease: "easeOut" }}
         className="relative z-10 flex flex-col items-center text-center w-full max-w-lg"
       >
-        {/* Logo morphing: old ↔ new with crossfade */}
-        <motion.div
-          animate={{
-            y: [0, -8, 0],
-          }}
-          transition={{
-            duration: 3,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
-          className="mb-6 sm:mb-8 relative w-16 h-16 sm:w-20 sm:h-20"
-        >
-          {/* Old logo */}
-          <motion.img
-            src={oldLogo}
-            alt="Pelikulart ancien"
-            className="absolute inset-0 w-full h-full rounded-2xl object-cover"
-            animate={{
-              opacity: [1, 1, 0, 0, 1],
-              scale: [1, 1, 0.9, 0.9, 1],
-            }}
+        {/* Logo flip transition: old ↔ new */}
+        <div className="mb-6 sm:mb-8 relative w-16 h-16 sm:w-20 sm:h-20" style={{ perspective: "600px" }}>
+          <motion.div
+            animate={{ rotateY: [0, 0, 180, 180, 360] }}
             transition={{
-              duration: 5,
+              duration: 6,
               repeat: Infinity,
               ease: "easeInOut",
-              times: [0, 0.35, 0.45, 0.85, 0.95],
+              times: [0, 0.3, 0.45, 0.8, 0.95],
             }}
-            style={{ boxShadow: "0 0 50px hsl(0 0% 100% / 0.15)" }}
-          />
-          {/* New logo */}
-          <motion.img
-            src={newLogo}
-            alt="Pelikulart AI nouveau"
-            className="absolute inset-0 w-full h-full rounded-2xl object-cover"
-            animate={{
-              opacity: [0, 0, 1, 1, 0],
-              scale: [0.9, 0.9, 1, 1, 0.9],
-            }}
-            transition={{
-              duration: 5,
-              repeat: Infinity,
-              ease: "easeInOut",
-              times: [0, 0.35, 0.45, 0.85, 0.95],
-            }}
-            style={{ boxShadow: "0 0 50px hsl(23 100% 50% / 0.35)" }}
-          />
-        </motion.div>
+            className="relative w-full h-full"
+            style={{ transformStyle: "preserve-3d" }}
+          >
+            {/* Old logo - front */}
+            <img
+              src={oldLogo}
+              alt="Pelikulart ancien"
+              className="absolute inset-0 w-full h-full rounded-2xl object-cover"
+              style={{ backfaceVisibility: "hidden" }}
+            />
+            {/* New logo - back */}
+            <img
+              src={newLogo}
+              alt="Pelikulart AI nouveau"
+              className="absolute inset-0 w-full h-full rounded-2xl object-cover"
+              style={{ backfaceVisibility: "hidden", transform: "rotateY(180deg)" }}
+            />
+          </motion.div>
+        </div>
 
         {/* Title */}
         <motion.h1
