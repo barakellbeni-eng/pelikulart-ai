@@ -1,5 +1,6 @@
 import Hero from "@/components/pelikulart/Hero";
 import MediaTicker from "@/components/pelikulart/MediaTicker";
+import SocialProof from "@/components/pelikulart/SocialProof";
 
 import TheProblem from "@/components/pelikulart/TheProblem";
 import TheSolution from "@/components/pelikulart/TheSolution";
@@ -18,7 +19,7 @@ const HomePage = () => {
     <div className="w-full overflow-x-hidden relative" style={{ backgroundColor: "#0A0A0A" }}>
       <Hero />
       <MediaTicker />
-
+      <SocialProof />
       <ScrollSection><TheProblem /></ScrollSection>
       <ScrollSection><TheSolution /></ScrollSection>
       <ScrollSection><HowItWorks /></ScrollSection>

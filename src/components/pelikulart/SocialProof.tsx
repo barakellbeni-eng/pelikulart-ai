@@ -1,46 +1,33 @@
 import { motion } from "framer-motion";
 
 const stats = [
-  { value: "2 000+", label: "Créateurs inscrits" },
-  { value: "15 000+", label: "Clips & images générés" },
-  { value: "8", label: "Pays couverts" },
+  { value: "2 000+", label: "Créateurs" },
+  { value: "14 000+", label: "Clips générés" },
+  { value: "8", label: "Pays" },
 ];
-
-const countries = ["Bénin", "Côte d'Ivoire", "Sénégal", "Togo", "Mali", "Burkina Faso", "Niger", "Guinée-Bissau"];
 
 const SocialProof = () => {
   return (
-    <section className="py-16 border-t border-white/5" style={{ backgroundColor: "#0A0A0A" }}>
-      <div className="max-w-5xl mx-auto px-6 sm:px-8">
-        <div className="grid grid-cols-3 gap-6 mb-10">
-          {stats.map((stat, i) => (
-            <motion.div
-              key={stat.label}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.1 }}
-              className="text-center"
-            >
-              <p className="text-2xl sm:text-4xl font-bold text-lime">{stat.value}</p>
-              <p className="text-xs sm:text-sm text-white/40 mt-1">{stat.label}</p>
-            </motion.div>
-          ))}
-        </div>
-
-        <motion.div
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          className="flex flex-wrap justify-center gap-3"
-        >
-          {countries.map((c) => (
-            <span key={c} className="text-xs text-white/30 bg-white/5 px-3 py-1.5 rounded-full border border-white/5">
-              {c}
-            </span>
-          ))}
-        </motion.div>
-      </div>
+    <section className="py-16" style={{ backgroundColor: "#080808" }}>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.6 }}
+        className="max-w-4xl mx-auto px-6 flex items-center justify-center"
+      >
+        {stats.map((stat, i) => (
+          <div key={stat.label} className="flex items-center">
+            {i > 0 && (
+              <div className="h-12 w-px bg-white/10 mx-8 sm:mx-12" />
+            )}
+            <div className="text-center">
+              <p className="text-3xl sm:text-5xl font-bold text-white font-display">{stat.value}</p>
+              <p className="text-xs sm:text-sm text-white/40 mt-1 font-mono tracking-wider uppercase">{stat.label}</p>
+            </div>
+          </div>
+        ))}
+      </motion.div>
     </section>
   );
 };
