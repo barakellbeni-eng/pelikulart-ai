@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, Smartphone, Sparkles } from "lucide-react";
+import { motion } from "framer-motion";
+import { ArrowRight, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
 import { playClickSound } from "@/utils/clickSound";
 
@@ -42,12 +42,12 @@ const Hero = () => {
         ))}
       </div>
 
-      {/* Gradient masks top & bottom to hide video edges */}
+      {/* Gradient masks */}
       <div className="absolute inset-0 z-[1] pointer-events-none" style={{
         background: "linear-gradient(to bottom, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.50) 18%, rgba(0,0,0,0.40) 50%, rgba(0,0,0,0.50) 82%, rgba(0,0,0,0.95) 100%)"
       }} />
 
-      {/* Orange glow at top center */}
+      {/* Orange glow */}
       <div
         className="absolute top-[-200px] left-1/2 -translate-x-1/2 w-[800px] h-[600px] rounded-full pointer-events-none z-[2]"
         style={{
@@ -56,7 +56,7 @@ const Hero = () => {
         }}
       />
 
-      {/* Grain texture */}
+      {/* Grain */}
       <div
         className="absolute inset-0 pointer-events-none z-[3] opacity-40"
         style={{
@@ -66,55 +66,42 @@ const Hero = () => {
 
       {/* Content */}
       <div className="relative z-20 max-w-7xl w-full mx-auto px-6 sm:px-8 py-32 md:py-40 flex flex-col items-center text-center">
-        {/* Animated badge */}
+        {/* Badge */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.1 }}
           className="mb-6"
         >
-          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-lime/20 bg-lime/5 text-lime font-mono text-xs tracking-wider animate-pulse-glow">
+          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-primary/20 bg-primary/5 text-primary font-mono text-xs tracking-wider animate-pulse-glow">
             <Sparkles className="w-3.5 h-3.5" />
-            Plateforme IA créative #1 en Afrique
+            Le moteur créatif de Barakell BENI
           </span>
         </motion.div>
 
         <motion.h1
-          className="text-4xl sm:text-5xl md:text-7xl font-bold leading-[1.05] tracking-tight text-white max-w-3xl font-display"
+          className="text-4xl sm:text-5xl md:text-7xl font-bold leading-[1.05] tracking-tight text-white max-w-4xl font-display"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.3 }}
         >
-          Créer l'impossible
+          Le premier studio IA premium{" "}
           <br />
-          avec l'
-          <span className="text-lime">IA</span>
+          <span className="text-primary">pour tes clips et visuels.</span>
         </motion.h1>
 
         <motion.p
-          className="text-lg md:text-xl text-white/50 mt-5 max-w-xl"
+          className="text-base md:text-lg text-white/50 mt-6 max-w-2xl leading-relaxed"
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.5 }}
         >
-          Génère des clips, images et vidéos IA de qualité pro — payable en FCFA via Mobile Money.
+          Ton imagination n'a plus de limite technique. Produis, réalise et impose ta vision avec une qualité cinématographique. Sans abonnement, paye juste ce que tu crées.
         </motion.p>
 
-        {/* Mobile Money badge */}
+        {/* Single CTA */}
         <motion.div
-          className="flex items-center justify-center gap-2 mt-4"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.8, delay: 0.6 }}
-        >
-          <Smartphone className="w-4 h-4 text-lime" />
-          <span className="text-xs text-white/30 font-mono tracking-wide">
-            Wave · Orange Money · MTN MoMo · Carte bancaire
-          </span>
-        </motion.div>
-
-        <motion.div
-          className="flex flex-wrap justify-center gap-4 mt-8"
+          className="flex flex-wrap justify-center gap-4 mt-10"
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.7 }}
@@ -122,17 +109,29 @@ const Hero = () => {
           <Link
             to="/studio"
             onClick={playClickSound}
-            className="group px-8 py-4 bg-lime text-white rounded-pill font-label text-base tracking-wider uppercase hover:bg-lime/90 transition-all flex items-center gap-2 glow-accent"
+            className="group px-8 py-4 bg-primary text-primary-foreground rounded-pill font-ui text-base font-semibold tracking-wider hover:bg-primary/90 transition-all flex items-center gap-2 glow-accent"
           >
-            Commencer maintenant
+            Lancer ma première génération
             <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
           </Link>
-          <Link
-            to="/creations"
-            className="px-8 py-4 bg-white/5 text-white rounded-pill font-label text-base tracking-wider uppercase hover:bg-white/10 transition-all border border-white/10"
-          >
-            Voir nos créations
-          </Link>
+        </motion.div>
+
+        {/* Payment methods */}
+        <motion.div
+          className="flex flex-col items-center gap-2 mt-8"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.8, delay: 0.9 }}
+        >
+          <span className="text-[11px] text-white/25 font-mono tracking-widest uppercase">
+            Paiements locaux et internationaux acceptés
+          </span>
+          <div className="flex items-center gap-3 text-xs text-white/35 font-mono">
+            <span className="px-2.5 py-1 rounded-full border border-white/[0.06] bg-white/[0.03]">Wave</span>
+            <span className="px-2.5 py-1 rounded-full border border-white/[0.06] bg-white/[0.03]">Orange Money</span>
+            <span className="px-2.5 py-1 rounded-full border border-white/[0.06] bg-white/[0.03]">MTN MoMo</span>
+            <span className="px-2.5 py-1 rounded-full border border-white/[0.06] bg-white/[0.03]">Carte bancaire</span>
+          </div>
         </motion.div>
       </div>
     </section>
