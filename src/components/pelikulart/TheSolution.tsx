@@ -37,7 +37,7 @@ const TheSolution = () => {
             >
               <div className="flex items-center justify-center gap-2 mb-2">
                 <Check className="w-4 h-4 text-lime" />
-                <h3 className="text-white font-semibold text-sm">{s.title}</h3>
+                <h3 className="text-white font-semibold text-sm font-display">{s.title}</h3>
               </div>
               <p className="text-white/40 text-xs leading-relaxed">{s.desc}</p>
             </motion.div>

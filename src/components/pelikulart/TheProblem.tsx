@@ -37,7 +37,7 @@ const TheProblem = () => {
             >
               <div className="flex items-center justify-center gap-2 mb-2">
                 <X className="w-4 h-4 text-red-400" />
-                <h3 className="text-white font-semibold text-sm">{p.title}</h3>
+                <h3 className="text-white font-semibold text-sm font-display">{p.title}</h3>
               </div>
               <p className="text-white/40 text-xs leading-relaxed">{p.desc}</p>
             </motion.div>

@@ -25,7 +25,7 @@ const FinalCTA = () => {
           <Link
             to="/auth"
             onClick={playClickSound}
-            className="inline-flex items-center gap-2 px-8 py-4 bg-lime text-white rounded-lg font-label text-lg tracking-wider uppercase hover:bg-lime/90 transition-all"
+            className="inline-flex items-center gap-2 px-8 py-4 bg-lime text-white rounded-pill font-label text-lg tracking-wider uppercase hover:bg-lime/90 transition-all glow-accent"
           >
             Créer mon compte gratuit
             <ArrowRight className="w-4 h-4" />
