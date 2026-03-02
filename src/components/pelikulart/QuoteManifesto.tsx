@@ -35,8 +35,8 @@ const QuoteManifesto = () => {
         </h2>
 
         {/* Orange arc with glow */}
-        <div className="relative w-full max-w-xl mt-6">
-          <svg viewBox="0 0 500 50" fill="none" className="w-full">
+        <div className="relative w-full max-w-xl -mt-2">
+          <svg viewBox="0 0 500 40" fill="none" className="w-full">
             <defs>
               <filter id="arc-glow" x="-20%" y="-40%" width="140%" height="180%">
                 <feGaussianBlur stdDeviation="6" result="blur" />
@@ -47,9 +47,9 @@ const QuoteManifesto = () => {
               </filter>
             </defs>
             <path
-              d="M 20 45 Q 250 -8 480 45"
+              d="M 15 38 Q 250 -5 485 38"
               stroke="hsl(var(--primary))"
-              strokeWidth="4.5"
+              strokeWidth="7"
               strokeLinecap="round"
               fill="none"
               filter="url(#arc-glow)"
