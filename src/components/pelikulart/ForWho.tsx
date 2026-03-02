@@ -1,31 +1,24 @@
 import { motion } from "framer-motion";
-import { Users } from "lucide-react";
 
 const ForWho = () => {
   return (
-    <section className="py-24 md:py-32">
-      <div className="max-w-4xl mx-auto px-6 sm:px-8 text-center">
+    <section className="py-28 md:py-40" style={{ backgroundColor: "#0A0A0A" }}>
+      <div className="max-w-6xl mx-auto px-6 sm:px-8">
         <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="flex items-center justify-center gap-2 mb-6"
-        >
-          <Users className="w-5 h-5 text-primary" />
-          <span className="text-xs uppercase tracking-[0.3em] text-primary/80 font-mono">Pour qui</span>
-        </motion.div>
-
-        <motion.p
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8 }}
-          className="text-xl sm:text-2xl md:text-3xl font-display font-bold text-white/70 leading-relaxed"
+          className="text-center"
         >
-          Que tu sois artiste, réalisateur, entrepreneur ou simple créatif — si tu as une vision,{" "}
-          <span className="text-primary">Studio Pelikulart AI</span> est fait pour toi.
-        </motion.p>
+          <h2 className="text-5xl sm:text-7xl md:text-9xl font-black text-white leading-[0.9] tracking-tight uppercase font-display">
+            Fait pour les
+            <br />
+            <span className="text-lime">créateurs</span>
+            <br />
+            <span className="text-lime">africains</span>
+          </h2>
+        </motion.div>
       </div>
     </section>
   );

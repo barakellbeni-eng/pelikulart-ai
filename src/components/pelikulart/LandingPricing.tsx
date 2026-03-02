@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Check, GraduationCap, Gift } from "lucide-react";
+import { Check, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const packs = [
@@ -49,27 +49,13 @@ const LandingPricing = () => {
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="text-center mb-8"
+          className="text-center mb-16"
         >
-          <span className="text-xs uppercase tracking-[0.3em] text-lime/80 font-mono mb-4 block">L'offre</span>
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white leading-tight font-display">
             Recharge et crée. <span className="text-lime">C'est tout.</span>
           </h2>
           <p className="text-white/40 mt-4 max-w-md mx-auto text-sm">
             Pas d'abonnement. Achète des Cauris, utilise-les quand tu veux. Ils n'expirent jamais.
-          </p>
-        </motion.div>
-
-        {/* Training bonus banner */}
-        <motion.div
-          initial={{ opacity: 0, y: 15 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="flex items-center justify-center gap-3 bg-primary/10 border border-primary/20 rounded-full px-6 py-3 mb-12 max-w-lg mx-auto"
-        >
-          <Gift className="w-5 h-5 text-primary flex-shrink-0" />
-          <p className="text-sm text-white/80 font-label">
-            <span className="text-primary font-bold">Formation offerte</span> à ton premier achat de Cauris
           </p>
         </motion.div>
 
@@ -98,12 +84,7 @@ const LandingPricing = () => {
                 <span className="text-4xl font-bold text-white font-mono">{pack.price}</span>
                 <span className="text-white/30 text-sm ml-1 font-mono">FCFA</span>
               </div>
-              <p className="text-lime text-sm font-mono mb-4">{pack.cauris} Cauris</p>
-
-              <div className="flex items-center gap-1.5 text-[10px] text-primary font-mono uppercase tracking-wider mb-6 bg-primary/5 rounded-full px-3 py-1.5 w-fit">
-                <GraduationCap className="w-3 h-3" />
-                Formation incluse
-              </div>
+              <p className="text-lime text-sm font-mono mb-6">{pack.cauris} Cauris</p>
 
               <ul className="space-y-3 mb-8 flex-1">
                 {pack.features.map((f) => (

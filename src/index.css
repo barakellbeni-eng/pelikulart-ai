@@ -115,20 +115,17 @@
     background-color: #080808;
   }
 
-  /* Dot grid + lines overlay with radial fade mask */
+  /* Dot grid overlay with radial fade mask — premium texture on all dark areas */
   body::after {
     content: '';
     position: fixed;
     inset: 0;
     z-index: 9999;
     pointer-events: none;
-    background-image:
-      radial-gradient(circle, hsl(0 0% 100% / 0.18) 1.5px, transparent 1.5px),
-      repeating-linear-gradient(to right, hsl(0 0% 100% / 0.06) 0px, hsl(0 0% 100% / 0.06) 1px, transparent 1px, transparent 48px),
-      repeating-linear-gradient(to bottom, hsl(0 0% 100% / 0.06) 0px, hsl(0 0% 100% / 0.06) 1px, transparent 1px, transparent 48px);
-    background-size: 48px 48px;
-    -webkit-mask-image: radial-gradient(ellipse 85% 65% at 50% 50%, black 15%, transparent 70%);
-    mask-image: radial-gradient(ellipse 85% 65% at 50% 50%, black 15%, transparent 70%);
+    background-image: radial-gradient(circle, hsl(0 0% 100% / 0.08) 1px, transparent 1px);
+    background-size: 24px 24px;
+    -webkit-mask-image: radial-gradient(ellipse 90% 70% at 50% 50%, black 10%, transparent 65%);
+    mask-image: radial-gradient(ellipse 90% 70% at 50% 50%, black 10%, transparent 65%);
   }
 }
 

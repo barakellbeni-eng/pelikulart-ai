@@ -1,44 +1,35 @@
 import { motion } from "framer-motion";
-import { UserPlus, GraduationCap, Wand2, Coins } from "lucide-react";
+import { PenLine, Cpu, Download } from "lucide-react";
 
 const steps = [
-  { num: "1", icon: UserPlus, title: "Inscris-toi" },
-  { num: "2", icon: GraduationCap, title: "Forme-toi" },
-  { num: "3", icon: Wand2, title: "Crée" },
-  { num: "4", icon: Coins, title: "Paie en FCFA" },
+  { num: "1", icon: PenLine, title: "Décris", desc: "Rentre ta vision, tes prompts et ton ambiance. Mets des mots sur l'image qui existe dans ta tête." },
+  { num: "2", icon: Cpu, title: "Génère", desc: "Notre moteur IA calcule et produit le rendu visuel avec une qualité cinématographique en quelques secondes." },
+  { num: "3", icon: Download, title: "Télécharge", desc: "Récupère tes assets en haute résolution (4K) directement prêts pour ton montage vidéo." },
 ];
 
 const HowItWorks = () => {
   return (
     <section className="py-20 md:py-28">
-      <div className="max-w-4xl mx-auto px-6 sm:px-8">
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="text-center mb-12"
-        >
-          <span className="text-xs uppercase tracking-[0.3em] text-white/30 font-mono">Comment ça marche</span>
-        </motion.div>
-
-        <div className="flex flex-wrap items-center justify-center gap-4 md:gap-6">
+      <div className="max-w-5xl mx-auto px-6 sm:px-8">
+        <div className="grid md:grid-cols-3 gap-8">
           {steps.map((step, i) => (
             <motion.div
               key={step.num}
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ delay: i * 0.1 }}
-              className="flex items-center gap-3"
+              transition={{ delay: i * 0.15 }}
+              className="text-center relative"
             >
-              <div className="flex items-center gap-3 bg-white/[0.03] border border-white/5 rounded-full px-5 py-3">
-                <div className="w-8 h-8 rounded-full bg-lime/10 border border-lime/20 flex items-center justify-center">
-                  <step.icon className="w-4 h-4 text-lime" />
-                </div>
-                <span className="text-white font-semibold text-sm font-display">{step.title}</span>
+              <div className="w-12 h-12 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center mx-auto mb-4">
+                <step.icon className="w-5 h-5 text-primary" />
               </div>
+              <h3 className="text-white font-bold text-lg mb-2 font-display">
+                {step.num}. {step.title}
+              </h3>
+              <p className="text-white/40 text-sm leading-relaxed">{step.desc}</p>
               {i < steps.length - 1 && (
-                <span className="text-white/15 text-lg hidden md:block">→</span>
+                <div className="hidden md:block absolute top-6 -right-4 text-white/10 text-2xl">→</div>
               )}
             </motion.div>
           ))}
