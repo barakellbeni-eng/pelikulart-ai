@@ -8,7 +8,7 @@ const steps = [
 
 const HowItWorks = () => {
   return (
-    <section className="py-20 md:py-28" style={{ backgroundColor: "#0A0A0A" }}>
+    <section className="py-20 md:py-28">
       <div className="max-w-4xl mx-auto px-6 sm:px-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}

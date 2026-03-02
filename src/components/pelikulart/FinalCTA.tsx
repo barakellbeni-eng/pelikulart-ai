@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 
 const FinalCTA = () => {
   return (
-    <section className="py-24 md:py-32" style={{ backgroundColor: "#080808" }}>
+    <section className="py-24 md:py-32">
       <div className="max-w-3xl mx-auto px-6 sm:px-8 text-center">
         <motion.h2
           initial={{ opacity: 0, y: 20 }}

@@ -20,7 +20,7 @@ const Hero = () => {
   }, []);
 
   return (
-    <section className="relative min-h-screen flex items-center overflow-hidden" style={{ backgroundColor: "#080808" }}>
+    <section className="relative min-h-screen flex items-center overflow-hidden">
       {/* Background video iframes */}
       <div className="absolute inset-0 z-0">
         {VIDEO_URLS.map((url, i) => (

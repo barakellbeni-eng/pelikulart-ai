@@ -7,7 +7,7 @@ const advantages = [
 
 const SocialProof = () => {
   return (
-    <section className="py-10" style={{ backgroundColor: "#080808" }}>
+    <section className="py-10">
       <div className="max-w-4xl mx-auto px-4 flex items-center justify-center">
         <p className="text-white/50 text-xs sm:text-sm font-mono tracking-wide text-center">
           {advantages.map((item, i) => (

@@ -17,7 +17,7 @@ import ScrollSection from "@/components/pelikulart/ScrollSection";
 
 const HomePage = () => {
   return (
-    <div className="w-full overflow-x-hidden relative" style={{ backgroundColor: "#0A0A0A" }}>
+    <div className="w-full overflow-x-hidden relative">
       <Hero />
       <SocialProof />
       <ScrollSection><DemoProduct /></ScrollSection>
@@ -28,7 +28,7 @@ const HomePage = () => {
       
       <ScrollSection><LandingPricing /></ScrollSection>
       <ScrollSection>
-        <div className="py-10" style={{ backgroundColor: "#0A0A0A" }}>
+        <div className="py-10">
           <PaymentMarquee showAvailability showSignupCTA />
         </div>
       </ScrollSection>

@@ -43,7 +43,7 @@ const packs = [
 
 const LandingPricing = () => {
   return (
-    <section className="py-24 md:py-32" style={{ backgroundColor: "#080808" }}>
+    <section className="py-24 md:py-32">
       <div className="max-w-5xl mx-auto px-6 sm:px-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
