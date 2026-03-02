@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { motion } from "framer-motion";
-import pelikulartLogo from "@/assets/pelikulart-logo.jpeg";
+import { motion, AnimatePresence } from "framer-motion";
+import oldLogo from "@/assets/pelikulart-logo.jpeg";
+import newLogo from "@/assets/pelikulart-logo.png";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -52,27 +53,51 @@ const ComingSoon = () => {
         transition={{ duration: 0.6, ease: "easeOut" }}
         className="relative z-10 flex flex-col items-center text-center w-full max-w-lg"
       >
-        {/* Logo with continuous floating + glow pulse */}
+        {/* Logo morphing: old ↔ new with crossfade */}
         <motion.div
           animate={{
             y: [0, -8, 0],
-            boxShadow: [
-              "0 0 40px hsl(23 100% 50% / 0.25)",
-              "0 0 80px hsl(23 100% 50% / 0.5)",
-              "0 0 40px hsl(23 100% 50% / 0.25)",
-            ],
           }}
           transition={{
             duration: 3,
             repeat: Infinity,
             ease: "easeInOut",
           }}
-          className="mb-6 sm:mb-8 rounded-2xl"
+          className="mb-6 sm:mb-8 relative w-16 h-16 sm:w-20 sm:h-20"
         >
-          <img
-            src={pelikulartLogo}
-            alt="Pelikulart AI"
-            className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl"
+          {/* Old logo */}
+          <motion.img
+            src={oldLogo}
+            alt="Pelikulart ancien"
+            className="absolute inset-0 w-full h-full rounded-2xl object-cover"
+            animate={{
+              opacity: [1, 1, 0, 0, 1],
+              scale: [1, 1, 0.9, 0.9, 1],
+            }}
+            transition={{
+              duration: 5,
+              repeat: Infinity,
+              ease: "easeInOut",
+              times: [0, 0.35, 0.45, 0.85, 0.95],
+            }}
+            style={{ boxShadow: "0 0 50px hsl(0 0% 100% / 0.15)" }}
+          />
+          {/* New logo */}
+          <motion.img
+            src={newLogo}
+            alt="Pelikulart AI nouveau"
+            className="absolute inset-0 w-full h-full rounded-2xl object-cover"
+            animate={{
+              opacity: [0, 0, 1, 1, 0],
+              scale: [0.9, 0.9, 1, 1, 0.9],
+            }}
+            transition={{
+              duration: 5,
+              repeat: Infinity,
+              ease: "easeInOut",
+              times: [0, 0.35, 0.45, 0.85, 0.95],
+            }}
+            style={{ boxShadow: "0 0 50px hsl(23 100% 50% / 0.35)" }}
           />
         </motion.div>
 
