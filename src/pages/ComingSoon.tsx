@@ -35,7 +35,7 @@ const ComingSoon = () => {
 
   return (
     <div
-      className="min-h-screen flex flex-col items-center justify-center px-6 relative overflow-hidden"
+      className="min-h-screen flex flex-col items-center justify-center px-4 sm:px-6 relative overflow-hidden"
       style={{ backgroundColor: "#000" }}
     >
       {/* Subtle radial glow */}
@@ -50,13 +50,13 @@ const ComingSoon = () => {
         initial={{ opacity: 0, scale: 0.8 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.6, ease: "easeOut" }}
-        className="relative z-10 flex flex-col items-center text-center max-w-lg"
+        className="relative z-10 flex flex-col items-center text-center w-full max-w-lg"
       >
         {/* Logo */}
         <img
           src={pelikulartLogo}
           alt="Pelikulart AI"
-          className="w-20 h-20 rounded-2xl mb-8"
+          className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl mb-6 sm:mb-8"
           style={{ boxShadow: "0 0 60px hsl(23 100% 50% / 0.35)" }}
         />
 
@@ -65,7 +65,7 @@ const ComingSoon = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3, duration: 0.5 }}
-          className="text-4xl md:text-5xl font-bold tracking-tight mb-4"
+          className="text-2xl sm:text-4xl md:text-5xl font-bold tracking-tight mb-3 sm:mb-4 leading-tight"
           style={{ color: "#fff" }}
         >
           Quelque chose de grand arrive
@@ -76,7 +76,7 @@ const ComingSoon = () => {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5, duration: 0.5 }}
-          className="text-sm md:text-base mb-10"
+          className="text-xs sm:text-sm md:text-base mb-8 sm:mb-10 px-2"
           style={{ color: "hsl(0 0% 50%)" }}
         >
           Soyez les premiers informés du lancement de Pelikulart AI.
@@ -102,7 +102,7 @@ const ComingSoon = () => {
                 placeholder="Votre email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="flex-1 h-12 px-4 rounded-xl text-sm outline-none transition-all duration-200"
+                className="flex-1 h-11 sm:h-12 px-4 rounded-xl text-sm outline-none transition-all duration-200 w-full"
                 style={{
                   backgroundColor: "hsl(0 0% 8%)",
                   border: "1px solid hsl(0 0% 15%)",
@@ -114,7 +114,7 @@ const ComingSoon = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="h-12 px-6 rounded-xl text-sm font-bold transition-all duration-200 shrink-0 disabled:opacity-50"
+                className="h-11 sm:h-12 px-6 rounded-xl text-sm font-bold transition-all duration-200 shrink-0 disabled:opacity-50 w-full sm:w-auto"
                 style={{
                   background: "hsl(23 100% 50%)",
                   color: "#000",
