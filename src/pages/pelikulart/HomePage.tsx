@@ -1,4 +1,5 @@
 import Hero from "@/components/pelikulart/Hero";
+import MediaTicker from "@/components/pelikulart/MediaTicker";
 
 import TheProblem from "@/components/pelikulart/TheProblem";
 import TheSolution from "@/components/pelikulart/TheSolution";
@@ -16,7 +17,8 @@ const HomePage = () => {
   return (
     <div className="w-full overflow-x-hidden relative" style={{ backgroundColor: "#0A0A0A" }}>
       <Hero />
-      
+      <MediaTicker />
+
       <ScrollSection><TheProblem /></ScrollSection>
       <ScrollSection><TheSolution /></ScrollSection>
       <ScrollSection><HowItWorks /></ScrollSection>
