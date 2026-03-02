@@ -60,16 +60,20 @@ const QuoteManifesto = () => {
           </svg>
         </div>
 
-        <motion.p
-          initial={{ opacity: 0, y: 15 }}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8, delay: 0.3 }}
-          className="text-lg sm:text-xl md:text-2xl text-white/40 font-display mt-8 text-center max-w-3xl px-4"
+          className="mt-12 text-center max-w-4xl px-4"
         >
-          <span className="text-white/60 font-bold">Pelikulart AI simplifie tout.</span>{" "}
-          On te forme, on te donne les meilleurs outils pour créer tes clips, pubs et films payable en FCFA, sans abonnement.
-        </motion.p>
+          <p className="text-2xl sm:text-3xl md:text-5xl text-white font-display font-bold tracking-tight leading-tight">
+            Pelikulart AI simplifie tout.
+          </p>
+          <p className="text-lg sm:text-xl md:text-2xl text-white/50 font-display mt-4 leading-relaxed">
+            On te forme, on te donne les meilleurs outils pour créer tes clips, pubs et films payable en FCFA, sans abonnement.
+          </p>
+        </motion.div>
       </div>
     </section>
   );
