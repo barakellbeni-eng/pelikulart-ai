@@ -12,7 +12,7 @@ const features = [
 
 const DemoProduct = () => {
   return (
-    <section className="py-24 lg:py-32" style={{ backgroundColor: "#080808" }}>
+    <section className="py-24 lg:py-32">
       <div className="max-w-7xl mx-auto px-6 sm:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
           {/* Left — Interface mockup */}

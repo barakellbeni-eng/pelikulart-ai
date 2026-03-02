@@ -277,7 +277,7 @@ const FAQ = () => {
   };
 
   return (
-    <section id="faq" className="py-16 md:py-24 relative" style={{ backgroundColor: "#0A0A0A" }}>
+    <section id="faq" className="py-16 md:py-24 relative">
       {/* Noise texture overlay */}
       <div
         className="fixed inset-0 pointer-events-none z-0 opacity-40"

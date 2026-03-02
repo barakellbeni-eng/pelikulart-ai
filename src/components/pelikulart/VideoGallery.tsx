@@ -9,7 +9,7 @@ const videos = [
 
 const VideoGallery = () => {
   return (
-    <section className="py-32" style={{ backgroundColor: "#0A0A0A" }}>
+    <section className="py-32">
       <div className="max-w-7xl mx-auto px-6 sm:px-8">
         <motion.p
           initial={{ opacity: 0 }}
