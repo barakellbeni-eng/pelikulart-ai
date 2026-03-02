@@ -113,19 +113,10 @@
     @apply bg-background text-foreground antialiased;
     font-family: 'DM Sans', sans-serif;
     background-color: #080808;
-  }
-
-  /* Dot grid overlay with radial fade mask — premium texture on all dark areas */
-  body::after {
-    content: '';
-    position: fixed;
-    inset: 0;
-    z-index: 9999;
-    pointer-events: none;
-    background-image: radial-gradient(circle, hsl(0 0% 100% / 0.08) 1px, transparent 1px);
-    background-size: 24px 24px;
-    -webkit-mask-image: radial-gradient(ellipse 90% 70% at 50% 50%, black 10%, transparent 65%);
-    mask-image: radial-gradient(ellipse 90% 70% at 50% 50%, black 10%, transparent 65%);
+    background-image:
+      repeating-linear-gradient(to right, hsl(0 0% 100% / 0.04) 0px, hsl(0 0% 100% / 0.04) 1px, transparent 1px, transparent 40px),
+      repeating-linear-gradient(to bottom, hsl(0 0% 100% / 0.04) 0px, hsl(0 0% 100% / 0.04) 1px, transparent 1px, transparent 40px);
+    background-size: 40px 40px;
   }
 }
 
