@@ -16,7 +16,7 @@ const QuoteManifesto = () => {
   return (
     <section className="py-28 md:py-40 relative overflow-hidden">
       <div className="max-w-5xl mx-auto px-6 sm:px-8 flex flex-col items-center justify-center text-center">
-        <h2 className="text-4xl sm:text-6xl md:text-[65px] tracking-tight whitespace-nowrap" style={{ fontFamily: "'Neue Haas Grotesk Display Pro', 'Helvetica Neue', Arial, sans-serif", fontWeight: 500, lineHeight: 1.1 }}>
+        <h2 className="text-5xl sm:text-7xl md:text-[90px] tracking-tight" style={{ fontFamily: "'Neue Haas Grotesk Display Pro', 'Helvetica Neue', Arial, sans-serif", fontWeight: 500, lineHeight: 1.1 }}>
           <span className="text-white">Trop </span>
           <span className="inline-block relative align-baseline">
             <AnimatePresence mode="wait">
@@ -35,11 +35,11 @@ const QuoteManifesto = () => {
         </h2>
 
         {/* Orange arc with glow */}
-        <div className="relative w-full max-w-md mt-4">
-          <svg viewBox="0 0 500 60" fill="none" className="w-full">
+        <div className="relative w-full max-w-xl mt-6">
+          <svg viewBox="0 0 500 50" fill="none" className="w-full">
             <defs>
               <filter id="arc-glow" x="-20%" y="-40%" width="140%" height="180%">
-                <feGaussianBlur stdDeviation="8" result="blur" />
+                <feGaussianBlur stdDeviation="6" result="blur" />
                 <feMerge>
                   <feMergeNode in="blur" />
                   <feMergeNode in="SourceGraphic" />
@@ -47,9 +47,9 @@ const QuoteManifesto = () => {
               </filter>
             </defs>
             <path
-              d="M 30 55 Q 250 -5 470 55"
+              d="M 20 45 Q 250 -8 480 45"
               stroke="hsl(var(--primary))"
-              strokeWidth="2.5"
+              strokeWidth="4.5"
               strokeLinecap="round"
               fill="none"
               filter="url(#arc-glow)"
