@@ -38,6 +38,18 @@ const QuoteManifesto = () => {
           </div>
 
         {/* Orange arc with glow */}
+        <div className="relative w-full max-w-xs sm:max-w-xl -mt-1 sm:-mt-2">
+          <svg viewBox="0 0 500 40" fill="none" className="w-full">
+            <path
+              d="M 15 38 Q 250 -5 485 38"
+              stroke="hsl(var(--primary))"
+              strokeWidth="5"
+              strokeLinecap="round"
+              fill="none"
+              opacity="0.35"
+            />
+          </svg>
+        </div>
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
