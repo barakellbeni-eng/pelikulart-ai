@@ -101,7 +101,7 @@ const AppContent = () => {
       <Routes>
         {/* Public Pelikulart pages */}
         <Route path="/" element={<ComingSoon />} />
-        <Route path="/preview-secret" element={<PublicLayout><HomePage /></PublicLayout>} />
+        <Route path="/previewbarakellsecret" element={<PublicLayout><HomePage /></PublicLayout>} />
         <Route path="/creations" element={<PublicLayout><CreationsPage /></PublicLayout>} />
         <Route path="/training" element={<PublicLayout><TrainingPage /></PublicLayout>} />
         {/* Devis removed */}
