@@ -16,19 +16,19 @@ const QuoteManifesto = () => {
   return (
     <section className="py-28 md:py-40 relative overflow-hidden">
       <div className="max-w-5xl mx-auto px-6 sm:px-8 flex flex-col items-center justify-center text-center">
-        <div className="flex items-baseline gap-3 sm:gap-5">
-          <span className="text-4xl sm:text-6xl md:text-8xl font-display font-black text-white tracking-tight">
+        <div className="flex items-baseline gap-3 sm:gap-5" style={{ fontFamily: "'Neue Haas Grotesk Display Pro', 'Helvetica Neue', Arial, sans-serif" }}>
+          <span className="text-4xl sm:text-6xl md:text-8xl font-black text-white tracking-tight italic">
             Trop
           </span>
-          <div className="relative h-[1.1em] overflow-hidden" style={{ minWidth: "280px" }}>
+          <div className="relative" style={{ height: "1.15em", minWidth: "300px" }}>
             <AnimatePresence mode="wait">
               <motion.span
                 key={words[index]}
-                initial={{ opacity: 0, y: 30 }}
+                initial={{ opacity: 0, y: 40 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -30 }}
-                transition={{ duration: 0.5, ease: "easeInOut" }}
-                className="absolute inset-0 text-4xl sm:text-6xl md:text-8xl font-display font-black text-primary tracking-tight"
+                exit={{ opacity: 0, y: -40 }}
+                transition={{ duration: 0.45, ease: "easeInOut" }}
+                className="absolute left-0 top-0 text-4xl sm:text-6xl md:text-8xl font-black text-primary tracking-tight italic whitespace-nowrap"
               >
                 {words[index]}
               </motion.span>
@@ -36,33 +36,26 @@ const QuoteManifesto = () => {
           </div>
         </div>
 
-        {/* Orange arc */}
-        <div className="relative w-full max-w-lg mt-6">
+        {/* Orange arc with glow */}
+        <div className="relative w-full max-w-md mt-4">
           <svg viewBox="0 0 500 60" fill="none" className="w-full">
-            <path
-              d="M 30 50 Q 250 -10 470 50"
-              stroke="hsl(var(--primary))"
-              strokeWidth="3"
-              strokeLinecap="round"
-              fill="none"
-            />
-            <path
-              d="M 30 50 Q 250 -10 470 50"
-              stroke="hsl(var(--primary))"
-              strokeWidth="3"
-              strokeLinecap="round"
-              fill="none"
-              filter="url(#glow)"
-            />
             <defs>
-              <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
-                <feGaussianBlur stdDeviation="6" result="blur" />
+              <filter id="arc-glow" x="-20%" y="-40%" width="140%" height="180%">
+                <feGaussianBlur stdDeviation="8" result="blur" />
                 <feMerge>
                   <feMergeNode in="blur" />
                   <feMergeNode in="SourceGraphic" />
                 </feMerge>
               </filter>
             </defs>
+            <path
+              d="M 30 55 Q 250 -5 470 55"
+              stroke="hsl(var(--primary))"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              fill="none"
+              filter="url(#arc-glow)"
+            />
           </svg>
         </div>
 
