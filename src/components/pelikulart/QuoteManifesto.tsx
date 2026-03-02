@@ -23,7 +23,17 @@ const QuoteManifesto = () => {
           transition={{ duration: 0.8, delay: 0.3 }}
           className="text-2xl sm:text-3xl md:text-4xl font-display font-bold text-primary mt-6"
         >
-          Pelikulart l'est.
+          Pelikulart AI simplifie tout.
+        </motion.p>
+
+        <motion.p
+          initial={{ opacity: 0, y: 10 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8, delay: 0.5 }}
+          className="text-base md:text-lg text-white/40 mt-5 max-w-xl mx-auto leading-relaxed"
+        >
+          On te forme, on te donne les meilleurs outils pour créer tes clips, pubs et films — payable en FCFA, sans abonnement.
         </motion.p>
       </div>
     </section>
