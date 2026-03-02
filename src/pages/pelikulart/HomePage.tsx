@@ -1,6 +1,7 @@
 import Hero from "@/components/pelikulart/Hero";
 import MediaTicker from "@/components/pelikulart/MediaTicker";
 import SocialProof from "@/components/pelikulart/SocialProof";
+import DemoProduct from "@/components/pelikulart/DemoProduct";
 
 import TheProblem from "@/components/pelikulart/TheProblem";
 import TheSolution from "@/components/pelikulart/TheSolution";
@@ -20,6 +21,7 @@ const HomePage = () => {
       <Hero />
       <MediaTicker />
       <SocialProof />
+      <ScrollSection><DemoProduct /></ScrollSection>
       <ScrollSection><TheProblem /></ScrollSection>
       <ScrollSection><TheSolution /></ScrollSection>
       <ScrollSection><HowItWorks /></ScrollSection>
