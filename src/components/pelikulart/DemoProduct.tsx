@@ -12,9 +12,9 @@ const features = [
 
 const DemoProduct = () => {
   return (
-    <section className="py-24 lg:py-32">
-      <div className="max-w-7xl mx-auto px-6 sm:px-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+    <section className="py-16 sm:py-24 lg:py-32">
+      <div className="max-w-7xl mx-auto px-4 sm:px-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12 lg:gap-20 items-center">
           {/* Left — Interface mockup */}
           <motion.div
             initial={{ opacity: 0, x: -30 }}
@@ -23,16 +23,16 @@ const DemoProduct = () => {
             transition={{ duration: 0.7 }}
             className="relative"
           >
-            <div className="rounded-2xl overflow-hidden border border-white/5 bg-[#111] shadow-2xl shadow-black/60">
+            <div className="rounded-xl sm:rounded-2xl overflow-hidden border border-white/5 bg-[#111] shadow-2xl shadow-black/60">
               {/* Mock browser bar */}
-              <div className="flex items-center gap-2 px-4 py-3 bg-[#0c0c0c] border-b border-white/5">
+              <div className="flex items-center gap-2 px-3 sm:px-4 py-2.5 sm:py-3 bg-[#0c0c0c] border-b border-white/5">
                 <div className="flex gap-1.5">
-                  <div className="w-2.5 h-2.5 rounded-full bg-white/10" />
-                  <div className="w-2.5 h-2.5 rounded-full bg-white/10" />
-                  <div className="w-2.5 h-2.5 rounded-full bg-white/10" />
+                  <div className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-white/10" />
+                  <div className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-white/10" />
+                  <div className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-white/10" />
                 </div>
-                <div className="flex-1 mx-4">
-                  <div className="bg-white/5 rounded-md px-3 py-1 text-[10px] text-white/30 font-mono text-center">
+                <div className="flex-1 mx-2 sm:mx-4">
+                  <div className="bg-white/5 rounded-md px-3 py-1 text-[9px] sm:text-[10px] text-white/30 font-mono text-center">
                     pelikulart.ai/studio
                   </div>
                 </div>
@@ -65,7 +65,7 @@ const DemoProduct = () => {
             transition={{ duration: 0.7, delay: 0.15 }}
           >
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            <div className="grid grid-cols-2 gap-3 sm:gap-5">
               {features.map((f, i) => (
                 <motion.div
                   key={f.label}
@@ -73,12 +73,12 @@ const DemoProduct = () => {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: 0.2 + i * 0.07 }}
-                  className="flex items-center gap-3 group"
+                  className="flex items-center gap-2.5 sm:gap-3 group"
                 >
-                  <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center group-hover:border-lime/20 group-hover:bg-lime/5 transition-colors">
-                    <f.icon className="w-4.5 h-4.5 text-lime" />
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-white/5 border border-white/5 flex items-center justify-center group-hover:border-lime/20 group-hover:bg-lime/5 transition-colors flex-shrink-0">
+                    <f.icon className="w-3.5 h-3.5 sm:w-4.5 sm:h-4.5 text-lime" />
                   </div>
-                  <span className="text-sm text-white/70 font-label">{f.label}</span>
+                  <span className="text-xs sm:text-sm text-white/70 font-label">{f.label}</span>
                 </motion.div>
               ))}
             </div>

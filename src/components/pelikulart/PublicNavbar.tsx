@@ -29,8 +29,8 @@ const PublicNavbar = () => {
         scrolled ? "bg-[#080808]/90 backdrop-blur-xl border-b border-white/5" : "bg-transparent"
       }`}
     >
-      <div className="max-w-7xl mx-auto flex items-center justify-between px-6 sm:px-8 py-5">
-        <Link to="/" className="text-lg font-bold tracking-tight text-white">
+      <div className="max-w-7xl mx-auto flex items-center justify-between px-4 sm:px-8 py-3.5 sm:py-5">
+        <Link to="/" className="text-base sm:text-lg font-bold tracking-tight text-white">
           Pelikulart <span className="text-lime">AI</span>
         </Link>
 
@@ -60,9 +60,9 @@ const PublicNavbar = () => {
         {/* Mobile toggle */}
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="md:hidden text-white p-2"
+          className="md:hidden text-white p-1.5"
         >
-          {isOpen ? <X size={22} /> : <Menu size={22} />}
+          {isOpen ? <X size={20} /> : <Menu size={20} />}
         </button>
       </div>
 
@@ -75,12 +75,12 @@ const PublicNavbar = () => {
             exit={{ opacity: 0, height: 0 }}
             className="md:hidden bg-black/95 backdrop-blur-xl overflow-hidden"
           >
-            <div className="flex flex-col px-6 py-4 gap-4">
+            <div className="flex flex-col px-4 py-3 gap-1">
               {navLinks.map((link) => (
                 <Link
                   key={link.to}
                   to={link.to}
-                  className={`text-sm font-label font-medium uppercase tracking-widest py-2 ${
+                  className={`text-sm font-label font-medium uppercase tracking-widest py-3 ${
                     location.pathname === link.to
                       ? "text-white"
                       : "text-white/60"
@@ -91,7 +91,7 @@ const PublicNavbar = () => {
               ))}
               <Link
                 to="/studio"
-                className="text-sm font-label font-medium uppercase tracking-widest py-2 text-lime"
+                className="text-sm font-label font-medium uppercase tracking-widest py-3 text-lime"
               >
                 Essayer notre studio
               </Link>

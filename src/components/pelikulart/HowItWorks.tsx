@@ -30,8 +30,8 @@ const steps = [
 
 const HowItWorks = () => {
   return (
-    <section className="py-20 md:py-28">
-      <div className="max-w-5xl mx-auto px-6 sm:px-8">
+    <section className="py-16 sm:py-20 md:py-28">
+      <div className="max-w-5xl mx-auto px-4 sm:px-8">
         <motion.p
           initial={{ opacity: 0, y: 10 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -41,7 +41,7 @@ const HowItWorks = () => {
           Comment ça marche ?
         </motion.p>
 
-        <div className="grid md:grid-cols-4 gap-8 mt-12">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-8 mt-8 sm:mt-12">
           {steps.map((step, i) => (
             <motion.div
               key={step.num}
@@ -51,13 +51,13 @@ const HowItWorks = () => {
               transition={{ delay: i * 0.15 }}
               className="text-center relative"
             >
-              <div className="w-12 h-12 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center mx-auto mb-4">
-                <step.icon className="w-5 h-5 text-primary" />
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                <step.icon className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
               </div>
-              <h3 className="text-white font-bold text-lg mb-2 font-display">
+              <h3 className="text-white font-bold text-sm sm:text-lg mb-1.5 sm:mb-2 font-display">
                 {step.num}. {step.title}
               </h3>
-              <p className="text-white/40 text-sm leading-relaxed">{step.desc}</p>
+              <p className="text-white/40 text-xs sm:text-sm leading-relaxed">{step.desc}</p>
               {i < steps.length - 1 && (
                 <div className="hidden md:block absolute top-6 -right-4 text-white/10 text-2xl">→</div>
               )}
