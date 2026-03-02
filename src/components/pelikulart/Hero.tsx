@@ -33,7 +33,7 @@ const Hero = () => {
             <iframe
               src={url}
               title={`Hero bg ${i + 1}`}
-              className="w-full h-full border-0 pointer-events-none scale-[1.15]"
+              className="w-full h-full border-0 pointer-events-none scale-[1.35]"
               style={{ objectFit: "cover" }}
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               tabIndex={-1}
