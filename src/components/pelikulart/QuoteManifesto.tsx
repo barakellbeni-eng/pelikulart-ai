@@ -16,19 +16,19 @@ const QuoteManifesto = () => {
   return (
     <section className="py-28 md:py-40 relative overflow-hidden">
       <div className="max-w-5xl mx-auto px-6 sm:px-8 flex flex-col items-center justify-center text-center">
-        <div className="flex items-baseline justify-center gap-3 sm:gap-4" style={{ fontFamily: "'Neue Haas Grotesk Display Pro', 'Helvetica Neue', Arial, sans-serif", fontWeight: 500 }}>
-          <span className="text-4xl sm:text-6xl md:text-[65px] text-white tracking-tight italic">
+        <div className="flex items-baseline justify-center gap-3 sm:gap-4" style={{ fontFamily: "'Neue Haas Grotesk Display Pro', 'Helvetica Neue', Arial, sans-serif", fontWeight: 500, lineHeight: 1.1 }}>
+          <span className="text-4xl sm:text-6xl md:text-[65px] text-white tracking-tight">
             Trop
           </span>
-          <div className="relative inline-flex justify-center" style={{ height: "1.2em", minWidth: "280px" }}>
+          <div className="relative" style={{ width: "320px", height: "1em" }}>
             <AnimatePresence mode="wait">
               <motion.span
                 key={words[index]}
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -30 }}
-                transition={{ duration: 0.45, ease: "easeInOut" }}
-                className="absolute left-1/2 -translate-x-1/2 top-0 text-4xl sm:text-6xl md:text-[65px] text-primary tracking-tight italic whitespace-nowrap"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.4, ease: "easeInOut" }}
+                className="absolute left-0 top-0 text-4xl sm:text-6xl md:text-[65px] text-primary tracking-tight whitespace-nowrap"
                 style={{ fontWeight: 500 }}
               >
                 {words[index]}
