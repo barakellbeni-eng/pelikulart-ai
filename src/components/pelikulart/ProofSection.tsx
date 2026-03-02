@@ -1,41 +1,20 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { Play } from "lucide-react";
-import heroVideo from "@/assets/hero-video.mp4";
-import heroVideo2 from "@/assets/hero-video-2.mp4";
-import { useState, useRef, useEffect } from "react";
-
-const videos = [heroVideo, heroVideo2];
 
 const ProofSection = () => {
-  const [currentVideo, setCurrentVideo] = useState(0);
-  const videoRef = useRef<HTMLVideoElement>(null);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentVideo((prev) => (prev + 1) % videos.length);
-    }, 10000);
-    return () => clearInterval(interval);
-  }, []);
-
   return (
     <section className="relative py-32 md:py-44 overflow-hidden">
-      {/* Background video loop */}
-      {videos.map((src, i) => (
-        <video
-          key={src}
-          src={src}
-          autoPlay
-          loop
-          muted
-          playsInline
-          className="absolute inset-0 w-full h-full object-cover transition-opacity duration-[2000ms]"
-          style={{
-            opacity: i === currentVideo ? 1 : 0,
-            transform: "scale(1.15)",
-          }}
+      {/* Background video via Videas embed */}
+      <div className="absolute inset-0">
+        <iframe
+          src="https://app.videas.fr/embed/media/2f752018-6649-465a-bac7-dcf94d9744ae/?autoplay=1&muted=1&loop=1&controls=0"
+          className="absolute inset-0 w-full h-full border-0"
+          style={{ transform: "scale(1.15)" }}
+          allow="autoplay; encrypted-media"
+          referrerPolicy="unsafe-url"
         />
-      ))}
+      </div>
 
       {/* Dark overlay */}
       <div className="absolute inset-0 bg-black/70" />
