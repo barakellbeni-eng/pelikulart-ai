@@ -16,9 +16,11 @@ const QuoteManifesto = () => {
   return (
     <section className="py-28 md:py-40 relative overflow-hidden">
       <div className="w-full flex flex-col items-center justify-center">
-          <div className="relative inline-block font-display" style={{ lineHeight: 1.05 }}>
-            <span className="text-5xl sm:text-7xl md:text-[100px] text-white tracking-tight font-bold">Trop </span>
-            <span className="text-5xl sm:text-7xl md:text-[100px] tracking-tight invisible font-bold" aria-hidden="true">d'abonnement</span>
+          <div className="relative inline-block" style={{ fontFamily: "'Neue Haas Grotesk Display Pro', 'Helvetica Neue', Arial, sans-serif", fontWeight: 500, lineHeight: 1.1 }}>
+            {/* "Trop " is fixed, followed by invisible spacer for the widest word */}
+            <span className="text-5xl sm:text-7xl md:text-[90px] text-white tracking-tight">Trop </span>
+            <span className="text-5xl sm:text-7xl md:text-[90px] tracking-tight invisible" aria-hidden="true">d'abonnement</span>
+            {/* Animated word overlays exactly where the spacer is */}
             <AnimatePresence mode="wait">
               <motion.span
                 key={words[index]}
@@ -26,7 +28,7 @@ const QuoteManifesto = () => {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.4, ease: "easeInOut" }}
-                className="absolute top-0 text-5xl sm:text-7xl md:text-[100px] text-primary tracking-tight whitespace-nowrap font-bold"
+                className="absolute top-0 text-5xl sm:text-7xl md:text-[90px] text-primary tracking-tight whitespace-nowrap"
                 style={{ left: "4.2ch" }}
               >
                 {words[index]}

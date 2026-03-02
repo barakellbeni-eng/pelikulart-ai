@@ -14,9 +14,9 @@ export default {
     },
     extend: {
       fontFamily: {
-        sans: ["'Neue Haas Grotesk Display Pro'", "Helvetica Neue", "Helvetica", "system-ui", "sans-serif"],
-        display: ["'Neue Haas Grotesk Display Pro'", "Helvetica Neue", "Helvetica", "system-ui", "sans-serif"],
-        label: ["'Neue Haas Grotesk Display Pro'", "Helvetica Neue", "Plus Jakarta Sans", "system-ui", "sans-serif"],
+        sans: ["DM Sans", "system-ui", "sans-serif"],
+        display: ["Satoshi", "system-ui", "sans-serif"],
+        label: ["Plus Jakarta Sans", "system-ui", "sans-serif"],
         mono: ["Geist Mono", "monospace"],
       },
       colors: {
