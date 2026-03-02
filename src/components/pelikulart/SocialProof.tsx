@@ -4,6 +4,7 @@ const stats = [
   { value: "2 000+", label: "Créateurs" },
   { value: "14 000+", label: "Clips générés" },
   { value: "8", label: "Pays" },
+  { value: "2024", label: "Depuis" },
 ];
 
 const SocialProof = () => {
