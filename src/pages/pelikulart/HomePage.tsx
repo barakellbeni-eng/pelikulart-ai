@@ -1,6 +1,6 @@
 import Hero from "@/components/pelikulart/Hero";
 
-import SocialProof from "@/components/pelikulart/SocialProof";
+
 import DemoProduct from "@/components/pelikulart/DemoProduct";
 
 
@@ -19,7 +19,7 @@ const HomePage = () => {
   return (
     <div className="w-full overflow-x-hidden relative">
       <Hero />
-      <SocialProof />
+      
       <ScrollSection><DemoProduct /></ScrollSection>
       
       <ScrollSection><TheSolution /></ScrollSection>
