@@ -22,8 +22,8 @@ const StudioSplash = ({ onFinish }: StudioSplashProps) => {
       <motion.div
         className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-black"
         style={{
-          backgroundImage: "radial-gradient(circle, hsl(0 0% 100% / 0.06) 1px, transparent 1px)",
-          backgroundSize: "24px 24px",
+          backgroundImage: "radial-gradient(circle, hsl(0 0% 100% / 0.15) 1.5px, transparent 1.5px)",
+          backgroundSize: "40px 40px",
         }}
         initial={{ opacity: 1 }}
         animate={{ opacity: phase === "out" ? 0 : 1 }}
