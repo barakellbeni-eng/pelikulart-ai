@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
 
-const words = ["d'outils", "compliqué", "inaccessible", "d'abonnement"];
+const words = ["d'outils", "compliqué", "inaccessible", "d'abonnement", "cher"];
 
 const QuoteManifesto = () => {
   const [index, setIndex] = useState(0);
