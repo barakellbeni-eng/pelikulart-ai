@@ -40,13 +40,24 @@ const QuoteManifesto = () => {
         {/* Orange arc with glow */}
         <div className="relative w-full max-w-xs sm:max-w-xl -mt-1 sm:-mt-2">
           <svg viewBox="0 0 500 40" fill="none" className="w-full">
+            <defs>
+              <filter id="arc-glow" x="-20%" y="-40%" width="140%" height="180%">
+                <feGaussianBlur stdDeviation="6" result="blur" />
+                <feMerge>
+                  <feMergeNode in="blur" />
+                  <feMergeNode in="SourceGraphic" />
+                </feMerge>
+              </filter>
+            </defs>
             <path
               d="M 15 38 Q 250 -5 485 38"
               stroke="hsl(var(--primary))"
               strokeWidth="5"
               strokeLinecap="round"
               fill="none"
-              opacity="0.35"
+              opacity="1"
+              filter="url(#arc-glow)"
+              style={{ filter: "drop-shadow(0 0 12px hsl(var(--primary) / 0.4))" }}
             />
           </svg>
         </div>
