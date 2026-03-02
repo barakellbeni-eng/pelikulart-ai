@@ -1,17 +1,47 @@
 import { motion } from "framer-motion";
-import { PenLine, Cpu, Download } from "lucide-react";
+import { GraduationCap, PenLine, Cpu, Download } from "lucide-react";
 
 const steps = [
-  { num: "1", icon: PenLine, title: "Décris", desc: "Rentre ta vision, tes prompts et ton ambiance. Mets des mots sur l'image qui existe dans ta tête." },
-  { num: "2", icon: Cpu, title: "Génère", desc: "Notre moteur IA calcule et produit le rendu visuel avec une qualité cinématographique en quelques secondes." },
-  { num: "3", icon: Download, title: "Télécharge", desc: "Récupère tes assets en haute résolution (4K) directement prêts pour ton montage vidéo." },
+  {
+    num: "1",
+    icon: GraduationCap,
+    title: "Tu te formes",
+    desc: "Avant de créer, maîtrise les outils. Nos formations concrètes te guident pas à pas — de zéro jusqu'à ta première création pro. Clips, pubs, courts métrages, films — tu apprends en faisant.",
+  },
+  {
+    num: "2",
+    icon: PenLine,
+    title: "Tu décris",
+    desc: "Rentre ta vision, tes prompts et ton ambiance. Mets des mots sur l'image qui existe dans ta tête — le style, les couleurs, l'émotion que tu veux transmettre.",
+  },
+  {
+    num: "3",
+    icon: Cpu,
+    title: "Tu génères",
+    desc: "Accède aux meilleurs outils IA disponibles sur le marché, sélectionnés et testés pour toi. Un rendu cinématographique en quelques secondes, sans technique complexe.",
+  },
+  {
+    num: "4",
+    icon: Download,
+    title: "Tu télécharges",
+    desc: "Récupère tes assets en haute résolution, directement prêts pour ton montage vidéo. Prêt à publier, prêt à diffuser, prêt à impressionner.",
+  },
 ];
 
 const HowItWorks = () => {
   return (
     <section className="py-20 md:py-28">
       <div className="max-w-5xl mx-auto px-6 sm:px-8">
-        <div className="grid md:grid-cols-3 gap-8">
+        <motion.p
+          initial={{ opacity: 0, y: 10 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="text-xs uppercase tracking-[0.3em] text-white/30 font-mono text-center mb-3"
+        >
+          Comment ça marche ?
+        </motion.p>
+
+        <div className="grid md:grid-cols-4 gap-8 mt-12">
           {steps.map((step, i) => (
             <motion.div
               key={step.num}
