@@ -2010,11 +2010,38 @@ const Dashboard = () => {
                             />
                           </div>
                         )}
-                        {item.type === "audio" && (
-                          <div className="p-4">
-                            <audio src={(item.data as GeneratedAudio).url} controls className="w-full" />
-                          </div>
-                        )}
+                        {item.type === "audio" && (() => {
+                          const aud = item.data as GeneratedAudio;
+                          const audioId = aud.id || `feed-aud-${i}`;
+                          const isPlaying = playingDashAudioId === audioId;
+                          return (
+                            <div
+                              className={`aspect-square bg-gradient-to-br from-card to-muted/30 flex flex-col items-center justify-center gap-2.5 relative cursor-pointer ${isPlaying ? "audio-playing" : ""}`}
+                              onClick={() => toggleDashAudioPlay(audioId, aud.url)}
+                            >
+                              <div className="relative w-12 h-12 flex items-center justify-center">
+                                <Music className="w-6 h-6 text-primary relative z-10" />
+                                {isPlaying && (
+                                  <>
+                                    <div className="ripple-ring absolute inset-0 rounded-full border-[1.5px] border-primary/30" />
+                                    <div className="ripple-ring-delayed absolute -inset-2 rounded-full border-[1.5px] border-primary/30" />
+                                  </>
+                                )}
+                              </div>
+                              <div className="flex items-center gap-[3px] h-5">
+                                {[6, 14, 10, 18, 8, 16, 12, 6].map((h, idx) => (
+                                  <div key={idx} className="wave-bar w-[3px] rounded-sm bg-primary/20" style={{ height: `${h}px`, animationDelay: `${idx * 0.1}s` }} />
+                                ))}
+                              </div>
+                              <button
+                                className="absolute bottom-2 left-2 w-6 h-6 rounded-full bg-primary flex items-center justify-center transition-transform hover:scale-110"
+                                onClick={(e) => { e.stopPropagation(); toggleDashAudioPlay(audioId, aud.url); }}
+                              >
+                                {isPlaying ? <Pause className="w-2.5 h-2.5 text-primary-foreground" fill="currentColor" /> : <Play className="w-2.5 h-2.5 text-primary-foreground ml-0.5" fill="currentColor" />}
+                              </button>
+                            </div>
+                          );
+                        })()}
 
                         {/* Actions bar */}
                         <div className="px-4 py-2.5 flex items-center gap-3">
