@@ -324,6 +324,7 @@ async function processImageGoogle(jobId: string, userId: string, body: any) {
     const messages = [{ role: "user", content }];
 
     const storageKeys: string[] = [];
+    const displayKeys: string[] = [];
 
     for (let i = 0; i < safeNumImages; i++) {
       const aiResp = await fetch(LOVABLE_AI_ENDPOINT, {
@@ -356,36 +357,43 @@ async function processImageGoogle(jobId: string, userId: string, body: any) {
       }
 
       for (const imageSource of imageCandidates) {
-        let storageKey: string;
+        let originalKey: string;
+        let displayKey: string;
         if (imageSource.startsWith("http://") || imageSource.startsWith("https://")) {
-          storageKey = await downloadAndUpload(imageSource, userId, "png");
+          const dual = await downloadAndUploadDual(imageSource, userId, "png");
+          originalKey = dual.originalKey;
+          displayKey = dual.displayKey;
         } else {
           const raw = imageSource.replace(/^data:image\/\w+;base64,/, "");
           const binaryStr = atob(raw);
           const bytes = new Uint8Array(binaryStr.length);
           for (let j = 0; j < binaryStr.length; j++) bytes[j] = binaryStr.charCodeAt(j);
-          storageKey = await uploadBytes(bytes, userId, "image/png", "png");
+          const dual = await uploadBytesDual(bytes, userId, "image/png", "png");
+          originalKey = dual.originalKey;
+          displayKey = dual.displayKey;
         }
-        storageKeys.push(storageKey);
+        storageKeys.push(originalKey);
+        displayKeys.push(displayKey);
 
-        const publicUrl = getPublicUrl(storageKey);
+        const dUrl = getPublicUrl(displayKey);
         await adminClient.from("generations").insert({
-          user_id: userId, prompt: prompt.slice(0, 5000), image_url: publicUrl,
+          user_id: userId, prompt: prompt.slice(0, 5000), image_url: dUrl,
           aspect_ratio: modelSettings.aspect_ratio || null, resolution: modelSettings.resolution || null, output_format: "png",
         });
 
         if (storageKeys.length === 1) {
-          await updateJob(adminClient, jobId, { result_url_temp: publicUrl, progress: 50 });
+          await updateJob(adminClient, jobId, { result_url_temp: dUrl, progress: 50 });
         }
       }
     }
 
     if (storageKeys.length === 0) throw new Error("No images generated");
 
-    const publicUrl = getPublicUrl(storageKeys[0]);
+    const displayUrl = getPublicUrl(displayKeys[0]);
+    const originalUrl = getPublicUrl(storageKeys[0]);
     await updateJob(adminClient, jobId, {
-      status: "completed", progress: 100, result_url: publicUrl, result_url_temp: publicUrl,
-      result_metadata: { storage_keys: storageKeys, count: storageKeys.length, format: "png" },
+      status: "completed", progress: 100, result_url: displayUrl, result_url_original: originalUrl, result_url_temp: displayUrl,
+      result_metadata: { storage_keys: storageKeys, display_keys: displayKeys, count: storageKeys.length, format: "png" },
       completed_at: new Date().toISOString(),
     });
   } catch (err: any) {
