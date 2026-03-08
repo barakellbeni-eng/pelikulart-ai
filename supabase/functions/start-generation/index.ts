@@ -100,7 +100,7 @@ const KIE_MODELS: Record<string, string> = {
   "kie-flux2-pro": "flux-2/pro-text-to-image",   // auto → flux-2/pro-image-to-image with image
   "kie-seedream-v45": "seedream/4.5-text-to-image", // auto → seedream/4.5-edit with image
   // Video
-  "kie-kling-30": "kling-3.0",
+  "kie-kling-30": "kling-3.0/video",
   "kie-kling-26": "kling-2.6/text-to-video",     // auto → kling-2.6/image-to-video with image
   "kie-wan-26": "wan/2-6-text-to-video",          // auto → wan/2-6-image-to-video with image
   "kie-seedance-15-pro": "bytedance/seedance-1.5-pro",
