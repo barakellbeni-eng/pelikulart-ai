@@ -463,6 +463,9 @@ const Gallery = () => {
                   <span className="flex items-center gap-1">🐚 {selected.credits_used}</span>
                 </div>
                 <div className="flex gap-2">
+                  <button onClick={() => { navigator.clipboard.writeText(selected.prompt); toast.success("Prompt copié !"); }} className="px-4 py-3 rounded-xl bg-muted/30 text-foreground hover:bg-muted/50 transition-colors text-sm" title="Copier le prompt">
+                    <ClipboardCopy className="w-4 h-4" />
+                  </button>
                   <button onClick={() => handleDownload(selected)} className="btn-generate flex-1 flex items-center justify-center gap-2 text-sm py-3">
                     <Download className="w-4 h-4" /> Télécharger
                   </button>

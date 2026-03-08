@@ -23,6 +23,7 @@ export default function GalleryCardMenu({ onDownload, onDelete, onCopyPrompt, on
   }, [open]);
 
   const items = [
+    ...(onCopyPrompt ? [{ label: "Copier le prompt", icon: ClipboardCopy, action: onCopyPrompt }] : []),
     { label: "Télécharger", icon: Download, action: onDownload },
     ...(onAddToProject ? [{ label: "Ajouter à un projet", icon: FolderPlus, action: onAddToProject }] : []),
     ...(onMoveProject ? [{ label: "Déplacer vers un projet", icon: ArrowRightLeft, action: onMoveProject }] : []),
