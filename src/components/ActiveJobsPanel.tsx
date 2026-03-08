@@ -116,7 +116,13 @@ function JobCard({ job, onDismiss }: {job: ActiveJob;onDismiss: (id: string) => 
               {job.tool_type === "video" ?
             <video src={displayUrl} controls className="w-full rounded-lg" /> :
             job.tool_type === "audio" ?
-            <audio src={displayUrl} controls className="w-full" /> :
+            <div className="space-y-2">
+              <div className="w-full aspect-square bg-muted/20 rounded-lg flex flex-col items-center justify-center">
+                <Music className="w-8 h-8 text-primary/40 mb-1" />
+                <p className="text-[9px] text-muted-foreground text-center px-2 line-clamp-2">{job.prompt}</p>
+              </div>
+              <audio src={displayUrl} controls className="w-full h-8" />
+            </div> :
             <img src={displayUrl} alt="" className="w-full rounded-lg" loading="lazy" />
             }
               {job.result_url_temp && !job.result_url &&
