@@ -80,6 +80,11 @@ const MultiPlan = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [isCuttingAll, setIsCuttingAll] = useState(false);
   const [loadingPlan, setLoadingPlan] = useState<number | null>(null);
+  // Queue state for "Découper tout": 'idle' | 'waiting' | 'running' | 'done'
+  const [queueStatus, setQueueStatus] = useState<Record<number, 'idle' | 'waiting' | 'running' | 'done'>>({
+    1: 'idle', 2: 'idle', 3: 'idle', 4: 'idle',
+  });
+  const isAnyJobRunning = isCuttingAll || isGenerating || loadingPlan !== null;
   const [showMediaPicker, setShowMediaPicker] = useState(false);
   const [showCadragePicker, setShowCadragePicker] = useState(false);
   const [cadrageSource, setCadrageSource] = useState<string | null>(null);
