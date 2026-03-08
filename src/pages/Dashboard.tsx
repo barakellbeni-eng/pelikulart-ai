@@ -121,6 +121,7 @@ const Dashboard = () => {
   const describeInputRef = useRef<HTMLInputElement>(null);
   const [isDraggingOverPrompt, setIsDraggingOverPrompt] = useState(false);
   const [isDraggingOverUpload, setIsDraggingOverUpload] = useState(false);
+  const [showMediaPicker, setShowMediaPicker] = useState(false);
 
   // Helper: fetch a URL as base64 data URL
   const urlToBase64 = useCallback(async (url: string): Promise<string> => {
