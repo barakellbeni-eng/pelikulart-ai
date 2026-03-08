@@ -35,7 +35,7 @@ const MultiPlan = () => {
   const [finalResult, setFinalResult] = useState<{ url: string; job_id: string } | null>(null);
   const [showMediaPicker, setShowMediaPicker] = useState(false);
 
-  const handleMediaSelect = useCallback((url: string) => {
+  const handleMediaSelect = useCallback((url: string, _item?: any) => {
     setSourceImage(url);
     setVariations([]);
     setSelectedVariation(null);
