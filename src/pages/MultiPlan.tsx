@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { Upload, Loader2, Camera, Download, Trash2 } from "lucide-react";
+import GenerationProgress from "@/components/GenerationProgress";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -200,8 +201,8 @@ const MultiPlan = () => {
                   exit={{ opacity: 0 }}
                 >
                   {isGenerating && !mainResult ? (
-                    <div className="aspect-video rounded-lg bg-muted/5 flex items-center justify-center border border-border/20">
-                      <Loader2 className="w-6 h-6 text-primary/30 animate-spin" />
+                    <div className="aspect-video rounded-lg bg-muted/5 flex flex-col items-center justify-center border border-border/20 gap-3">
+                      <GenerationProgress estimatedTime="~15s" />
                     </div>
                   ) : mainResult ? (
                     <div className="relative group rounded-lg overflow-hidden bg-black/30">
@@ -285,8 +286,8 @@ const MultiPlan = () => {
                       </AnimatePresence>
 
                       {isLoading && (
-                        <div className="w-full aspect-[3/4] rounded-lg bg-muted/5 flex items-center justify-center border border-border/10">
-                          <Loader2 className="w-3.5 h-3.5 text-primary/20 animate-spin" />
+                        <div className="w-full aspect-[3/4] rounded-lg bg-muted/5 flex flex-col items-center justify-center border border-border/10 gap-2">
+                          <GenerationProgress estimatedTime="~15s" compact />
                         </div>
                       )}
                     </div>
