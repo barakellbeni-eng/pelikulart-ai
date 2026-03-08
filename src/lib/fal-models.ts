@@ -13,25 +13,28 @@ export interface ModelSetting {
 }
 
 export type ModelType = "image" | "video" | "audio";
+export type ModelProvider = "fal" | "google-direct" | "kie";
 
 export interface FalModel {
   id: string;
   name: string;
   brand: string;
   endpoint: string;
+  provider?: ModelProvider; // defaults to "fal" if not set; "google-direct" for Pelikulart; "kie" for KIE AI
+  kieModel?: string; // KIE AI model identifier (e.g. "google/nano-banana")
   description: string;
   icon: string;
   color: string;
   type: ModelType;
   settings: ModelSetting[];
   supportsImageInput?: boolean;
-  maxInputImages?: number; // Max number of reference images (default 1 if supportsImageInput)
+  maxInputImages?: number;
   maxImages?: number;
-  caurisCost: number; // Base cost in Cauris (5s for video)
+  caurisCost: number;
   caurisCost10s?: number;
   caurisCost15s?: number;
-  estimatedTime: string; // e.g. "~3s", "~15s", "~2min"
-  recommended?: boolean; // Show as popular/recommended
+  estimatedTime: string;
+  recommended?: boolean;
 }
 
 // ─── Shared setting presets ───
