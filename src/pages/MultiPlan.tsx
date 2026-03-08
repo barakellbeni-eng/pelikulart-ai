@@ -78,6 +78,8 @@ const MultiPlan = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [loadingPlan, setLoadingPlan] = useState<number | null>(null);
   const [showMediaPicker, setShowMediaPicker] = useState(false);
+  const [showCadragePicker, setShowCadragePicker] = useState(false);
+  const [cadrageSource, setCadrageSource] = useState<string | null>(null);
   const [previewImage, setPreviewImage] = useState<PersistedItem | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<PersistedItem | null>(null);
   const [deleting, setDeleting] = useState(false);
@@ -190,11 +192,11 @@ const MultiPlan = () => {
   };
 
   const handlePlanClick = async (planIndex: number) => {
-    if (!latestMainResult || !user || loadingPlan !== null) return;
+    if (!cadrageSource || !user || loadingPlan !== null) return;
     setLoadingPlan(planIndex);
 
     try {
-      await callGenerate(latestMainResult.url, selectedPlan, planIndex + 1);
+      await callGenerate(cadrageSource, selectedPlan, planIndex + 1);
       await loadGallery();
       refreshBalance();
     } catch (e: any) {
@@ -448,11 +450,31 @@ const MultiPlan = () => {
             </div>
           </div>
 
-          {/* Cadrage buttons (only after main result) */}
-          {latestMainResult && (
-            <div className="space-y-1.5">
-              <label className="text-[10px] text-muted-foreground uppercase tracking-widest">Cadrages</label>
-              <div className="grid grid-cols-2 gap-1.5">
+          {/* Cadrage source + buttons */}
+          <div className="space-y-1.5">
+            <label className="text-[10px] text-muted-foreground uppercase tracking-widest">Image de cadrage</label>
+            {cadrageSource ? (
+              <div className="relative rounded-lg overflow-hidden bg-black/40 group/cadrage">
+                <img src={cadrageSource} alt="Cadrage source" className="w-full aspect-video object-cover" />
+                <button
+                  onClick={() => setCadrageSource(null)}
+                  className="absolute top-1.5 right-1.5 px-1.5 py-0.5 rounded text-[9px] font-medium bg-background/70 backdrop-blur-sm text-muted-foreground hover:text-foreground transition-colors z-10"
+                >
+                  ✕
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => setShowCadragePicker(true)}
+                className="w-full border border-dashed border-border/40 rounded-lg py-6 flex flex-col items-center gap-1.5 text-muted-foreground/50 hover:border-primary/20 hover:text-muted-foreground transition-colors"
+              >
+                <Upload className="w-4 h-4" />
+                <span className="text-[10px]">Choisir une image</span>
+              </button>
+            )}
+
+            {cadrageSource && (
+              <div className="grid grid-cols-2 gap-1.5 mt-2">
                 {[0, 1, 2, 3].map((idx) => {
                   const isLoading = loadingPlan === idx;
                   return (
@@ -475,8 +497,8 @@ const MultiPlan = () => {
                   );
                 })}
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </div>
 
@@ -537,6 +559,13 @@ const MultiPlan = () => {
         open={showMediaPicker}
         onClose={() => setShowMediaPicker(false)}
         onSelect={handleMediaSelect}
+        accept={["image"]}
+      />
+
+      <MediaPickerModal
+        open={showCadragePicker}
+        onClose={() => setShowCadragePicker(false)}
+        onSelect={(url) => { setCadrageSource(url); setShowCadragePicker(false); }}
         accept={["image"]}
       />
     </div>
