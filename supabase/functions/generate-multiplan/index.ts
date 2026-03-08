@@ -24,8 +24,8 @@ const PLAN_TYPE_MAP: Record<string, string> = {
 };
 
 // ── KIE AI helpers ──
-async function kieGenerate(prompt: string, imageUrl: string, imageSize: any, apiKey: string): Promise<string> {
-  // Create task using nano-banana-2
+async function kieGenerate(prompt: string, imageUrl: string, aspectRatio: string, resolution: string, apiKey: string): Promise<string> {
+  // Create task using nano-banana-2 with real aspect_ratio + resolution
   const createResp = await fetch(`${KIE_AI_BASE}/api/v1/jobs/createTask`, {
     method: "POST",
     headers: { "Authorization": `Bearer ${apiKey}`, "Content-Type": "application/json" },
@@ -34,7 +34,8 @@ async function kieGenerate(prompt: string, imageUrl: string, imageSize: any, api
       input: {
         prompt,
         image_input: [imageUrl],
-        image_size: typeof imageSize === "object" ? "1:1" : imageSize,
+        aspect_ratio: aspectRatio,
+        resolution: resolution,
         output_format: "png",
       },
     }),
