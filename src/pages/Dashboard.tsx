@@ -229,11 +229,17 @@ const Dashboard = () => {
   useEffect(() => {
     if (!user) return;
     const loadHistory = async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from("generations")
         .select("*")
         .order("created_at", { ascending: false })
         .limit(50);
+
+      if (selectedProjectId) {
+        query = query.eq("project_id", selectedProjectId);
+      }
+
+      const { data, error } = await query;
       if (!error && data) {
         // Resolve signed URLs for all items
         const allUrls = (data as any[]).map((g: any) => g.image_url as string);
