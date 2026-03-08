@@ -1596,7 +1596,7 @@ const Dashboard = () => {
                         initial={{ opacity: 0, y: 15 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: i * 0.03 }}
-                        className={`relative rounded-xl bg-card/20 overflow-hidden ${isSelected ? "ring-2 ring-primary ring-offset-2 ring-offset-background" : ""}`}
+                        className={`relative rounded-xl bg-card/20 overflow-hidden group`}
                       >
                         {selectionKey && (
                           <button
@@ -1792,9 +1792,7 @@ const Dashboard = () => {
                           e.dataTransfer.setData("text/x-gallery-image", img.url);
                           e.dataTransfer.effectAllowed = "copy";
                         }}
-                        className={`aspect-square relative group rounded-xl overflow-hidden cursor-grab active:cursor-grabbing ${
-                          imageSelected ? "ring-2 ring-primary ring-offset-2 ring-offset-background" : ""
-                        }`}
+                        className={`aspect-square relative group rounded-xl overflow-hidden cursor-grab active:cursor-grabbing`}
                       >
                         <motion.div
                           initial={{ opacity: 0, scale: 0.95 }}
@@ -1883,9 +1881,7 @@ const Dashboard = () => {
                         key={`vid-${i}-${item.ts}`}
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        className={`aspect-square relative group rounded-xl overflow-hidden cursor-pointer ${
-                          videoSelected ? "ring-2 ring-primary ring-offset-2 ring-offset-background" : ""
-                        }`}
+                        className={`aspect-square relative group rounded-xl overflow-hidden cursor-pointer`}
                         onClick={() => {
                           if (selectionCount > 0) {
                             toggleSelection(videoSelectionKey);
