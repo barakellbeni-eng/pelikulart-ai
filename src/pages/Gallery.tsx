@@ -45,6 +45,8 @@ const Gallery = () => {
       query = query.eq("project_id", selectedProjectId);
     }
 
+    const { data, error } = await query;
+
     if (error || !data) {
       setLoading(false);
       return;
