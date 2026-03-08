@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { X, Download, Calendar, Cpu, Trash2, Loader2, Image as ImageIcon, Film, Music, Check } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
@@ -187,8 +187,19 @@ const Gallery = () => {
     return <ImageIcon className="w-3 h-3" />;
   };
 
+  const wasDraggingRef = useRef(false);
+
+  const handleContainerMouseUp = useCallback((e: React.MouseEvent) => {
+    wasDraggingRef.current = isDragging;
+    handleMouseUp();
+  }, [handleMouseUp, isDragging]);
+
   const handleCardClick = (item: GalleryItem, e: React.MouseEvent) => {
-    if (isDragging) return;
+    // Ignore click if we just finished a drag-select
+    if (wasDraggingRef.current) {
+      wasDraggingRef.current = false;
+      return;
+    }
     if (e.ctrlKey || e.metaKey || selectionCount > 0) {
       toggleSelect(item.id, e.ctrlKey || e.metaKey);
     } else {
@@ -238,7 +249,7 @@ const Gallery = () => {
         className="max-w-5xl mx-auto px-4 pt-6 relative select-none"
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
+        onMouseUp={handleContainerMouseUp}
       >
         {dragBox && (
           <div

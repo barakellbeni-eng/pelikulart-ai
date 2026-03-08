@@ -5,6 +5,7 @@ export function useGallerySelection(itemIds: string[]) {
   const [isDragging, setIsDragging] = useState(false);
   const dragStart = useRef<{ x: number; y: number } | null>(null);
   const dragRect = useRef<{ x: number; y: number; w: number; h: number } | null>(null);
+  const dragStartedOnCard = useRef(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const [dragBox, setDragBox] = useState<{ x: number; y: number; w: number; h: number } | null>(null);
 
@@ -29,19 +30,21 @@ export function useGallerySelection(itemIds: string[]) {
   const clearSelection = useCallback(() => setSelectedIds(new Set()), []);
 
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
-    // Only start drag on the container background, not on cards
-    if ((e.target as HTMLElement).closest("[data-gallery-card]")) return;
+    // Start drag from anywhere (cards included) with left button
     if (e.button !== 0) return;
     const rect = containerRef.current?.getBoundingClientRect();
     if (!rect) return;
     dragStart.current = { x: e.clientX, y: e.clientY };
+    dragStartedOnCard.current = !!(e.target as HTMLElement).closest("[data-gallery-card]");
   }, []);
 
   const handleMouseMove = useCallback((e: React.MouseEvent) => {
     if (!dragStart.current) return;
     const dx = e.clientX - dragStart.current.x;
     const dy = e.clientY - dragStart.current.y;
-    if (!isDragging && Math.abs(dx) + Math.abs(dy) < 8) return;
+    // Higher threshold when starting on a card to avoid accidental drags
+    const threshold = dragStartedOnCard.current ? 15 : 8;
+    if (!isDragging && Math.abs(dx) + Math.abs(dy) < threshold) return;
 
     if (!isDragging) setIsDragging(true);
 
@@ -90,11 +93,14 @@ export function useGallerySelection(itemIds: string[]) {
   }, [isDragging]);
 
   const handleMouseUp = useCallback(() => {
+    const wasDragging = isDragging;
     dragStart.current = null;
     dragRect.current = null;
+    dragStartedOnCard.current = false;
     setIsDragging(false);
     setDragBox(null);
-  }, []);
+    return wasDragging;
+  }, [isDragging]);
 
   // Global mouseup to end drag even outside container
   useEffect(() => {
