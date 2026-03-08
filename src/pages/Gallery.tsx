@@ -323,7 +323,7 @@ const Gallery = () => {
             <p className="text-sm">Aucune génération pour le moment</p>
           </div>
         ) : (
-          <div className={gridClass}>
+          <div className="grid gap-3" style={gridStyle}>
             <AnimatePresence mode="popLayout">
               {filtered.map((item, i) => {
                 const removing = removingIds.has(item.id);
