@@ -2343,7 +2343,7 @@ const Dashboard = () => {
                             VID
                           </span>
                         </div>
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
+                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
                           <div className="absolute top-1.5 right-11 flex items-center gap-1">
                             <button
                               onClick={(e) => { e.stopPropagation(); handleDownload(vid.url, i); }}
