@@ -225,7 +225,7 @@ export const FAL_MODELS: FalModel[] = [
   // ── Z-Image Turbo (KIE) ──
   {
     id: "kie-zimage-turbo", type: "image", brand: "Z-Image", name: "Z-Image Turbo",
-    endpoint: "kie", provider: "kie", kieModel: "z-image-turbo",
+    endpoint: "kie", provider: "kie", kieModel: "z-image",
     description: "Ultra rapide, photoréaliste, très économique", icon: "⚡", color: "from-white/20 to-white/5",
     maxImages: 4, supportsImageInput: false, caurisCost: 1, estimatedTime: "~3s",
     settings: [

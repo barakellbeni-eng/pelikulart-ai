@@ -99,7 +99,7 @@ const KIE_MODELS: Record<string, string> = {
   "kie-imagen4-ultra": "google/imagen4-ultra",
   "kie-flux2-pro": "flux-2/pro-text-to-image",   // auto → flux-2/pro-image-to-image with image
   "kie-seedream-v45": "seedream/4.5-text-to-image", // auto → seedream/4.5-edit with image
-  "kie-zimage-turbo": "z-image-turbo",
+  "kie-zimage-turbo": "z-image",
   // Video
   "kie-kling-30": "kling-3.0/video",
   "kie-kling-26": "kling-2.6/text-to-video",     // auto → kling-2.6/image-to-video with image
@@ -250,7 +250,7 @@ async function generateAudioThumbnail(prompt: string, userId: string): Promise<s
     const thumbPrompt = `Album cover art, cinematic, vibrant: ${prompt.slice(0, 500)}`;
     const input = { prompt: thumbPrompt, aspect_ratio: "1:1" };
 
-    const taskId = await kieCreateTask("z-image-turbo", input, KIE_API_KEY);
+    const taskId = await kieCreateTask("z-image", input, KIE_API_KEY);
     const result = await kiePollTask(taskId, KIE_API_KEY, 60);
 
     const resultUrls: string[] = result.resultUrls || [];
@@ -671,7 +671,8 @@ async function processKie(jobId: string, userId: string, body: any) {
       }
     } else if (tool_type === "audio") {
       if (rawSettings.duration) input.duration = rawSettings.duration;
-      if (kieModel.includes("text-to-speech")) {
+      // ElevenLabs models (TTS and SFX) expect 'text' instead of 'prompt'
+      if (kieModel.includes("elevenlabs")) {
         input.text = prompt;
         delete input.prompt;
       }
