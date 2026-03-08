@@ -27,6 +27,7 @@ const defaults: GalleryPreferences = {
   sortBy: "newest",
   dateFilter: "all",
   typeFilter: "all",
+  sourceFilter: "all",
   showPrompt: true,
   showMeta: true,
   zoom: 3,
