@@ -935,7 +935,7 @@ serve(async (req) => {
       endpoint = AUDIO_ENDPOINTS[model_id];
     }
 
-    if (!isGoogleModel && !isKieModel && !endpoint) {
+    if (!isGoogleModel && !isKieModel && !isSunoModel && !endpoint) {
       return new Response(JSON.stringify({ error: "Modèle inconnu" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
