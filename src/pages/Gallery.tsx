@@ -6,6 +6,9 @@ import { useAuth } from "@/hooks/useAuth";
 import { getSignedUrl, getSignedUrls } from "@/lib/storage";
 import { toast } from "sonner";
 import { useProjects } from "@/hooks/useProjects";
+import VideoThumbnail from "@/components/VideoThumbnail";
+import DeleteConfirmModal from "@/components/DeleteConfirmModal";
+import GalleryCardMenu from "@/components/GalleryCardMenu";
 
 interface GalleryItem {
   id: string;
@@ -16,7 +19,7 @@ interface GalleryItem {
   result_metadata: Record<string, any> | null;
   created_at: string;
   credits_used: number;
-  // resolved signed URL for display
+  project_id?: string | null;
   displayUrl?: string;
 }
 
@@ -24,11 +27,12 @@ const DELETE_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/delete-gen
 
 const Gallery = () => {
   const { user } = useAuth();
-  const { selectedProjectId } = useProjects();
+  const { selectedProjectId, projects } = useProjects();
   const [items, setItems] = useState<GalleryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<GalleryItem | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<GalleryItem | null>(null);
   const [filter, setFilter] = useState<"all" | "image" | "video" | "audio">("all");
 
   const fetchGallery = useCallback(async () => {
@@ -36,7 +40,7 @@ const Gallery = () => {
 
     let query = supabase
       .from("generation_jobs")
-      .select("id, tool_type, prompt, model, result_url, result_metadata, created_at, credits_used")
+      .select("id, tool_type, prompt, model, result_url, result_metadata, created_at, credits_used, project_id")
       .eq("status", "completed")
       .is("deleted_at", null)
       .order("created_at", { ascending: false })
@@ -53,10 +57,7 @@ const Gallery = () => {
       return;
     }
 
-    // Filter out items without result_url
     const validItems = (data as GalleryItem[]).filter((d) => d.result_url);
-
-    // Resolve signed URLs in batch
     const urls = validItems.map((d) => d.result_url);
     const signedUrls = await getSignedUrls(urls);
 
@@ -102,6 +103,7 @@ const Gallery = () => {
       toast.error(e.message || "Erreur lors de la suppression");
     } finally {
       setDeleting(null);
+      setDeleteTarget(null);
     }
   };
 
@@ -122,6 +124,26 @@ const Gallery = () => {
     } catch {
       toast.error("Erreur lors du téléchargement");
     }
+  };
+
+  const handleMoveToProject = async (item: GalleryItem, projectId: string | null) => {
+    const { error } = await supabase
+      .from("generation_jobs")
+      .update({ project_id: projectId })
+      .eq("id", item.id);
+
+    if (error) {
+      toast.error("Erreur lors du déplacement");
+      return;
+    }
+
+    setItems((prev) =>
+      prev.map((i) => (i.id === item.id ? { ...i, project_id: projectId } : i))
+    );
+    const projectName = projectId
+      ? projects.find((p) => p.id === projectId)?.name || "projet"
+      : "aucun projet";
+    toast.success(`Déplacé vers ${projectName}`);
   };
 
   const typeIcon = (type: string) => {
@@ -186,7 +208,7 @@ const Gallery = () => {
                 transition={{ delay: i * 0.05 }}
                 className="glass-card overflow-hidden cursor-pointer group break-inside-avoid relative"
               >
-                {/* Delete button — always visible overlay on media */}
+                {/* Media area */}
                 <div className="relative" onClick={() => setSelected(item)}>
                   {item.tool_type === "image" ? (
                     <img
@@ -196,31 +218,47 @@ const Gallery = () => {
                       loading="lazy"
                     />
                   ) : item.tool_type === "video" ? (
-                    <video
-                      src={item.displayUrl}
-                      className="w-full"
-                      muted
-                      playsInline
-                      onMouseEnter={(e) => (e.target as HTMLVideoElement).play()}
-                      onMouseLeave={(e) => { const v = e.target as HTMLVideoElement; v.pause(); v.currentTime = 0; }}
-                    />
+                    <VideoThumbnail src={item.displayUrl || ""} />
                   ) : (
                     <div className="w-full h-28 bg-muted/30 flex items-center justify-center">
                       <Music className="w-8 h-8 text-muted-foreground/30" />
                     </div>
                   )}
-                  <button
-                    onClick={(e) => { e.stopPropagation(); handleDelete(item); }}
-                    disabled={deleting === item.id}
-                    className="absolute top-2 right-2 z-10 opacity-90 group-hover:opacity-100 transition-all bg-destructive/80 backdrop-blur-sm hover:bg-destructive text-destructive-foreground rounded-full p-1.5 shadow-lg"
-                  >
-                    {deleting === item.id ? (
-                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                    ) : (
+
+                  {/* Hover action buttons */}
+                  <div className="absolute top-2 right-2 z-10 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button
+                      onClick={(e) => { e.stopPropagation(); handleDownload(item); }}
+                      className="w-7 h-7 rounded-lg flex items-center justify-center bg-background/70 backdrop-blur-sm hover:bg-background/90 transition-all text-muted-foreground hover:text-foreground shadow-sm"
+                      title="Télécharger"
+                    >
+                      <Download className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); setDeleteTarget(item); }}
+                      className="w-7 h-7 rounded-lg flex items-center justify-center bg-destructive/80 backdrop-blur-sm hover:bg-destructive transition-all text-destructive-foreground shadow-sm"
+                      title="Supprimer"
+                    >
                       <Trash2 className="w-3.5 h-3.5" />
-                    )}
-                  </button>
+                    </button>
+                    <GalleryCardMenu
+                      onDownload={() => handleDownload(item)}
+                      onDelete={() => setDeleteTarget(item)}
+                      onMoveProject={() => {
+                        // Quick project move — pick first other project
+                        const otherProjects = projects.filter((p) => p.id !== item.project_id);
+                        if (otherProjects.length === 0) {
+                          toast.info("Aucun autre projet disponible");
+                          return;
+                        }
+                        // For now, move to first available project
+                        handleMoveToProject(item, otherProjects[0].id);
+                      }}
+                    />
+                  </div>
                 </div>
+
+                {/* Info */}
                 <div className="p-3" onClick={() => setSelected(item)}>
                   <p className="text-xs text-muted-foreground line-clamp-2">{item.prompt}</p>
                   <div className="flex items-center gap-2 mt-2">
@@ -291,11 +329,10 @@ const Gallery = () => {
                     Télécharger
                   </button>
                   <button
-                    onClick={() => handleDelete(selected)}
-                    disabled={deleting === selected.id}
+                    onClick={() => setDeleteTarget(selected)}
                     className="px-4 py-3 rounded-xl bg-destructive/10 text-destructive hover:bg-destructive/20 transition-colors text-sm"
                   >
-                    {deleting === selected.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                    <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
               </div>
@@ -303,6 +340,14 @@ const Gallery = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Delete confirmation */}
+      <DeleteConfirmModal
+        open={!!deleteTarget}
+        loading={!!deleting}
+        onCancel={() => setDeleteTarget(null)}
+        onConfirm={() => deleteTarget && handleDelete(deleteTarget)}
+      />
     </div>
   );
 };
