@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useSyncExternalStore, useCallback } from "react";
+
 import { Textarea } from "@/components/ui/textarea";
 import { Slider } from "@/components/ui/slider";
 import { supabase } from "@/integrations/supabase/client";
