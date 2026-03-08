@@ -377,7 +377,7 @@ const Gallery = () => {
                           loading="lazy"
                         />
                       ) : item.tool_type === "video" ? (
-                        <div className="relative aspect-square bg-card flex items-center justify-center overflow-hidden">
+                        <div className={`relative ${cardAspect} bg-card flex items-center justify-center overflow-hidden`}>
                           <VideoThumbnail src={item.displayUrl || ""} />
                           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                             <div className="w-9 h-9 rounded-full bg-primary/15 border border-primary/30 flex items-center justify-center">
