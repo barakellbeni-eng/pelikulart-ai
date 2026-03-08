@@ -159,12 +159,23 @@ serve(async (req) => {
       : `generate 4 different ${planLabel} shot of this exact image, Keep the same subject, same scene, same colors, same lighting.`;
 
     let imageResult: string | null = null;
-    let usedProvider = "fal";
+    let usedProvider = "kie";
 
-    // Try Fal AI first, fallback to KIE AI
-    if (FAL_API_KEY) {
+    // Try KIE AI (nano-banana-2) first
+    if (KIE_AI_API_KEY) {
       try {
-        console.log(`Multi-plan: generating ${planLabel} ${aspect_ratio} ${resolution} via Fal AI`);
+        console.log(`Multi-plan: generating ${planLabel} ${aspect_ratio} ${resolution} via KIE AI (nano-banana-2)`);
+        imageResult = await kieGenerate(prompt, image_url, aspect_ratio, KIE_AI_API_KEY);
+      } catch (kieErr: any) {
+        console.error("KIE AI error:", kieErr.message);
+      }
+    }
+
+    // Fallback to Fal AI if KIE failed
+    if (!imageResult && FAL_API_KEY) {
+      try {
+        console.log(`Multi-plan: falling back to Fal AI for ${planLabel}`);
+        usedProvider = "fal";
         const falResp = await fetch(FAL_ENDPOINT, {
           method: "POST",
           headers: { Authorization: `Key ${FAL_API_KEY}`, "Content-Type": "application/json" },
@@ -182,17 +193,6 @@ serve(async (req) => {
         }
       } catch (falErr) {
         console.error("Fal AI exception:", falErr);
-      }
-    }
-
-    // Fallback to KIE AI if Fal failed
-    if (!imageResult && KIE_AI_API_KEY) {
-      try {
-        console.log(`Multi-plan: falling back to KIE AI for ${planLabel}`);
-        usedProvider = "kie";
-        imageResult = await kieGenerate(prompt, image_url, aspect_ratio, KIE_AI_API_KEY);
-      } catch (kieErr: any) {
-        console.error("KIE AI error:", kieErr.message);
       }
     }
 
