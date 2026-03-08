@@ -4,6 +4,7 @@ import { Slider } from "@/components/ui/slider";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useCauris } from "@/hooks/useCauris";
+import { useProjects } from "@/hooks/useProjects";
 import {
   Image,
   Video,
