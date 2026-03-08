@@ -54,15 +54,18 @@ const MultiPlan = () => {
   const plansRef = useRef<HTMLDivElement>(null);
   const planResultRef = useRef<HTMLDivElement>(null);
 
-  const callGenerate = async (imageUrl: string, planType: string) => {
+  const callGenerate = async (imageUrl: string, planType: string, planIndex?: number) => {
     const { data: sessionData } = await supabase.auth.getSession();
     const token = sessionData?.session?.access_token;
     if (!token) throw new Error("Non authentifié");
 
+    const payload: any = { image_url: imageUrl, plan_type: planType, aspect_ratio: selectedRatio, resolution: selectedResolution };
+    if (planIndex !== undefined) payload.plan_index = planIndex;
+
     const resp = await fetch(MULTIPLAN_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ image_url: imageUrl, plan_type: planType, aspect_ratio: selectedRatio, resolution: selectedResolution }),
+      body: JSON.stringify(payload),
     });
 
     if (!resp.ok) {
