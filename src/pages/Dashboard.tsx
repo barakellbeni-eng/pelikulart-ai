@@ -2098,8 +2098,17 @@ const Dashboard = () => {
               );
             }
 
+            const gridStyle = (() => {
+              const sizes = [80, 130, 180, 240, 0];
+              const size = sizes[gallerySizeLevel - 1];
+              if (gallerySizeLevel === 5) return { gridTemplateColumns: "1fr" };
+              if (gallerySizeLevel === 4) return { gridTemplateColumns: "repeat(2, 1fr)" };
+              return { gridTemplateColumns: `repeat(auto-fill, minmax(${size}px, 1fr))` };
+            })();
+            const cardAspect = gallerySizeLevel >= 4 ? "aspect-video" : "aspect-square";
+
             return (
-              <div className={`grid gap-3 ${galleryImageSize === "mini" ? "grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8" : galleryImageSize === "large" ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-3" : galleryImageSize === "small" ? "grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5" : "grid-cols-2 md:grid-cols-3 lg:grid-cols-4"}`}>
+              <div className="grid gap-3" style={gridStyle}>
                 {/* Loading placeholders */}
                 {isGenerating && (
                   activeTab === "audio" ? (
