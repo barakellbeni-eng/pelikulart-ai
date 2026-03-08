@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
+import { downloadAndUploadToR2, getR2SignedUrl } from "../_shared/r2.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -34,42 +35,11 @@ const MODELS_USING_IMAGE_URLS = new Set([
   "seedream-v4-edit", "seedream-v45-edit", "flux2-dev-edit", "nano-banana-pro-edit",
 ]);
 
-// Allowed setting keys to prevent arbitrary data injection
 const ALLOWED_SETTINGS = new Set([
   "aspect_ratio", "resolution", "image_size", "guidance_scale", "seed",
   "negative_prompt", "num_inference_steps", "style", "safety_tolerance",
   "enable_safety_checker", "expand_prompt", "raw",
 ]);
-
-async function downloadAndUpload(
-  supabase: any,
-  imageUrl: string,
-  userId: string,
-  format: string,
-): Promise<string> {
-  const resp = await fetch(imageUrl);
-  if (!resp.ok) throw new Error("Failed to download generated image");
-  const arrayBuffer = await resp.arrayBuffer();
-  const uint8 = new Uint8Array(arrayBuffer);
-
-  const ext = format === "jpeg" ? "jpg" : format;
-  const fileName = `${userId}/${crypto.randomUUID()}.${ext}`;
-
-  const { error: uploadError } = await supabase.storage
-    .from("generations")
-    .upload(fileName, uint8, {
-      contentType: `image/${format}`,
-      upsert: false,
-    });
-
-  if (uploadError) {
-    console.error("Storage upload error:", uploadError);
-    throw new Error("Failed to upload image to storage");
-  }
-
-  // Return the storage path (not public URL) for signed URL generation
-  return fileName;
-}
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -86,12 +56,12 @@ serve(async (req) => {
       throw new Error("Supabase config missing");
     }
 
-    // --- Authentication: require valid JWT ---
+    // --- Authentication ---
     const authHeader = req.headers.get("authorization") || "";
     if (!authHeader.startsWith("Bearer ")) {
       return new Response(
         JSON.stringify({ error: "Authentification requise" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
 
@@ -99,12 +69,11 @@ serve(async (req) => {
     const userClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
       global: { headers: { Authorization: authHeader } },
     });
-
     const { data: claimsData, error: claimsError } = await userClient.auth.getClaims(token);
     if (claimsError || !claimsData?.claims?.sub) {
       return new Response(
         JSON.stringify({ error: "Authentification invalide" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
 
@@ -127,14 +96,14 @@ serve(async (req) => {
     if (!prompt || typeof prompt !== "string") {
       return new Response(
         JSON.stringify({ error: "Un prompt est requis" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
 
     if (prompt.length > 5000) {
       return new Response(
         JSON.stringify({ error: "Le prompt est trop long (max 5000 caractères)" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
 
@@ -142,13 +111,12 @@ serve(async (req) => {
     if (!endpoint) {
       return new Response(
         JSON.stringify({ error: "Modèle inconnu" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
 
     const safeNumImages = Math.min(Math.max(1, Number(num_images) || 1), 4);
 
-    // Filter model settings to allowed keys only
     const modelSettings: Record<string, any> = {};
     for (const [key, value] of Object.entries(rawSettings)) {
       if (ALLOWED_SETTINGS.has(key) && value !== "" && value !== null && value !== undefined) {
@@ -157,7 +125,7 @@ serve(async (req) => {
       }
     }
 
-    // --- Server-side credit deduction BEFORE processing ---
+    // --- Credit deduction ---
     const cost = typeof cauris_cost === "number" && cauris_cost > 0 ? cauris_cost : 2;
     const { data: deductResult, error: deductError } = await adminClient.rpc("deduct_cauris", {
       p_user_id: userId,
@@ -167,7 +135,7 @@ serve(async (req) => {
     if (deductError || deductResult === -1) {
       return new Response(
         JSON.stringify({ error: "Solde insuffisant" }),
-        { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
 
@@ -175,11 +143,10 @@ serve(async (req) => {
     const isEditModel = MODELS_USING_IMAGE_URLS.has(model_id);
     const hasImages = (image_urls && Array.isArray(image_urls) && image_urls.length > 0) || !!image_url;
     if (isEditModel && !hasImages) {
-      // Refund credits since we can't process
       await adminClient.rpc("add_cauris", { p_user_id: userId, p_amount: cost });
       return new Response(
         JSON.stringify({ error: "Ce modèle d'édition nécessite au moins une image de référence." }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
 
@@ -191,7 +158,6 @@ serve(async (req) => {
       ...modelSettings,
     };
 
-    // Handle image input
     if (image_urls && Array.isArray(image_urls) && image_urls.length > 0) {
       if (MODELS_USING_IMAGE_URLS.has(model_id)) {
         payload.image_urls = image_urls.slice(0, 5);
@@ -220,20 +186,18 @@ serve(async (req) => {
     if (!submitResp.ok) {
       const errText = await submitResp.text();
       console.error("Fal submit error:", submitResp.status, errText);
-
-      // Refund credits on failure
       await adminClient.rpc("add_cauris", { p_user_id: userId, p_amount: cost });
 
       if (submitResp.status === 500 && errText.includes("temporarily overloaded")) {
         return new Response(
           JSON.stringify({ error: "Le service IA est temporairement surchargé. Réessayez dans quelques secondes." }),
-          { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" } },
         );
       }
 
       return new Response(
         JSON.stringify({ error: "Erreur du service de génération. Réessayez." }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
 
@@ -241,49 +205,48 @@ serve(async (req) => {
     const falImages = submitData.images || submitData.output?.images;
 
     if (!falImages?.length) {
-      // Refund credits
       await adminClient.rpc("add_cauris", { p_user_id: userId, p_amount: cost });
       return new Response(
         JSON.stringify({ error: "Aucune image générée" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
 
     const savedImages = [];
     for (const img of falImages) {
       try {
-        const storedPath = await downloadAndUpload(adminClient, img.url, userId, output_format);
+        // Upload to R2 instead of Supabase storage
+        const r2Key = await downloadAndUploadToR2(img.url, userId, output_format);
 
+        // Store with r2: prefix in DB to distinguish from old Supabase paths
         await adminClient.from("generations").insert({
           user_id: userId,
           prompt: prompt.slice(0, 5000),
-          image_url: storedPath,
+          image_url: `r2:${r2Key}`,
           aspect_ratio: modelSettings.aspect_ratio || null,
           resolution: modelSettings.resolution || modelSettings.image_size || null,
           output_format,
         });
 
-        // Generate a signed URL for immediate display
-        const { data: signedData } = await adminClient.storage
-          .from("generations")
-          .createSignedUrl(storedPath, 3600);
-
-        savedImages.push({ url: signedData?.signedUrl || storedPath, width: img.width, height: img.height });
+        // Generate a presigned URL for immediate display
+        const signedUrl = await getR2SignedUrl(r2Key, 3600);
+        savedImages.push({ url: signedUrl, width: img.width, height: img.height });
       } catch (uploadErr) {
-        console.error("Upload/save error:", uploadErr);
+        console.error("R2 upload error:", uploadErr);
+        // Fallback to fal URL
         savedImages.push({ url: img.url, width: img.width, height: img.height });
       }
     }
 
     return new Response(
       JSON.stringify({ images: savedImages, new_balance: deductResult }),
-      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   } catch (e) {
     console.error("generate-image error:", e);
     return new Response(
       JSON.stringify({ error: "Une erreur interne est survenue. Réessayez." }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   }
 });
