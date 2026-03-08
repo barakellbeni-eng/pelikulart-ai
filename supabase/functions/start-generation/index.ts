@@ -513,7 +513,7 @@ async function processKie(jobId: string, userId: string, body: any) {
   if (!KIE_API_KEY) throw new Error("KIE_AI_API_KEY is not configured");
 
   const { prompt, model_id, tool_type, image_url, image_urls, num_images = 1, ...rawSettings } = body;
-  const kieModel = KIE_MODELS[model_id];
+  let kieModel = KIE_MODELS[model_id];
   if (!kieModel) throw new Error(`Unknown KIE model: ${model_id}`);
 
   try {
@@ -522,7 +522,18 @@ async function processKie(jobId: string, userId: string, body: any) {
     // Build KIE input payload based on tool type
     const input: Record<string, any> = { prompt };
 
+    // Determine if user provided images
+    const imageList = (image_urls && Array.isArray(image_urls) && image_urls.length > 0)
+      ? image_urls : (image_url ? [image_url] : []);
+    const hasImages = imageList.length > 0;
+
     if (tool_type === "image") {
+      // Auto-switch: kie-nano-banana → google/nano-banana-edit when images provided
+      if (model_id === "kie-nano-banana" && hasImages) {
+        kieModel = "google/nano-banana-edit";
+        console.log(`[KIE] Auto-switched to google/nano-banana-edit (image provided)`);
+      }
+
       // Different models use different param names per KIE API docs
       if (KIE_ASPECT_RESOLUTION_MODELS.has(kieModel)) {
         // nano-banana-pro, nano-banana-2 use aspect_ratio + resolution
@@ -537,10 +548,7 @@ async function processKie(jobId: string, userId: string, body: any) {
       if (rawSettings.google_search !== undefined) input.google_search = rawSettings.google_search;
 
       // Handle image inputs — param name differs per model
-      const imageList = (image_urls && Array.isArray(image_urls) && image_urls.length > 0)
-        ? image_urls : (image_url ? [image_url] : []);
-
-      if (imageList.length > 0) {
+      if (hasImages) {
         if (KIE_IMAGE_INPUT_MODELS.has(kieModel)) {
           // nano-banana-pro & nano-banana-2 use image_input
           input.image_input = imageList.slice(0, 14);
