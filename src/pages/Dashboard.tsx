@@ -111,6 +111,9 @@ const Dashboard = () => {
   const [selectedModel, setSelectedModel] = useState<FalModel>(imageModels[0]);
   const [modelSettings, setModelSettings] = useState<Record<string, any>>(getDefaultSettings(imageModels[0]));
   const [numImages, setNumImages] = useState(1);
+  // Cache settings per model so switching doesn't lose adjustments
+  const settingsCacheRef = useRef<Record<string, { settings: Record<string, any>; numImages: number }>>({});
+
   const generationJob = useSyncExternalStore(subscribeGeneration, getGenerationJob);
   const isGenerating = generationJob?.status === "pending";
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -238,25 +241,30 @@ const Dashboard = () => {
   }, [selectedModel, referenceImages, urlToBase64]);
 
   const handleSelectModel = (model: FalModel) => {
+    // Save current model's settings before switching
+    settingsCacheRef.current[selectedModel.id] = { settings: { ...modelSettings }, numImages };
+    // Restore cached settings or use defaults
+    const cached = settingsCacheRef.current[model.id];
     setSelectedModel(model);
-    setModelSettings(getDefaultSettings(model));
-    setNumImages(1);
+    setModelSettings(cached?.settings ?? getDefaultSettings(model));
+    setNumImages(cached?.numImages ?? 1);
     setShowModelDropdown(false);
   };
 
   const handleSwitchTab = (tab: "image" | "video" | "audio") => {
+    // Save current model's settings
+    settingsCacheRef.current[selectedModel.id] = { settings: { ...modelSettings }, numImages };
     setActiveTab(tab);
-    if (tab === "video") {
-      setSelectedModel(videoModels[0]);
-      setModelSettings(getDefaultSettings(videoModels[0]));
-    } else if (tab === "audio") {
-      setSelectedModel(audioModels[0]);
-      setModelSettings(getDefaultSettings(audioModels[0]));
-    } else if (tab === "image") {
-      setSelectedModel(imageModels[0]);
-      setModelSettings(getDefaultSettings(imageModels[0]));
-    }
-    setNumImages(1);
+    const targetModels = tab === "video" ? videoModels : tab === "audio" ? audioModels : imageModels;
+    // Try to restore previously used model in this tab, otherwise first model
+    const cachedModelId = Object.keys(settingsCacheRef.current).find(id =>
+      targetModels.some(m => m.id === id)
+    );
+    const targetModel = cachedModelId ? targetModels.find(m => m.id === cachedModelId)! : targetModels[0];
+    const cached = settingsCacheRef.current[targetModel.id];
+    setSelectedModel(targetModel);
+    setModelSettings(cached?.settings ?? getDefaultSettings(targetModel));
+    setNumImages(cached?.numImages ?? 1);
   };
 
   const updateSetting = (key: string, value: any) => {
