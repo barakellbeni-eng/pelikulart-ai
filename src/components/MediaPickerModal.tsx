@@ -31,6 +31,7 @@ interface MediaPickerModalProps {
 
 const UPLOAD_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/upload-media`;
 const DELETE_MEDIA_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/delete-media`;
+const DELETE_GENERATION_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/delete-generation`;
 
 // ─── Helpers ───
 
@@ -235,27 +236,42 @@ export default function MediaPickerModal({ open, onClose, onSelect, accept, titl
     if (file) handleUpload(file);
   };
 
-  // Delete handler (uploads only)
+  // Delete handler (uploads and generations)
   const handleDelete = async (item: MediaItem) => {
-    if (deleting || item.source !== "upload") return;
+    if (deleting) return;
     setDeleting(item.id);
     try {
       const { data: sessionData } = await supabase.auth.getSession();
       const token = sessionData?.session?.access_token;
       if (!token) throw new Error("Non authentifié");
 
-      const resp = await fetch(DELETE_MEDIA_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ media_id: item.id }),
-      });
-
-      if (!resp.ok) {
-        const err = await resp.json().catch(() => ({ error: "Erreur" }));
-        throw new Error(err.error || "Erreur de suppression");
+      if (item.source === "upload") {
+        const resp = await fetch(DELETE_MEDIA_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ media_id: item.id }),
+        });
+        if (!resp.ok) {
+          const err = await resp.json().catch(() => ({ error: "Erreur" }));
+          throw new Error(err.error || "Erreur de suppression");
+        }
+      } else {
+        // Generation: call delete-generation
+        const resp = await fetch(DELETE_GENERATION_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ job_id: item.id }),
+        });
+        if (!resp.ok) {
+          const err = await resp.json().catch(() => ({ error: "Erreur" }));
+          throw new Error(err.error || "Erreur de suppression");
+        }
       }
 
       setItems((prev) => prev.filter((i) => i.id !== item.id));
@@ -403,20 +419,18 @@ export default function MediaPickerModal({ open, onClose, onSelect, accept, titl
                               </div>
                             )}
 
-                            {/* Delete button for uploads */}
-                            {item.source === "upload" && (
-                              <button
-                                onClick={(e) => { e.stopPropagation(); handleDelete(item); }}
-                                disabled={deleting === item.id}
-                                className="absolute top-1.5 right-1.5 z-10 opacity-0 group-hover:opacity-100 transition-opacity bg-destructive/80 hover:bg-destructive text-destructive-foreground rounded-full p-1"
-                              >
-                                {deleting === item.id ? (
-                                  <Loader2 className="w-2.5 h-2.5 animate-spin" />
-                                ) : (
-                                  <Trash2 className="w-2.5 h-2.5" />
-                                )}
-                              </button>
-                            )}
+                            {/* Delete button */}
+                            <button
+                              onClick={(e) => { e.stopPropagation(); handleDelete(item); }}
+                              disabled={deleting === item.id}
+                              className="absolute top-1.5 right-1.5 z-10 opacity-0 group-hover:opacity-100 transition-opacity bg-destructive/80 hover:bg-destructive text-destructive-foreground rounded-full p-1"
+                            >
+                              {deleting === item.id ? (
+                                <Loader2 className="w-2.5 h-2.5 animate-spin" />
+                              ) : (
+                                <Trash2 className="w-2.5 h-2.5" />
+                              )}
+                            </button>
 
                             {item.file_type === "image" ? (
                               <img
