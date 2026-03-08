@@ -14,6 +14,72 @@ export type Database = {
   }
   public: {
     Tables: {
+      generation_jobs: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          credits_used: number
+          deleted_at: string | null
+          external_job_id: string | null
+          id: string
+          model: string
+          params: Json | null
+          progress: number
+          prompt: string
+          provider: string
+          result_metadata: Json | null
+          result_url: string | null
+          result_url_temp: string | null
+          started_at: string | null
+          status: string
+          tool_type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          credits_used?: number
+          deleted_at?: string | null
+          external_job_id?: string | null
+          id?: string
+          model: string
+          params?: Json | null
+          progress?: number
+          prompt: string
+          provider?: string
+          result_metadata?: Json | null
+          result_url?: string | null
+          result_url_temp?: string | null
+          started_at?: string | null
+          status?: string
+          tool_type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          credits_used?: number
+          deleted_at?: string | null
+          external_job_id?: string | null
+          id?: string
+          model?: string
+          params?: Json | null
+          progress?: number
+          prompt?: string
+          provider?: string
+          result_metadata?: Json | null
+          result_url?: string | null
+          result_url_temp?: string | null
+          started_at?: string | null
+          status?: string
+          tool_type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       generations: {
         Row: {
           aspect_ratio: string | null
