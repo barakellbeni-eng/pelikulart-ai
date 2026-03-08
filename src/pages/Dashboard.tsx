@@ -896,7 +896,7 @@ const Dashboard = () => {
   };
 
 
-    const i2vModels = getModelsByType("video").filter((m) => m.supportsImageInput);
+    const handleImageToVideo = (img: GeneratedImage) => {
     if (i2vModels.length === 0) return;
     setActiveTab("video");
     setSelectedModel(i2vModels[0]);
