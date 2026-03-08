@@ -10,6 +10,7 @@ const corsHeaders = {
 
 const FAL_ENDPOINT = "https://fal.run/fal-ai/nano-banana-pro/edit";
 const KIE_AI_BASE = "https://api.kie.ai";
+const KIE_MODEL = "nano-banana-2";
 
 const PLAN_TYPE_MAP: Record<string, string> = {
   "close-up": "close-up shot",
