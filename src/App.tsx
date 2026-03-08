@@ -79,7 +79,7 @@ const AuthenticatedLayout = ({ children }: { children: React.ReactNode }) => {
             </div>
           </header>
           <div className={isFullHeightPage ? "flex-1 min-h-0 overflow-hidden" : "flex-1 min-h-0"}>{children}</div>
-          <GlobalActiveJobs />
+          
         </main>
       </div>
     </SidebarProvider>
