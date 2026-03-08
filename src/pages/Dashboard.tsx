@@ -444,6 +444,11 @@ const Dashboard = () => {
 
   const handleGenerate = async () => {
     if (!prompt.trim()) return;
+    // Edit models require at least one reference image
+    if (selectedModel.id.endsWith("-edit") && referenceImages.length === 0) {
+      toast.error("Ce modèle d'édition nécessite au moins une image de référence.");
+      return;
+    }
     const cost = calculateCaurisCost(selectedModel, modelSettings, numImages);
     if (!gateGeneration(cost)) return;
 
