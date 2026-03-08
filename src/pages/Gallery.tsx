@@ -1,14 +1,15 @@
-import { useState, useEffect, useCallback } from "react";
-import { X, Download, Calendar, Cpu, Trash2, Loader2, Image as ImageIcon, Film, Music } from "lucide-react";
+import { useState, useEffect, useCallback, useRef } from "react";
+import { X, Download, Calendar, Cpu, Trash2, Loader2, Image as ImageIcon, Film, Music, Check } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { getSignedUrl, getSignedUrls } from "@/lib/storage";
+import { getSignedUrls } from "@/lib/storage";
 import { toast } from "sonner";
 import { useProjects } from "@/hooks/useProjects";
 import VideoThumbnail from "@/components/VideoThumbnail";
 import DeleteConfirmModal from "@/components/DeleteConfirmModal";
 import GalleryCardMenu from "@/components/GalleryCardMenu";
+import { useGallerySelection } from "@/hooks/useGallerySelection";
 
 interface GalleryItem {
   id: string;
@@ -34,6 +35,24 @@ const Gallery = () => {
   const [deleting, setDeleting] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<GalleryItem | null>(null);
   const [filter, setFilter] = useState<"all" | "image" | "video" | "audio">("all");
+  const [removingIds, setRemovingIds] = useState<Set<string>>(new Set());
+  const [batchDeleting, setBatchDeleting] = useState(false);
+
+  const filtered = filter === "all" ? items : items.filter((i) => i.tool_type === filter);
+
+  const {
+    selectedIds,
+    containerRef,
+    toggleSelect,
+    clearSelection,
+    handleMouseDown,
+    handleMouseMove,
+    handleMouseUp,
+    isDragging,
+    dragBox,
+    isSelected,
+    selectionCount,
+  } = useGallerySelection(filtered.map((i) => i.id));
 
   const fetchGallery = useCallback(async () => {
     if (!user) { setItems([]); setLoading(false); return; }
@@ -51,11 +70,7 @@ const Gallery = () => {
     }
 
     const { data, error } = await query;
-
-    if (error || !data) {
-      setLoading(false);
-      return;
-    }
+    if (error || !data) { setLoading(false); return; }
 
     const validItems = (data as GalleryItem[]).filter((d) => d.result_url);
     const urls = validItems.map((d) => d.result_url);
@@ -70,9 +85,7 @@ const Gallery = () => {
     setLoading(false);
   }, [user, selectedProjectId]);
 
-  useEffect(() => {
-    fetchGallery();
-  }, [fetchGallery]);
+  useEffect(() => { fetchGallery(); }, [fetchGallery]);
 
   const handleDelete = async (item: GalleryItem) => {
     if (deleting) return;
@@ -84,10 +97,7 @@ const Gallery = () => {
 
       const resp = await fetch(DELETE_URL, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ job_id: item.id }),
       });
 
@@ -104,6 +114,56 @@ const Gallery = () => {
     } finally {
       setDeleting(null);
       setDeleteTarget(null);
+    }
+  };
+
+  const handleBatchDelete = async () => {
+    if (batchDeleting || selectionCount === 0) return;
+    setBatchDeleting(true);
+
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData?.session?.access_token;
+      if (!token) throw new Error("Non authentifié");
+
+      const idsToDelete = Array.from(selectedIds);
+
+      // Staggered removal animation
+      setRemovingIds(new Set(idsToDelete));
+
+      // Wait for animation to complete (300ms + 50ms * count)
+      await new Promise((r) => setTimeout(r, 300 + idsToDelete.length * 50));
+
+      // Delete all in parallel
+      const results = await Promise.allSettled(
+        idsToDelete.map((id) =>
+          fetch(DELETE_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+            body: JSON.stringify({ job_id: id }),
+          })
+        )
+      );
+
+      const successIds = new Set<string>();
+      results.forEach((r, i) => {
+        if (r.status === "fulfilled" && r.value.ok) successIds.add(idsToDelete[i]);
+      });
+
+      setItems((prev) => prev.filter((i) => !successIds.has(i.id)));
+      clearSelection();
+      setRemovingIds(new Set());
+
+      if (successIds.size === idsToDelete.length) {
+        toast.success(`${successIds.size} génération(s) supprimée(s)`);
+      } else {
+        toast.warning(`${successIds.size}/${idsToDelete.length} supprimée(s)`);
+      }
+    } catch (e: any) {
+      toast.error(e.message || "Erreur lors de la suppression");
+      setRemovingIds(new Set());
+    } finally {
+      setBatchDeleting(false);
     }
   };
 
@@ -132,17 +192,10 @@ const Gallery = () => {
       .update({ project_id: projectId })
       .eq("id", item.id);
 
-    if (error) {
-      toast.error("Erreur lors du déplacement");
-      return;
-    }
+    if (error) { toast.error("Erreur lors du déplacement"); return; }
 
-    setItems((prev) =>
-      prev.map((i) => (i.id === item.id ? { ...i, project_id: projectId } : i))
-    );
-    const projectName = projectId
-      ? projects.find((p) => p.id === projectId)?.name || "projet"
-      : "aucun projet";
+    setItems((prev) => prev.map((i) => (i.id === item.id ? { ...i, project_id: projectId } : i)));
+    const projectName = projectId ? projects.find((p) => p.id === projectId)?.name || "projet" : "aucun projet";
     toast.success(`Déplacé vers ${projectName}`);
   };
 
@@ -152,14 +205,21 @@ const Gallery = () => {
     return <ImageIcon className="w-3 h-3" />;
   };
 
-  const filtered = filter === "all" ? items : items.filter((i) => i.tool_type === filter);
-
   const filterButtons: { key: typeof filter; label: string }[] = [
     { key: "all", label: "Tout" },
     { key: "image", label: "Images" },
     { key: "video", label: "Vidéos" },
     { key: "audio", label: "Audio" },
   ];
+
+  const handleCardClick = (item: GalleryItem, e: React.MouseEvent) => {
+    if (isDragging) return;
+    if (e.ctrlKey || e.metaKey || selectionCount > 0) {
+      toggleSelect(item.id, e.ctrlKey || e.metaKey);
+    } else {
+      setSelected(item);
+    }
+  };
 
   return (
     <div className="min-h-screen pb-24 md:pb-8">
@@ -189,7 +249,21 @@ const Gallery = () => {
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto px-4 pt-6">
+      <main
+        ref={containerRef}
+        className="max-w-4xl mx-auto px-4 pt-6 relative select-none"
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+      >
+        {/* Drag selection rectangle */}
+        {dragBox && (
+          <div
+            className="absolute border-2 border-primary/50 bg-primary/10 rounded-sm pointer-events-none z-40"
+            style={{ left: dragBox.x, top: dragBox.y, width: dragBox.w, height: dragBox.h }}
+          />
+        )}
+
         {loading ? (
           <div className="flex justify-center py-20">
             <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
@@ -200,79 +274,138 @@ const Gallery = () => {
           </div>
         ) : (
           <div className="columns-2 md:columns-3 gap-3 space-y-3">
-            {filtered.map((item, i) => (
-              <motion.div
-                key={item.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.05 }}
-                className="glass-card overflow-hidden cursor-pointer group break-inside-avoid relative"
-              >
-                {/* Media area */}
-                <div className="relative" onClick={() => setSelected(item)}>
-                  {item.tool_type === "image" ? (
-                    <img
-                      src={item.displayUrl}
-                      alt={item.prompt}
-                      className="w-full object-cover"
-                      loading="lazy"
-                    />
-                  ) : item.tool_type === "video" ? (
-                    <VideoThumbnail src={item.displayUrl || ""} />
-                  ) : (
-                    <div className="w-full h-28 bg-muted/30 flex items-center justify-center">
-                      <Music className="w-8 h-8 text-muted-foreground/30" />
+            <AnimatePresence mode="popLayout">
+              {filtered.map((item, i) => {
+                const removing = removingIds.has(item.id);
+                const removingIndex = removing ? Array.from(removingIds).indexOf(item.id) : 0;
+
+                return (
+                  <motion.div
+                    key={item.id}
+                    data-gallery-card={item.id}
+                    layout
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={
+                      removing
+                        ? { opacity: 0, scale: 0.85, transition: { delay: removingIndex * 0.05, duration: 0.3, ease: "easeOut" } }
+                        : { opacity: 1, y: 0, scale: 1 }
+                    }
+                    exit={{ opacity: 0, scale: 0.85, transition: { duration: 0.3, ease: "easeOut" } }}
+                    transition={{ delay: i * 0.03, layout: { duration: 0.4, ease: "easeInOut" } }}
+                    className={`glass-card overflow-hidden cursor-pointer group break-inside-avoid relative transition-all duration-200 ${
+                      isSelected(item.id)
+                        ? "ring-2 ring-primary ring-offset-2 ring-offset-background"
+                        : ""
+                    }`}
+                    onClick={(e) => handleCardClick(item, e)}
+                  >
+                    {/* Selection checkmark */}
+                    <AnimatePresence>
+                      {isSelected(item.id) && (
+                        <motion.div
+                          initial={{ scale: 0, opacity: 0 }}
+                          animate={{ scale: 1, opacity: 1 }}
+                          exit={{ scale: 0, opacity: 0 }}
+                          className="absolute top-2 left-2 z-20 w-6 h-6 rounded-full bg-primary flex items-center justify-center shadow-lg"
+                        >
+                          <Check className="w-3.5 h-3.5 text-primary-foreground" />
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+
+                    {/* Media area */}
+                    <div className="relative">
+                      {item.tool_type === "image" ? (
+                        <img src={item.displayUrl} alt={item.prompt} className="w-full object-cover" loading="lazy" />
+                      ) : item.tool_type === "video" ? (
+                        <VideoThumbnail src={item.displayUrl || ""} />
+                      ) : (
+                        <div className="w-full h-28 bg-muted/30 flex items-center justify-center">
+                          <Music className="w-8 h-8 text-muted-foreground/30" />
+                        </div>
+                      )}
+
+                      {/* Hover action buttons */}
+                      <div className="absolute top-2 right-2 z-10 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handleDownload(item); }}
+                          className="w-7 h-7 rounded-lg flex items-center justify-center bg-background/70 backdrop-blur-sm hover:bg-background/90 transition-all text-muted-foreground hover:text-foreground shadow-sm"
+                          title="Télécharger"
+                        >
+                          <Download className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); setDeleteTarget(item); }}
+                          className="w-7 h-7 rounded-lg flex items-center justify-center bg-destructive/80 backdrop-blur-sm hover:bg-destructive transition-all text-destructive-foreground shadow-sm"
+                          title="Supprimer"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                        <GalleryCardMenu
+                          onDownload={() => handleDownload(item)}
+                          onDelete={() => setDeleteTarget(item)}
+                          onMoveProject={() => {
+                            const otherProjects = projects.filter((p) => p.id !== item.project_id);
+                            if (otherProjects.length === 0) { toast.info("Aucun autre projet disponible"); return; }
+                            handleMoveToProject(item, otherProjects[0].id);
+                          }}
+                        />
+                      </div>
                     </div>
-                  )}
 
-                  {/* Hover action buttons */}
-                  <div className="absolute top-2 right-2 z-10 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button
-                      onClick={(e) => { e.stopPropagation(); handleDownload(item); }}
-                      className="w-7 h-7 rounded-lg flex items-center justify-center bg-background/70 backdrop-blur-sm hover:bg-background/90 transition-all text-muted-foreground hover:text-foreground shadow-sm"
-                      title="Télécharger"
-                    >
-                      <Download className="w-3.5 h-3.5" />
-                    </button>
-                    <button
-                      onClick={(e) => { e.stopPropagation(); setDeleteTarget(item); }}
-                      className="w-7 h-7 rounded-lg flex items-center justify-center bg-destructive/80 backdrop-blur-sm hover:bg-destructive transition-all text-destructive-foreground shadow-sm"
-                      title="Supprimer"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
-                    <GalleryCardMenu
-                      onDownload={() => handleDownload(item)}
-                      onDelete={() => setDeleteTarget(item)}
-                      onMoveProject={() => {
-                        // Quick project move — pick first other project
-                        const otherProjects = projects.filter((p) => p.id !== item.project_id);
-                        if (otherProjects.length === 0) {
-                          toast.info("Aucun autre projet disponible");
-                          return;
-                        }
-                        // For now, move to first available project
-                        handleMoveToProject(item, otherProjects[0].id);
-                      }}
-                    />
-                  </div>
-                </div>
-
-                {/* Info */}
-                <div className="p-3" onClick={() => setSelected(item)}>
-                  <p className="text-xs text-muted-foreground line-clamp-2">{item.prompt}</p>
-                  <div className="flex items-center gap-2 mt-2">
-                    <span className="text-[10px] font-medium text-primary bg-primary/10 px-2 py-0.5 rounded-full flex items-center gap-1">
-                      {typeIcon(item.tool_type)}
-                      {item.model}
-                    </span>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
+                    {/* Info */}
+                    <div className="p-3">
+                      <p className="text-xs text-muted-foreground line-clamp-2">{item.prompt}</p>
+                      <div className="flex items-center gap-2 mt-2">
+                        <span className="text-[10px] font-medium text-primary bg-primary/10 px-2 py-0.5 rounded-full flex items-center gap-1">
+                          {typeIcon(item.tool_type)}
+                          {item.model}
+                        </span>
+                      </div>
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </AnimatePresence>
           </div>
         )}
       </main>
+
+      {/* Floating selection bar */}
+      <AnimatePresence>
+        {selectionCount > 0 && (
+          <motion.div
+            initial={{ y: 80, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 80, opacity: 0 }}
+            transition={{ type: "spring", damping: 25, stiffness: 300 }}
+            className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[90] flex items-center gap-3 bg-card border border-border rounded-2xl px-5 py-3 shadow-2xl backdrop-blur-xl"
+          >
+            <span className="text-sm font-medium text-foreground">
+              {selectionCount} élément{selectionCount > 1 ? "s" : ""} sélectionné{selectionCount > 1 ? "s" : ""}
+            </span>
+            <div className="w-px h-5 bg-border" />
+            <button
+              onClick={clearSelection}
+              className="px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted/50 transition-colors"
+            >
+              Annuler
+            </button>
+            <button
+              onClick={handleBatchDelete}
+              disabled={batchDeleting}
+              className="px-4 py-1.5 text-sm bg-destructive text-destructive-foreground rounded-lg hover:bg-destructive/90 transition-colors font-medium flex items-center gap-2"
+            >
+              {batchDeleting ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <Trash2 className="w-3.5 h-3.5" />
+              )}
+              Supprimer la sélection
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Detail Modal */}
       <AnimatePresence>
@@ -309,29 +442,15 @@ const Gallery = () => {
               <div className="space-y-3">
                 <p className="text-sm text-foreground">{selected.prompt}</p>
                 <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                  <span className="flex items-center gap-1">
-                    <Calendar className="w-3 h-3" />
-                    {new Date(selected.created_at).toLocaleDateString("fr-FR")}
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <Cpu className="w-3 h-3" /> {selected.model}
-                  </span>
-                  <span className="flex items-center gap-1">
-                    🐚 {selected.credits_used}
-                  </span>
+                  <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />{new Date(selected.created_at).toLocaleDateString("fr-FR")}</span>
+                  <span className="flex items-center gap-1"><Cpu className="w-3 h-3" /> {selected.model}</span>
+                  <span className="flex items-center gap-1">🐚 {selected.credits_used}</span>
                 </div>
                 <div className="flex gap-2">
-                  <button
-                    onClick={() => handleDownload(selected)}
-                    className="btn-generate flex-1 flex items-center justify-center gap-2 text-sm py-3"
-                  >
-                    <Download className="w-4 h-4" />
-                    Télécharger
+                  <button onClick={() => handleDownload(selected)} className="btn-generate flex-1 flex items-center justify-center gap-2 text-sm py-3">
+                    <Download className="w-4 h-4" /> Télécharger
                   </button>
-                  <button
-                    onClick={() => setDeleteTarget(selected)}
-                    className="px-4 py-3 rounded-xl bg-destructive/10 text-destructive hover:bg-destructive/20 transition-colors text-sm"
-                  >
+                  <button onClick={() => setDeleteTarget(selected)} className="px-4 py-3 rounded-xl bg-destructive/10 text-destructive hover:bg-destructive/20 transition-colors text-sm">
                     <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
