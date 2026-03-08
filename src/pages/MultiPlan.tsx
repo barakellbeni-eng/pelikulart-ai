@@ -41,8 +41,17 @@ type ResolutionId = (typeof RESOLUTIONS)[number]["id"];
 const MultiPlan = () => {
   const { user } = useAuth();
   const { refetch: refreshBalance } = useCauris();
+  const location = useLocation();
 
   const [sourceImage, setSourceImage] = useState<string | null>(null);
+
+  // Accept image from navigation state (e.g. sent from Dashboard)
+  useEffect(() => {
+    const stateImage = (location.state as any)?.sourceImage;
+    if (stateImage && typeof stateImage === "string") {
+      setSourceImage(stateImage);
+    }
+  }, [location.state]);
   const [selectedPlan, setSelectedPlan] = useState<PlanTypeId>("close-up");
   const [selectedRatio, setSelectedRatio] = useState<AspectRatioId>("1:1");
   const [selectedResolution, setSelectedResolution] = useState<ResolutionId>("2K");
