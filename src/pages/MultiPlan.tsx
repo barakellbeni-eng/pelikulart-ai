@@ -71,6 +71,7 @@ const MultiPlan = () => {
   const [planResults, setPlanResults] = useState<Record<number, { url: string; job_id: string }>>({});
   const [loadingPlan, setLoadingPlan] = useState<number | null>(null);
   const [showMediaPicker, setShowMediaPicker] = useState(false);
+  const [previewImage, setPreviewImage] = useState<{ url: string; label: string } | null>(null);
 
   // Session gallery: all generated images
   const [sessionGallery, setSessionGallery] = useState<{ url: string; label: string }[]>([]);
