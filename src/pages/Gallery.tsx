@@ -50,6 +50,13 @@ const Gallery = () => {
       list = list.filter((i) => i.tool_type === prefs.typeFilter);
     }
 
+    // Source filter (multi-plan vs standard)
+    if (prefs.sourceFilter === "multiplan") {
+      list = list.filter((i) => i.prompt.startsWith("Multi-Plan"));
+    } else if (prefs.sourceFilter === "standard") {
+      list = list.filter((i) => !i.prompt.startsWith("Multi-Plan"));
+    }
+
     // Date filter
     if (prefs.dateFilter !== "all") {
       const now = new Date();
@@ -67,7 +74,7 @@ const Gallery = () => {
     else if (prefs.sortBy === "model") list.sort((a, b) => a.model.localeCompare(b.model));
 
     return list;
-  }, [items, prefs.typeFilter, prefs.dateFilter, prefs.sortBy]);
+  }, [items, prefs.typeFilter, prefs.sourceFilter, prefs.dateFilter, prefs.sortBy]);
 
   const {
     selectedIds,

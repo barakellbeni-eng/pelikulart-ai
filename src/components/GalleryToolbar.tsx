@@ -9,6 +9,7 @@ import {
   Grid3x3,
   ZoomIn,
   ZoomOut,
+  Camera,
 } from "lucide-react";
 import type {
   CardSize,
@@ -16,6 +17,7 @@ import type {
   SortBy,
   DateFilter,
   TypeFilter,
+  SourceFilter,
   GalleryPreferences,
 } from "@/hooks/useGalleryPreferences";
 
@@ -54,6 +56,12 @@ const typeOptions: { key: TypeFilter; label: string }[] = [
   { key: "image", label: "Images" },
   { key: "video", label: "Vidéos" },
   { key: "audio", label: "Audio" },
+];
+
+const sourceOptions: { key: SourceFilter; label: string }[] = [
+  { key: "all", label: "Tout" },
+  { key: "standard", label: "Standard" },
+  { key: "multiplan", label: "Multi-Plan" },
 ];
 
 function Chip({
@@ -161,6 +169,18 @@ export default function GalleryToolbar({ prefs, update }: Props) {
           {typeOptions.map((t) => (
             <Chip key={t.key} active={prefs.typeFilter === t.key} onClick={() => update("typeFilter", t.key)}>
               {t.label}
+            </Chip>
+          ))}
+        </div>
+
+        <div className="w-px h-4 bg-border" />
+
+        {/* Source filter */}
+        <div className="flex items-center gap-1">
+          <Camera className="w-3.5 h-3.5 text-muted-foreground mr-1" />
+          {sourceOptions.map((s) => (
+            <Chip key={s.key} active={prefs.sourceFilter === s.key} onClick={() => update("sourceFilter", s.key)}>
+              {s.label}
             </Chip>
           ))}
         </div>
