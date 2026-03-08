@@ -89,6 +89,7 @@ export default function MediaPickerModal({ open, onClose, onSelect, accept, titl
             .from("generation_jobs")
             .select("id, tool_type, model, prompt, result_url, created_at")
             .eq("status", "completed")
+            .is("deleted_at", null)
             .not("result_url", "is", null)
             .order("created_at", { ascending: false })
             .limit(200),
