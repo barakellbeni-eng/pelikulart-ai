@@ -30,6 +30,8 @@ import {
   Film,
   RefreshCw,
   Info,
+  FolderInput,
+  Package,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
@@ -129,6 +131,7 @@ const Dashboard = () => {
   const [showMediaPicker, setShowMediaPicker] = useState(false);
   const [selectedGalleryItems, setSelectedGalleryItems] = useState<Set<string>>(new Set());
   const [batchDeletingSelection, setBatchDeletingSelection] = useState(false);
+  const [showMoveProjectModal, setShowMoveProjectModal] = useState(false);
 
   const getImageSelectionKey = useCallback((img: GeneratedImage) => `image:${img.id ?? img.url}`, []);
   const getVideoSelectionKey = useCallback((vid: GeneratedVideo) => `video:${vid.id ?? vid.url}`, []);
