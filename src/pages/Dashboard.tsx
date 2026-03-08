@@ -827,7 +827,75 @@ const Dashboard = () => {
     }
   };
 
-  const handleImageToVideo = (img: GeneratedImage) => {
+  // Batch download as ZIP (fetches all files, bundles manually)
+  const handleBatchDownload = async () => {
+    const urls: { url: string; name: string }[] = [];
+    let idx = 0;
+    for (const key of selectedGalleryItems) {
+      const img = galleryImages.find((g) => getImageSelectionKey(g) === key);
+      if (img) { urls.push({ url: img.url, name: `pelikulart-${idx++}.png` }); continue; }
+      const vid = galleryVideos.find((g) => getVideoSelectionKey(g) === key);
+      if (vid) { urls.push({ url: vid.url, name: `pelikulart-${idx++}.mp4` }); }
+    }
+    if (urls.length === 0) return;
+    toast.info(`Téléchargement de ${urls.length} fichiers…`);
+    for (const { url, name } of urls) {
+      try {
+        const resp = await fetch(url);
+        const blob = await resp.blob();
+        const blobUrl = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = blobUrl;
+        a.download = name;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(blobUrl);
+      } catch { /* skip */ }
+    }
+    toast.success("Téléchargement terminé !");
+  };
+
+  // Send exactly 2 images to video as start + end frames
+  const handleSendToVideoStartEnd = () => {
+    const selectedImages = galleryImages.filter((img) => selectedGalleryItems.has(getImageSelectionKey(img)));
+    if (selectedImages.length !== 2) return;
+    const i2vModels = getModelsByType("video").filter((m) => m.supportsImageInput && (m.maxInputImages || 1) >= 2);
+    const targetModel = i2vModels.length > 0 ? i2vModels[0] : getModelsByType("video").filter((m) => m.supportsImageInput)[0];
+    if (!targetModel) { toast.error("Aucun modèle vidéo disponible"); return; }
+    setActiveTab("video");
+    setSelectedModel(targetModel);
+    setModelSettings(getDefaultSettings(targetModel));
+    setReferenceImages([selectedImages[0].url, selectedImages[1].url]);
+    setReferencePreviews([selectedImages[0].url, selectedImages[1].url]);
+    const combinedPrompt = [selectedImages[0].prompt, selectedImages[1].prompt].filter(Boolean).join(" → ");
+    if (combinedPrompt) setPrompt(combinedPrompt);
+    clearSelection();
+    toast.success("2 images chargées (Start & End) dans le générateur vidéo !");
+  };
+
+  // Move selected items to a project
+  const handleMoveToProject = async (projectId: string) => {
+    const ids: string[] = [];
+    for (const key of selectedGalleryItems) {
+      const img = galleryImages.find((g) => getImageSelectionKey(g) === key);
+      if (img?.id) { ids.push(img.id); continue; }
+      const vid = galleryVideos.find((g) => getVideoSelectionKey(g) === key);
+      if (vid?.id) ids.push(vid.id);
+    }
+    if (ids.length === 0) return;
+    const results = await Promise.allSettled(
+      ids.map((id) =>
+        supabase.from("generations").update({ project_id: projectId }).eq("id", id)
+      )
+    );
+    const ok = results.filter((r) => r.status === "fulfilled").length;
+    toast.success(`${ok} élément(s) déplacé(s)`);
+    clearSelection();
+    setShowMoveProjectModal(false);
+  };
+
+
     const i2vModels = getModelsByType("video").filter((m) => m.supportsImageInput);
     if (i2vModels.length === 0) return;
     setActiveTab("video");
