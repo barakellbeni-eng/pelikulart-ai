@@ -24,6 +24,9 @@ verify_jwt = false
 [functions.delete-account]
 verify_jwt = false
 
+[functions.delete-generation]
+verify_jwt = false
+
 [functions.r2-signed-url]
 verify_jwt = false
 
