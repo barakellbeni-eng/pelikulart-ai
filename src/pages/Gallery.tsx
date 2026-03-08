@@ -311,7 +311,7 @@ const Gallery = () => {
                         <img
                           src={item.displayUrl}
                           alt={item.prompt}
-                          className={`w-full object-cover ${isGrid ? "aspect-square" : ""}`}
+                          className={`w-full object-cover ${isGrid ? "aspect-video" : ""}`}
                           loading="lazy"
                         />
                       ) : item.tool_type === "video" ? (
