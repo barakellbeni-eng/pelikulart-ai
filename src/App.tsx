@@ -69,7 +69,7 @@ const AuthenticatedLayout = ({ children }: { children: React.ReactNode }) => {
       <div className="min-h-screen flex w-full">
         <AppSidebar />
         <main className={isCreatePage ? "flex-1 flex flex-col h-screen overflow-hidden" : "flex-1 flex flex-col min-h-screen overflow-auto"}>
-          <header className="sticky top-0 z-50 glass px-4 py-2 flex items-center gap-3">
+          <header className="shrink-0 sticky top-0 z-50 glass px-4 py-2 flex items-center gap-3">
             <SidebarTrigger />
             <div className="ml-auto flex items-center gap-2">
               <ThemeToggle />
