@@ -206,10 +206,45 @@ const Gallery = () => {
     toast.success(`Déplacé vers ${projectName}`);
   };
 
+  const toggleAudioPlay = useCallback((itemId: string, url: string) => {
+    if (playingAudioId === itemId) {
+      audioRefs[itemId]?.pause();
+      setPlayingAudioId(null);
+      return;
+    }
+    // Stop any other playing audio
+    if (playingAudioId && audioRefs[playingAudioId]) {
+      audioRefs[playingAudioId].pause();
+    }
+    if (!audioRefs[itemId]) {
+      audioRefs[itemId] = new Audio(url);
+      audioRefs[itemId].onended = () => setPlayingAudioId(null);
+    }
+    audioRefs[itemId].play();
+    setPlayingAudioId(itemId);
+  }, [playingAudioId]);
+
   const typeIcon = (type: string) => {
     if (type === "video") return <Film className="w-3 h-3" />;
     if (type === "audio") return <Music className="w-3 h-3" />;
     return <ImageIcon className="w-3 h-3" />;
+  };
+
+  const typeTag = (type: string) => {
+    if (type === "video") return <span className="text-[9px] px-1.5 py-0.5 rounded bg-orange-500/10 text-orange-400 font-medium">Vidéo</span>;
+    if (type === "audio") return <span className="text-[9px] px-1.5 py-0.5 rounded bg-primary/10 text-primary font-medium">Audio</span>;
+    return <span className="text-[9px] px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-400 font-medium">Image</span>;
+  };
+
+  const timeAgo = (dateStr: string) => {
+    const diff = Date.now() - new Date(dateStr).getTime();
+    const mins = Math.floor(diff / 60000);
+    if (mins < 1) return "À l'instant";
+    if (mins < 60) return `Il y a ${mins} min`;
+    const hours = Math.floor(mins / 60);
+    if (hours < 24) return `Il y a ${hours}h`;
+    const days = Math.floor(hours / 24);
+    return `Il y a ${days}j`;
   };
 
   const wasDraggingRef = useRef(false);
