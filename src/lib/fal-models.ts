@@ -404,7 +404,7 @@ export const FAL_MODELS: FalModel[] = [
     endpoint: "kie", provider: "kie", kieModel: "suno/v4",
     description: "Qualité vocale améliorée, jusqu'à 4 min",
     icon: "♫", color: "from-amber-500/20 to-orange-500/10",
-    maxImages: 1, supportsImageInput: false, caurisCost: 5, estimatedTime: "~2-3 min",
+    maxImages: 1, supportsImageInput: false, caurisCost: 6, estimatedTime: "~2-3 min",
     settings: [
       { key: "audio_type", label: "Type", type: "select", options: [
         { value: "music", label: "🎵 Musique" }, { value: "instrumental", label: "🎹 Instrumental" },
