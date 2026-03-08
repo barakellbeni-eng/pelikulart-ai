@@ -111,6 +111,9 @@ const Dashboard = () => {
   const [selectedModel, setSelectedModel] = useState<FalModel>(imageModels[0]);
   const [modelSettings, setModelSettings] = useState<Record<string, any>>(getDefaultSettings(imageModels[0]));
   const [numImages, setNumImages] = useState(1);
+  // Cache settings per model so switching doesn't lose adjustments
+  const settingsCacheRef = useRef<Record<string, { settings: Record<string, any>; numImages: number }>>({});
+
   const generationJob = useSyncExternalStore(subscribeGeneration, getGenerationJob);
   const isGenerating = generationJob?.status === "pending";
   const [isSubmitting, setIsSubmitting] = useState(false);
