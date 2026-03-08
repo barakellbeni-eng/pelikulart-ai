@@ -42,7 +42,9 @@ export function useGallerySelection(itemIds: string[]) {
     if (!dragStart.current) return;
     const dx = e.clientX - dragStart.current.x;
     const dy = e.clientY - dragStart.current.y;
-    if (!isDragging && Math.abs(dx) + Math.abs(dy) < 8) return;
+    // Higher threshold when starting on a card to avoid accidental drags
+    const threshold = dragStartedOnCard.current ? 15 : 8;
+    if (!isDragging && Math.abs(dx) + Math.abs(dy) < threshold) return;
 
     if (!isDragging) setIsDragging(true);
 
