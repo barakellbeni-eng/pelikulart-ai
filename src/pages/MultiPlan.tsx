@@ -358,7 +358,7 @@ const MultiPlan = () => {
                       <Crosshair className="w-3.5 h-3.5" />
                     </button>
                     <button
-                      onClick={(e) => { e.stopPropagation(); handleDownload(item.url, item.id.slice(0, 8)); }}
+                      onClick={(e) => { e.stopPropagation(); handleDownload(item.originalUrl || item.url, item.id.slice(0, 8)); }}
                       className="w-7 h-7 rounded-lg flex items-center justify-center bg-background/70 backdrop-blur-sm hover:bg-background/90 transition-all text-muted-foreground hover:text-foreground shadow-sm"
                       title="Télécharger"
                     >
