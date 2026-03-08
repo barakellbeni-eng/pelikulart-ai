@@ -58,6 +58,7 @@ export function useProjects() {
       .from("generation_jobs")
       .select("project_id")
       .eq("status", "completed")
+      .is("deleted_at", null)
       .not("project_id", "is", null);
 
     const countMap = new Map<string, number>();
@@ -118,20 +119,33 @@ export function useProjects() {
   }, []);
 
   const deleteProject = useCallback(async (id: string) => {
-    // Unlink generations first (set project_id to null)
-    await supabase.from("generation_jobs").update({ project_id: null }).eq("project_id", id);
-    await supabase.from("generations").update({ project_id: null }).eq("project_id", id);
+    if (!user) return;
 
-    const { error } = await supabase.from("projects").delete().eq("id", id);
-    if (error) {
+    try {
+      // Unlink generations first (set project_id to null)
+      const [unlinkJobs, unlinkGen] = await Promise.all([
+        supabase.from("generation_jobs").update({ project_id: null }).eq("project_id", id),
+        supabase.from("generations").update({ project_id: null }).eq("project_id", id),
+      ]);
+
+      if (unlinkJobs.error) console.error("Unlink jobs error:", unlinkJobs.error);
+      if (unlinkGen.error) console.error("Unlink generations error:", unlinkGen.error);
+
+      const { error } = await supabase.from("projects").delete().eq("id", id);
+      if (error) {
+        console.error("Delete project error:", error);
+        toast.error("Erreur lors de la suppression du projet");
+        return;
+      }
+
+      setProjects((prev) => prev.filter((p) => p.id !== id));
+      if (selectedProjectId === id) selectProject(null);
+      toast.success("Projet supprimé");
+    } catch (e) {
+      console.error("deleteProject error:", e);
       toast.error("Erreur lors de la suppression");
-      return;
     }
-
-    setProjects((prev) => prev.filter((p) => p.id !== id));
-    if (selectedProjectId === id) selectProject(null);
-    toast.success("Projet supprimé");
-  }, [selectedProjectId, selectProject]);
+  }, [user, selectedProjectId, selectProject]);
 
   const updateCover = useCallback(async (projectId: string, coverUrl: string) => {
     await supabase

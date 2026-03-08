@@ -38,6 +38,7 @@ const Gallery = () => {
       .from("generation_jobs")
       .select("id, tool_type, prompt, model, result_url, result_metadata, created_at, credits_used")
       .eq("status", "completed")
+      .is("deleted_at", null)
       .order("created_at", { ascending: false })
       .limit(100);
 

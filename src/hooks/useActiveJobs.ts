@@ -37,6 +37,7 @@ export function useActiveJobs() {
       .from("generation_jobs")
       .select("id, tool_type, model, prompt, status, progress, result_url, result_url_temp, credits_used, created_at, started_at, completed_at, result_metadata")
       .in("status", ["pending", "processing", "completed", "failed"])
+      .is("deleted_at", null)
       .order("created_at", { ascending: false })
       .limit(20);
 
