@@ -407,6 +407,39 @@ const MultiPlan = () => {
               ))}
             </div>
           </div>
+
+          {/* Plan buttons (only after main result) */}
+          {mainResult && (
+            <div className="space-y-1.5">
+              <label className="text-[10px] text-muted-foreground uppercase tracking-widest">Plans</label>
+              <div className="grid grid-cols-2 gap-1.5">
+                {[0, 1, 2, 3].map((idx) => {
+                  const isLoading = loadingPlan === idx;
+                  const result = planResults[idx];
+                  return (
+                    <button
+                      key={idx}
+                      onClick={() => handlePlanClick(idx)}
+                      disabled={loadingPlan !== null}
+                      className={`py-2 rounded-lg text-[11px] font-medium transition-all border ${
+                        isLoading
+                          ? "border-primary/30 bg-primary/5 text-primary"
+                          : result
+                            ? "border-primary/15 bg-primary/5 text-primary/70 hover:bg-primary/10"
+                            : "border-border/30 text-muted-foreground hover:border-primary/20 hover:text-foreground"
+                      } ${loadingPlan !== null && !isLoading ? "opacity-20 cursor-not-allowed" : ""}`}
+                    >
+                      {isLoading ? (
+                        <Loader2 className="w-3 h-3 animate-spin mx-auto" />
+                      ) : (
+                        `Plan ${idx + 1}`
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Sticky generate + clear buttons */}
