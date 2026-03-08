@@ -755,6 +755,7 @@ async function processSuno(jobId: string, userId: string, body: any) {
       model: sunoModel,
       instrumental: isInstrumental,
       customMode: useCustomMode,
+      callBackUrl: "https://localhost/no-op",
     };
 
     if (useCustomMode) {
