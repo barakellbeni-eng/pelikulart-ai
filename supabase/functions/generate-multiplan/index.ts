@@ -171,11 +171,20 @@ serve(async (req) => {
       try {
         console.log(`Multi-plan: falling back to Fal AI for ${planLabel}`);
         usedProvider = "fal";
+        // Build pixel dimensions for Fal AI
+        const ratioSizes: Record<string, Record<string, { width: number; height: number }>> = {
+          "1:1":  { "1K": { width: 1024, height: 1024 }, "2K": { width: 2048, height: 2048 }, "4K": { width: 4096, height: 4096 } },
+          "16:9": { "1K": { width: 1024, height: 576 },  "2K": { width: 2048, height: 1152 }, "4K": { width: 3840, height: 2160 } },
+          "9:16": { "1K": { width: 576, height: 1024 },  "2K": { width: 1152, height: 2048 }, "4K": { width: 2160, height: 3840 } },
+          "4:3":  { "1K": { width: 1024, height: 768 },  "2K": { width: 2048, height: 1536 }, "4K": { width: 4096, height: 3072 } },
+          "3:4":  { "1K": { width: 768, height: 1024 },  "2K": { width: 1536, height: 2048 }, "4K": { width: 3072, height: 4096 } },
+        };
+        const falImageSize = ratioSizes[aspect_ratio]?.[safeResolution] || ratioSizes["1:1"]["2K"];
         const falResp = await fetch(FAL_ENDPOINT, {
           method: "POST",
           headers: { Authorization: `Key ${FAL_API_KEY}`, "Content-Type": "application/json" },
           body: JSON.stringify({
-            prompt, image_urls: [image_url], num_images: 1, output_format: "png", image_size: imageSize,
+            prompt, image_urls: [image_url], num_images: 1, output_format: "png", image_size: falImageSize,
           }),
         });
 
