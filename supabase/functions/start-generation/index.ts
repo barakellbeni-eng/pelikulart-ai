@@ -90,10 +90,9 @@ const KIE_AI_BASE = "https://api.kie.ai";
 
 // ── KIE AI model IDs mapped to their KIE model names ──
 const KIE_MODELS: Record<string, string> = {
-  "kie-nano-banana": "google/nano-banana",
+  "kie-nano-banana": "google/nano-banana", // auto-switches to google/nano-banana-edit when images provided
   "kie-nano-banana-pro": "nano-banana-pro",
   "kie-nano-banana-2": "nano-banana-2",
-  "kie-nano-banana-edit": "google/nano-banana-edit",
   "kie-imagen4": "google/imagen4",
   "kie-imagen4-fast": "google/imagen4-fast",
   "kie-imagen4-ultra": "google/imagen4-ultra",
