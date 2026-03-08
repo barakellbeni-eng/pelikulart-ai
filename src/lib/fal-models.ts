@@ -356,7 +356,7 @@ export const FAL_MODELS: FalModel[] = [
     id: "kie-elevenlabs-sfx", type: "audio", brand: "ElevenLabs", name: "Sound Effects v2",
     endpoint: "kie", provider: "kie", kieModel: "elevenlabs/sound-effect-v2",
     description: "Effets sonores via ElevenLabs", icon: "◆", color: "from-white/20 to-white/5",
-    maxImages: 1, supportsImageInput: false, caurisCost: 5, estimatedTime: "~10s",
+    maxImages: 1, supportsImageInput: false, caurisCost: 6, estimatedTime: "~10s",
     settings: [
       { key: "duration", label: "Durée (secondes)", type: "slider", min: 1, max: 22, step: 1, defaultValue: 5 },
     ],
@@ -365,7 +365,7 @@ export const FAL_MODELS: FalModel[] = [
     id: "kie-elevenlabs-tts", type: "audio", brand: "ElevenLabs", name: "TTS Multilingual",
     endpoint: "kie", provider: "kie", kieModel: "elevenlabs/text-to-speech-multilingual-v2",
     description: "Text-to-Speech multilingue", icon: "○", color: "from-white/20 to-white/5",
-    maxImages: 1, supportsImageInput: false, caurisCost: 3, estimatedTime: "~5s",
+    maxImages: 1, supportsImageInput: false, caurisCost: 4, estimatedTime: "~5s",
     settings: [],
   },
 
