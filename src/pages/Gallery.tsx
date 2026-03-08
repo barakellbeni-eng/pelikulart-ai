@@ -186,20 +186,8 @@ const Gallery = () => {
                 transition={{ delay: i * 0.05 }}
                 className="glass-card overflow-hidden cursor-pointer group break-inside-avoid relative"
               >
-                {/* Delete button */}
-                <button
-                  onClick={(e) => { e.stopPropagation(); handleDelete(item); }}
-                  disabled={deleting === item.id}
-                  className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity bg-destructive/80 hover:bg-destructive text-destructive-foreground rounded-full p-1.5"
-                >
-                  {deleting === item.id ? (
-                    <Loader2 className="w-3 h-3 animate-spin" />
-                  ) : (
-                    <Trash2 className="w-3 h-3" />
-                  )}
-                </button>
-
-                <div onClick={() => setSelected(item)}>
+                {/* Delete button — always visible overlay on media */}
+                <div className="relative" onClick={() => setSelected(item)}>
                   {item.tool_type === "image" ? (
                     <img
                       src={item.displayUrl}
@@ -217,10 +205,22 @@ const Gallery = () => {
                       onMouseLeave={(e) => { const v = e.target as HTMLVideoElement; v.pause(); v.currentTime = 0; }}
                     />
                   ) : (
-                    <div className="w-full h-24 bg-muted/30 flex items-center justify-center">
+                    <div className="w-full h-28 bg-muted/30 flex items-center justify-center">
                       <Music className="w-8 h-8 text-muted-foreground/30" />
                     </div>
                   )}
+                  <button
+                    onClick={(e) => { e.stopPropagation(); handleDelete(item); }}
+                    disabled={deleting === item.id}
+                    className="absolute top-2 right-2 z-10 opacity-60 group-hover:opacity-100 transition-opacity bg-background/70 backdrop-blur-sm hover:bg-destructive text-muted-foreground hover:text-destructive-foreground rounded-full p-1.5"
+                  >
+                    {deleting === item.id ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <Trash2 className="w-3.5 h-3.5" />
+                    )}
+                  </button>
+                </div>
                   <div className="p-3">
                     <p className="text-xs text-muted-foreground line-clamp-2">{item.prompt}</p>
                     <div className="flex items-center gap-2 mt-2">
