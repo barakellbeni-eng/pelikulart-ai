@@ -90,8 +90,8 @@ export default function VideoThumbnail({ src, className = "", aspectSquare = fal
           className={`w-full ${aspectSquare ? "aspect-square object-cover" : "object-cover"}`}
         />
       )}
-      {/* Play overlay */}
-      <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover/video:bg-black/30 transition-colors">
+      {/* Play overlay - z-0 so gallery action buttons (z-30) stay above */}
+      <div className="absolute inset-0 z-0 flex items-center justify-center bg-black/20 group-hover/video:bg-black/30 transition-colors">
         <div className="w-10 h-10 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center shadow-lg group-hover/video:scale-110 transition-transform">
           <Play className="w-5 h-5 text-foreground ml-0.5" fill="currentColor" />
         </div>
