@@ -5,6 +5,7 @@ export type ViewType = "grid" | "masonry";
 export type SortBy = "newest" | "oldest" | "type" | "model";
 export type DateFilter = "all" | "today" | "week" | "month";
 export type TypeFilter = "all" | "image" | "video" | "audio";
+export type SourceFilter = "all" | "standard" | "multiplan";
 
 export interface GalleryPreferences {
   cardSize: CardSize;
@@ -12,6 +13,7 @@ export interface GalleryPreferences {
   sortBy: SortBy;
   dateFilter: DateFilter;
   typeFilter: TypeFilter;
+  sourceFilter: SourceFilter;
   showPrompt: boolean;
   showMeta: boolean;
   zoom: number; // 1-5, controls columns
