@@ -25,6 +25,7 @@ export type Database = {
           model: string
           params: Json | null
           progress: number
+          project_id: string | null
           prompt: string
           provider: string
           result_metadata: Json | null
@@ -46,6 +47,7 @@ export type Database = {
           model: string
           params?: Json | null
           progress?: number
+          project_id?: string | null
           prompt: string
           provider?: string
           result_metadata?: Json | null
@@ -67,6 +69,7 @@ export type Database = {
           model?: string
           params?: Json | null
           progress?: number
+          project_id?: string | null
           prompt?: string
           provider?: string
           result_metadata?: Json | null
@@ -78,7 +81,15 @@ export type Database = {
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "generation_jobs_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       generations: {
         Row: {
@@ -90,6 +101,7 @@ export type Database = {
           is_public: boolean
           media_type: string
           output_format: string | null
+          project_id: string | null
           prompt: string
           resolution: string | null
           user_id: string
@@ -103,6 +115,7 @@ export type Database = {
           is_public?: boolean
           media_type?: string
           output_format?: string | null
+          project_id?: string | null
           prompt: string
           resolution?: string | null
           user_id: string
@@ -116,11 +129,20 @@ export type Database = {
           is_public?: boolean
           media_type?: string
           output_format?: string | null
+          project_id?: string | null
           prompt?: string
           resolution?: string | null
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "generations_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       payment_transactions: {
         Row: {
@@ -174,6 +196,33 @@ export type Database = {
           credits?: number
           display_name?: string | null
           id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      projects: {
+        Row: {
+          cover_url: string | null
+          created_at: string
+          id: string
+          name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          cover_url?: string | null
+          created_at?: string
+          id?: string
+          name?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          cover_url?: string | null
+          created_at?: string
+          id?: string
+          name?: string
           updated_at?: string
           user_id?: string
         }
