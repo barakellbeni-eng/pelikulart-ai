@@ -2253,7 +2253,7 @@ const Dashboard = () => {
                         key={`vid-${i}-${item.ts}`}
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        className={`aspect-square relative group rounded-xl overflow-hidden cursor-pointer`}
+                        className={`${cardAspect} relative group rounded-xl overflow-hidden cursor-pointer`}
                         onClick={() => {
                           if (selectionCount > 0) {
                             toggleSelection(videoSelectionKey);
