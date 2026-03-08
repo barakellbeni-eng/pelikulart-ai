@@ -6,6 +6,7 @@ export function useGallerySelection(itemIds: string[]) {
   const dragStart = useRef<{ x: number; y: number } | null>(null);
   const dragRect = useRef<{ x: number; y: number; w: number; h: number } | null>(null);
   const dragStartedOnCard = useRef(false);
+  const isDraggingRef = useRef(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const [dragBox, setDragBox] = useState<{ x: number; y: number; w: number; h: number } | null>(null);
 
@@ -36,6 +37,7 @@ export function useGallerySelection(itemIds: string[]) {
     if (!rect) return;
     dragStart.current = { x: e.clientX, y: e.clientY };
     dragStartedOnCard.current = !!(e.target as HTMLElement).closest("[data-gallery-card]");
+    isDraggingRef.current = false;
   }, []);
 
   const handleMouseMove = useCallback((e: React.MouseEvent) => {
@@ -44,9 +46,12 @@ export function useGallerySelection(itemIds: string[]) {
     const dy = e.clientY - dragStart.current.y;
     // Higher threshold when starting on a card to avoid accidental drags
     const threshold = dragStartedOnCard.current ? 15 : 8;
-    if (!isDragging && Math.abs(dx) + Math.abs(dy) < threshold) return;
+    if (!isDraggingRef.current && Math.abs(dx) + Math.abs(dy) < threshold) return;
 
-    if (!isDragging) setIsDragging(true);
+    if (!isDraggingRef.current) {
+      isDraggingRef.current = true;
+      setIsDragging(true);
+    }
 
     const container = containerRef.current;
     if (!container) return;
@@ -90,17 +95,18 @@ export function useGallerySelection(itemIds: string[]) {
     } else {
       setSelectedIds(newSelected);
     }
-  }, [isDragging]);
+  }, []);
 
   const handleMouseUp = useCallback(() => {
-    const wasDragging = isDragging;
+    const wasDragging = isDraggingRef.current;
     dragStart.current = null;
     dragRect.current = null;
     dragStartedOnCard.current = false;
+    isDraggingRef.current = false;
     setIsDragging(false);
     setDragBox(null);
     return wasDragging;
-  }, [isDragging]);
+  }, []);
 
   // Global mouseup to end drag even outside container
   useEffect(() => {
@@ -108,6 +114,8 @@ export function useGallerySelection(itemIds: string[]) {
       if (dragStart.current) {
         dragStart.current = null;
         dragRect.current = null;
+        dragStartedOnCard.current = false;
+        isDraggingRef.current = false;
         setIsDragging(false);
         setDragBox(null);
       }
