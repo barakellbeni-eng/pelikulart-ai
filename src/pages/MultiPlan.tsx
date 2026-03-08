@@ -561,6 +561,13 @@ const MultiPlan = () => {
         onSelect={handleMediaSelect}
         accept={["image"]}
       />
+
+      <MediaPickerModal
+        open={showCadragePicker}
+        onClose={() => setShowCadragePicker(false)}
+        onSelect={(url) => { setCadrageSource(url); setShowCadragePicker(false); }}
+        accept={["image"]}
+      />
     </div>
   );
 };
