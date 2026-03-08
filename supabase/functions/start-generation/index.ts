@@ -497,6 +497,24 @@ serve(async (req) => {
       }
     }
 
+    // ── Concurrent job limits per user ──
+    const maxConcurrent = tool_type === "video" ? 2 : 4;
+    const { count: activeCount, error: countError } = await adminClient
+      .from("generation_jobs")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", userId)
+      .eq("tool_type", tool_type)
+      .in("status", ["pending", "processing"])
+      .is("deleted_at", null);
+
+    if (!countError && (activeCount ?? 0) >= maxConcurrent) {
+      const label = tool_type === "video" ? "vidéos" : tool_type === "audio" ? "audios" : "images";
+      return new Response(
+        JSON.stringify({ error: `Limite atteinte : ${maxConcurrent} ${label} simultanées maximum. Attendez qu'un job se termine.` }),
+        { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
     const cost = typeof cauris_cost === "number" && cauris_cost > 0 ? cauris_cost : (
       tool_type === "video" ? 10 : tool_type === "audio" ? 5 : 2
     );
