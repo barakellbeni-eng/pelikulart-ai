@@ -481,23 +481,7 @@ const Gallery = () => {
               ) : selected.tool_type === "video" ? (
                 <video src={selected.displayUrl} controls className="w-full rounded-xl" />
               ) : (
-                <div className="space-y-3">
-                  {selected.result_metadata?.thumbnail_url && (
-                    <div className="relative rounded-xl overflow-hidden">
-                      <img src={selected.result_metadata.thumbnail_url} alt={selected.prompt} className="w-full rounded-xl" />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                      <div className="absolute bottom-3 left-3 flex items-center gap-1.5 bg-white/15 backdrop-blur-md rounded-full px-2.5 py-1">
-                        <Music className="w-3.5 h-3.5 text-white" />
-                        {selected.result_metadata?.duration && (
-                          <span className="text-xs text-white font-medium">
-                            {Math.floor(selected.result_metadata.duration / 60).toString().padStart(2, "0")}:{Math.floor(selected.result_metadata.duration % 60).toString().padStart(2, "0")}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  )}
-                  <audio src={selected.displayUrl} controls className="w-full" />
-                </div>
+                <audio src={selected.displayUrl} controls className="w-full" />
               )}
               <div className="space-y-3">
                 <p className="text-sm text-foreground">{selected.prompt}</p>
