@@ -1400,9 +1400,6 @@ const Dashboard = () => {
                       </span>
                     )}
                   </div>
-                  <span className="text-[10px] text-muted-foreground leading-tight">
-                    {selectedModel.description}
-                  </span>
                 </div>
                 <span className="text-[10px] font-bold text-primary mr-1">{calculateCaurisCost(selectedModel, modelSettings, numImages)} c</span>
                 <span className="text-[9px] text-muted-foreground mr-1">⏱ {selectedModel.estimatedTime}</span>
