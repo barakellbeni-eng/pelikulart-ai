@@ -660,11 +660,14 @@ serve(async (req) => {
     }
 
     const isGoogleModel = model_id === "google-direct";
+    const isKieModel = !!KIE_MODELS[model_id];
     let provider = "fal";
     let endpoint: string | undefined;
 
     if (isGoogleModel) {
       provider = "lovable-ai";
+    } else if (isKieModel) {
+      provider = "kie";
     } else if (tool_type === "image") {
       endpoint = IMAGE_ENDPOINTS[model_id];
     } else if (tool_type === "video") {
@@ -673,7 +676,7 @@ serve(async (req) => {
       endpoint = AUDIO_ENDPOINTS[model_id];
     }
 
-    if (!isGoogleModel && !endpoint) {
+    if (!isGoogleModel && !isKieModel && !endpoint) {
       return new Response(JSON.stringify({ error: "Modèle inconnu" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
