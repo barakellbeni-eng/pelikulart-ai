@@ -4,6 +4,8 @@ import logoSeedream from "@/assets/logo-seedream.png";
 import logoPelikulart from "@/assets/pelikulart-logo.png";
 import logoKling30 from "@/assets/logo-kling-30.png";
 import logoKling26 from "@/assets/logo-kling-26.png";
+import logoKling25 from "@/assets/logo-kling-25.png";
+import logoKling21 from "@/assets/logo-kling-21.png";
 
 const brandLogos: Record<string, string> = {
   Google: logoGoogle,
@@ -16,6 +18,8 @@ const brandLogos: Record<string, string> = {
 const modelLogos: Record<string, string> = {
   "kie-kling-30": logoKling30,
   "kie-kling-26": logoKling26,
+  "kie-kling-25-turbo": logoKling25,
+  "kie-kling-21": logoKling21,
 };
 
 export function getBrandLogo(brand: string, modelId?: string): string | null {
