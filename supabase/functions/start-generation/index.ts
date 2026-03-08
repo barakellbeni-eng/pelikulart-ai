@@ -718,15 +718,9 @@ async function processKie(jobId: string, userId: string, body: any) {
       ? (storageKeys[0].startsWith("http") ? storageKeys[0] : getPublicUrl(storageKeys[0]))
       : urlsToProcess[0];
 
-    // Generate thumbnail for audio
-    let thumbnailUrl: string | null = null;
-    if (isAudio) {
-      thumbnailUrl = await generateAudioThumbnail(prompt, userId);
-    }
-
     await updateJob(adminClient, jobId, {
       status: "completed", progress: 100, result_url: finalDisplayUrl, result_url_original: finalOriginalUrl, result_url_temp: finalDisplayUrl,
-      result_metadata: { storage_keys: storageKeys, display_keys: displayKeys, count: storageKeys.length, format, provider: "kie", ...(thumbnailUrl ? { thumbnail_url: thumbnailUrl } : {}) },
+      result_metadata: { storage_keys: storageKeys, display_keys: displayKeys, count: storageKeys.length, format, provider: "kie" },
       completed_at: new Date().toISOString(),
     });
   } catch (err: any) {
