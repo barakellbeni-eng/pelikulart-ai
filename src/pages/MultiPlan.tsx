@@ -277,8 +277,8 @@ const MultiPlan = () => {
             </>
           ) : (
             <>
-              {generationCount > 0 ? <RotateCcw className="w-5 h-5" /> : <Camera className="w-5 h-5" />}
-              {generationCount > 0 ? "Relancer les plans" : "Varier les plans"}
+              <Camera className="w-5 h-5" />
+              Varier les plans
               <span className="text-sm opacity-70 ml-1">· 3 cauris</span>
             </>
           )}
@@ -358,56 +358,58 @@ const MultiPlan = () => {
 
         {/* Plan buttons */}
         <div ref={planButtonsRef} className="space-y-3">
-          <label className="text-[11px] text-muted-foreground font-semibold uppercase tracking-wider">
-            Sélectionnez un plan à affiner
-          </label>
-          <div className="grid grid-cols-4 gap-3">
-            {[1, 2, 3, 4].map((n) => {
-              const idx = n - 1;
-              const enabled = variations.length > 0 && !!variations[idx];
-              const isActive = selectedVariation === idx;
+          <AnimatePresence>
+            {variations.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="space-y-3"
+              >
+                <label className="text-[11px] text-muted-foreground font-semibold uppercase tracking-wider">
+                  Choisissez un plan à générer
+                </label>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  {[1, 2, 3, 4].map((n) => {
+                    const idx = n - 1;
+                    const hasVariation = !!variations[idx];
+                    const isLoading = selectedVariation === idx && isGeneratingPlan;
 
-              return (
-                <motion.button
-                  key={n}
-                  onClick={() => enabled && handlePlanClick(idx)}
-                  disabled={!enabled || isGeneratingPlan}
-                  className={`py-4 rounded-xl text-sm font-bold transition-all ${
-                    isActive && isGeneratingPlan
-                      ? "bg-primary/20 text-primary"
-                      : isActive
-                        ? "bg-primary text-primary-foreground ring-2 ring-primary ring-offset-2 ring-offset-background"
-                        : enabled
-                          ? "bg-card border border-border text-foreground hover:border-primary/50 hover:bg-primary/5"
-                          : "bg-muted/10 text-muted-foreground/30 cursor-not-allowed"
-                  }`}
-                  whileHover={enabled && !isGeneratingPlan ? { scale: 1.04, y: -2 } : {}}
-                  whileTap={enabled && !isGeneratingPlan ? { scale: 0.96 } : {}}
-                  animate={
-                    isActive && isGeneratingPlan
-                      ? { opacity: [0.5, 1, 0.5] }
-                      : enabled
-                        ? { opacity: 1, scale: 1 }
-                        : { opacity: 0.4, scale: 1 }
-                  }
-                  transition={
-                    isActive && isGeneratingPlan
-                      ? { repeat: Infinity, duration: 1.2 }
-                      : { duration: 0.2 }
-                  }
-                >
-                  {isActive && isGeneratingPlan ? (
-                    <Loader2 className="w-4 h-4 animate-spin mx-auto" />
-                  ) : (
-                    `Plan ${n}`
-                  )}
-                </motion.button>
-              );
-            })}
-          </div>
-          <p className="text-[10px] text-muted-foreground/50">
-            Chaque plan coûte 2 cauris · Les images sont glissables vers d'autres outils
-          </p>
+                    return (
+                      <motion.button
+                        key={n}
+                        onClick={() => hasVariation && !isGeneratingPlan && handlePlanClick(idx)}
+                        disabled={!hasVariation || isGeneratingPlan}
+                        className={`py-5 rounded-xl text-sm font-bold transition-all border ${
+                          isLoading
+                            ? "bg-primary/20 border-primary/40 text-primary"
+                            : hasVariation
+                              ? "bg-card border-border text-foreground hover:border-primary/50 hover:bg-primary/5 hover:shadow-lg hover:shadow-primary/10"
+                              : "bg-muted/10 border-border/30 text-muted-foreground/30 cursor-not-allowed"
+                        }`}
+                        whileHover={hasVariation && !isGeneratingPlan ? { scale: 1.04, y: -3 } : {}}
+                        whileTap={hasVariation && !isGeneratingPlan ? { scale: 0.96 } : {}}
+                      >
+                        {isLoading ? (
+                          <div className="flex flex-col items-center gap-1.5">
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                            <span className="text-[10px]">Génération...</span>
+                          </div>
+                        ) : (
+                          <div className="flex flex-col items-center gap-1">
+                            <span>Plan {n}</span>
+                            <span className="text-[10px] text-muted-foreground/50 font-normal">2 cauris</span>
+                          </div>
+                        )}
+                      </motion.button>
+                    );
+                  })}
+                </div>
+                <p className="text-[10px] text-muted-foreground/50">
+                  Chaque plan génère un cadrage unique · Les images sont glissables
+                </p>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
         {/* Final result */}
