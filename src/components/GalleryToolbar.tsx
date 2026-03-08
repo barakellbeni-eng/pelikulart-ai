@@ -7,6 +7,8 @@ import {
   EyeOff,
   Grid2x2,
   Grid3x3,
+  ZoomIn,
+  ZoomOut,
 } from "lucide-react";
 import type {
   CardSize,
@@ -168,6 +170,23 @@ export default function GalleryToolbar({ prefs, update }: Props) {
         {/* Display toggles */}
         <ToggleRow label="Prompt" active={prefs.showPrompt} onToggle={() => update("showPrompt", !prefs.showPrompt)} />
         <ToggleRow label="Métadonnées" active={prefs.showMeta} onToggle={() => update("showMeta", !prefs.showMeta)} />
+
+        <div className="w-px h-4 bg-border" />
+
+        {/* Zoom slider */}
+        <div className="flex items-center gap-2">
+          <ZoomOut className="w-3.5 h-3.5 text-muted-foreground" />
+          <input
+            type="range"
+            min={1}
+            max={5}
+            step={1}
+            value={prefs.zoom}
+            onChange={(e) => update("zoom", Number(e.target.value))}
+            className="w-20 h-1 accent-primary cursor-pointer"
+          />
+          <ZoomIn className="w-3.5 h-3.5 text-muted-foreground" />
+        </div>
       </div>
     </div>
   );

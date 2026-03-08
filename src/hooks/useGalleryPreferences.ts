@@ -14,6 +14,7 @@ export interface GalleryPreferences {
   typeFilter: TypeFilter;
   showPrompt: boolean;
   showMeta: boolean;
+  zoom: number; // 1-5, controls columns
 }
 
 const STORAGE_KEY = "pelikulart-gallery-prefs";
@@ -26,6 +27,7 @@ const defaults: GalleryPreferences = {
   typeFilter: "all",
   showPrompt: true,
   showMeta: true,
+  zoom: 3,
 };
 
 function load(): GalleryPreferences {
