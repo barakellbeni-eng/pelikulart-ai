@@ -284,8 +284,15 @@ export default function MediaPickerModal({ open, onClose, onSelect, accept, titl
         }
       }
 
-      setItems((prev) => prev.filter((i) => i.id !== item.id));
-      if (selected?.id === item.id) setSelected(null);
+      const targetRef = item.source === "generation" ? normalizeMediaRef(item.url) : "";
+      setItems((prev) => prev.filter((i) => {
+        if (i.id === item.id) return false;
+        if (item.source === "generation" && targetRef && normalizeMediaRef(i.url) === targetRef) return false;
+        return true;
+      }));
+      if (selected && (selected.id === item.id || (item.source === "generation" && targetRef && normalizeMediaRef(selected.url) === targetRef))) {
+        setSelected(null);
+      }
       toast.success("Fichier supprimé");
     } catch (e: any) {
       toast.error(e.message || "Erreur");
