@@ -9,6 +9,7 @@ import {
   Music,
   Sparkles,
   Clapperboard,
+  Camera,
 } from "lucide-react";
 import pelikulartLogo from "@/assets/pelikulart-logo.png";
 import {
