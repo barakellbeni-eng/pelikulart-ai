@@ -13,21 +13,29 @@ const MULTIPLAN_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generat
 
 const PLAN_TYPES = [
   { id: "close-up", label: "Close-up" },
+  { id: "extreme-close-up", label: "Très gros plan" },
   { id: "macro", label: "Macro" },
   { id: "serre", label: "Serré" },
+  { id: "taille", label: "Plan taille" },
   { id: "americain", label: "Américain" },
+  { id: "moyen", label: "Plan moyen" },
   { id: "large", label: "Large" },
   { id: "tres-large", label: "Très large" },
+  { id: "general", label: "Plan général" },
   { id: "plongee", label: "Plongée" },
   { id: "contre-plongee", label: "Contre-plongée" },
+  { id: "dutch-angle", label: "Dutch angle" },
+  { id: "over-shoulder", label: "Par-dessus l'épaule" },
+  { id: "bird-eye", label: "Vue aérienne" },
+  { id: "worm-eye", label: "Vue en contre-bas" },
+  { id: "profile", label: "Profil" },
+  { id: "three-quarter", label: "Trois-quarts" },
 ] as const;
 
 const ASPECT_RATIOS = [
   { id: "1:1", label: "1:1" },
   { id: "16:9", label: "16:9" },
   { id: "9:16", label: "9:16" },
-  { id: "4:3", label: "4:3" },
-  { id: "3:4", label: "3:4" },
 ] as const;
 
 const RESOLUTIONS = [
