@@ -154,15 +154,15 @@ serve(async (req) => {
     const planLabel = PLAN_TYPE_MAP[plan_type] || plan_type;
 
     const planPrompts: Record<number, string> = {
-      1: "Reframe this exact image, camera angle variation 1, same subject, same scene, same lighting, same style",
-      2: "Reframe this exact image, camera angle variation 2, same subject, same scene, same lighting, same style",
-      3: "Reframe this exact image, camera angle variation 3, same subject, same scene, same lighting, same style",
-      4: "Reframe this exact image, camera angle variation 4, same subject, same scene, same lighting, same style",
+      1: `Reframe this image as a ${planLabel}, variation 1. Keep the exact same subject, scene, colors and lighting. Change only the camera angle and framing to match a ${planLabel}.`,
+      2: `Reframe this image as a ${planLabel}, variation 2. Keep the exact same subject, scene, colors and lighting. Change only the camera angle and framing to match a ${planLabel}.`,
+      3: `Reframe this image as a ${planLabel}, variation 3. Keep the exact same subject, scene, colors and lighting. Change only the camera angle and framing to match a ${planLabel}.`,
+      4: `Reframe this image as a ${planLabel}, variation 4. Keep the exact same subject, scene, colors and lighting. Change only the camera angle and framing to match a ${planLabel}.`,
     };
 
     const prompt = plan_index && planPrompts[plan_index]
       ? planPrompts[plan_index]
-      : `generate 4 different ${planLabel} shot of this exact image, Keep the same subject, same scene, same colors, same lighting.`;
+      : `Transform this image into a ${planLabel}. Keep the exact same subject, scene, colors and lighting. Change only the camera angle and framing to create a cinematic ${planLabel}.`;
 
     let imageResult: string | null = null;
     let usedProvider = "kie";
@@ -243,7 +243,7 @@ serve(async (req) => {
       user_id: userId,
       tool_type: "image",
       model: usedProvider === "kie" ? "kie-nano-banana-2" : "nano-banana-pro-edit",
-      prompt: `Multi-Plan ${planLabel}`,
+      prompt: plan_index ? `Multi-Plan ${planLabel} #${plan_index}` : `Multi-Plan ${planLabel}`,
       provider: usedProvider,
       status: "completed",
       result_url: publicUrl,
