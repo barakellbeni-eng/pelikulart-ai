@@ -671,7 +671,8 @@ async function processKie(jobId: string, userId: string, body: any) {
       }
     } else if (tool_type === "audio") {
       if (rawSettings.duration) input.duration = rawSettings.duration;
-      if (kieModel.includes("text-to-speech")) {
+      // ElevenLabs models (TTS and SFX) expect 'text' instead of 'prompt'
+      if (kieModel.includes("elevenlabs")) {
         input.text = prompt;
         delete input.prompt;
       }
