@@ -30,6 +30,7 @@ import {
   Check,
   Trash2,
   Film,
+  Camera,
   RefreshCw,
   Info,
   FolderInput,
