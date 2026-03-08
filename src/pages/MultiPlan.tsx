@@ -29,6 +29,7 @@ const PLAN_TYPES = [
   { id: "bird-eye", label: "Vue aérienne" },
   { id: "worm-eye", label: "Vue en contre-bas" },
   { id: "profile", label: "Profil" },
+  { id: "pov", label: "POV" },
   { id: "three-quarter", label: "Trois-quarts" },
 ] as const;
 
