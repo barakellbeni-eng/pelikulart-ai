@@ -23,6 +23,7 @@ import {
   SidebarFooter,
   SidebarSeparator,
 } from "@/components/ui/sidebar";
+import ProjectsPanel from "@/components/ProjectsPanel";
 
 const mainNav = [
   { title: "Accueil", url: "/studio", icon: Wand2 },
@@ -115,8 +116,14 @@ const AppSidebar = () => {
           </SidebarGroupContent>
         </SidebarGroup>
 
+        <SidebarSeparator />
 
-
+        {/* Projects panel */}
+        <SidebarGroup className="flex-1 min-h-0">
+          <SidebarGroupContent className="h-full">
+            <ProjectsPanel />
+          </SidebarGroupContent>
+        </SidebarGroup>
       </SidebarContent>
 
       {/* Footer avec crédits */}
