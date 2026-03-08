@@ -89,6 +89,7 @@ serve(async (req) => {
       image_url,
       image_urls,
       cauris_cost = 0,
+      project_id,
       ...rawSettings
     } = body;
 
@@ -226,6 +227,7 @@ serve(async (req) => {
           aspect_ratio: modelSettings.aspect_ratio || null,
           resolution: modelSettings.resolution || modelSettings.image_size || null,
           output_format,
+          project_id: project_id || null,
         });
 
         // Generate a presigned URL for immediate display
