@@ -58,7 +58,7 @@ serve(async (req) => {
     const adminClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
     const body = await req.json();
-    const { image_url, plan_type, project_id, aspect_ratio = "1:1", resolution = "2K" } = body;
+    const { image_url, plan_type, project_id, aspect_ratio = "1:1", resolution = "2K", plan_index } = body;
 
     if (!image_url) {
       return new Response(
@@ -79,12 +79,6 @@ serve(async (req) => {
       );
     }
 
-    // Resolution mapping
-    const resolutionMap: Record<string, { width: number; height: number }> = {
-      "2K": { width: 2048, height: 2048 },
-      "4K": { width: 4096, height: 4096 },
-    };
-
     // Aspect ratio to image_size
     const ratioSizes: Record<string, Record<string, { width: number; height: number }>> = {
       "1:1":  { "2K": { width: 2048, height: 2048 }, "4K": { width: 4096, height: 4096 } },
@@ -97,7 +91,18 @@ serve(async (req) => {
     const imageSize = ratioSizes[aspect_ratio]?.[resolution] || ratioSizes["1:1"]["2K"];
 
     const planLabel = PLAN_TYPE_MAP[plan_type] || plan_type;
-    const prompt = `generate 4 different ${planLabel} shot of this exact image, Keep the same subject, same scene, same colors, same lighting.`;
+
+    // Plan-specific prompts for buttons Plan 1-4
+    const planPrompts: Record<number, string> = {
+      1: "Select only the first shot of this image.",
+      2: "Select only the second shot of this image.",
+      3: "Select only the third shot of this image.",
+      4: "Select only the fourth shot of this image.",
+    };
+
+    const prompt = plan_index && planPrompts[plan_index]
+      ? planPrompts[plan_index]
+      : `generate 4 different ${planLabel} shot of this exact image, Keep the same subject, same scene, same colors, same lighting.`;
 
     console.log(`Multi-plan: generating ${planLabel} ${aspect_ratio} ${resolution} via Fal AI`);
 
