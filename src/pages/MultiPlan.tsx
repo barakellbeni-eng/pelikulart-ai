@@ -371,24 +371,19 @@ const MultiPlan = () => {
             </motion.div>
           </div>
 
-          {/* Plan type */}
+          {/* Plan type - dropdown */}
           <div className="space-y-1.5">
             <label className="text-[10px] text-muted-foreground uppercase tracking-widest">Type de plan</label>
-            <div className="grid grid-cols-2 gap-1">
+            <select
+              value={selectedPlan}
+              onChange={(e) => setSelectedPlan(e.target.value as PlanTypeId)}
+              className="w-full px-3 py-2 rounded-lg bg-muted/20 border border-border/30 text-xs text-foreground appearance-none cursor-pointer hover:border-primary/30 focus:border-primary/50 focus:outline-none focus:ring-1 focus:ring-primary/20 transition-all"
+              style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 10px center' }}
+            >
               {PLAN_TYPES.map((plan) => (
-                <button
-                  key={plan.id}
-                  onClick={() => setSelectedPlan(plan.id)}
-                  className={`px-2 py-1.5 rounded text-[10px] font-medium text-left transition-all ${
-                    selectedPlan === plan.id
-                      ? "bg-primary/15 text-primary"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  {plan.label}
-                </button>
+                <option key={plan.id} value={plan.id}>{plan.label}</option>
               ))}
-            </div>
+            </select>
           </div>
 
           {/* Generate button */}
