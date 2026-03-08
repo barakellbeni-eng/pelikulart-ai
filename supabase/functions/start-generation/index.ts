@@ -574,21 +574,28 @@ async function processKie(jobId: string, userId: string, body: any) {
         }
       }
     } else if (tool_type === "video") {
-      // Auto-switch video T2V → I2V
+      // Auto-switch video T2V → I2V (Kling 2.6, Wan 2.6)
       if (hasImages && KIE_AUTO_SWITCH[model_id]) {
         kieModel = KIE_AUTO_SWITCH[model_id][1];
         console.log(`[KIE] Auto-switched to ${kieModel} (image provided)`);
       }
 
       if (rawSettings.duration) input.duration = String(rawSettings.duration);
-      if (rawSettings.aspect_ratio) input.aspect_ratio = rawSettings.aspect_ratio;
       if (rawSettings.resolution) input.resolution = rawSettings.resolution;
-      if (rawSettings.mode) input.mode = rawSettings.mode;
-      if (rawSettings.sound !== undefined) input.sound = rawSettings.sound;
       if (rawSettings.generate_audio !== undefined) input.generate_audio = rawSettings.generate_audio;
 
-      // Kling 3.0 specific
-      if (kieModel === "kling-3.0") input.multi_shots = false;
+      // Kling 2.6 I2V does NOT support aspect_ratio, only T2V does
+      const isKling26I2V = kieModel === "kling-2.6/image-to-video";
+      if (rawSettings.aspect_ratio && !isKling26I2V) input.aspect_ratio = rawSettings.aspect_ratio;
+
+      // Sound param (Kling 2.6 & 3.0)
+      if (rawSettings.sound !== undefined) input.sound = rawSettings.sound;
+
+      // Kling 3.0 specific (unified model, accepts image_urls optionally)
+      if (kieModel === "kling-3.0/video") {
+        input.multi_shots = false;
+        if (rawSettings.mode) input.mode = rawSettings.mode;
+      }
 
       // Image input for video
       if (hasImages) {
