@@ -61,6 +61,18 @@ const MultiPlan = () => {
   const [loadingPlan, setLoadingPlan] = useState<number | null>(null);
   const [showMediaPicker, setShowMediaPicker] = useState(false);
 
+  // Session gallery: all generated images
+  const [sessionGallery, setSessionGallery] = useState<{ url: string; label: string }[]>([]);
+  const [selectedGalleryIndex, setSelectedGalleryIndex] = useState<number>(0);
+
+  const addToGallery = (url: string, label: string) => {
+    setSessionGallery((prev) => {
+      const next = [...prev, { url, label }];
+      setSelectedGalleryIndex(next.length - 1);
+      return next;
+    });
+  };
+
   const callGenerate = async (imageUrl: string, planType: string, planIndex?: number) => {
     const { data: sessionData } = await supabase.auth.getSession();
     const token = sessionData?.session?.access_token;
@@ -121,6 +133,7 @@ const MultiPlan = () => {
     try {
       const result = await callGenerate(sourceImage, selectedPlan);
       setMainResult(result);
+      addToGallery(result.url, "Multi-Plan");
       refreshBalance();
       toast.success("Image générée !");
     } catch (e: any) {
@@ -137,6 +150,7 @@ const MultiPlan = () => {
     try {
       const result = await callGenerate(mainResult.url, selectedPlan, planIndex + 1);
       setPlanResults((prev) => ({ ...prev, [planIndex]: result }));
+      addToGallery(result.url, `Plan ${planIndex + 1}`);
       refreshBalance();
     } catch (e: any) {
       toast.error(e.message);
