@@ -2247,12 +2247,22 @@ const Dashboard = () => {
                           </button>
 
                           {/* Type badge */}
-                          <div className="absolute top-1.5 left-1.5">
+                          <div className="absolute top-1.5 left-1.5 z-10">
                             <span className="flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-blue-500/80 backdrop-blur-sm text-[9px] font-bold text-white uppercase">
                               <Image className="w-2.5 h-2.5" />
                               IMG
                             </span>
                           </div>
+                          {/* Model logo — always visible, bottom-right */}
+                          {(() => {
+                            const model = img.modelId ? getModelById(img.modelId) : null;
+                            const logo = model ? getBrandLogo(model.brand, model.id) : null;
+                            return logo ? (
+                              <div className="absolute bottom-1.5 right-1.5 z-10">
+                                <img src={logo} alt={model!.brand} className="w-5 h-5 rounded object-contain pointer-events-none drop-shadow-md" draggable={false} onContextMenu={(e) => e.preventDefault()} />
+                              </div>
+                            ) : null;
+                          })()}
                           <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                             <div className="absolute top-1.5 right-11 flex items-center gap-1">
                               {img.prompt && (
