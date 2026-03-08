@@ -99,7 +99,7 @@ const KIE_MODELS: Record<string, string> = {
   "kie-imagen4-ultra": "google/imagen4-ultra",
   "kie-flux2-pro": "flux-2/pro-text-to-image",   // auto → flux-2/pro-image-to-image with image
   "kie-seedream-v45": "seedream/4.5-text-to-image", // auto → seedream/4.5-edit with image
-  "kie-zimage-turbo": "z-image",
+  
   // Video
   "kie-kling-30": "kling-3.0/video",
   "kie-kling-26": "kling-2.6/text-to-video",     // auto → kling-2.6/image-to-video with image
@@ -239,32 +239,6 @@ async function kiePollTask(taskId: string, apiKey: string, maxAttempts = 150): P
   throw new Error("KIE AI generation timed out");
 }
 
-// ──────────────────────── AUDIO THUMBNAIL GENERATOR ────────────────────────
-
-async function generateAudioThumbnail(prompt: string, userId: string): Promise<string | null> {
-  const KIE_API_KEY = Deno.env.get("KIE_AI_API_KEY");
-  if (!KIE_API_KEY) return null;
-
-  try {
-    console.log("[Thumbnail] Generating thumbnail for audio via Z-Image Turbo");
-    const thumbPrompt = `Album cover art, cinematic, vibrant: ${prompt.slice(0, 500)}`;
-    const input = { prompt: thumbPrompt, aspect_ratio: "1:1" };
-
-    const taskId = await kieCreateTask("z-image", input, KIE_API_KEY);
-    const result = await kiePollTask(taskId, KIE_API_KEY, 60);
-
-    const resultUrls: string[] = result.resultUrls || [];
-    if (resultUrls.length === 0) return null;
-
-    const { displayKey } = await downloadAndUploadDual(resultUrls[0], userId, "png");
-    const thumbnailUrl = getPublicUrl(displayKey);
-    console.log("[Thumbnail] Generated:", thumbnailUrl);
-    return thumbnailUrl;
-  } catch (err) {
-    console.error("[Thumbnail] Failed (non-blocking):", err);
-    return null;
-  }
-}
 
 // ──────────────────────── BACKGROUND PROCESSORS ────────────────────────
 
@@ -560,11 +534,9 @@ async function processAudio(jobId: string, userId: string, body: any) {
       user_id: userId, prompt: prompt.slice(0, 5000), image_url: publicUrl, media_type: "audio",
     });
 
-    const thumbnailUrl = await generateAudioThumbnail(prompt, userId);
-
     await updateJob(adminClient, jobId, {
       status: "completed", progress: 100, result_url: publicUrl, result_url_original: publicUrl, result_url_temp: publicUrl,
-      result_metadata: { storage_keys: [storageKey], format: "wav", ...(thumbnailUrl ? { thumbnail_url: thumbnailUrl } : {}) },
+      result_metadata: { storage_keys: [storageKey], format: "wav" },
       completed_at: new Date().toISOString(),
     });
   } catch (err: any) {
@@ -746,15 +718,9 @@ async function processKie(jobId: string, userId: string, body: any) {
       ? (storageKeys[0].startsWith("http") ? storageKeys[0] : getPublicUrl(storageKeys[0]))
       : urlsToProcess[0];
 
-    // Generate thumbnail for audio
-    let thumbnailUrl: string | null = null;
-    if (isAudio) {
-      thumbnailUrl = await generateAudioThumbnail(prompt, userId);
-    }
-
     await updateJob(adminClient, jobId, {
       status: "completed", progress: 100, result_url: finalDisplayUrl, result_url_original: finalOriginalUrl, result_url_temp: finalDisplayUrl,
-      result_metadata: { storage_keys: storageKeys, display_keys: displayKeys, count: storageKeys.length, format, provider: "kie", ...(thumbnailUrl ? { thumbnail_url: thumbnailUrl } : {}) },
+      result_metadata: { storage_keys: storageKeys, display_keys: displayKeys, count: storageKeys.length, format, provider: "kie" },
       completed_at: new Date().toISOString(),
     });
   } catch (err: any) {
@@ -882,9 +848,6 @@ async function processSuno(jobId: string, userId: string, body: any) {
       media_type: "audio",
     });
 
-    // Generate thumbnail
-    const thumbnailUrl = await generateAudioThumbnail(prompt, userId);
-
     await updateJob(adminClient, jobId, {
       status: "completed",
       progress: 100,
@@ -899,7 +862,6 @@ async function processSuno(jobId: string, userId: string, body: any) {
         title: trackTitle,
         tags: trackTags,
         duration: trackDuration,
-        ...(thumbnailUrl ? { thumbnail_url: thumbnailUrl } : {}),
       },
       completed_at: new Date().toISOString(),
     });

@@ -347,39 +347,14 @@ const Gallery = () => {
                           <VideoThumbnail src={item.displayUrl || ""} />
                         </div>
                       ) : item.tool_type === "audio" ? (
-                        <div className={`w-full ${isGrid ? "aspect-[3/4]" : "aspect-square"} relative overflow-hidden`}>
-                          {/* Thumbnail or fallback */}
-                          {item.result_metadata?.thumbnail_url ? (
-                            <img
-                              src={item.result_metadata.thumbnail_url}
-                              alt={item.prompt}
-                              className="w-full h-full object-cover"
-                              loading="lazy"
-                            />
-                          ) : (
-                            <div className="w-full h-full bg-muted/30 flex items-center justify-center">
-                              <Music className="w-12 h-12 text-muted-foreground/20" />
-                            </div>
+                        <div className="w-full aspect-square bg-muted/20 flex flex-col items-center justify-center relative overflow-hidden">
+                          <Music className="w-10 h-10 text-primary/40 mb-2" />
+                          <p className="text-[10px] text-muted-foreground text-center px-3 line-clamp-2">{item.prompt}</p>
+                          {item.result_metadata?.duration && (
+                            <span className="absolute bottom-2 left-2 text-[9px] text-muted-foreground bg-muted/40 rounded-full px-2 py-0.5">
+                              {Math.floor(item.result_metadata.duration / 60).toString().padStart(2, "0")}:{Math.floor(item.result_metadata.duration % 60).toString().padStart(2, "0")}
+                            </span>
                           )}
-                          {/* Dark gradient overlay */}
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-                          {/* Prompt text overlay */}
-                          <div className="absolute bottom-10 left-3 right-3">
-                            <p className="text-white text-xs leading-relaxed line-clamp-3 drop-shadow-lg">
-                              {item.prompt}
-                            </p>
-                          </div>
-                          {/* Audio indicator bottom-left */}
-                          <div className="absolute bottom-2.5 left-3 flex items-center gap-1.5 bg-white/15 backdrop-blur-md rounded-full px-2 py-1">
-                            <Music className="w-3 h-3 text-white" />
-                            {item.result_metadata?.duration ? (
-                              <span className="text-[10px] text-white font-medium">
-                                {Math.floor(item.result_metadata.duration / 60).toString().padStart(2, "0")}:{Math.floor(item.result_metadata.duration % 60).toString().padStart(2, "0")}
-                              </span>
-                            ) : (
-                              <span className="text-[10px] text-white font-medium">Audio</span>
-                            )}
-                          </div>
                         </div>
                       ) : null}
 
@@ -506,23 +481,7 @@ const Gallery = () => {
               ) : selected.tool_type === "video" ? (
                 <video src={selected.displayUrl} controls className="w-full rounded-xl" />
               ) : (
-                <div className="space-y-3">
-                  {selected.result_metadata?.thumbnail_url && (
-                    <div className="relative rounded-xl overflow-hidden">
-                      <img src={selected.result_metadata.thumbnail_url} alt={selected.prompt} className="w-full rounded-xl" />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                      <div className="absolute bottom-3 left-3 flex items-center gap-1.5 bg-white/15 backdrop-blur-md rounded-full px-2.5 py-1">
-                        <Music className="w-3.5 h-3.5 text-white" />
-                        {selected.result_metadata?.duration && (
-                          <span className="text-xs text-white font-medium">
-                            {Math.floor(selected.result_metadata.duration / 60).toString().padStart(2, "0")}:{Math.floor(selected.result_metadata.duration % 60).toString().padStart(2, "0")}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  )}
-                  <audio src={selected.displayUrl} controls className="w-full" />
-                </div>
+                <audio src={selected.displayUrl} controls className="w-full" />
               )}
               <div className="space-y-3">
                 <p className="text-sm text-foreground">{selected.prompt}</p>
