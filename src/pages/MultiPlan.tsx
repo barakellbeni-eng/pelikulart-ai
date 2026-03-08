@@ -62,7 +62,7 @@ const MultiPlan = () => {
     const resp = await fetch(MULTIPLAN_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ image_url: imageUrl, plan_type: planType }),
+      body: JSON.stringify({ image_url: imageUrl, plan_type: planType, aspect_ratio: selectedRatio, resolution: selectedResolution }),
     });
 
     if (!resp.ok) {
