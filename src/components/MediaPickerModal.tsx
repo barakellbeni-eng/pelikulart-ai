@@ -77,30 +77,68 @@ export default function MediaPickerModal({ open, onClose, onSelect, accept, titl
 
     try {
       if (tab === "generations") {
-        const { data, error } = await supabase
-          .from("generation_jobs")
-          .select("id, tool_type, model, prompt, result_url, created_at")
-          .eq("status", "completed")
-          .not("result_url", "is", null)
-          .order("created_at", { ascending: false })
-          .limit(200);
+        // Fetch from both generation_jobs AND legacy generations table
+        const [jobsRes, legacyRes] = await Promise.all([
+          supabase
+            .from("generation_jobs")
+            .select("id, tool_type, model, prompt, result_url, created_at")
+            .eq("status", "completed")
+            .not("result_url", "is", null)
+            .order("created_at", { ascending: false })
+            .limit(200),
+          supabase
+            .from("generations")
+            .select("id, media_type, prompt, image_url, created_at")
+            .order("created_at", { ascending: false })
+            .limit(200),
+        ]);
 
-        if (!error && data) {
-          const urls = data.map((d: any) => d.result_url as string);
-          const signedUrls = await getSignedUrls(urls);
-          const mapped: MediaItem[] = data.map((d: any, i: number) => ({
-            id: d.id,
-            source: "generation" as const,
-            file_type: d.tool_type as "image" | "video" | "audio",
-            name: (d.prompt || "Génération").slice(0, 60),
-            url: d.result_url,
-            displayUrl: signedUrls[i],
-            created_at: d.created_at,
-            model: d.model,
-            prompt: d.prompt,
-          }));
-          setItems(mapped);
+        const allItems: MediaItem[] = [];
+        const seenIds = new Set<string>();
+
+        // Map generation_jobs
+        if (!jobsRes.error && jobsRes.data) {
+          for (const d of jobsRes.data) {
+            seenIds.add(d.id);
+            allItems.push({
+              id: d.id,
+              source: "generation" as const,
+              file_type: d.tool_type as "image" | "video" | "audio",
+              name: (d.prompt || "Génération").slice(0, 60),
+              url: d.result_url!,
+              created_at: d.created_at,
+              model: d.model,
+              prompt: d.prompt,
+            });
+          }
         }
+
+        // Map legacy generations (avoid duplicates)
+        if (!legacyRes.error && legacyRes.data) {
+          for (const d of legacyRes.data) {
+            if (seenIds.has(d.id)) continue;
+            allItems.push({
+              id: d.id,
+              source: "generation" as const,
+              file_type: (d.media_type || "image") as "image" | "video" | "audio",
+              name: (d.prompt || "Génération").slice(0, 60),
+              url: d.image_url,
+              created_at: d.created_at,
+            });
+          }
+        }
+
+        // Sort by date desc
+        allItems.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
+        // Resolve signed URLs
+        const urls = allItems.map((item) => item.url);
+        const signedUrls = await getSignedUrls(urls);
+        for (let i = 0; i < allItems.length; i++) {
+          allItems[i].displayUrl = signedUrls[i];
+        }
+
+        setItems(allItems);
       } else {
         const { data, error } = await supabase
           .from("user_media")
