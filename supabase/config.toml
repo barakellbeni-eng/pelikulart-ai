@@ -29,6 +29,3 @@ verify_jwt = false
 
 [functions.start-generation]
 verify_jwt = false
-
-[functions.delete-generation]
-verify_jwt = false
