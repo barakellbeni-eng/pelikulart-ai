@@ -230,8 +230,54 @@ const MultiPlan = () => {
             ))}
           </div>
         </div>
+        {/* Aspect ratio selector */}
+        <div className="space-y-2">
+          <label className="text-[11px] text-muted-foreground font-semibold uppercase tracking-wider">
+            Ratio
+          </label>
+          <div className="flex flex-wrap gap-2">
+            {ASPECT_RATIOS.map((ratio) => (
+              <motion.button
+                key={ratio.id}
+                onClick={() => setSelectedRatio(ratio.id)}
+                className={`px-4 py-2 rounded-xl text-sm font-medium transition-all flex items-center gap-1.5 ${
+                  selectedRatio === ratio.id
+                    ? "bg-primary text-primary-foreground shadow-lg shadow-primary/25 scale-105"
+                    : "bg-card border border-border text-muted-foreground hover:text-foreground hover:border-primary/30"
+                }`}
+                whileTap={{ scale: 0.97 }}
+              >
+                <span>{ratio.icon}</span>
+                {ratio.label}
+              </motion.button>
+            ))}
+          </div>
+        </div>
 
-        {/* Generate button */}
+        {/* Resolution selector */}
+        <div className="space-y-2">
+          <label className="text-[11px] text-muted-foreground font-semibold uppercase tracking-wider">
+            Qualité
+          </label>
+          <div className="flex gap-2">
+            {RESOLUTIONS.map((res) => (
+              <motion.button
+                key={res.id}
+                onClick={() => setSelectedResolution(res.id)}
+                className={`px-5 py-2 rounded-xl text-sm font-medium transition-all ${
+                  selectedResolution === res.id
+                    ? "bg-primary text-primary-foreground shadow-lg shadow-primary/25 scale-105"
+                    : "bg-card border border-border text-muted-foreground hover:text-foreground hover:border-primary/30"
+                }`}
+                whileTap={{ scale: 0.97 }}
+              >
+                {res.label}
+                <span className="text-[10px] opacity-60 ml-1">{res.desc}</span>
+              </motion.button>
+            ))}
+          </div>
+        </div>
+
         <motion.button
           onClick={handleGenerate}
           disabled={!sourceImage || isGenerating || !user}
