@@ -666,33 +666,46 @@ async function processKie(jobId: string, userId: string, body: any) {
     await updateJob(adminClient, jobId, { result_url_temp: urlsToProcess[0], progress: 50 });
 
     const storageKeys: string[] = [];
+    const displayKeys: string[] = [];
+    const isImageType = !isVideo && !isAudio;
     for (const url of urlsToProcess) {
       try {
-        const storageKey = await downloadAndUpload(url, userId, format);
-        storageKeys.push(storageKey);
-        const publicUrl = getPublicUrl(storageKey);
-
-        await adminClient.from("generations").insert({
-          user_id: userId,
-          prompt: prompt.slice(0, 5000),
-          image_url: publicUrl,
-          media_type: mediaType,
-          aspect_ratio: rawSettings.aspect_ratio || rawSettings.image_size || null,
-        });
+        if (isImageType) {
+          const { originalKey, displayKey } = await downloadAndUploadDual(url, userId, format);
+          storageKeys.push(originalKey);
+          displayKeys.push(displayKey);
+          const dUrl = getPublicUrl(displayKey);
+          await adminClient.from("generations").insert({
+            user_id: userId, prompt: prompt.slice(0, 5000), image_url: dUrl,
+            media_type: mediaType, aspect_ratio: rawSettings.aspect_ratio || rawSettings.image_size || null,
+          });
+        } else {
+          const storageKey = await downloadAndUpload(url, userId, format);
+          storageKeys.push(storageKey);
+          displayKeys.push(storageKey);
+          const publicUrl = getPublicUrl(storageKey);
+          await adminClient.from("generations").insert({
+            user_id: userId, prompt: prompt.slice(0, 5000), image_url: publicUrl,
+            media_type: mediaType, aspect_ratio: rawSettings.aspect_ratio || rawSettings.image_size || null,
+          });
+        }
       } catch (dlErr) {
         console.error(`[KIE] Download error for ${url}:`, dlErr);
-        // Use temp URL as fallback
         storageKeys.push(url);
+        displayKeys.push(url);
       }
     }
 
-    const finalUrl = storageKeys.length > 0
+    const finalDisplayUrl = displayKeys.length > 0
+      ? (displayKeys[0].startsWith("http") ? displayKeys[0] : getPublicUrl(displayKeys[0]))
+      : urlsToProcess[0];
+    const finalOriginalUrl = storageKeys.length > 0
       ? (storageKeys[0].startsWith("http") ? storageKeys[0] : getPublicUrl(storageKeys[0]))
       : urlsToProcess[0];
 
     await updateJob(adminClient, jobId, {
-      status: "completed", progress: 100, result_url: finalUrl, result_url_temp: finalUrl,
-      result_metadata: { storage_keys: storageKeys, count: storageKeys.length, format, provider: "kie" },
+      status: "completed", progress: 100, result_url: finalDisplayUrl, result_url_original: finalOriginalUrl, result_url_temp: finalDisplayUrl,
+      result_metadata: { storage_keys: storageKeys, display_keys: displayKeys, count: storageKeys.length, format, provider: "kie" },
       completed_at: new Date().toISOString(),
     });
   } catch (err: any) {

@@ -178,14 +178,15 @@ const Gallery = () => {
 
   const handleDownload = async (item: GalleryItem) => {
     try {
-      const url = item.displayUrl || item.result_url;
+      const url = item.result_url_original || item.displayUrl || item.result_url;
       const response = await fetch(url);
       const blob = await response.blob();
       const blobUrl = URL.createObjectURL(blob);
       const ext = item.tool_type === "video" ? "mp4" : item.tool_type === "audio" ? "mp3" : "png";
+      const date = new Date(item.created_at).toISOString().slice(0, 10).replace(/-/g, '');
       const a = document.createElement("a");
       a.href = blobUrl;
-      a.download = `pelikulart-${item.id.slice(0, 8)}.${ext}`;
+      a.download = `pelikulart_${item.tool_type}_${date}_${item.id.slice(0, 8)}.${ext}`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);

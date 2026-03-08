@@ -679,7 +679,7 @@ const MultiPlan = () => {
               </p>
               <div className="flex gap-2">
                 <button
-                  onClick={() => handleDownload(previewImage.url, previewImage.id.slice(0, 8))}
+                  onClick={() => handleDownload(previewImage.originalUrl || previewImage.url, previewImage.id.slice(0, 8))}
                   className="btn-generate flex-1 flex items-center justify-center gap-2 text-sm py-3"
                 >
                   <Download className="w-4 h-4" /> Télécharger

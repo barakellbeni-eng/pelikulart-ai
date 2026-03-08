@@ -30,6 +30,7 @@ export type Database = {
           provider: string
           result_metadata: Json | null
           result_url: string | null
+          result_url_original: string | null
           result_url_temp: string | null
           started_at: string | null
           status: string
@@ -52,6 +53,7 @@ export type Database = {
           provider?: string
           result_metadata?: Json | null
           result_url?: string | null
+          result_url_original?: string | null
           result_url_temp?: string | null
           started_at?: string | null
           status?: string
@@ -74,6 +76,7 @@ export type Database = {
           provider?: string
           result_metadata?: Json | null
           result_url?: string | null
+          result_url_original?: string | null
           result_url_temp?: string | null
           started_at?: string | null
           status?: string
