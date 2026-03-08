@@ -1750,7 +1750,7 @@ const Dashboard = () => {
                             <img
                               src={(item.data as GeneratedImage).url}
                               alt={(item.data as GeneratedImage).prompt || "Generated"}
-                              className="w-full object-contain max-h-[600px] bg-black/20"
+                              className="w-full object-contain max-h-[280px] bg-black/20"
                               loading="lazy"
                             />
                           </div>
@@ -1769,7 +1769,7 @@ const Dashboard = () => {
                             <video
                               src={(item.data as GeneratedVideo).url}
                               controls
-                              className="w-full max-h-[600px]"
+                              className="w-full max-h-[280px]"
                             />
                           </div>
                         )}
