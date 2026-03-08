@@ -35,6 +35,10 @@ import {
   Info,
   FolderInput,
   Package,
+  Play,
+  Pause,
+  ZoomIn,
+  ZoomOut,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
@@ -132,11 +136,17 @@ const Dashboard = () => {
   const [previewVideo, setPreviewVideo] = useState<GeneratedVideo | null>(null);
   const [isEnhancing, setIsEnhancing] = useState(false);
   const [isDescribingImage, setIsDescribingImage] = useState(false);
-  const [galleryLayout, setGalleryLayout] = useState<"row" | "grid">("row");
+  const [galleryLayout, setGalleryLayout] = useState<"row" | "grid">("grid");
+  const [gallerySizeLevel, setGallerySizeLevel] = useState<number>(() => {
+    const saved = localStorage.getItem("gallerySizeLevel");
+    return saved ? parseInt(saved) : 3;
+  });
   const [galleryImageSize, setGalleryImageSize] = useState<"mini" | "small" | "medium" | "large">("medium");
   const [galleryFilter, setGalleryFilter] = useState<"all" | "image" | "video" | "audio">("all");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
+  const [playingDashAudioId, setPlayingDashAudioId] = useState<string | null>(null);
+  const dashAudioRefs = useRef<Record<string, HTMLAudioElement>>({});
   const describeInputRef = useRef<HTMLInputElement>(null);
   const [isDraggingOverPrompt, setIsDraggingOverPrompt] = useState(false);
   const [isDraggingOverUpload, setIsDraggingOverUpload] = useState(false);
@@ -979,6 +989,47 @@ const Dashboard = () => {
     }
   };
 
+  const handleDeleteAudio = async (aud: GeneratedAudio) => {
+    if (!user) return;
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData?.session?.access_token;
+      if (token && aud.id) {
+        await fetch(DELETE_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ job_id: aud.id }),
+        });
+      }
+      setGalleryAudios((prev) => prev.filter((a) => a.url !== aud.url));
+      toast.success("Audio supprimé");
+    } catch {
+      toast.error("Erreur lors de la suppression");
+    }
+  };
+
+  const toggleDashAudioPlay = (id: string, url: string) => {
+    if (playingDashAudioId === id) {
+      dashAudioRefs.current[id]?.pause();
+      setPlayingDashAudioId(null);
+      return;
+    }
+    if (playingDashAudioId && dashAudioRefs.current[playingDashAudioId]) {
+      dashAudioRefs.current[playingDashAudioId].pause();
+    }
+    if (!dashAudioRefs.current[id]) {
+      dashAudioRefs.current[id] = new Audio(url);
+      dashAudioRefs.current[id].onended = () => setPlayingDashAudioId(null);
+    }
+    dashAudioRefs.current[id].play();
+    setPlayingDashAudioId(id);
+  };
+
+  const handleSizeSliderChange = (val: number) => {
+    setGallerySizeLevel(val);
+    localStorage.setItem("gallerySizeLevel", String(val));
+  };
+
   const handleBatchDeleteSelection = async () => {
     if (!user || batchDeletingSelection || selectionCount === 0) return;
 
@@ -1780,13 +1831,21 @@ const Dashboard = () => {
               </button>
             ))}
           </div>
-          <div className="flex items-center gap-1">
-            <ViewModePopover
-              layout={galleryLayout}
-              imageSize={galleryImageSize}
-              onLayoutChange={setGalleryLayout}
-              onImageSizeChange={setGalleryImageSize}
-            />
+          <div className="flex items-center gap-2">
+            {/* Size slider */}
+            <div className="flex items-center gap-1.5 bg-card border border-border rounded-lg px-2.5 h-8">
+              <ZoomOut className="w-3 h-3 text-muted-foreground" />
+              <input
+                type="range"
+                min={1}
+                max={5}
+                step={1}
+                value={gallerySizeLevel}
+                onChange={(e) => handleSizeSliderChange(Number(e.target.value))}
+                className="w-16 h-[3px] accent-primary cursor-pointer"
+              />
+              <ZoomIn className="w-3.5 h-3.5 text-muted-foreground" />
+            </div>
             <FiltersPopover
               typeFilter={galleryFilter}
               onTypeFilterChange={setGalleryFilter}
@@ -1951,11 +2010,38 @@ const Dashboard = () => {
                             />
                           </div>
                         )}
-                        {item.type === "audio" && (
-                          <div className="p-4">
-                            <audio src={(item.data as GeneratedAudio).url} controls className="w-full" />
-                          </div>
-                        )}
+                        {item.type === "audio" && (() => {
+                          const aud = item.data as GeneratedAudio;
+                          const audioId = aud.id || `feed-aud-${i}`;
+                          const isPlaying = playingDashAudioId === audioId;
+                          return (
+                            <div
+                              className={`aspect-square bg-gradient-to-br from-card to-muted/30 flex flex-col items-center justify-center gap-2.5 relative cursor-pointer ${isPlaying ? "audio-playing" : ""}`}
+                              onClick={() => toggleDashAudioPlay(audioId, aud.url)}
+                            >
+                              <div className="relative w-12 h-12 flex items-center justify-center">
+                                <Music className="w-6 h-6 text-primary relative z-10" />
+                                {isPlaying && (
+                                  <>
+                                    <div className="ripple-ring absolute inset-0 rounded-full border-[1.5px] border-primary/30" />
+                                    <div className="ripple-ring-delayed absolute -inset-2 rounded-full border-[1.5px] border-primary/30" />
+                                  </>
+                                )}
+                              </div>
+                              <div className="flex items-center gap-[3px] h-5">
+                                {[6, 14, 10, 18, 8, 16, 12, 6].map((h, idx) => (
+                                  <div key={idx} className="wave-bar w-[3px] rounded-sm bg-primary/20" style={{ height: `${h}px`, animationDelay: `${idx * 0.1}s` }} />
+                                ))}
+                              </div>
+                              <button
+                                className="absolute bottom-2 left-2 w-6 h-6 rounded-full bg-primary flex items-center justify-center transition-transform hover:scale-110"
+                                onClick={(e) => { e.stopPropagation(); toggleDashAudioPlay(audioId, aud.url); }}
+                              >
+                                {isPlaying ? <Pause className="w-2.5 h-2.5 text-primary-foreground" fill="currentColor" /> : <Play className="w-2.5 h-2.5 text-primary-foreground ml-0.5" fill="currentColor" />}
+                              </button>
+                            </div>
+                          );
+                        })()}
 
                         {/* Actions bar */}
                         <div className="px-4 py-2.5 flex items-center gap-3">
@@ -2011,6 +2097,15 @@ const Dashboard = () => {
                                 <Trash2 className="w-3.5 h-3.5 text-destructive" />
                               </button>
                             )}
+                            {item.type === "audio" && (
+                              <button
+                                onClick={() => handleDeleteAudio(item.data as GeneratedAudio)}
+                                className="w-7 h-7 rounded-lg bg-destructive/10 flex items-center justify-center hover:bg-destructive/20 transition-colors"
+                                title="Supprimer"
+                              >
+                                <Trash2 className="w-3.5 h-3.5 text-destructive" />
+                              </button>
+                            )}
                             <button
                               onClick={() => handleDownload(
                                 item.type === "image" ? (item.data as GeneratedImage).url :
@@ -2039,8 +2134,17 @@ const Dashboard = () => {
               );
             }
 
+            const gridStyle = (() => {
+              const sizes = [80, 130, 180, 240, 0];
+              const size = sizes[gallerySizeLevel - 1];
+              if (gallerySizeLevel === 5) return { gridTemplateColumns: "1fr" };
+              if (gallerySizeLevel === 4) return { gridTemplateColumns: "repeat(2, 1fr)" };
+              return { gridTemplateColumns: `repeat(auto-fill, minmax(${size}px, 1fr))` };
+            })();
+            const cardAspect = gallerySizeLevel >= 4 ? "aspect-video" : "aspect-square";
+
             return (
-              <div className={`grid gap-3 ${galleryImageSize === "mini" ? "grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8" : galleryImageSize === "large" ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-3" : galleryImageSize === "small" ? "grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5" : "grid-cols-2 md:grid-cols-3 lg:grid-cols-4"}`}>
+              <div className="grid gap-3" style={gridStyle}>
                 {/* Loading placeholders */}
                 {isGenerating && (
                   activeTab === "audio" ? (
@@ -2089,7 +2193,7 @@ const Dashboard = () => {
                           e.dataTransfer.setData("text/x-gallery-image", img.url);
                           e.dataTransfer.effectAllowed = "copy";
                         }}
-                        className={`aspect-square relative group rounded-xl overflow-hidden cursor-grab active:cursor-grabbing`}
+                        className={`${cardAspect} relative group rounded-xl overflow-hidden cursor-grab active:cursor-grabbing`}
                       >
                         <motion.div
                           initial={{ opacity: 0, scale: 0.95 }}
@@ -2185,7 +2289,7 @@ const Dashboard = () => {
                         key={`vid-${i}-${item.ts}`}
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        className={`aspect-square relative group rounded-xl overflow-hidden cursor-pointer`}
+                        className={`${cardAspect} relative group rounded-xl overflow-hidden cursor-pointer`}
                         onClick={() => {
                           if (selectionCount > 0) {
                             toggleSelection(videoSelectionKey);
@@ -2248,35 +2352,80 @@ const Dashboard = () => {
 
                   if (item.type === "audio") {
                     const aud = item.data as GeneratedAudio;
-                    const model = aud.modelId ? getModelById(aud.modelId) : null;
+                    const audioId = aud.id || `aud-${i}`;
+                    const isPlaying = playingDashAudioId === audioId;
                     return (
                       <motion.div
                         key={`aud-${i}-${item.ts}`}
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        className="col-span-full glass rounded-xl p-4 space-y-3"
+                        className={`${cardAspect} relative group rounded-xl overflow-hidden cursor-pointer bg-gradient-to-br from-card to-muted/30`}
+                        onClick={() => toggleDashAudioPlay(audioId, aud.url)}
                       >
-                        <div className="flex items-center gap-2">
-                          <span className="flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-green-500/80 backdrop-blur-sm text-[9px] font-bold text-white uppercase shrink-0">
-                            <Music className="w-2.5 h-2.5" />
-                            AUD
-                          </span>
-                          {model && (
-                            <span className="w-5 h-5 rounded bg-white/[0.06] flex items-center justify-center text-[9px] font-bold text-muted-foreground uppercase">
-                              {model.brand.slice(0, 2)}
-                            </span>
+                        {/* Ripple + waveform */}
+                        <div className={`w-full h-full flex flex-col items-center justify-center gap-2.5 ${isPlaying ? "audio-playing" : ""}`}>
+                          <div className="relative w-12 h-12 flex items-center justify-center">
+                            <Music className="w-6 h-6 text-primary relative z-10" />
+                            {isPlaying && (
+                              <>
+                                <div className="ripple-ring absolute inset-0 rounded-full border-[1.5px] border-primary/30" />
+                                <div className="ripple-ring-delayed absolute -inset-2 rounded-full border-[1.5px] border-primary/30" />
+                              </>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-[3px] h-5">
+                            {[6, 14, 10, 18, 8, 16, 12, 6].map((h, idx) => (
+                              <div
+                                key={idx}
+                                className="wave-bar w-[3px] rounded-sm bg-primary/20"
+                                style={{ height: `${h}px`, animationDelay: `${idx * 0.1}s` }}
+                              />
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Play button */}
+                        <button
+                          className="absolute bottom-2 left-2 w-6 h-6 rounded-full bg-primary flex items-center justify-center transition-transform hover:scale-110 z-10"
+                          onClick={(e) => { e.stopPropagation(); toggleDashAudioPlay(audioId, aud.url); }}
+                        >
+                          {isPlaying ? (
+                            <Pause className="w-2.5 h-2.5 text-primary-foreground" fill="currentColor" />
+                          ) : (
+                            <Play className="w-2.5 h-2.5 text-primary-foreground ml-0.5" fill="currentColor" />
                           )}
-                          <span className="text-xs font-medium text-foreground truncate flex-1">
-                            {aud.prompt}
-                          </span>
+                        </button>
+
+                        {/* Hover actions */}
+                        <div className="absolute top-2 right-2 z-30 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                           <button
-                            onClick={() => handleDownload(aud.url, i)}
-                            className="w-7 h-7 rounded-lg bg-white/[0.06] flex items-center justify-center hover:bg-white/[0.1] transition-colors shrink-0"
+                            onClick={(e) => { e.stopPropagation(); handleDownload(aud.url, i); }}
+                            className="w-[26px] h-[26px] rounded-md flex items-center justify-center bg-background/80 backdrop-blur-sm border border-border hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all text-foreground shadow-sm"
+                            title="Télécharger"
                           >
-                            <Download className="w-3.5 h-3.5 text-muted-foreground" />
+                            <Download className="w-3 h-3" />
+                          </button>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); navigator.clipboard.writeText(aud.prompt || ""); toast.success("Prompt copié !"); }}
+                            className="w-[26px] h-[26px] rounded-md flex items-center justify-center bg-background/80 backdrop-blur-sm border border-border hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all text-foreground shadow-sm"
+                            title="Recréer"
+                          >
+                            <RefreshCw className="w-3 h-3" />
+                          </button>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); handleDeleteAudio(aud); }}
+                            className="w-[26px] h-[26px] rounded-md flex items-center justify-center bg-background/80 backdrop-blur-sm border border-border hover:bg-destructive hover:text-destructive-foreground hover:border-destructive transition-all text-foreground shadow-sm"
+                            title="Supprimer"
+                          >
+                            <X className="w-3 h-3" />
                           </button>
                         </div>
-                        <audio src={aud.url} controls className="w-full h-8" />
+
+                        {/* Bottom info */}
+                        <div className="absolute bottom-0 left-0 right-0 px-2.5 py-2 flex items-center justify-between bg-gradient-to-t from-background/80 to-transparent">
+                          <span className="text-[10px] text-muted-foreground">{aud.prompt ? aud.prompt.slice(0, 20) + (aud.prompt.length > 20 ? "..." : "") : ""}</span>
+                          <span className="text-[9px] px-1.5 py-0.5 rounded bg-primary/10 text-primary font-medium">Audio</span>
+                        </div>
                       </motion.div>
                     );
                   }
