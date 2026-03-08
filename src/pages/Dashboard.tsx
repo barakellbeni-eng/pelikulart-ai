@@ -40,6 +40,7 @@ import { getBrandLogo } from "@/lib/brandLogos";
 import GenerationProgress from "@/components/GenerationProgress";
 import ActiveJobsPanel from "@/components/ActiveJobsPanel";
 import MediaPickerModal from "@/components/MediaPickerModal";
+import { ViewModePopover, FiltersPopover } from "@/components/GalleryViewSettings";
 import { useActiveJobs } from "@/hooks/useActiveJobs";
 import { getGenerationJob, startGeneration, completeGeneration, failGeneration, subscribeGeneration } from "@/hooks/useGenerationStore";
 import { getSignedUrl, getSignedUrls } from "@/lib/storage";
@@ -123,8 +124,11 @@ const Dashboard = () => {
   const [previewVideo, setPreviewVideo] = useState<GeneratedVideo | null>(null);
   const [isEnhancing, setIsEnhancing] = useState(false);
   const [isDescribingImage, setIsDescribingImage] = useState(false);
-  const [gridSize, setGridSize] = useState<"small" | "medium" | "large" | "feed">("feed");
+  const [galleryLayout, setGalleryLayout] = useState<"row" | "grid">("row");
+  const [galleryImageSize, setGalleryImageSize] = useState<"mini" | "small" | "medium" | "large">("medium");
   const [galleryFilter, setGalleryFilter] = useState<"all" | "image" | "video" | "audio">("all");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
   const describeInputRef = useRef<HTMLInputElement>(null);
   const [isDraggingOverPrompt, setIsDraggingOverPrompt] = useState(false);
   const [isDraggingOverUpload, setIsDraggingOverUpload] = useState(false);
@@ -1574,7 +1578,7 @@ const Dashboard = () => {
 
       {/* ===== RIGHT GALLERY (UNIFIED) ===== */}
       <div className="flex-1 flex flex-col h-full overflow-hidden">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 px-3 sm:px-5 py-2 sm:py-3">
+        <div className="flex items-center justify-between gap-2 px-3 sm:px-5 py-2 sm:py-3">
           <div className="flex items-center gap-1 glass rounded-lg p-0.5 overflow-x-auto max-w-full scrollbar-hide">
             {([
               { value: "all" as const, label: "Tout", icon: null, count: galleryImages.length + galleryVideos.length + galleryAudios.length },
@@ -1601,35 +1605,21 @@ const Dashboard = () => {
               </button>
             ))}
           </div>
-          <div className="flex items-center gap-1 glass rounded-lg p-0.5">
-            <button
-              onClick={() => setGridSize("feed")}
-              className={`p-1.5 rounded-md transition-colors ${gridSize === "feed" ? "bg-primary/20 text-primary" : "text-muted-foreground hover:text-foreground"}`}
-              title="Vue flux"
-            >
-              <SlidersHorizontal className="w-3.5 h-3.5" />
-            </button>
-            <button
-              onClick={() => setGridSize("small")}
-              className={`p-1.5 rounded-md transition-colors ${gridSize === "small" ? "bg-primary/20 text-primary" : "text-muted-foreground hover:text-foreground"}`}
-              title="Petite grille"
-            >
-              <Grid3X3 className="w-3.5 h-3.5" />
-            </button>
-            <button
-              onClick={() => setGridSize("medium")}
-              className={`p-1.5 rounded-md transition-colors ${gridSize === "medium" ? "bg-primary/20 text-primary" : "text-muted-foreground hover:text-foreground"}`}
-              title="Grille moyenne"
-            >
-              <LayoutGrid className="w-3.5 h-3.5" />
-            </button>
-            <button
-              onClick={() => setGridSize("large")}
-              className={`p-1.5 rounded-md transition-colors ${gridSize === "large" ? "bg-primary/20 text-primary" : "text-muted-foreground hover:text-foreground"}`}
-              title="Grande grille"
-            >
-              <Image className="w-3.5 h-3.5" />
-            </button>
+          <div className="flex items-center gap-1">
+            <ViewModePopover
+              layout={galleryLayout}
+              imageSize={galleryImageSize}
+              onLayoutChange={setGalleryLayout}
+              onImageSizeChange={setGalleryImageSize}
+            />
+            <FiltersPopover
+              typeFilter={galleryFilter}
+              onTypeFilterChange={setGalleryFilter}
+              dateFrom={dateFrom}
+              dateTo={dateTo}
+              onDateFromChange={setDateFrom}
+              onDateToChange={setDateTo}
+            />
           </div>
         </div>
 
@@ -1658,7 +1648,20 @@ const Dashboard = () => {
             }
             allItems.sort((a, b) => b.ts - a.ts);
 
-            const totalCount = allItems.length;
+            // Date range filter
+            const dateFilteredItems = allItems.filter((item) => {
+              if (dateFrom) {
+                const from = new Date(dateFrom).getTime();
+                if (item.ts < from) return false;
+              }
+              if (dateTo) {
+                const to = new Date(dateTo).getTime() + 86400000; // end of day
+                if (item.ts > to) return false;
+              }
+              return true;
+            });
+
+            const totalCount = dateFilteredItems.length;
 
             if (totalCount === 0 && !isGenerating) {
               return (
@@ -1674,7 +1677,7 @@ const Dashboard = () => {
               );
             }
 
-            if (gridSize === "feed") {
+            if (galleryLayout === "row") {
               // ===== FEED VIEW (like Kling AI) =====
               return (
                 <div className="max-w-2xl mx-auto space-y-6">
@@ -1692,7 +1695,7 @@ const Dashboard = () => {
                     </motion.div>
                   )}
 
-                  {allItems.map((item, i) => {
+                  {dateFilteredItems.map((item, i) => {
                     const model = (() => {
                       if (item.type === "image") {
                         const img = item.data as GeneratedImage;
@@ -1862,7 +1865,7 @@ const Dashboard = () => {
             }
 
             return (
-              <div className={`grid gap-3 ${gridSize === "small" ? "grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8" : gridSize === "large" ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-3" : "grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5"}`}>
+              <div className={`grid gap-3 ${galleryImageSize === "mini" ? "grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8" : galleryImageSize === "large" ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-3" : galleryImageSize === "small" ? "grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5" : "grid-cols-2 md:grid-cols-3 lg:grid-cols-4"}`}>
                 {/* Loading placeholders */}
                 {isGenerating && (
                   activeTab === "audio" ? (
@@ -1897,7 +1900,7 @@ const Dashboard = () => {
                   )
                 )}
 
-                {allItems.map((item, i) => {
+                {dateFilteredItems.map((item, i) => {
                   if (item.type === "image") {
                     const img = item.data as GeneratedImage;
                     const imageSelectionKey = getImageSelectionKey(img);
