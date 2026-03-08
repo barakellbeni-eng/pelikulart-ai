@@ -52,6 +52,7 @@ const GENERATE_IMAGE_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ge
 const GENERATE_IMAGE_GOOGLE_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-image-google`;
 const GENERATE_VIDEO_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-video`;
 const GENERATE_AUDIO_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-audio`;
+const START_GENERATION_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/start-generation`;
 
 const afrikaBoostKeywords = [
   "Lumière du Sahel",
