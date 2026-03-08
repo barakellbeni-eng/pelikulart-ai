@@ -175,6 +175,18 @@ export default function GalleryToolbar({ prefs, update }: Props) {
 
         <div className="w-px h-4 bg-border" />
 
+        {/* Source filter */}
+        <div className="flex items-center gap-1">
+          <Camera className="w-3.5 h-3.5 text-muted-foreground mr-1" />
+          {sourceOptions.map((s) => (
+            <Chip key={s.key} active={prefs.sourceFilter === s.key} onClick={() => update("sourceFilter", s.key)}>
+              {s.label}
+            </Chip>
+          ))}
+        </div>
+
+        <div className="w-px h-4 bg-border" />
+
         {/* Display toggles */}
         <ToggleRow label="Prompt" active={prefs.showPrompt} onToggle={() => update("showPrompt", !prefs.showPrompt)} />
         <ToggleRow label="Métadonnées" active={prefs.showMeta} onToggle={() => update("showMeta", !prefs.showMeta)} />
