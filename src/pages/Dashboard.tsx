@@ -710,7 +710,7 @@ const Dashboard = () => {
                 .single();
 
               if (jobRow?.status === "completed" && jobRow.result_url) {
-                setGalleryVideos((prev) => [{ url: jobRow.result_url!, prompt: currentPrompt, timestamp: Date.now() }, ...prev]);
+                setGalleryVideos((prev) => [{ url: jobRow.result_url!, prompt: currentPrompt, timestamp: Date.now(), modelId: selectedModel.id }, ...prev]);
                 toast.success("Vidéo générée !");
                 refetchCauris();
                 completeGeneration();
