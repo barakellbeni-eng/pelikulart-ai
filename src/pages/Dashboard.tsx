@@ -215,40 +215,8 @@ const Dashboard = () => {
     setModelSettings((prev) => ({ ...prev, [key]: value }));
   };
 
-  // Helper: download a remote file and upload to Supabase storage, then insert into generations table
-  const persistMedia = useCallback(async (
-    remoteUrl: string,
-    mediaType: "video" | "audio",
-    promptText: string,
-    ext: string,
-    contentType: string,
-  ): Promise<string> => {
-    if (!user) return remoteUrl;
-    try {
-      const resp = await fetch(remoteUrl);
-      if (!resp.ok) return remoteUrl;
-      const blob = await resp.blob();
-      const arrayBuffer = await blob.arrayBuffer();
-      const fileName = `${user.id}/${crypto.randomUUID()}.${ext}`;
-      const { error: uploadError } = await supabase.storage
-        .from("generations")
-        .upload(fileName, new Uint8Array(arrayBuffer), { contentType, upsert: false });
-      if (uploadError) { console.error("Upload error:", uploadError); return remoteUrl; }
-      // Store the file path (not public URL) for signed URL generation
-      await supabase.from("generations").insert({
-        user_id: user.id,
-        prompt: promptText,
-        image_url: fileName,
-        media_type: mediaType,
-      } as any);
-      // Return a signed URL for immediate display
-      const signedUrl = await getSignedUrl(fileName);
-      return signedUrl;
-    } catch (e) {
-      console.error("persistMedia error:", e);
-      return remoteUrl;
-    }
-  }, [user]);
+
+
 
   // Load history from DB
   useEffect(() => {
