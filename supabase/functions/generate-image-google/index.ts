@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
+import { uploadBytesToR2, downloadAndUploadToR2, getR2SignedUrl } from "../_shared/r2.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -8,49 +9,7 @@ const corsHeaders = {
 };
 
 const LOVABLE_AI_ENDPOINT = "https://ai.gateway.lovable.dev/v1/chat/completions";
-
 const ALLOWED_SETTINGS = new Set(["aspect_ratio", "resolution"]);
-
-async function uploadGeneratedImage(
-  supabase: any,
-  imageSource: string,
-  userId: string,
-): Promise<string> {
-  let bytes: Uint8Array;
-  let contentType = "image/png";
-
-  if (imageSource.startsWith("http://") || imageSource.startsWith("https://")) {
-    const resp = await fetch(imageSource);
-    if (!resp.ok) throw new Error("Failed to download generated image");
-    const arrayBuffer = await resp.arrayBuffer();
-    bytes = new Uint8Array(arrayBuffer);
-    contentType = resp.headers.get("content-type") || contentType;
-  } else {
-    const raw = imageSource.replace(/^data:image\/\w+;base64,/, "");
-    const binaryStr = atob(raw);
-    bytes = new Uint8Array(binaryStr.length);
-    for (let i = 0; i < binaryStr.length; i++) {
-      bytes[i] = binaryStr.charCodeAt(i);
-    }
-  }
-
-  const fileName = `${userId}/${crypto.randomUUID()}.png`;
-
-  const { error: uploadError } = await supabase.storage
-    .from("generations")
-    .upload(fileName, bytes, {
-      contentType,
-      upsert: false,
-    });
-
-  if (uploadError) {
-    console.error("Storage upload error:", uploadError);
-    throw new Error("Failed to upload image to storage");
-  }
-
-  // Return the storage path (not public URL) for signed URL generation
-  return fileName;
-}
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -72,7 +31,7 @@ serve(async (req) => {
     if (!authHeader.startsWith("Bearer ")) {
       return new Response(
         JSON.stringify({ error: "Authentification requise" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
 
@@ -80,12 +39,11 @@ serve(async (req) => {
     const userClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
       global: { headers: { Authorization: authHeader } },
     });
-
     const { data: claimsData, error: claimsError } = await userClient.auth.getClaims(token);
     if (claimsError || !claimsData?.claims?.sub) {
       return new Response(
         JSON.stringify({ error: "Authentification invalide" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
 
@@ -93,26 +51,20 @@ serve(async (req) => {
     const adminClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
     const body = await req.json();
-    const {
-      prompt,
-      num_images = 1,
-      cauris_cost = 0,
-      image_url,
-      ...rawSettings
-    } = body;
+    const { prompt, num_images = 1, cauris_cost = 0, image_url, ...rawSettings } = body;
 
     // --- Validation ---
     if (!prompt || typeof prompt !== "string") {
       return new Response(
         JSON.stringify({ error: "Un prompt est requis" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
 
     if (prompt.length > 5000) {
       return new Response(
         JSON.stringify({ error: "Le prompt est trop long (max 5000 caractères)" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
 
@@ -135,7 +87,7 @@ serve(async (req) => {
     if (deductError || deductResult === -1) {
       return new Response(
         JSON.stringify({ error: "Solde insuffisant" }),
-        { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
 
@@ -148,19 +100,12 @@ serve(async (req) => {
       fullPrompt += `\nResolution: ${modelSettings.resolution}`;
     }
 
-    // --- Build messages for Lovable AI gateway ---
     const content: any[] = [{ type: "text", text: `Generate an image.\n${fullPrompt}` }];
     if (image_url) {
       content.push({ type: "image_url", image_url: { url: image_url } });
     }
 
-    const messages = [
-      {
-        role: "user",
-        content,
-      },
-    ];
-
+    const messages = [{ role: "user", content }];
     const savedImages = [];
 
     for (let i = 0; i < safeNumImages; i++) {
@@ -189,13 +134,13 @@ serve(async (req) => {
           if (aiResp.status === 429) {
             return new Response(
               JSON.stringify({ error: "Limite de requêtes atteinte. Réessayez dans quelques secondes." }),
-              { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+              { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } },
             );
           }
           if (aiResp.status === 402) {
             return new Response(
               JSON.stringify({ error: "Crédits IA insuffisants pour effectuer la génération." }),
-              { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+              { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } },
             );
           }
         }
@@ -234,25 +179,35 @@ serve(async (req) => {
 
       for (const imageSource of imageCandidates) {
         try {
-          const storedPath = await uploadGeneratedImage(adminClient, imageSource, userId);
+          let r2Key: string;
 
+          if (imageSource.startsWith("http://") || imageSource.startsWith("https://")) {
+            r2Key = await downloadAndUploadToR2(imageSource, userId, "png");
+          } else {
+            // Base64 image
+            const raw = imageSource.replace(/^data:image\/\w+;base64,/, "");
+            const binaryStr = atob(raw);
+            const bytes = new Uint8Array(binaryStr.length);
+            for (let j = 0; j < binaryStr.length; j++) {
+              bytes[j] = binaryStr.charCodeAt(j);
+            }
+            r2Key = await uploadBytesToR2(bytes, userId, "image/png", "png");
+          }
+
+          // Store with r2: prefix
           await adminClient.from("generations").insert({
             user_id: userId,
             prompt: prompt.slice(0, 5000),
-            image_url: storedPath,
+            image_url: `r2:${r2Key}`,
             aspect_ratio: modelSettings.aspect_ratio || null,
             resolution: modelSettings.resolution || null,
             output_format: "png",
           });
 
-          // Generate a signed URL for immediate display
-          const { data: signedData } = await adminClient.storage
-            .from("generations")
-            .createSignedUrl(storedPath, 3600);
-
-          savedImages.push({ url: signedData?.signedUrl || storedPath });
+          const signedUrl = await getR2SignedUrl(r2Key, 3600);
+          savedImages.push({ url: signedUrl });
         } catch (uploadErr) {
-          console.error("Upload error:", uploadErr);
+          console.error("R2 upload error:", uploadErr);
         }
       }
     }
@@ -261,19 +216,19 @@ serve(async (req) => {
       await adminClient.rpc("add_cauris", { p_user_id: userId, p_amount: cost });
       return new Response(
         JSON.stringify({ error: "Aucune image générée. Essayez un prompt différent." }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
 
     return new Response(
       JSON.stringify({ images: savedImages, new_balance: deductResult }),
-      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   } catch (e) {
     console.error("generate-image-google error:", e);
     return new Response(
       JSON.stringify({ error: "Une erreur interne est survenue. Réessayez." }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   }
 });
