@@ -483,6 +483,10 @@ const Dashboard = () => {
         }
 
         setGalleryImages((prev) => [...newImages, ...prev]);
+        // Auto-update project cover with first image
+        if (selectedProjectId && newImages.length > 0) {
+          updateCover(selectedProjectId, newImages[0].url);
+        }
         // Credits already deducted server-side; just refresh balance
         if (data.new_balance !== undefined) {
           refetchCauris();
