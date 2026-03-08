@@ -42,6 +42,7 @@ const Gallery = () => {
   const [deleteTarget, setDeleteTarget] = useState<GalleryItem | null>(null);
   const [removingIds, setRemovingIds] = useState<Set<string>>(new Set());
   const [batchDeleting, setBatchDeleting] = useState(false);
+  const [playingAudioId, setPlayingAudioId] = useState<string | null>(null);
 
   const { prefs, update } = useGalleryPreferences();
 
