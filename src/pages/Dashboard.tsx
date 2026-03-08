@@ -1768,11 +1768,6 @@ const Dashboard = () => {
                             </div>
                           </div>
                         </div>
-                        {vid.prompt && (
-                          <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity z-10">
-                            <p className="text-[10px] text-white/80 truncate">{vid.prompt}</p>
-                          </div>
-                        )}
                       </motion.div>
                     );
                   }
