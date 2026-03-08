@@ -244,7 +244,7 @@ export const FAL_MODELS: FalModel[] = [
   // ── Kling 3.0 (KIE) ──
   {
     id: "kie-kling-30", type: "video", brand: "Kling", name: "Kling 3.0",
-    endpoint: "kie", provider: "kie", kieModel: "kling-3.0",
+    endpoint: "kie", provider: "kie", kieModel: "kling-3.0/video",
     description: "Multi-shot & elements, T2V ou I2V auto", icon: "◆", color: "from-white/20 to-white/5",
     maxImages: 1, supportsImageInput: true, caurisCost: 60, caurisCost10s: 120, estimatedTime: "~2min", recommended: true,
     settings: [
