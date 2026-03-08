@@ -55,6 +55,7 @@ type ResolutionId = (typeof RESOLUTIONS)[number]["id"];
 interface PersistedItem {
   id: string;
   url: string;
+  originalUrl?: string;
   prompt: string;
   created_at: string;
 }
