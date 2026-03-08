@@ -406,13 +406,23 @@ const Dashboard = () => {
     }
   };
 
+  // Gate: check auth then credits before any generation
+  const gateGeneration = (cost: number): boolean => {
+    if (!user) {
+      setShowAuthModal(true);
+      return false;
+    }
+    if (balance < cost) {
+      setShowCreditsModal(true);
+      return false;
+    }
+    return true;
+  };
+
   const handleGenerate = async () => {
     if (!prompt.trim()) return;
     const cost = calculateCaurisCost(selectedModel, modelSettings, numImages);
-    if (balance < cost) {
-      toast.error(`Solde insuffisant ! Il vous faut ${cost} cauris. Rechargez votre compte.`);
-      return;
-    }
+    if (!gateGeneration(cost)) return;
 
     // Capture current values before resetting UI
     const currentPrompt = prompt;
@@ -515,10 +525,7 @@ const Dashboard = () => {
   const handleGenerateVideo = async () => {
     if (!prompt.trim()) return;
     const cost = calculateCaurisCost(selectedModel, modelSettings);
-    if (balance < cost) {
-      toast.error(`Solde insuffisant ! Il vous faut ${cost} cauris. Rechargez votre compte.`);
-      return;
-    }
+    if (!gateGeneration(cost)) return;
 
     const currentPrompt = prompt;
     const currentModel = selectedModel;
@@ -619,10 +626,7 @@ const Dashboard = () => {
   const handleGenerateAudio = async () => {
     if (!prompt.trim()) return;
     const cost = calculateCaurisCost(selectedModel, modelSettings);
-    if (balance < cost) {
-      toast.error(`Solde insuffisant ! Il vous faut ${cost} cauris.`);
-      return;
-    }
+    if (!gateGeneration(cost)) return;
 
     const currentPrompt = prompt;
     const currentModel = selectedModel;
