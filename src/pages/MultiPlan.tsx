@@ -432,7 +432,7 @@ const MultiPlan = () => {
                       {isLoading ? (
                         <Loader2 className="w-3 h-3 animate-spin mx-auto" />
                       ) : (
-                        `Plan ${idx + 1}`
+                        `Cadrage ${idx + 1}`
                       )}
                     </button>
                   );
