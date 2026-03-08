@@ -37,6 +37,7 @@ import {
   Pause,
   ZoomIn,
   ZoomOut,
+  ClipboardCopy,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
@@ -2254,6 +2255,15 @@ const Dashboard = () => {
                           </div>
                           <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                             <div className="absolute top-1.5 right-11 flex items-center gap-1">
+                              {img.prompt && (
+                                <button
+                                  onClick={(e) => { e.stopPropagation(); navigator.clipboard.writeText(img.prompt || ""); toast.success("Prompt copié !"); }}
+                                  className="w-6 h-6 rounded-md bg-white/10 backdrop-blur-sm flex items-center justify-center hover:bg-white/25 transition-colors"
+                                  title="Copier le prompt"
+                                >
+                                  <ClipboardCopy className="w-3 h-3 text-white" />
+                                </button>
+                              )}
                               <button
                                 onClick={(e) => { e.stopPropagation(); handleImageToVideo(img); }}
                                 className="w-6 h-6 rounded-md bg-white/10 backdrop-blur-sm flex items-center justify-center hover:bg-white/25 transition-colors"
@@ -2277,7 +2287,16 @@ const Dashboard = () => {
                               </button>
                             </div>
                             <div className="absolute bottom-0 left-0 right-0 p-2.5 flex items-end justify-between">
-                              <span className="text-[10px] text-white/80 font-medium">{img.resolution || ""}</span>
+                              {/* Model logo bottom-left */}
+                              {(() => {
+                                const model = img.modelId ? getModelById(img.modelId) : null;
+                                const logo = model ? getBrandLogo(model.brand, model.id) : null;
+                                return logo ? (
+                                  <img src={logo} alt={model!.brand} className="w-5 h-5 rounded object-contain pointer-events-none" draggable={false} />
+                                ) : (
+                                  <span className="text-[10px] text-white/80 font-medium">{img.resolution || ""}</span>
+                                );
+                              })()}
                               <div className="flex items-center gap-1.5">
                                 <button
                                   onClick={(e) => { e.stopPropagation(); handleDeleteImage(img); }}
@@ -2345,6 +2364,15 @@ const Dashboard = () => {
                         </div>
                         <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
                           <div className="absolute top-1.5 right-11 flex items-center gap-1">
+                            {vid.prompt && (
+                              <button
+                                onClick={(e) => { e.stopPropagation(); navigator.clipboard.writeText(vid.prompt || ""); toast.success("Prompt copié !"); }}
+                                className="w-6 h-6 rounded-md bg-white/10 backdrop-blur-sm flex items-center justify-center hover:bg-white/25 transition-colors"
+                                title="Copier le prompt"
+                              >
+                                <ClipboardCopy className="w-3 h-3 text-white" />
+                              </button>
+                            )}
                             <button
                               onClick={(e) => { e.stopPropagation(); handleDownload(vid.url, i); }}
                               className="w-6 h-6 rounded-md bg-white/10 backdrop-blur-sm flex items-center justify-center hover:bg-white/25 transition-colors"
