@@ -318,15 +318,17 @@ const Gallery = () => {
                       {item.tool_type === "image" ? (
                         <img src={item.displayUrl} alt={item.prompt} className="w-full object-cover" loading="lazy" />
                       ) : item.tool_type === "video" ? (
-                        <VideoThumbnail src={item.displayUrl || ""} />
+                        <div className="relative">
+                          <VideoThumbnail src={item.displayUrl || ""} />
+                        </div>
                       ) : (
                         <div className="w-full h-28 bg-muted/30 flex items-center justify-center">
                           <Music className="w-8 h-8 text-muted-foreground/30" />
                         </div>
                       )}
 
-                      {/* Hover action buttons */}
-                      <div className="absolute top-2 right-2 z-10 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      {/* Hover action buttons - z-30 to be above video overlay */}
+                      <div className="absolute top-2 right-2 z-30 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                         <button
                           onClick={(e) => { e.stopPropagation(); handleDownload(item); }}
                           className="w-7 h-7 rounded-lg flex items-center justify-center bg-background/70 backdrop-blur-sm hover:bg-background/90 transition-all text-muted-foreground hover:text-foreground shadow-sm"
