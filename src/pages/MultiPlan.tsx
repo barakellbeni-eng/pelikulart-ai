@@ -24,7 +24,7 @@ type PlanTypeId = typeof PLAN_TYPES[number]["id"];
 
 const MultiPlan = () => {
   const { user } = useAuth();
-  const { refreshBalance } = useCauris();
+  const { refetch: refreshBalance } = useCauris();
 
   const [sourceImage, setSourceImage] = useState<string | null>(null);
   const [selectedPlan, setSelectedPlan] = useState<PlanTypeId>("close-up");
