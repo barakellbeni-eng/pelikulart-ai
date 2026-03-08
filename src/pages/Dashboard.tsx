@@ -2041,7 +2041,6 @@ const Dashboard = () => {
             </>
           )}
         </div>
-        </div>
 
         {/* ===== PINNED BOTTOM BAR ===== */}
         <div className="shrink-0 p-4 space-y-3 bg-card/80 backdrop-blur-sm">
