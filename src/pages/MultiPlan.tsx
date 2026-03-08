@@ -42,6 +42,8 @@ const MultiPlan = () => {
 
   const [sourceImage, setSourceImage] = useState<string | null>(null);
   const [selectedPlan, setSelectedPlan] = useState<PlanTypeId>("close-up");
+  const [selectedRatio, setSelectedRatio] = useState<AspectRatioId>("1:1");
+  const [selectedResolution, setSelectedResolution] = useState<ResolutionId>("2K");
   const [isGenerating, setIsGenerating] = useState(false);
   const [mainResult, setMainResult] = useState<{ url: string; job_id: string } | null>(null);
   const [planResults, setPlanResults] = useState<Record<number, { url: string; job_id: string }>>({});
