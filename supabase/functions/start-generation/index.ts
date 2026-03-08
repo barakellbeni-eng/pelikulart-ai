@@ -621,7 +621,7 @@ async function processKie(jobId: string, userId: string, body: any) {
 
       // Kling 3.0 specific (unified model, accepts image_urls optionally)
       if (kieModel === "kling-3.0/video") {
-        input.multi_shots = false;
+        input.multi_shots = rawSettings.multi_shots === true;
         if (rawSettings.mode) input.mode = rawSettings.mode;
       }
 

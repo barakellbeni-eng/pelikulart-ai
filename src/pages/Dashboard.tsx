@@ -2275,7 +2275,7 @@ const Dashboard = () => {
                               <button
                                 onClick={(e) => { e.stopPropagation(); navigate("/studio/multi-plan", { state: { sourceImage: img.url } }); }}
                                 className="w-6 h-6 rounded-md bg-white/10 backdrop-blur-sm flex items-center justify-center hover:bg-white/25 transition-colors"
-                                title="Multi-Shot"
+                                title="Multi-Plan (angles de caméra)"
                               >
                                 <Camera className="w-3 h-3 text-white" />
                               </button>
