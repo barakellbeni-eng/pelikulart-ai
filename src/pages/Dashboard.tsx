@@ -1745,13 +1745,28 @@ const Dashboard = () => {
                             VID
                           </span>
                         </div>
-                        <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
-                          <button
-                            onClick={() => handleDownload(vid.url, i)}
-                            className="w-7 h-7 rounded-lg bg-black/60 backdrop-blur-sm flex items-center justify-center hover:bg-black/80 transition-colors"
-                          >
-                            <Download className="w-3.5 h-3.5 text-white" />
-                          </button>
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
+                          <div className="absolute top-1.5 right-1.5 flex items-center gap-1">
+                            <button
+                              onClick={(e) => { e.stopPropagation(); handleDownload(vid.url, i); }}
+                              className="w-6 h-6 rounded-md bg-white/10 backdrop-blur-sm flex items-center justify-center hover:bg-white/25 transition-colors"
+                              title="Télécharger"
+                            >
+                              <Download className="w-3 h-3 text-white" />
+                            </button>
+                          </div>
+                          <div className="absolute bottom-0 left-0 right-0 p-2.5 flex items-end justify-between">
+                            <span className="text-[10px] text-white/80 font-medium truncate flex-1">{vid.prompt || ""}</span>
+                            <div className="flex items-center gap-1.5">
+                              <button
+                                onClick={(e) => { e.stopPropagation(); handleDeleteVideo(vid); }}
+                                className="w-7 h-7 rounded-lg bg-destructive/20 backdrop-blur-sm flex items-center justify-center hover:bg-destructive/40 transition-colors"
+                                title="Supprimer"
+                              >
+                                <Trash2 className="w-3.5 h-3.5 text-destructive" />
+                              </button>
+                            </div>
+                          </div>
                         </div>
                         {vid.prompt && (
                           <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity z-10">
