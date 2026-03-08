@@ -762,7 +762,7 @@ const Dashboard = () => {
               const pollData = await pollResp.json();
 
               if (pollData.status === "COMPLETED" && pollData.video_url) {
-                setGalleryVideos((prev) => [{ url: pollData.video_url, prompt: currentPrompt, timestamp: Date.now() }, ...prev]);
+                setGalleryVideos((prev) => [{ url: pollData.video_url, prompt: currentPrompt, timestamp: Date.now(), modelId: selectedModel.id }, ...prev]);
                 toast.success("Vidéo générée !");
                 refetchCauris();
                 completeGeneration();
