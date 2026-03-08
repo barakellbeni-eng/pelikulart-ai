@@ -6,12 +6,16 @@ import logoKling30 from "@/assets/logo-kling-30.png";
 import logoKling26 from "@/assets/logo-kling-26.png";
 import logoKling25 from "@/assets/logo-kling-25.png";
 import logoKling21 from "@/assets/logo-kling-21.png";
+import logoSuno from "@/assets/logo-suno.png";
+import logoElevenLabs from "@/assets/logo-elevenlabs.png";
 
 const brandLogos: Record<string, string> = {
   Google: logoGoogle,
   FLUX: logoFlux,
   Seedream: logoSeedream,
   Pelikulart: logoPelikulart,
+  Suno: logoSuno,
+  ElevenLabs: logoElevenLabs,
 };
 
 // Per-model logos (for brands with version-specific icons like Kling)
