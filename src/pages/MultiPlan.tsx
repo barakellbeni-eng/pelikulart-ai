@@ -196,7 +196,7 @@ const MultiPlan = () => {
     setLoadingPlan(planIndex);
 
     try {
-      await callGenerate(latestMainResult.url, selectedPlan, planIndex + 1);
+      await callGenerate(cadrageSource, selectedPlan, planIndex + 1);
       await loadGallery();
       refreshBalance();
     } catch (e: any) {
