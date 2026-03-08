@@ -101,11 +101,14 @@ export default function MediaPickerModal({ open, onClose, onSelect, accept, titl
 
         const allItems: MediaItem[] = [];
         const seenIds = new Set<string>();
+        const seenRefs = new Set<string>();
 
         // Map generation_jobs
         if (!jobsRes.error && jobsRes.data) {
           for (const d of jobsRes.data) {
+            const ref = normalizeMediaRef(d.result_url || "");
             seenIds.add(d.id);
+            if (ref) seenRefs.add(ref);
             allItems.push({
               id: d.id,
               source: "generation" as const,
@@ -119,10 +122,12 @@ export default function MediaPickerModal({ open, onClose, onSelect, accept, titl
           }
         }
 
-        // Map legacy generations (avoid duplicates)
+        // Map legacy generations (avoid duplicates by id OR media reference)
         if (!legacyRes.error && legacyRes.data) {
           for (const d of legacyRes.data) {
-            if (seenIds.has(d.id)) continue;
+            const ref = normalizeMediaRef(d.image_url || "");
+            if (seenIds.has(d.id) || (ref && seenRefs.has(ref))) continue;
+            if (ref) seenRefs.add(ref);
             allItems.push({
               id: d.id,
               source: "generation" as const,
