@@ -269,7 +269,7 @@ const Dashboard = () => {
       }
     };
     loadHistory();
-  }, [user]);
+  }, [user, selectedProjectId]);
 
   // No more fake progress — just show hourglass while generating
 
