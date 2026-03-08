@@ -61,6 +61,7 @@ const afrikaBoostKeywords = [
 ];
 
 interface GeneratedImage {
+  id?: string;
   url: string;
   width?: number;
   height?: number;
@@ -74,12 +75,14 @@ interface GeneratedImage {
 }
 
 interface GeneratedVideo {
+  id?: string;
   url: string;
   prompt?: string;
   timestamp?: number;
 }
 
 interface GeneratedAudio {
+  id?: string;
   url: string;
   prompt?: string;
   timestamp?: number;
