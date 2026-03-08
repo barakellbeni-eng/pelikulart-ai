@@ -354,6 +354,7 @@ const Gallery = () => {
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
                         <GalleryCardMenu
+                          onCopyPrompt={() => { navigator.clipboard.writeText(item.prompt); toast.success("Prompt copié !"); }}
                           onDownload={() => handleDownload(item)}
                           onDelete={() => setDeleteTarget(item)}
                           onMoveProject={() => {
