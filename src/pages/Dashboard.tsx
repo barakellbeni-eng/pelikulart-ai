@@ -1989,6 +1989,36 @@ const Dashboard = () => {
         </div>
       </div>
 
+      <AnimatePresence>
+        {selectionCount > 0 && (
+          <motion.div
+            initial={{ y: 80, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 80, opacity: 0 }}
+            transition={{ type: "spring", damping: 24, stiffness: 280 }}
+            className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[90] flex items-center gap-3 rounded-2xl border border-border bg-card px-4 py-2.5 shadow-2xl"
+          >
+            <span className="text-sm font-medium text-foreground">
+              {selectionCount} sélectionné{selectionCount > 1 ? "s" : ""}
+            </span>
+            <button
+              onClick={clearSelection}
+              className="px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted/50 transition-colors"
+            >
+              Annuler
+            </button>
+            <button
+              onClick={handleBatchDeleteSelection}
+              disabled={batchDeletingSelection}
+              className="px-3 py-1.5 text-sm rounded-lg bg-destructive text-destructive-foreground hover:bg-destructive/90 disabled:opacity-60 transition-colors flex items-center gap-2"
+            >
+              {batchDeletingSelection ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
+              Supprimer
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* ===== VIDEO PREVIEW MODAL ===== */}
       <AnimatePresence>
         {previewVideo && (
