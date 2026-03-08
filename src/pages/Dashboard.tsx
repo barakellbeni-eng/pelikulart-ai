@@ -694,20 +694,34 @@ const Dashboard = () => {
     }
   };
 
-  const handleDeleteImage = async (img: GeneratedImage) => {
-    if (!user) return;
+  const handleDeleteGeneration = async (jobId: string | undefined, type: "image" | "video" | "audio", url: string) => {
+    if (!user || !jobId) return;
     try {
-      const { error } = await supabase
-        .from("generations")
-        .delete()
-        .eq("user_id", user.id)
-        .eq("image_url", img.url);
-      if (error) throw error;
-      setGalleryImages((prev) => prev.filter((g) => g.url !== img.url));
-      setPreviewImage(null);
-      toast.success("Image supprimée");
-    } catch {
-      toast.error("Erreur lors de la suppression");
+      const { data: sessionData } = await supabase.auth.getSession();
+      const resp = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/delete-generation`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${sessionData?.session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+        },
+        body: JSON.stringify({ job_id: jobId }),
+      });
+      if (!resp.ok) {
+        const err = await resp.json().catch(() => ({ error: "Erreur" }));
+        throw new Error(err.error || "Erreur");
+      }
+      if (type === "image") {
+        setGalleryImages((prev) => prev.filter((g) => g.jobId !== jobId));
+        setPreviewImage(null);
+      } else if (type === "video") {
+        setGalleryVideos((prev) => prev.filter((g) => g.jobId !== jobId));
+        setPreviewVideo(null);
+      } else {
+        setGalleryAudios((prev) => prev.filter((g) => g.jobId !== jobId));
+      }
+      toast.success("Supprimé définitivement");
+    } catch (e: any) {
+      toast.error(e.message || "Erreur lors de la suppression");
     }
   };
 
