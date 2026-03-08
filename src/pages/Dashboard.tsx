@@ -2097,6 +2097,15 @@ const Dashboard = () => {
                                 <Trash2 className="w-3.5 h-3.5 text-destructive" />
                               </button>
                             )}
+                            {item.type === "audio" && (
+                              <button
+                                onClick={() => handleDeleteAudio(item.data as GeneratedAudio)}
+                                className="w-7 h-7 rounded-lg bg-destructive/10 flex items-center justify-center hover:bg-destructive/20 transition-colors"
+                                title="Supprimer"
+                              >
+                                <Trash2 className="w-3.5 h-3.5 text-destructive" />
+                              </button>
+                            )
                             <button
                               onClick={() => handleDownload(
                                 item.type === "image" ? (item.data as GeneratedImage).url :
