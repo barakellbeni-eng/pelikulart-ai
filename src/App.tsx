@@ -115,9 +115,9 @@ const AppContent = () => {
         <Route path="/auth" element={<Auth />} />
         <Route path="/reset-password" element={<ResetPassword />} />
 
-        {/* Studio (authenticated) */}
-        <Route path="/studio" element={<ProtectedRoute><AuthenticatedLayout><StudioHome /></AuthenticatedLayout></ProtectedRoute>} />
-        <Route path="/studio/create" element={<ProtectedRoute><AuthenticatedLayout><Dashboard /></AuthenticatedLayout></ProtectedRoute>} />
+        {/* Studio (open to all, generation gated in Dashboard) */}
+        <Route path="/studio" element={<AuthenticatedLayout><StudioHome /></AuthenticatedLayout>} />
+        <Route path="/studio/create" element={<AuthenticatedLayout><Dashboard /></AuthenticatedLayout>} />
         <Route path="/pricing" element={<AuthenticatedLayout><Pricing /></AuthenticatedLayout>} />
         <Route path="/profile" element={<ProtectedRoute><AuthenticatedLayout><Profile /></AuthenticatedLayout></ProtectedRoute>} />
 
