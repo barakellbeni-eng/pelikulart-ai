@@ -8,6 +8,7 @@ import {
   Video,
   Music,
   Sparkles,
+  Clapperboard,
 } from "lucide-react";
 import pelikulartLogo from "@/assets/pelikulart-logo.png";
 import {
@@ -36,6 +37,7 @@ const creationTools = [
   { title: "Générer Image", url: "/studio/create?mode=image", icon: Image },
   { title: "Générer Vidéo", url: "/studio/create?mode=video", icon: Video },
   { title: "Générer Audio", url: "/studio/create?mode=audio", icon: Music },
+  { title: "Multi-Plan", url: "/studio/multi-plan", icon: Clapperboard },
 ];
 
 

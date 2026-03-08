@@ -20,6 +20,7 @@ import StudioSplash from "@/components/pelikulart/StudioSplash";
 // Studio pages
 import StudioHome from "./pages/StudioHome";
 import Dashboard from "./pages/Dashboard";
+import MultiPlan from "./pages/MultiPlan";
 import Pricing from "./pages/Pricing";
 import Profile from "./pages/Profile";
 import ResetPassword from "./pages/ResetPassword";
@@ -57,7 +58,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
 const AuthenticatedLayout = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
-  const isCreatePage = location.pathname === "/studio/create";
+  const isFullHeightPage = location.pathname === "/studio/create" || location.pathname === "/studio/multi-plan";
   const [showSplash, setShowSplash] = useState(true);
   const handleSplashFinish = useCallback(() => setShowSplash(false), []);
 
@@ -69,7 +70,7 @@ const AuthenticatedLayout = ({ children }: { children: React.ReactNode }) => {
     <SidebarProvider>
       <div className="min-h-screen flex w-full">
         <AppSidebar />
-        <main className={isCreatePage ? "flex-1 flex flex-col h-screen overflow-hidden" : "flex-1 flex flex-col min-h-screen overflow-auto"}>
+        <main className={isFullHeightPage ? "flex-1 flex flex-col h-screen overflow-hidden" : "flex-1 flex flex-col min-h-screen overflow-auto"}>
           <header className="shrink-0 sticky top-0 z-50 glass px-4 py-2 flex items-center gap-3">
             <SidebarTrigger />
             <div className="ml-auto flex items-center gap-2">
@@ -77,7 +78,7 @@ const AuthenticatedLayout = ({ children }: { children: React.ReactNode }) => {
               <ProfileRing />
             </div>
           </header>
-          <div className={isCreatePage ? "flex-1 min-h-0 overflow-hidden" : "flex-1 min-h-0"}>{children}</div>
+          <div className={isFullHeightPage ? "flex-1 min-h-0 overflow-hidden" : "flex-1 min-h-0"}>{children}</div>
           <GlobalActiveJobs />
         </main>
       </div>
@@ -120,6 +121,7 @@ const AppContent = () => {
         {/* Studio (open to all, generation gated in Dashboard) */}
         <Route path="/studio" element={<AuthenticatedLayout><StudioHome /></AuthenticatedLayout>} />
         <Route path="/studio/create" element={<AuthenticatedLayout><Dashboard /></AuthenticatedLayout>} />
+        <Route path="/studio/multi-plan" element={<AuthenticatedLayout><MultiPlan /></AuthenticatedLayout>} />
         <Route path="/pricing" element={<AuthenticatedLayout><Pricing /></AuthenticatedLayout>} />
         <Route path="/profile" element={<ProtectedRoute><AuthenticatedLayout><Profile /></AuthenticatedLayout></ProtectedRoute>} />
 
