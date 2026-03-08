@@ -14,13 +14,24 @@ const KIE_MODEL = "nano-banana-2";
 
 const PLAN_TYPE_MAP: Record<string, string> = {
   "close-up": "close-up shot",
+  "extreme-close-up": "extreme close-up shot",
   "macro": "macro shot",
   "serre": "tight/medium close-up shot",
+  "taille": "waist-level medium shot",
   "americain": "american shot (knee-level framing)",
+  "moyen": "medium shot",
   "large": "wide shot",
   "tres-large": "extreme wide shot",
+  "general": "establishing/general shot",
   "plongee": "high-angle (bird's eye) shot",
   "contre-plongee": "low-angle (worm's eye) shot",
+  "dutch-angle": "dutch angle (tilted camera) shot",
+  "over-shoulder": "over-the-shoulder shot",
+  "bird-eye": "aerial/bird's eye view shot",
+  "worm-eye": "worm's eye view shot",
+  "profile": "profile/side view shot",
+  "three-quarter": "three-quarter angle shot",
+  "pov": "point-of-view (POV) shot",
 };
 
 // ── KIE AI helpers ──
