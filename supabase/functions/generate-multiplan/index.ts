@@ -243,7 +243,7 @@ serve(async (req) => {
       user_id: userId,
       tool_type: "image",
       model: usedProvider === "kie" ? "kie-nano-banana-2" : "nano-banana-pro-edit",
-      prompt: `Multi-Plan ${planLabel}`,
+      prompt: plan_index ? `Multi-Plan ${planLabel} #${plan_index}` : `Multi-Plan ${planLabel}`,
       provider: usedProvider,
       status: "completed",
       result_url: publicUrl,
