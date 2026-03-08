@@ -36,6 +36,7 @@ import { FAL_MODELS, getModelById, getDefaultSettings, getModelsByType, getModel
 import { getBrandLogo } from "@/lib/brandLogos";
 import GenerationProgress from "@/components/GenerationProgress";
 import ActiveJobsPanel from "@/components/ActiveJobsPanel";
+import MediaPickerModal from "@/components/MediaPickerModal";
 import { useActiveJobs } from "@/hooks/useActiveJobs";
 import { getGenerationJob, startGeneration, completeGeneration, failGeneration, subscribeGeneration } from "@/hooks/useGenerationStore";
 import { getSignedUrl, getSignedUrls } from "@/lib/storage";
@@ -120,6 +121,7 @@ const Dashboard = () => {
   const describeInputRef = useRef<HTMLInputElement>(null);
   const [isDraggingOverPrompt, setIsDraggingOverPrompt] = useState(false);
   const [isDraggingOverUpload, setIsDraggingOverUpload] = useState(false);
+  const [showMediaPicker, setShowMediaPicker] = useState(false);
 
   // Helper: fetch a URL as base64 data URL
   const urlToBase64 = useCallback(async (url: string): Promise<string> => {
@@ -1119,15 +1121,23 @@ const Dashboard = () => {
                   </motion.div>
                 ))}
                 {referencePreviews.length < (selectedModel.maxInputImages || 1) && (
-                  <motion.button
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    onClick={() => fileInputRef.current?.click()}
-                    className="aspect-square flex flex-col items-center justify-center gap-1.5 rounded-xl border-2 border-dashed border-white/[0.1] hover:border-primary/40 bg-white/[0.02] hover:bg-white/[0.04] transition-all cursor-pointer"
-                  >
-                    <Upload className="w-5 h-5 text-muted-foreground" />
-                    <span className="text-[9px] text-muted-foreground font-medium">Upload</span>
-                  </motion.button>
+                  <div className="flex flex-col gap-2">
+                    <motion.button
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      onClick={() => fileInputRef.current?.click()}
+                      className="aspect-square flex flex-col items-center justify-center gap-1.5 rounded-xl border-2 border-dashed border-border hover:border-primary/40 bg-muted/5 hover:bg-muted/10 transition-all cursor-pointer"
+                    >
+                      <Upload className="w-5 h-5 text-muted-foreground" />
+                      <span className="text-[9px] text-muted-foreground font-medium">Upload</span>
+                    </motion.button>
+                    <button
+                      onClick={() => setShowMediaPicker(true)}
+                      className="text-[10px] text-primary hover:text-primary/80 transition-colors font-medium"
+                    >
+                      📂 Bibliothèque
+                    </button>
+                  </div>
                 )}
               </div>
               {referencePreviews.length === 0 && (
@@ -2008,6 +2018,25 @@ const Dashboard = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Media Picker Modal */}
+      <MediaPickerModal
+        open={showMediaPicker}
+        onClose={() => setShowMediaPicker(false)}
+        accept={activeTab === "video" ? ["image", "video"] : activeTab === "audio" ? ["image", "audio"] : ["image"]}
+        onSelect={(url, item) => {
+          const maxInput = selectedModel.maxInputImages || 1;
+          if (referenceImages.length >= maxInput) {
+            toast.error(`Maximum ${maxInput} images pour ce modèle`);
+            return;
+          }
+          // Use the signed display URL for preview, and the R2 URL for the actual reference
+          const displayUrl = item.displayUrl || url;
+          setReferenceImages((prev) => [...prev, displayUrl]);
+          setReferencePreviews((prev) => [...prev, displayUrl]);
+          toast.success("Média ajouté comme référence !");
+        }}
+      />
     </div>
   );
 };
