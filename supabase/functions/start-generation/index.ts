@@ -99,7 +99,7 @@ const KIE_MODELS: Record<string, string> = {
   "kie-imagen4-ultra": "google/imagen4-ultra",
   "kie-flux2-pro": "flux-2/pro-text-to-image",   // auto → flux-2/pro-image-to-image with image
   "kie-seedream-v45": "seedream/4.5-text-to-image", // auto → seedream/4.5-edit with image
-  "kie-zimage-turbo": "z-image",
+  
   // Video
   "kie-kling-30": "kling-3.0/video",
   "kie-kling-26": "kling-2.6/text-to-video",     // auto → kling-2.6/image-to-video with image
