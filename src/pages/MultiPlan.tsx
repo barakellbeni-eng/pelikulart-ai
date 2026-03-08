@@ -215,7 +215,10 @@ const MultiPlan = () => {
                       <GenerationProgress estimatedTime="~15s" />
                     </div>
                   ) : mainResult ? (
-                    <div className="relative group rounded-lg overflow-hidden bg-black/30">
+                    <div
+                      className="relative group rounded-lg overflow-hidden bg-black/30 cursor-pointer"
+                      onClick={() => setPreviewImage({ url: mainResult.url, label: "Source générée" })}
+                    >
                       <img
                         src={mainResult.url}
                         alt="Résultat"
@@ -226,12 +229,20 @@ const MultiPlan = () => {
                           e.dataTransfer.effectAllowed = "copy";
                         }}
                       />
-                      <button
-                        onClick={() => handleDownload(mainResult.url, "multiplan")}
-                        className="absolute top-2 right-2 w-7 h-7 rounded bg-background/60 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                      >
-                        <Download className="w-3.5 h-3.5 text-foreground" />
-                      </button>
+                      <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handleDownload(mainResult.url, "multiplan"); }}
+                          className="w-7 h-7 rounded-lg flex items-center justify-center bg-background/70 backdrop-blur-sm hover:bg-background/90 transition-all text-muted-foreground hover:text-foreground shadow-sm"
+                        >
+                          <Download className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); setMainResult(null); }}
+                          className="w-7 h-7 rounded-lg flex items-center justify-center bg-destructive/80 backdrop-blur-sm hover:bg-destructive transition-all text-destructive-foreground shadow-sm"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
                       <div className="absolute bottom-2 left-2 px-2 py-0.5 rounded bg-background/60 backdrop-blur-sm text-[9px] uppercase tracking-widest text-muted-foreground">
                         Source générée
                       </div>
