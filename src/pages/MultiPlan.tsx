@@ -313,11 +313,25 @@ const MultiPlan = () => {
             <label className="text-[10px] text-muted-foreground uppercase tracking-widest">Source</label>
             <motion.div onDragOver={(e) => e.preventDefault()} onDrop={handleDrop}>
               {sourceImage ? (
-                <div className="relative rounded-lg overflow-hidden bg-black/40">
+                <div className="relative rounded-lg overflow-hidden bg-black/40 group/plans">
                   <img src={sourceImage} alt="Source" className="w-full aspect-video object-cover" />
+                  {/* Plan overlay on hover */}
+                  <div className="absolute inset-0 grid grid-cols-2 grid-rows-2 opacity-0 group-hover/plans:opacity-100 transition-opacity duration-300 pointer-events-none">
+                    {[1, 2, 3, 4].map((num) => (
+                      <div
+                        key={num}
+                        className="flex items-center justify-center border border-primary/40"
+                        style={{ background: 'hsla(var(--primary) / 0.12)' }}
+                      >
+                        <span className="w-7 h-7 rounded-full bg-primary/80 text-primary-foreground text-xs font-bold flex items-center justify-center shadow-lg backdrop-blur-sm">
+                          {num}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
                   <button
                     onClick={() => { setSourceImage(null); setMainResult(null); setPlanResults({}); }}
-                    className="absolute top-1.5 right-1.5 px-1.5 py-0.5 rounded text-[9px] font-medium bg-background/70 backdrop-blur-sm text-muted-foreground hover:text-foreground transition-colors"
+                    className="absolute top-1.5 right-1.5 px-1.5 py-0.5 rounded text-[9px] font-medium bg-background/70 backdrop-blur-sm text-muted-foreground hover:text-foreground transition-colors z-10"
                   >
                     ✕
                   </button>
