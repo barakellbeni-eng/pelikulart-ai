@@ -1125,18 +1125,12 @@ const Dashboard = () => {
                     <motion.button
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
-                      onClick={() => fileInputRef.current?.click()}
+                      onClick={() => setShowMediaPicker(true)}
                       className="aspect-square flex flex-col items-center justify-center gap-1.5 rounded-xl border-2 border-dashed border-border hover:border-primary/40 bg-muted/5 hover:bg-muted/10 transition-all cursor-pointer"
                     >
                       <Upload className="w-5 h-5 text-muted-foreground" />
-                      <span className="text-[9px] text-muted-foreground font-medium">Upload</span>
+                      <span className="text-[9px] text-muted-foreground font-medium">Ajouter</span>
                     </motion.button>
-                    <button
-                      onClick={() => setShowMediaPicker(true)}
-                      className="text-[10px] text-primary hover:text-primary/80 transition-colors font-medium"
-                    >
-                      📂 Bibliothèque
-                    </button>
                   </div>
                 )}
               </div>
