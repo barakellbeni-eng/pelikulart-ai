@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
-import { uploadBytesToR2, downloadAndUploadToR2, getR2SignedUrl } from "../_shared/r2.ts";
+import { uploadBytes, downloadAndUpload, getPublicUrl } from "../_shared/storage.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -22,11 +22,8 @@ serve(async (req) => {
 
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-    if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
-      throw new Error("Supabase config missing");
-    }
+    if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) throw new Error("Supabase config missing");
 
-    // --- Authentication ---
     const authHeader = req.headers.get("authorization") || "";
     if (!authHeader.startsWith("Bearer ")) {
       return new Response(
@@ -53,14 +50,12 @@ serve(async (req) => {
     const body = await req.json();
     const { prompt, num_images = 1, cauris_cost = 0, image_url, project_id, ...rawSettings } = body;
 
-    // --- Validation ---
     if (!prompt || typeof prompt !== "string") {
       return new Response(
         JSON.stringify({ error: "Un prompt est requis" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
-
     if (prompt.length > 5000) {
       return new Response(
         JSON.stringify({ error: "Le prompt est trop long (max 5000 caractères)" }),
@@ -77,11 +72,9 @@ serve(async (req) => {
       }
     }
 
-    // --- Deduct credits ---
     const cost = typeof cauris_cost === "number" && cauris_cost > 0 ? cauris_cost : 2;
     const { data: deductResult, error: deductError } = await adminClient.rpc("deduct_cauris", {
-      p_user_id: userId,
-      p_amount: cost,
+      p_user_id: userId, p_amount: cost,
     });
 
     if (deductError || deductResult === -1) {
@@ -91,19 +84,12 @@ serve(async (req) => {
       );
     }
 
-    // --- Build prompt with settings ---
     let fullPrompt = prompt;
-    if (modelSettings.aspect_ratio) {
-      fullPrompt += `\n\nAspect ratio: ${modelSettings.aspect_ratio}`;
-    }
-    if (modelSettings.resolution) {
-      fullPrompt += `\nResolution: ${modelSettings.resolution}`;
-    }
+    if (modelSettings.aspect_ratio) fullPrompt += `\n\nAspect ratio: ${modelSettings.aspect_ratio}`;
+    if (modelSettings.resolution) fullPrompt += `\nResolution: ${modelSettings.resolution}`;
 
     const content: any[] = [{ type: "text", text: `Generate an image based on this description: ${fullPrompt}` }];
-    if (image_url) {
-      content.push({ type: "image_url", image_url: { url: image_url } });
-    }
+    if (image_url) content.push({ type: "image_url", image_url: { url: image_url } });
 
     const messages = [{ role: "user", content }];
     const savedImages = [];
@@ -119,41 +105,24 @@ serve(async (req) => {
           ? messages
           : [{ role: "user", content: [{ type: "text", text: `Create a high quality image: ${fullPrompt}. Output only the image.` }] }];
 
-        if (attempt > 0) {
-          console.log(`Retry attempt ${attempt} for image ${i + 1}`);
-        }
+        if (attempt > 0) console.log(`Retry attempt ${attempt} for image ${i + 1}`);
 
         const aiResp = await fetch(LOVABLE_AI_ENDPOINT, {
           method: "POST",
-          headers: {
-            Authorization: `Bearer ${LOVABLE_API_KEY}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            model: "google/gemini-2.5-flash-image",
-            messages: promptMessages,
-            modalities: ["image", "text"],
-          }),
+          headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
+          body: JSON.stringify({ model: "google/gemini-2.5-flash-image", messages: promptMessages, modalities: ["image", "text"] }),
         });
 
         if (!aiResp.ok) {
           const errText = await aiResp.text();
           console.error("Lovable AI error:", aiResp.status, errText);
-
           if (savedImages.length === 0 && attempt === MAX_RETRIES) {
             await adminClient.rpc("add_cauris", { p_user_id: userId, p_amount: cost });
-
             if (aiResp.status === 429) {
-              return new Response(
-                JSON.stringify({ error: "Limite de requêtes atteinte. Réessayez dans quelques secondes." }),
-                { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } },
-              );
+              return new Response(JSON.stringify({ error: "Limite de requêtes atteinte. Réessayez dans quelques secondes." }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } });
             }
             if (aiResp.status === 402) {
-              return new Response(
-                JSON.stringify({ error: "Crédits IA insuffisants pour effectuer la génération." }),
-                { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } },
-              );
+              return new Response(JSON.stringify({ error: "Crédits IA insuffisants pour effectuer la génération." }), { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } });
             }
           }
           if (!aiResp.ok) break;
@@ -162,7 +131,6 @@ serve(async (req) => {
         const aiData = await aiResp.json();
         const choice = aiData?.choices?.[0];
 
-        // Check message.images array
         const messageImages = choice?.message?.images;
         if (Array.isArray(messageImages)) {
           for (const img of messageImages) {
@@ -171,64 +139,52 @@ serve(async (req) => {
           }
         }
 
-        // Check message.content array parts
         const messageContent = choice?.message?.content;
         if (Array.isArray(messageContent)) {
           for (const part of messageContent) {
             const url = part?.image_url?.url;
-            if (part?.type === "image_url" && typeof url === "string" && url) {
-              imageCandidates.push(url);
-            }
+            if (part?.type === "image_url" && typeof url === "string" && url) imageCandidates.push(url);
           }
         }
 
-        // Check if content is a base64 string directly
         if (typeof messageContent === "string" && messageContent.startsWith("data:image")) {
           imageCandidates.push(messageContent);
         }
 
         if (!imageCandidates.length) {
-          console.warn(`Attempt ${attempt}: No image returned`, {
-            hasMessageImages: Array.isArray(messageImages),
-            contentIsArray: Array.isArray(messageContent),
-            contentType: typeof messageContent,
-            finishReason: choice?.finish_reason ?? null,
-          });
+          console.warn(`Attempt ${attempt}: No image returned`);
         }
       }
 
       for (const imageSource of imageCandidates) {
         try {
-          let r2Key: string;
+          let storageKey: string;
 
           if (imageSource.startsWith("http://") || imageSource.startsWith("https://")) {
-            r2Key = await downloadAndUploadToR2(imageSource, userId, "png");
+            storageKey = await downloadAndUpload(imageSource, userId, "png");
           } else {
-            // Base64 image
             const raw = imageSource.replace(/^data:image\/\w+;base64,/, "");
             const binaryStr = atob(raw);
             const bytes = new Uint8Array(binaryStr.length);
-            for (let j = 0; j < binaryStr.length; j++) {
-              bytes[j] = binaryStr.charCodeAt(j);
-            }
-            r2Key = await uploadBytesToR2(bytes, userId, "image/png", "png");
+            for (let j = 0; j < binaryStr.length; j++) bytes[j] = binaryStr.charCodeAt(j);
+            storageKey = await uploadBytes(bytes, userId, "image/png", "png");
           }
 
-          // Store with r2: prefix
+          const publicUrl = getPublicUrl(storageKey);
+
           await adminClient.from("generations").insert({
             user_id: userId,
             prompt: prompt.slice(0, 5000),
-            image_url: `r2:${r2Key}`,
+            image_url: publicUrl,
             aspect_ratio: modelSettings.aspect_ratio || null,
             resolution: modelSettings.resolution || null,
             output_format: "png",
             project_id: project_id || null,
           });
 
-          const signedUrl = await getR2SignedUrl(r2Key, 3600);
-          savedImages.push({ url: signedUrl });
+          savedImages.push({ url: publicUrl });
         } catch (uploadErr) {
-          console.error("R2 upload error:", uploadErr);
+          console.error("Storage upload error:", uploadErr);
         }
       }
     }

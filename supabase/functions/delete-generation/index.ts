@@ -1,12 +1,28 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
-import { deleteFromR2 } from "../_shared/r2.ts";
+import { deleteFile } from "../_shared/storage.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
+
+const BUCKET = "generations";
+
+/** Extract the storage key from a public URL or r2: prefixed path */
+function extractStorageKey(url: string): string | null {
+  if (!url) return null;
+  // Legacy r2: prefix
+  if (url.startsWith("r2:")) return url.slice(3);
+  // Supabase public URL
+  const marker = `/storage/v1/object/public/${BUCKET}/`;
+  const idx = url.indexOf(marker);
+  if (idx !== -1) return url.substring(idx + marker.length).split("?")[0];
+  // Raw key (no http)
+  if (!url.startsWith("http")) return url;
+  return null;
+}
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -19,10 +35,7 @@ serve(async (req) => {
 
     const authHeader = req.headers.get("authorization") || "";
     if (!authHeader.startsWith("Bearer ")) {
-      return new Response(
-        JSON.stringify({ error: "Authentification requise" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } },
-      );
+      return new Response(JSON.stringify({ error: "Authentification requise" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
     const token = authHeader.replace("Bearer ", "");
@@ -30,20 +43,14 @@ serve(async (req) => {
 
     const { data: userData, error: userError } = await adminClient.auth.getUser(token);
     if (userError || !userData?.user?.id) {
-      return new Response(
-        JSON.stringify({ error: "Authentification invalide" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } },
-      );
+      return new Response(JSON.stringify({ error: "Authentification invalide" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
     const userId = userData.user.id;
     const { job_id } = await req.json();
 
     if (!job_id) {
-      return new Response(
-        JSON.stringify({ error: "job_id requis" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
-      );
+      return new Response(JSON.stringify({ error: "job_id requis" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
     // Try generation_jobs first
@@ -55,7 +62,7 @@ serve(async (req) => {
       .is("deleted_at", null)
       .single();
 
-    // If not found in generation_jobs, try legacy generations table
+    // If not found, try legacy generations table
     if (jobError || !job) {
       const { data: legacyGen, error: legacyError } = await adminClient
         .from("generations")
@@ -65,86 +72,58 @@ serve(async (req) => {
         .single();
 
       if (legacyError || !legacyGen) {
-        return new Response(
-          JSON.stringify({ error: "Job introuvable" }),
-          { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } },
-        );
+        return new Response(JSON.stringify({ error: "Job introuvable" }), { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
 
-      // Delete R2 file if applicable
-      const r2Key = legacyGen.image_url?.startsWith("r2:")
-        ? legacyGen.image_url.slice(3)
-        : legacyGen.image_url;
-      if (r2Key) {
-        try { await deleteFromR2(r2Key); } catch (e) { console.error("R2 delete failed:", e); }
+      // Delete file from storage
+      const key = extractStorageKey(legacyGen.image_url);
+      if (key) {
+        try { await deleteFile(key); } catch (e) { console.error("Storage delete failed:", e); }
       }
 
-      // Hard delete from generations table
       await adminClient.from("generations").delete().eq("id", job_id).eq("user_id", userId);
 
-      return new Response(
-        JSON.stringify({ success: true }),
-        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
-      );
+      return new Response(JSON.stringify({ success: true }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
-    // Collect keys + URL variants to clean legacy rows reliably
-    const r2KeysToDelete = new Set<string>();
+    // Collect keys to delete
+    const keysToDelete = new Set<string>();
     const imageUrlsToDelete = new Set<string>();
 
-    const addLookupCandidates = (value?: string | null) => {
+    const addCandidates = (value?: string | null) => {
       if (!value || typeof value !== "string") return;
       const raw = value.trim();
       if (!raw) return;
-
       imageUrlsToDelete.add(raw);
-
+      const key = extractStorageKey(raw);
+      if (key) keysToDelete.add(key);
+      // Also add alternate forms for legacy cleanup
       if (raw.startsWith("r2:")) {
-        const key = raw.slice(3);
-        if (!key) return;
-        r2KeysToDelete.add(key);
-        imageUrlsToDelete.add(key);
-        imageUrlsToDelete.add(`r2:${key}`);
-        return;
-      }
-
-      // Old rows may store raw key without r2: prefix
-      if (!/^https?:\/\//i.test(raw)) {
-        r2KeysToDelete.add(raw);
-        imageUrlsToDelete.add(`r2:${raw}`);
+        imageUrlsToDelete.add(raw.slice(3));
+        imageUrlsToDelete.add(raw);
       }
     };
 
-    addLookupCandidates(job.result_url);
+    addCandidates(job.result_url);
 
-    // Check result_metadata for additional R2 keys (multi-image generations)
     const metadata = job.result_metadata as Record<string, any> | null;
-    if (metadata?.r2_key && typeof metadata.r2_key === "string") {
-      addLookupCandidates(metadata.r2_key);
-    }
+    if (metadata?.r2_key && typeof metadata.r2_key === "string") addCandidates(metadata.r2_key);
     if (metadata?.r2_keys && Array.isArray(metadata.r2_keys)) {
-      for (const key of metadata.r2_keys) {
-        if (typeof key === "string") addLookupCandidates(key);
-      }
+      for (const key of metadata.r2_keys) if (typeof key === "string") addCandidates(key);
+    }
+    if (metadata?.storage_keys && Array.isArray(metadata.storage_keys)) {
+      for (const key of metadata.storage_keys) if (typeof key === "string") addCandidates(key);
     }
 
-    // Delete R2 files in parallel (non-blocking — don't fail if R2 delete fails)
-    const r2Deletions = Array.from(r2KeysToDelete).map(async (key) => {
-      try {
-        await deleteFromR2(key);
-      } catch (e) {
-        console.error(`R2 delete failed for ${key}:`, e);
-      }
+    // Delete files in parallel
+    const deletions = Array.from(keysToDelete).map(async (key) => {
+      try { await deleteFile(key); } catch (e) { console.error(`Storage delete failed for ${key}:`, e); }
     });
 
-    // Delete matching entries from legacy 'generations' table with both formats
+    // Delete from legacy generations table
     const generationsDeletion = imageUrlsToDelete.size > 0
-      ? adminClient
-          .from("generations")
-          .delete()
-          .eq("user_id", userId)
-          .in("image_url", Array.from(imageUrlsToDelete))
-      : Promise.resolve({ error: null as unknown });
+      ? adminClient.from("generations").delete().eq("user_id", userId).in("image_url", Array.from(imageUrlsToDelete))
+      : Promise.resolve({ error: null });
 
     // Soft-delete the job
     const jobSoftDelete = adminClient
@@ -153,32 +132,19 @@ serve(async (req) => {
       .eq("id", job_id)
       .eq("user_id", userId);
 
-    const [, generationsDeleteRes, jobSoftDeleteRes] = await Promise.all([
-      Promise.all(r2Deletions),
+    const [, , jobSoftDeleteRes] = await Promise.all([
+      Promise.all(deletions),
       generationsDeletion,
       jobSoftDelete,
     ]);
 
-    if ((generationsDeleteRes as { error?: unknown })?.error) {
-      console.error("Legacy generations delete error:", (generationsDeleteRes as { error?: unknown }).error);
-    }
-
     if (jobSoftDeleteRes.error) {
-      return new Response(
-        JSON.stringify({ error: "Erreur lors de la suppression en base" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
-      );
+      return new Response(JSON.stringify({ error: "Erreur lors de la suppression en base" }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
-    return new Response(
-      JSON.stringify({ success: true }),
-      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
-    );
+    return new Response(JSON.stringify({ success: true }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (e) {
     console.error("delete-generation error:", e);
-    return new Response(
-      JSON.stringify({ error: "Erreur interne" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
-    );
+    return new Response(JSON.stringify({ error: "Erreur interne" }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   }
 });

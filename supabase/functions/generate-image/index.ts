@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
-import { downloadAndUploadToR2, getR2SignedUrl } from "../_shared/r2.ts";
+import { downloadAndUpload, getPublicUrl } from "../_shared/storage.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -56,7 +56,6 @@ serve(async (req) => {
       throw new Error("Supabase config missing");
     }
 
-    // --- Authentication ---
     const authHeader = req.headers.get("authorization") || "";
     if (!authHeader.startsWith("Bearer ")) {
       return new Response(
@@ -82,25 +81,17 @@ serve(async (req) => {
 
     const body = await req.json();
     const {
-      prompt,
-      model_id = "nano-banana-pro",
-      output_format = "png",
-      num_images = 1,
-      image_url,
-      image_urls,
-      cauris_cost = 0,
-      project_id,
+      prompt, model_id = "nano-banana-pro", output_format = "png",
+      num_images = 1, image_url, image_urls, cauris_cost = 0, project_id,
       ...rawSettings
     } = body;
 
-    // --- Input validation ---
     if (!prompt || typeof prompt !== "string") {
       return new Response(
         JSON.stringify({ error: "Un prompt est requis" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
-
     if (prompt.length > 5000) {
       return new Response(
         JSON.stringify({ error: "Le prompt est trop long (max 5000 caractères)" }),
@@ -126,11 +117,9 @@ serve(async (req) => {
       }
     }
 
-    // --- Credit deduction ---
     const cost = typeof cauris_cost === "number" && cauris_cost > 0 ? cauris_cost : 2;
     const { data: deductResult, error: deductError } = await adminClient.rpc("deduct_cauris", {
-      p_user_id: userId,
-      p_amount: cost,
+      p_user_id: userId, p_amount: cost,
     });
 
     if (deductError || deductResult === -1) {
@@ -140,7 +129,6 @@ serve(async (req) => {
       );
     }
 
-    // Edit models require at least one reference image
     const isEditModel = MODELS_USING_IMAGE_URLS.has(model_id);
     const hasImages = (image_urls && Array.isArray(image_urls) && image_urls.length > 0) || !!image_url;
     if (isEditModel && !hasImages) {
@@ -151,36 +139,21 @@ serve(async (req) => {
       );
     }
 
-    // Build payload
-    const payload: Record<string, any> = {
-      prompt,
-      num_images: safeNumImages,
-      output_format,
-      ...modelSettings,
-    };
+    const payload: Record<string, any> = { prompt, num_images: safeNumImages, output_format, ...modelSettings };
 
     if (image_urls && Array.isArray(image_urls) && image_urls.length > 0) {
-      if (MODELS_USING_IMAGE_URLS.has(model_id)) {
-        payload.image_urls = image_urls.slice(0, 5);
-      } else {
-        payload.image_url = image_urls[0];
-      }
+      if (MODELS_USING_IMAGE_URLS.has(model_id)) payload.image_urls = image_urls.slice(0, 5);
+      else payload.image_url = image_urls[0];
     } else if (image_url) {
-      if (MODELS_USING_IMAGE_URLS.has(model_id)) {
-        payload.image_urls = [image_url];
-      } else {
-        payload.image_url = image_url;
-      }
+      if (MODELS_USING_IMAGE_URLS.has(model_id)) payload.image_urls = [image_url];
+      else payload.image_url = image_url;
     }
 
     console.log(`Submitting to ${model_id}`);
 
     const submitResp = await fetch(endpoint, {
       method: "POST",
-      headers: {
-        Authorization: `Key ${FAL_API_KEY}`,
-        "Content-Type": "application/json",
-      },
+      headers: { Authorization: `Key ${FAL_API_KEY}`, "Content-Type": "application/json" },
       body: JSON.stringify(payload),
     });
 
@@ -216,26 +189,22 @@ serve(async (req) => {
     const savedImages = [];
     for (const img of falImages) {
       try {
-        // Upload to R2 instead of Supabase storage
-        const r2Key = await downloadAndUploadToR2(img.url, userId, output_format);
+        const storageKey = await downloadAndUpload(img.url, userId, output_format);
+        const publicUrl = getPublicUrl(storageKey);
 
-        // Store with r2: prefix in DB to distinguish from old Supabase paths
         await adminClient.from("generations").insert({
           user_id: userId,
           prompt: prompt.slice(0, 5000),
-          image_url: `r2:${r2Key}`,
+          image_url: publicUrl,
           aspect_ratio: modelSettings.aspect_ratio || null,
           resolution: modelSettings.resolution || modelSettings.image_size || null,
           output_format,
           project_id: project_id || null,
         });
 
-        // Generate a presigned URL for immediate display
-        const signedUrl = await getR2SignedUrl(r2Key, 3600);
-        savedImages.push({ url: signedUrl, width: img.width, height: img.height });
+        savedImages.push({ url: publicUrl, width: img.width, height: img.height });
       } catch (uploadErr) {
-        console.error("R2 upload error:", uploadErr);
-        // Fallback to fal URL
+        console.error("Storage upload error:", uploadErr);
         savedImages.push({ url: img.url, width: img.width, height: img.height });
       }
     }
