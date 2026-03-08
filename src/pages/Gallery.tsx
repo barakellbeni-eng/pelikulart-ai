@@ -291,19 +291,27 @@ const Gallery = () => {
                     } ${isSelected(item.id) ? "ring-2 ring-primary ring-offset-2 ring-offset-background" : ""}`}
                     onClick={(e) => handleCardClick(item, e)}
                   >
-                    {/* Selection checkmark */}
-                    <AnimatePresence>
-                      {isSelected(item.id) && (
-                        <motion.div
-                          initial={{ scale: 0, opacity: 0 }}
-                          animate={{ scale: 1, opacity: 1 }}
-                          exit={{ scale: 0, opacity: 0 }}
-                          className="absolute top-2 left-2 z-20 w-6 h-6 rounded-full bg-primary flex items-center justify-center shadow-lg"
-                        >
-                          <Check className="w-3.5 h-3.5 text-primary-foreground" />
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
+                    {/* Selection checkbox — visible on hover OR when any selection exists */}
+                    <div
+                      className={`absolute top-2 left-2 z-20 transition-opacity duration-150 ${
+                        selectionCount > 0 || isSelected(item.id) ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+                      }`}
+                    >
+                      <button
+                        onClick={(e) => { e.stopPropagation(); toggleSelect(item.id, true); }}
+                        className={`w-7 h-7 rounded-lg flex items-center justify-center backdrop-blur-sm shadow-lg transition-all duration-150 ${
+                          isSelected(item.id)
+                            ? "bg-primary text-primary-foreground scale-110"
+                            : "bg-background/60 text-muted-foreground hover:bg-background/80 hover:text-foreground"
+                        }`}
+                      >
+                        {isSelected(item.id) ? (
+                          <Check className="w-4 h-4" />
+                        ) : (
+                          <div className="w-4 h-4 rounded border-2 border-current" />
+                        )}
+                      </button>
+                    </div>
 
                     {/* Media */}
                     <div className="relative">
