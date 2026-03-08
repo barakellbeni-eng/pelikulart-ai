@@ -137,15 +137,9 @@ serve(async (req) => {
       );
     }
 
-    const ratioSizes: Record<string, Record<string, { width: number; height: number }>> = {
-      "1:1":  { "2K": { width: 2048, height: 2048 }, "4K": { width: 4096, height: 4096 } },
-      "16:9": { "2K": { width: 2048, height: 1152 }, "4K": { width: 3840, height: 2160 } },
-      "9:16": { "2K": { width: 1152, height: 2048 }, "4K": { width: 2160, height: 3840 } },
-      "4:3":  { "2K": { width: 2048, height: 1536 }, "4K": { width: 4096, height: 3072 } },
-      "3:4":  { "2K": { width: 1536, height: 2048 }, "4K": { width: 3072, height: 4096 } },
-    };
-
-    const imageSize = ratioSizes[aspect_ratio]?.[resolution] || ratioSizes["1:1"]["2K"];
+    // Resolution validation
+    const validResolutions = ["1K", "2K", "4K"];
+    const safeResolution = validResolutions.includes(resolution) ? resolution : "2K";
     const planLabel = PLAN_TYPE_MAP[plan_type] || plan_type;
 
     const planPrompts: Record<number, string> = {
