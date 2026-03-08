@@ -320,7 +320,7 @@ export default function MediaPickerModal({ open, onClose, onSelect, accept, titl
                     : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
                 }`}
               >
-                🎨 Mes générations
+                Mes générations
               </button>
               <button
                 onClick={() => setTab("uploads")}
@@ -330,7 +330,7 @@ export default function MediaPickerModal({ open, onClose, onSelect, accept, titl
                     : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
                 }`}
               >
-                📁 Mes uploads
+                Mes uploads
               </button>
             </div>
 
