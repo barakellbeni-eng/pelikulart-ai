@@ -1000,7 +1000,8 @@ serve(async (req) => {
 
     const bgPromise = (async () => {
       try {
-        if (isKieModel) await processKie(jobId, userId, body);
+        if (isSunoModel) await processSuno(jobId, userId, body);
+        else if (isKieModel) await processKie(jobId, userId, body);
         else if (isGoogleModel) await processImageGoogle(jobId, userId, body);
         else if (tool_type === "image") await processImage(jobId, userId, body);
         else if (tool_type === "video") await processVideo(jobId, userId, body);
