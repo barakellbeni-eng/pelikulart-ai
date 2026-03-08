@@ -207,6 +207,26 @@ const MultiPlan = () => {
     }
   };
 
+  const handleCutAll = async () => {
+    if (!cadrageSource || !user || isCuttingAll || loadingPlan !== null) return;
+    setIsCuttingAll(true);
+
+    try {
+      for (let i = 1; i <= 4; i++) {
+        await callGenerate(cadrageSource, selectedPlan, i);
+      }
+      await loadGallery();
+      refreshBalance();
+      toast.success("4 cadrages générés !");
+    } catch (e: any) {
+      toast.error(e.message);
+      await loadGallery();
+      refreshBalance();
+    } finally {
+      setIsCuttingAll(false);
+    }
+  };
+
   const handleDownload = async (url: string, name: string) => {
     try {
       const response = await fetch(url);
