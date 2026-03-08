@@ -50,7 +50,7 @@ function OrbitRing({ rotate, vertical, zoom }: { rotate: number; vertical: numbe
       {/* Orbit ring */}
       <group ref={ringRef as any} rotation={[0, 0, 0]}>
         <Line points={ringPoints} color="#4466ff" lineWidth={2} transparent opacity={0.8} />
-      </line>
+      </group>
 
       {/* Camera dot 1 - purple */}
       <mesh ref={camDotRef}>
