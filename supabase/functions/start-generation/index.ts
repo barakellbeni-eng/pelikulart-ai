@@ -500,6 +500,122 @@ async function processAudio(jobId: string, userId: string, body: any) {
   }
 }
 
+// ──────────────────────── KIE AI PROCESSOR ────────────────────────
+
+async function processKie(jobId: string, userId: string, body: any) {
+  const adminClient = getAdminClient();
+  const KIE_API_KEY = Deno.env.get("KIE_AI_API_KEY");
+  if (!KIE_API_KEY) throw new Error("KIE_AI_API_KEY is not configured");
+
+  const { prompt, model_id, tool_type, image_url, image_urls, num_images = 1, ...rawSettings } = body;
+  const kieModel = KIE_MODELS[model_id];
+  if (!kieModel) throw new Error(`Unknown KIE model: ${model_id}`);
+
+  try {
+    await updateJob(adminClient, jobId, { status: "processing", started_at: new Date().toISOString() });
+
+    // Build KIE input payload based on tool type
+    const input: Record<string, any> = { prompt };
+
+    if (tool_type === "image") {
+      // Image-specific params
+      if (rawSettings.image_size) input.image_size = rawSettings.image_size;
+      else if (rawSettings.aspect_ratio) input.image_size = rawSettings.aspect_ratio;
+      if (rawSettings.output_format) input.output_format = rawSettings.output_format;
+      // Handle image inputs for edit models
+      if (image_urls && Array.isArray(image_urls) && image_urls.length > 0) {
+        input.image_urls = image_urls.slice(0, 5);
+      } else if (image_url) {
+        input.image_urls = [image_url];
+      }
+    } else if (tool_type === "video") {
+      // Video-specific params (Kling 3.0)
+      if (rawSettings.duration) input.duration = String(rawSettings.duration);
+      if (rawSettings.aspect_ratio) input.aspect_ratio = rawSettings.aspect_ratio;
+      if (rawSettings.mode) input.mode = rawSettings.mode;
+      if (rawSettings.sound !== undefined) input.sound = rawSettings.sound;
+      input.multi_shots = false;
+      if (image_url) input.image_urls = [image_url];
+    } else if (tool_type === "audio") {
+      // Audio-specific params (ElevenLabs)
+      if (rawSettings.duration) input.duration = rawSettings.duration;
+      // For TTS, use prompt as text
+      if (kieModel.includes("text-to-speech")) {
+        input.text = prompt;
+        delete input.prompt;
+      }
+    }
+
+    console.log(`[KIE] Creating task for ${kieModel}`);
+    const taskId = await kieCreateTask(kieModel, input, KIE_API_KEY);
+    await updateJob(adminClient, jobId, { external_job_id: taskId, progress: 10 });
+
+    console.log(`[KIE] Polling task ${taskId}`);
+    const result = await kiePollTask(taskId, KIE_API_KEY);
+
+    // Extract result URLs
+    const resultUrls: string[] = result.resultUrls || [];
+    const resultObject = result.resultObject;
+
+    if (resultUrls.length === 0 && !resultObject) {
+      throw new Error("KIE AI: no results returned");
+    }
+
+    // Determine media type and format
+    const isVideo = tool_type === "video";
+    const isAudio = tool_type === "audio";
+    const format = isVideo ? "mp4" : isAudio ? "wav" : "png";
+    const mediaType = isVideo ? "video" : isAudio ? "audio" : "image";
+
+    // Download and store results (handle multiple for images)
+    const safeNumImages = isVideo || isAudio ? 1 : Math.min(Math.max(1, Number(num_images) || 1), 4);
+    const urlsToProcess = resultUrls.slice(0, safeNumImages);
+
+    if (urlsToProcess.length === 0) throw new Error("KIE AI: no result URLs");
+
+    // Set temp URL immediately
+    await updateJob(adminClient, jobId, { result_url_temp: urlsToProcess[0], progress: 50 });
+
+    const storageKeys: string[] = [];
+    for (const url of urlsToProcess) {
+      try {
+        const storageKey = await downloadAndUpload(url, userId, format);
+        storageKeys.push(storageKey);
+        const publicUrl = getPublicUrl(storageKey);
+
+        await adminClient.from("generations").insert({
+          user_id: userId,
+          prompt: prompt.slice(0, 5000),
+          image_url: publicUrl,
+          media_type: mediaType,
+          aspect_ratio: rawSettings.aspect_ratio || rawSettings.image_size || null,
+        });
+      } catch (dlErr) {
+        console.error(`[KIE] Download error for ${url}:`, dlErr);
+        // Use temp URL as fallback
+        storageKeys.push(url);
+      }
+    }
+
+    const finalUrl = storageKeys.length > 0
+      ? (storageKeys[0].startsWith("http") ? storageKeys[0] : getPublicUrl(storageKeys[0]))
+      : urlsToProcess[0];
+
+    await updateJob(adminClient, jobId, {
+      status: "completed", progress: 100, result_url: finalUrl, result_url_temp: finalUrl,
+      result_metadata: { storage_keys: storageKeys, count: storageKeys.length, format, provider: "kie" },
+      completed_at: new Date().toISOString(),
+    });
+  } catch (err: any) {
+    console.error(`[job ${jobId}] KIE processing failed:`, err);
+    await updateJob(adminClient, jobId, {
+      status: "failed", result_metadata: { error: err.message, provider: "kie" }, completed_at: new Date().toISOString(),
+    });
+    const defaultCost = tool_type === "video" ? 10 : tool_type === "audio" ? 5 : 2;
+    await adminClient.rpc("add_cauris", { p_user_id: userId, p_amount: body.cauris_cost || defaultCost });
+  }
+}
+
 // ──────────────────────── MAIN HANDLER ────────────────────────
 
 serve(async (req) => {
