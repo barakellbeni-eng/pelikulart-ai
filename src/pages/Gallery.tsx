@@ -95,7 +95,7 @@ const Gallery = () => {
 
     let query = supabase
       .from("generation_jobs")
-      .select("id, tool_type, prompt, model, result_url, result_metadata, created_at, credits_used, project_id")
+      .select("*")
       .eq("status", "completed")
       .is("deleted_at", null)
       .order("created_at", { ascending: false })
@@ -106,7 +106,20 @@ const Gallery = () => {
     const { data, error } = await query;
     if (error || !data) { setLoading(false); return; }
 
-    const validItems = (data as GalleryItem[]).filter((d) => d.result_url);
+    const validItems: GalleryItem[] = (data as any[])
+      .filter((d: any) => d.result_url)
+      .map((d: any) => ({
+        id: d.id,
+        tool_type: d.tool_type,
+        prompt: d.prompt,
+        model: d.model,
+        result_url: d.result_url,
+        result_url_original: d.result_url_original || d.result_url,
+        result_metadata: d.result_metadata,
+        created_at: d.created_at,
+        credits_used: d.credits_used,
+        project_id: d.project_id,
+      }));
     const urls = validItems.map((d) => d.result_url);
     const signedUrls = await getSignedUrls(urls);
 
