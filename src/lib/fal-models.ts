@@ -352,7 +352,7 @@ export const FAL_MODELS: FalModel[] = [
     id: "kie-elevenlabs-tts", type: "audio", brand: "ElevenLabs", name: "TTS Multilingual",
     endpoint: "kie", provider: "kie", kieModel: "elevenlabs/text-to-speech-multilingual-v2",
     description: "Text-to-Speech multilingue", icon: "○", color: "from-white/20 to-white/5",
-    maxImages: 1, supportsImageInput: false, caurisCost: 4, estimatedTime: "~5s",
+    maxImages: 1, supportsImageInput: false, caurisCost: 3, estimatedTime: "~5s",
     settings: [],
   },
 
