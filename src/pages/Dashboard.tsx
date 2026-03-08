@@ -61,6 +61,7 @@ const afrikaBoostKeywords = [
 ];
 
 interface GeneratedImage {
+  id?: string;
   url: string;
   width?: number;
   height?: number;
@@ -74,12 +75,14 @@ interface GeneratedImage {
 }
 
 interface GeneratedVideo {
+  id?: string;
   url: string;
   prompt?: string;
   timestamp?: number;
 }
 
 interface GeneratedAudio {
+  id?: string;
   url: string;
   prompt?: string;
   timestamp?: number;
@@ -251,6 +254,7 @@ const Dashboard = () => {
         for (let idx = 0; idx < (data as any[]).length; idx++) {
           const g = (data as any[])[idx];
           const item = {
+            id: g.id,
             url: signedUrlList[idx],
             prompt: g.prompt,
             timestamp: new Date(g.created_at).getTime(),
@@ -699,23 +703,48 @@ const Dashboard = () => {
     }
   };
 
+  const DELETE_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/delete-generation`;
+
   const handleDeleteImage = async (img: GeneratedImage) => {
     if (!user) return;
     try {
-      // Try to find the generation_job for this image and delete via edge function
       const { data: sessionData } = await supabase.auth.getSession();
       const token = sessionData?.session?.access_token;
-      if (token) {
-        // Also delete from legacy generations table
-        await supabase
-          .from("generations")
-          .delete()
-          .eq("user_id", user.id)
-          .eq("image_url", img.url);
+      if (token && img.id) {
+        await fetch(DELETE_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ job_id: img.id }),
+        });
+      } else if (token) {
+        // Fallback: delete from legacy generations table directly
+        await supabase.from("generations").delete().eq("user_id", user.id).eq("image_url", img.url);
       }
       setGalleryImages((prev) => prev.filter((g) => g.url !== img.url));
       setPreviewImage(null);
-      toast.success("Image supprimée");
+      toast.success("Image supprimée définitivement");
+    } catch {
+      toast.error("Erreur lors de la suppression");
+    }
+  };
+
+  const handleDeleteVideo = async (vid: GeneratedVideo) => {
+    if (!user) return;
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData?.session?.access_token;
+      if (token && vid.id) {
+        await fetch(DELETE_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ job_id: vid.id }),
+        });
+      } else if (token) {
+        await supabase.from("generations").delete().eq("user_id", user.id).eq("image_url", vid.url);
+      }
+      setGalleryVideos((prev) => prev.filter((g) => g.url !== vid.url));
+      setPreviewVideo(null);
+      toast.success("Vidéo supprimée définitivement");
     } catch {
       toast.error("Erreur lors de la suppression");
     }
@@ -1566,6 +1595,15 @@ const Dashboard = () => {
                                 </button>
                               </>
                             )}
+                            {item.type === "video" && (
+                              <button
+                                onClick={() => handleDeleteVideo(item.data as GeneratedVideo)}
+                                className="w-7 h-7 rounded-lg bg-destructive/10 flex items-center justify-center hover:bg-destructive/20 transition-colors"
+                                title="Supprimer"
+                              >
+                                <Trash2 className="w-3.5 h-3.5 text-destructive" />
+                              </button>
+                            )}
                             <button
                               onClick={() => handleDownload(
                                 item.type === "image" ? (item.data as GeneratedImage).url :
@@ -1716,19 +1754,29 @@ const Dashboard = () => {
                             VID
                           </span>
                         </div>
-                        <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
-                          <button
-                            onClick={() => handleDownload(vid.url, i)}
-                            className="w-7 h-7 rounded-lg bg-black/60 backdrop-blur-sm flex items-center justify-center hover:bg-black/80 transition-colors"
-                          >
-                            <Download className="w-3.5 h-3.5 text-white" />
-                          </button>
-                        </div>
-                        {vid.prompt && (
-                          <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity z-10">
-                            <p className="text-[10px] text-white/80 truncate">{vid.prompt}</p>
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
+                          <div className="absolute top-1.5 right-1.5 flex items-center gap-1">
+                            <button
+                              onClick={(e) => { e.stopPropagation(); handleDownload(vid.url, i); }}
+                              className="w-6 h-6 rounded-md bg-white/10 backdrop-blur-sm flex items-center justify-center hover:bg-white/25 transition-colors"
+                              title="Télécharger"
+                            >
+                              <Download className="w-3 h-3 text-white" />
+                            </button>
                           </div>
-                        )}
+                          <div className="absolute bottom-0 left-0 right-0 p-2.5 flex items-end justify-between">
+                            <span className="text-[10px] text-white/80 font-medium truncate flex-1">{vid.prompt || ""}</span>
+                            <div className="flex items-center gap-1.5">
+                              <button
+                                onClick={(e) => { e.stopPropagation(); handleDeleteVideo(vid); }}
+                                className="w-7 h-7 rounded-lg bg-destructive/20 backdrop-blur-sm flex items-center justify-center hover:bg-destructive/40 transition-colors"
+                                title="Supprimer"
+                              >
+                                <Trash2 className="w-3.5 h-3.5 text-destructive" />
+                              </button>
+                            </div>
+                          </div>
+                        </div>
                       </motion.div>
                     );
                   }
