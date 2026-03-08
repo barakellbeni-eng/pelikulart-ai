@@ -113,7 +113,6 @@ const MultiPlan = () => {
       setPlanResults((prev) => ({ ...prev, [planIndex]: result }));
       refreshBalance();
       toast.success(`Plan ${planIndex + 1} généré !`);
-      scrollTo(planResultRef);
     } catch (e: any) {
       toast.error(e.message);
     } finally {
