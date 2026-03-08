@@ -80,7 +80,7 @@ serve(async (req) => {
     }
 
     const planLabel = PLAN_TYPE_MAP[plan_type] || plan_type;
-    const prompt = `Recreate 4 ${planLabel} of this exact image, Keep the same subject, same scene, same colors, same lighting.`;
+    const prompt = `generate 4 different ${planLabel} shot of this exact image, Keep the same subject, same scene, same colors, same lighting.`;
 
     console.log(`Multi-plan: generating ${planLabel} via Fal AI nano-banana-pro/edit`);
 
