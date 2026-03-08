@@ -274,7 +274,7 @@ const MultiPlan = () => {
             )}
 
             {/* Persisted gallery grid */}
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+            <div className="space-y-4">
               {gallery.map((item) => (
                 <motion.div
                   key={item.id}
@@ -286,7 +286,7 @@ const MultiPlan = () => {
                   <img
                     src={item.url}
                     alt={item.prompt}
-                    className="w-full aspect-square object-cover"
+                    className="w-full max-h-[60vh] object-contain"
                     loading="lazy"
                     draggable
                     onDragStart={(e) => {
