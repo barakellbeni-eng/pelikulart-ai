@@ -415,6 +415,42 @@ const MultiPlan = () => {
         </div>
       </div>
 
+      {/* ───── FAR RIGHT: Session Filmstrip Gallery ───── */}
+      {sessionGallery.length > 0 && (
+        <div className="w-[72px] h-full border-l border-border/20 bg-background/50 flex flex-col overflow-hidden shrink-0">
+          <div className="flex-1 overflow-y-auto py-3 px-2 space-y-2">
+            {sessionGallery.map((item, idx) => (
+              <motion.button
+                key={idx}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: idx * 0.05 }}
+                onClick={() => setSelectedGalleryIndex(idx)}
+                className={`w-full rounded-lg overflow-hidden border-2 transition-all ${
+                  selectedGalleryIndex === idx
+                    ? "border-primary ring-1 ring-primary/30"
+                    : "border-transparent hover:border-border/40"
+                }`}
+              >
+                <img
+                  src={item.url}
+                  alt={item.label}
+                  className="w-full aspect-square object-cover"
+                  draggable
+                  onDragStart={(e) => {
+                    e.dataTransfer.setData("text/x-gallery-image", item.url);
+                    e.dataTransfer.effectAllowed = "copy";
+                  }}
+                />
+              </motion.button>
+            ))}
+          </div>
+          <div className="px-2 py-2 border-t border-border/20 text-center">
+            <span className="text-[9px] text-muted-foreground/50">{sessionGallery.length}</span>
+          </div>
+        </div>
+      )}
+
       <MediaPickerModal
         open={showMediaPicker}
         onClose={() => setShowMediaPicker(false)}
