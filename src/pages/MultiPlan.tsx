@@ -351,7 +351,7 @@ const MultiPlan = () => {
         open={showMediaPicker}
         onClose={() => setShowMediaPicker(false)}
         onSelect={handleMediaSelect}
-        accept="image"
+        accept={["image"]}
       />
     </div>
   );
