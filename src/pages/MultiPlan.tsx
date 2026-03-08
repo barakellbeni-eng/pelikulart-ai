@@ -246,9 +246,10 @@ const MultiPlan = () => {
       const response = await fetch(url);
       const blob = await response.blob();
       const blobUrl = URL.createObjectURL(blob);
+      const date = new Date().toISOString().slice(0, 10).replace(/-/g, '');
       const a = document.createElement("a");
       a.href = blobUrl;
-      a.download = `pelikulart-${name}.png`;
+      a.download = `pelikulart_image_${date}_${name}.png`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
