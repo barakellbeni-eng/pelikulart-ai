@@ -19,6 +19,7 @@ import StudioSplash from "@/components/pelikulart/StudioSplash";
 
 // Studio pages
 import StudioHome from "./pages/StudioHome";
+import CameraControl from "./pages/CameraControl";
 import Dashboard from "./pages/Dashboard";
 import MultiPlan from "./pages/MultiPlan";
 import Pricing from "./pages/Pricing";
@@ -122,6 +123,7 @@ const AppContent = () => {
         <Route path="/studio" element={<AuthenticatedLayout><StudioHome /></AuthenticatedLayout>} />
         <Route path="/studio/create" element={<AuthenticatedLayout><Dashboard /></AuthenticatedLayout>} />
         <Route path="/studio/multi-plan" element={<AuthenticatedLayout><MultiPlan /></AuthenticatedLayout>} />
+        <Route path="/studio/camera" element={<AuthenticatedLayout><CameraControl /></AuthenticatedLayout>} />
         <Route path="/pricing" element={<AuthenticatedLayout><Pricing /></AuthenticatedLayout>} />
         <Route path="/profile" element={<ProtectedRoute><AuthenticatedLayout><Profile /></AuthenticatedLayout></ProtectedRoute>} />
 
