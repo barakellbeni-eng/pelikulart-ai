@@ -1560,7 +1560,7 @@ const Dashboard = () => {
                                   <RefreshCw className="w-3.5 h-3.5 text-muted-foreground" />
                                 </button>
                                 <button
-                                  onClick={() => handleDeleteImage(item.data as GeneratedImage)}
+                                  onClick={() => handleDeleteGeneration((item.data as GeneratedImage).jobId, "image", (item.data as GeneratedImage).url)}
                                   className="w-7 h-7 rounded-lg bg-destructive/10 flex items-center justify-center hover:bg-destructive/20 transition-colors"
                                   title="Supprimer"
                                 >
@@ -1681,7 +1681,7 @@ const Dashboard = () => {
                               <span className="text-[10px] text-white/80 font-medium">{img.resolution || ""}</span>
                               <div className="flex items-center gap-1.5">
                                 <button
-                                  onClick={(e) => { e.stopPropagation(); handleDeleteImage(img); }}
+                                  onClick={(e) => { e.stopPropagation(); handleDeleteGeneration(img.jobId, "image", img.url); }}
                                   className="w-7 h-7 rounded-lg bg-destructive/20 backdrop-blur-sm flex items-center justify-center hover:bg-destructive/40 transition-colors"
                                 >
                                   <Trash2 className="w-3.5 h-3.5 text-destructive" />
@@ -1925,7 +1925,7 @@ const Dashboard = () => {
                   Partager
                 </button>
                 <button
-                  onClick={() => handleDeleteImage(previewImage)}
+                  onClick={() => handleDeleteGeneration(previewImage.jobId, "image", previewImage.url)}
                   className="flex items-center gap-2 px-3 py-2 rounded-xl bg-destructive/20 text-destructive text-sm font-semibold hover:bg-destructive/30 transition-colors"
                 >
                   <Trash2 className="w-4 h-4" />
