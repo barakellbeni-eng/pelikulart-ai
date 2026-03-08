@@ -286,8 +286,8 @@ const MultiPlan = () => {
                       </AnimatePresence>
 
                       {isLoading && (
-                        <div className="w-full aspect-[3/4] rounded-lg bg-muted/5 flex items-center justify-center border border-border/10">
-                          <Loader2 className="w-3.5 h-3.5 text-primary/20 animate-spin" />
+                        <div className="w-full aspect-[3/4] rounded-lg bg-muted/5 flex flex-col items-center justify-center border border-border/10 gap-2">
+                          <GenerationProgress estimatedTime="~15s" compact />
                         </div>
                       )}
                     </div>
