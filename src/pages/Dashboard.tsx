@@ -2364,6 +2364,15 @@ const Dashboard = () => {
                         </div>
                         <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
                           <div className="absolute top-1.5 right-11 flex items-center gap-1">
+                            {vid.prompt && (
+                              <button
+                                onClick={(e) => { e.stopPropagation(); navigator.clipboard.writeText(vid.prompt || ""); toast.success("Prompt copié !"); }}
+                                className="w-6 h-6 rounded-md bg-white/10 backdrop-blur-sm flex items-center justify-center hover:bg-white/25 transition-colors"
+                                title="Copier le prompt"
+                              >
+                                <ClipboardCopy className="w-3 h-3 text-white" />
+                              </button>
+                            )}
                             <button
                               onClick={(e) => { e.stopPropagation(); handleDownload(vid.url, i); }}
                               className="w-6 h-6 rounded-md bg-white/10 backdrop-blur-sm flex items-center justify-center hover:bg-white/25 transition-colors"
