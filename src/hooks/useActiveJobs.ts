@@ -9,6 +9,7 @@ export interface ActiveJob {
   status: string;
   progress: number;
   result_url: string | null;
+  result_url_original: string | null;
   result_url_temp: string | null;
   credits_used: number;
   created_at: string;
