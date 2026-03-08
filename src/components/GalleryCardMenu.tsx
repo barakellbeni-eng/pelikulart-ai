@@ -1,9 +1,10 @@
 import { useState, useRef, useEffect } from "react";
-import { MoreHorizontal, Download, FolderPlus, ArrowRightLeft, Trash2 } from "lucide-react";
+import { MoreHorizontal, Download, FolderPlus, ArrowRightLeft, Trash2, ClipboardCopy } from "lucide-react";
 
 interface GalleryCardMenuProps {
   onDownload: () => void;
   onDelete: () => void;
+  onCopyPrompt?: () => void;
   onAddToProject?: () => void;
   onMoveProject?: () => void;
 }
