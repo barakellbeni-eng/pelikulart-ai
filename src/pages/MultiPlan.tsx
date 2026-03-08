@@ -128,7 +128,7 @@ const MultiPlan = () => {
     setLoadingPlan(planIndex);
 
     try {
-      const result = await callGenerate(mainResult.url, selectedPlan);
+      const result = await callGenerate(mainResult.url, selectedPlan, planIndex + 1);
       setPlanResults((prev) => ({ ...prev, [planIndex]: result }));
       refreshBalance();
       toast.success(`Plan ${planIndex + 1} généré !`);
