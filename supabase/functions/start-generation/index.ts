@@ -916,12 +916,15 @@ serve(async (req) => {
     }
 
     const isGoogleModel = model_id === "google-direct";
+    const isSunoModel = SUNO_MODELS.has(model_id);
     const isKieModel = !!KIE_MODELS[model_id];
     let provider = "fal";
     let endpoint: string | undefined;
 
     if (isGoogleModel) {
       provider = "lovable-ai";
+    } else if (isSunoModel) {
+      provider = "suno";
     } else if (isKieModel) {
       provider = "kie";
     } else if (tool_type === "image") {
