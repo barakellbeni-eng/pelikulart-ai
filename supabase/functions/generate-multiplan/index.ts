@@ -94,10 +94,10 @@ serve(async (req) => {
 
     // Plan-specific prompts for buttons Plan 1-4
     const planPrompts: Record<number, string> = {
-      1: "Select only the first shot of this image.",
-      2: "Select only the second shot of this image.",
-      3: "Select only the third shot of this image.",
-      4: "Select only the fourth shot of this image.",
+      1: "Select and generate only the first shot of this image.",
+      2: "Select and generate only the second shot of this image.",
+      3: "Select and generate only the third shot of this image.",
+      4: "Select and generate only the fourth shot of this image.",
     };
 
     const prompt = plan_index && planPrompts[plan_index]
