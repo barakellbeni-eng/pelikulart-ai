@@ -29,6 +29,9 @@ interface GalleryItem {
 
 const DELETE_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/delete-generation`;
 
+// Audio player state for gallery cards
+const audioRefs: Record<string, HTMLAudioElement> = {};
+
 const Gallery = () => {
   const { user } = useAuth();
   const { selectedProjectId, projects } = useProjects();
