@@ -1578,7 +1578,7 @@ const Dashboard = () => {
 
       {/* ===== RIGHT GALLERY (UNIFIED) ===== */}
       <div className="flex-1 flex flex-col h-full overflow-hidden">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 px-3 sm:px-5 py-2 sm:py-3">
+        <div className="flex items-center justify-between gap-2 px-3 sm:px-5 py-2 sm:py-3">
           <div className="flex items-center gap-1 glass rounded-lg p-0.5 overflow-x-auto max-w-full scrollbar-hide">
             {([
               { value: "all" as const, label: "Tout", icon: null, count: galleryImages.length + galleryVideos.length + galleryAudios.length },
@@ -1605,35 +1605,21 @@ const Dashboard = () => {
               </button>
             ))}
           </div>
-          <div className="flex items-center gap-1 glass rounded-lg p-0.5">
-            <button
-              onClick={() => setGridSize("feed")}
-              className={`p-1.5 rounded-md transition-colors ${gridSize === "feed" ? "bg-primary/20 text-primary" : "text-muted-foreground hover:text-foreground"}`}
-              title="Vue flux"
-            >
-              <SlidersHorizontal className="w-3.5 h-3.5" />
-            </button>
-            <button
-              onClick={() => setGridSize("small")}
-              className={`p-1.5 rounded-md transition-colors ${gridSize === "small" ? "bg-primary/20 text-primary" : "text-muted-foreground hover:text-foreground"}`}
-              title="Petite grille"
-            >
-              <Grid3X3 className="w-3.5 h-3.5" />
-            </button>
-            <button
-              onClick={() => setGridSize("medium")}
-              className={`p-1.5 rounded-md transition-colors ${gridSize === "medium" ? "bg-primary/20 text-primary" : "text-muted-foreground hover:text-foreground"}`}
-              title="Grille moyenne"
-            >
-              <LayoutGrid className="w-3.5 h-3.5" />
-            </button>
-            <button
-              onClick={() => setGridSize("large")}
-              className={`p-1.5 rounded-md transition-colors ${gridSize === "large" ? "bg-primary/20 text-primary" : "text-muted-foreground hover:text-foreground"}`}
-              title="Grande grille"
-            >
-              <Image className="w-3.5 h-3.5" />
-            </button>
+          <div className="flex items-center gap-1">
+            <ViewModePopover
+              layout={galleryLayout}
+              imageSize={galleryImageSize}
+              onLayoutChange={setGalleryLayout}
+              onImageSizeChange={setGalleryImageSize}
+            />
+            <FiltersPopover
+              typeFilter={galleryFilter}
+              onTypeFilterChange={setGalleryFilter}
+              dateFrom={dateFrom}
+              dateTo={dateTo}
+              onDateFromChange={setDateFrom}
+              onDateToChange={setDateTo}
+            />
           </div>
         </div>
 
