@@ -9,6 +9,7 @@ import {
   Grid3x3,
   ZoomIn,
   ZoomOut,
+  Camera,
 } from "lucide-react";
 import type {
   CardSize,
@@ -16,6 +17,7 @@ import type {
   SortBy,
   DateFilter,
   TypeFilter,
+  SourceFilter,
   GalleryPreferences,
 } from "@/hooks/useGalleryPreferences";
 
