@@ -77,7 +77,6 @@ const Gallery = () => {
     handleMouseDown,
     handleMouseMove,
     handleMouseUp,
-    isDragging,
     dragBox,
     isSelected,
     selectionCount,
@@ -190,9 +189,8 @@ const Gallery = () => {
   const wasDraggingRef = useRef(false);
 
   const handleContainerMouseUp = useCallback((e: React.MouseEvent) => {
-    wasDraggingRef.current = isDragging;
-    handleMouseUp();
-  }, [handleMouseUp, isDragging]);
+    wasDraggingRef.current = handleMouseUp();
+  }, [handleMouseUp]);
 
   const handleCardClick = (item: GalleryItem, e: React.MouseEvent) => {
     // Ignore click if we just finished a drag-select
