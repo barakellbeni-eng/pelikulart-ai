@@ -39,20 +39,17 @@ function OrbitRing({ rotate, vertical, zoom }: { rotate: number; vertical: numbe
     }
   });
 
-  const ringGeometry = useMemo(() => {
+  const ringPoints = useMemo(() => {
     const curve = new THREE.EllipseCurve(0, 0, radius, radius, 0, 2 * Math.PI, false, 0);
-    const points = curve.getPoints(64);
-    const geometry = new THREE.BufferGeometry().setFromPoints(
-      points.map((p) => new THREE.Vector3(p.x, 0, p.y))
-    );
-    return geometry;
+    const pts = curve.getPoints(64);
+    return pts.map((p) => new THREE.Vector3(p.x, 0, p.y));
   }, [radius]);
 
   return (
     <group>
       {/* Orbit ring */}
-      <line ref={ringRef as any} geometry={ringGeometry}>
-        <lineBasicMaterial color="#4466ff" linewidth={2} transparent opacity={0.8} />
+      <group ref={ringRef as any} rotation={[0, 0, 0]}>
+        <Line points={ringPoints} color="#4466ff" lineWidth={2} transparent opacity={0.8} />
       </line>
 
       {/* Camera dot 1 - purple */}
