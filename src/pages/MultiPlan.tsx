@@ -19,8 +19,22 @@ const PLAN_TYPES = [
   { id: "plongee", label: "Plongée", emoji: "🦅" },
   { id: "contre-plongee", label: "Contre-plongée", emoji: "🐜" },
 ] as const;
+const ASPECT_RATIOS = [
+  { id: "1:1", label: "1:1", icon: "◻️" },
+  { id: "16:9", label: "16:9", icon: "🖥️" },
+  { id: "9:16", label: "9:16", icon: "📱" },
+  { id: "4:3", label: "4:3", icon: "📺" },
+  { id: "3:4", label: "3:4", icon: "📋" },
+] as const;
+
+const RESOLUTIONS = [
+  { id: "2K", label: "2K", desc: "Standard" },
+  { id: "4K", label: "4K", desc: "Haute qualité" },
+] as const;
 
 type PlanTypeId = typeof PLAN_TYPES[number]["id"];
+type AspectRatioId = typeof ASPECT_RATIOS[number]["id"];
+type ResolutionId = typeof RESOLUTIONS[number]["id"];
 
 const MultiPlan = () => {
   const { user } = useAuth();
@@ -28,6 +42,8 @@ const MultiPlan = () => {
 
   const [sourceImage, setSourceImage] = useState<string | null>(null);
   const [selectedPlan, setSelectedPlan] = useState<PlanTypeId>("close-up");
+  const [selectedRatio, setSelectedRatio] = useState<AspectRatioId>("1:1");
+  const [selectedResolution, setSelectedResolution] = useState<ResolutionId>("2K");
   const [isGenerating, setIsGenerating] = useState(false);
   const [mainResult, setMainResult] = useState<{ url: string; job_id: string } | null>(null);
   const [planResults, setPlanResults] = useState<Record<number, { url: string; job_id: string }>>({});
@@ -46,7 +62,7 @@ const MultiPlan = () => {
     const resp = await fetch(MULTIPLAN_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ image_url: imageUrl, plan_type: planType }),
+      body: JSON.stringify({ image_url: imageUrl, plan_type: planType, aspect_ratio: selectedRatio, resolution: selectedResolution }),
     });
 
     if (!resp.ok) {
@@ -214,8 +230,54 @@ const MultiPlan = () => {
             ))}
           </div>
         </div>
+        {/* Aspect ratio selector */}
+        <div className="space-y-2">
+          <label className="text-[11px] text-muted-foreground font-semibold uppercase tracking-wider">
+            Ratio
+          </label>
+          <div className="flex flex-wrap gap-2">
+            {ASPECT_RATIOS.map((ratio) => (
+              <motion.button
+                key={ratio.id}
+                onClick={() => setSelectedRatio(ratio.id)}
+                className={`px-4 py-2 rounded-xl text-sm font-medium transition-all flex items-center gap-1.5 ${
+                  selectedRatio === ratio.id
+                    ? "bg-primary text-primary-foreground shadow-lg shadow-primary/25 scale-105"
+                    : "bg-card border border-border text-muted-foreground hover:text-foreground hover:border-primary/30"
+                }`}
+                whileTap={{ scale: 0.97 }}
+              >
+                <span>{ratio.icon}</span>
+                {ratio.label}
+              </motion.button>
+            ))}
+          </div>
+        </div>
 
-        {/* Generate button */}
+        {/* Resolution selector */}
+        <div className="space-y-2">
+          <label className="text-[11px] text-muted-foreground font-semibold uppercase tracking-wider">
+            Qualité
+          </label>
+          <div className="flex gap-2">
+            {RESOLUTIONS.map((res) => (
+              <motion.button
+                key={res.id}
+                onClick={() => setSelectedResolution(res.id)}
+                className={`px-5 py-2 rounded-xl text-sm font-medium transition-all ${
+                  selectedResolution === res.id
+                    ? "bg-primary text-primary-foreground shadow-lg shadow-primary/25 scale-105"
+                    : "bg-card border border-border text-muted-foreground hover:text-foreground hover:border-primary/30"
+                }`}
+                whileTap={{ scale: 0.97 }}
+              >
+                {res.label}
+                <span className="text-[10px] opacity-60 ml-1">{res.desc}</span>
+              </motion.button>
+            ))}
+          </div>
+        </div>
+
         <motion.button
           onClick={handleGenerate}
           disabled={!sourceImage || isGenerating || !user}
