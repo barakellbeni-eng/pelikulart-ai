@@ -25,15 +25,15 @@ const PLAN_TYPE_MAP: Record<string, string> = {
 
 // ── KIE AI helpers ──
 async function kieGenerate(prompt: string, imageUrl: string, imageSize: any, apiKey: string): Promise<string> {
-  // Create task
+  // Create task using nano-banana-2
   const createResp = await fetch(`${KIE_AI_BASE}/api/v1/jobs/createTask`, {
     method: "POST",
     headers: { "Authorization": `Bearer ${apiKey}`, "Content-Type": "application/json" },
     body: JSON.stringify({
-      model: "google/nano-banana-edit",
+      model: KIE_MODEL,
       input: {
         prompt,
-        image_urls: [imageUrl],
+        image_input: [imageUrl],
         image_size: typeof imageSize === "object" ? "1:1" : imageSize,
         output_format: "png",
       },
