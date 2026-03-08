@@ -827,33 +827,72 @@ const Dashboard = () => {
     }
   };
 
-  // Batch download as ZIP (fetches all files, bundles manually)
+  // Batch download as ZIP
   const handleBatchDownload = async () => {
-    const urls: { url: string; name: string }[] = [];
-    let idx = 0;
+    const files: { url: string; name: string; prompt: string }[] = [];
     for (const key of selectedGalleryItems) {
       const img = galleryImages.find((g) => getImageSelectionKey(g) === key);
-      if (img) { urls.push({ url: img.url, name: `pelikulart-${idx++}.png` }); continue; }
+      if (img) {
+        const ext = img.url.includes(".jpg") || img.url.includes(".jpeg") ? "jpg" : "png";
+        const shortPrompt = (img.prompt || "image").replace(/[^a-zA-Z0-9À-ÿ ]/g, "").trim().slice(0, 40).trim();
+        files.push({ url: img.url, name: `Pelikulart image - ${shortPrompt}.${ext}`, prompt: img.prompt || "" });
+        continue;
+      }
       const vid = galleryVideos.find((g) => getVideoSelectionKey(g) === key);
-      if (vid) { urls.push({ url: vid.url, name: `pelikulart-${idx++}.mp4` }); }
+      if (vid) {
+        const shortPrompt = (vid.prompt || "video").replace(/[^a-zA-Z0-9À-ÿ ]/g, "").trim().slice(0, 40).trim();
+        files.push({ url: vid.url, name: `Pelikulart video - ${shortPrompt}.mp4`, prompt: vid.prompt || "" });
+      }
     }
-    if (urls.length === 0) return;
-    toast.info(`Téléchargement de ${urls.length} fichiers…`);
-    for (const { url, name } of urls) {
-      try {
-        const resp = await fetch(url);
-        const blob = await resp.blob();
-        const blobUrl = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = blobUrl;
-        a.download = name;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(blobUrl);
-      } catch { /* skip */ }
+    if (files.length === 0) return;
+
+    toast.info(`Téléchargement de ${files.length} fichiers…`);
+
+    try {
+      // Fetch all files in parallel
+      const blobs = await Promise.all(
+        files.map(async (f) => {
+          const resp = await fetch(f.url);
+          if (!resp.ok) throw new Error("fetch failed");
+          return resp.blob();
+        })
+      );
+
+      // Use dynamic import for JSZip
+      const JSZip = (await import("jszip")).default;
+      const zip = new JSZip();
+      const folder = zip.folder("Pelikulart creator")!;
+
+      // Deduplicate names
+      const usedNames = new Set<string>();
+      for (let i = 0; i < files.length; i++) {
+        let name = files[i].name;
+        if (usedNames.has(name)) {
+          const dotIdx = name.lastIndexOf(".");
+          const base = name.slice(0, dotIdx);
+          const ext = name.slice(dotIdx);
+          let counter = 2;
+          while (usedNames.has(`${base} (${counter})${ext}`)) counter++;
+          name = `${base} (${counter})${ext}`;
+        }
+        usedNames.add(name);
+        folder.file(name, blobs[i]);
+      }
+
+      const zipBlob = await zip.generateAsync({ type: "blob" });
+      const blobUrl = URL.createObjectURL(zipBlob);
+      const a = document.createElement("a");
+      a.href = blobUrl;
+      a.download = "Pelikulart creator.zip";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(blobUrl);
+      toast.success("ZIP téléchargé !");
+    } catch (err) {
+      console.error("ZIP download error:", err);
+      toast.error("Erreur lors du téléchargement");
     }
-    toast.success("Téléchargement terminé !");
   };
 
   // Send exactly 2 images to video as start + end frames
