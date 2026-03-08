@@ -53,23 +53,6 @@ export function useProjects() {
       return;
     }
 
-    // Auto-create "Projet 1" for new users with no projects
-    if (!data || data.length === 0) {
-      const { data: newProject, error: createErr } = await supabase
-        .from("projects")
-        .insert({ user_id: user.id, name: "Projet 1" })
-        .select("id, name, cover_url, created_at, updated_at")
-        .single();
-
-      if (!createErr && newProject) {
-        const p: Project = { ...(newProject as any), generation_count: 0 };
-        setProjects([p]);
-        selectProject(p.id);
-      }
-      setLoading(false);
-      return;
-    }
-
     // Get counts from generation_jobs per project (only completed, non-deleted)
     const { data: counts } = await supabase
       .from("generation_jobs")
