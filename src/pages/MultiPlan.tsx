@@ -38,10 +38,6 @@ const MultiPlan = () => {
   const plansRef = useRef<HTMLDivElement>(null);
   const planResultRef = useRef<HTMLDivElement>(null);
 
-  const scrollTo = (ref: React.RefObject<HTMLDivElement>) => {
-    setTimeout(() => ref.current?.scrollIntoView({ behavior: "smooth", block: "center" }), 300);
-  };
-
   const callGenerate = async (imageUrl: string, planType: string) => {
     const { data: sessionData } = await supabase.auth.getSession();
     const token = sessionData?.session?.access_token;
