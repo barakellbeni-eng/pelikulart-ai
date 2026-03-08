@@ -1664,7 +1664,7 @@ const Dashboard = () => {
               );
             }
 
-            if (gridSize === "feed") {
+            if (galleryLayout === "row") {
               // ===== FEED VIEW (like Kling AI) =====
               return (
                 <div className="max-w-2xl mx-auto space-y-6">
@@ -1852,7 +1852,7 @@ const Dashboard = () => {
             }
 
             return (
-              <div className={`grid gap-3 ${gridSize === "small" ? "grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8" : gridSize === "large" ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-3" : "grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5"}`}>
+              <div className={`grid gap-3 ${galleryImageSize === "mini" ? "grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8" : galleryImageSize === "large" ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-3" : galleryImageSize === "small" ? "grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5" : "grid-cols-2 md:grid-cols-3 lg:grid-cols-4"}`}>
                 {/* Loading placeholders */}
                 {isGenerating && (
                   activeTab === "audio" ? (
