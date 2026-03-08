@@ -58,7 +58,7 @@ serve(async (req) => {
     const adminClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
     const body = await req.json();
-    const { image_url, plan_type, project_id } = body;
+    const { image_url, plan_type, project_id, aspect_ratio = "1:1", resolution = "2K" } = body;
 
     if (!image_url) {
       return new Response(
@@ -79,10 +79,27 @@ serve(async (req) => {
       );
     }
 
+    // Resolution mapping
+    const resolutionMap: Record<string, { width: number; height: number }> = {
+      "2K": { width: 2048, height: 2048 },
+      "4K": { width: 4096, height: 4096 },
+    };
+
+    // Aspect ratio to image_size
+    const ratioSizes: Record<string, Record<string, { width: number; height: number }>> = {
+      "1:1":  { "2K": { width: 2048, height: 2048 }, "4K": { width: 4096, height: 4096 } },
+      "16:9": { "2K": { width: 2048, height: 1152 }, "4K": { width: 3840, height: 2160 } },
+      "9:16": { "2K": { width: 1152, height: 2048 }, "4K": { width: 2160, height: 3840 } },
+      "4:3":  { "2K": { width: 2048, height: 1536 }, "4K": { width: 4096, height: 3072 } },
+      "3:4":  { "2K": { width: 1536, height: 2048 }, "4K": { width: 3072, height: 4096 } },
+    };
+
+    const imageSize = ratioSizes[aspect_ratio]?.[resolution] || ratioSizes["1:1"]["2K"];
+
     const planLabel = PLAN_TYPE_MAP[plan_type] || plan_type;
     const prompt = `generate 4 different ${planLabel} shot of this exact image, Keep the same subject, same scene, same colors, same lighting.`;
 
-    console.log(`Multi-plan: generating ${planLabel} via Fal AI nano-banana-pro/edit`);
+    console.log(`Multi-plan: generating ${planLabel} ${aspect_ratio} ${resolution} via Fal AI`);
 
     // Call Fal AI nano-banana-pro/edit
     const falResp = await fetch(FAL_ENDPOINT, {
@@ -96,6 +113,7 @@ serve(async (req) => {
         image_urls: [image_url],
         num_images: 1,
         output_format: "png",
+        image_size: imageSize,
       }),
     });
 
