@@ -22,8 +22,6 @@ import {
   ChevronDown,
   User,
   Wand2,
-  Grid3X3,
-  LayoutGrid,
   Search,
   Heart,
   SlidersHorizontal,
