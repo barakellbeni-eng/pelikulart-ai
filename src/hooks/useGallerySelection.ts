@@ -5,6 +5,7 @@ export function useGallerySelection(itemIds: string[]) {
   const [isDragging, setIsDragging] = useState(false);
   const dragStart = useRef<{ x: number; y: number } | null>(null);
   const dragRect = useRef<{ x: number; y: number; w: number; h: number } | null>(null);
+  const dragStartedOnCard = useRef(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const [dragBox, setDragBox] = useState<{ x: number; y: number; w: number; h: number } | null>(null);
 
@@ -29,12 +30,12 @@ export function useGallerySelection(itemIds: string[]) {
   const clearSelection = useCallback(() => setSelectedIds(new Set()), []);
 
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
-    // Only start drag on the container background, not on cards
-    if ((e.target as HTMLElement).closest("[data-gallery-card]")) return;
+    // Start drag from anywhere (cards included) with left button
     if (e.button !== 0) return;
     const rect = containerRef.current?.getBoundingClientRect();
     if (!rect) return;
     dragStart.current = { x: e.clientX, y: e.clientY };
+    dragStartedOnCard.current = !!(e.target as HTMLElement).closest("[data-gallery-card]");
   }, []);
 
   const handleMouseMove = useCallback((e: React.MouseEvent) => {
