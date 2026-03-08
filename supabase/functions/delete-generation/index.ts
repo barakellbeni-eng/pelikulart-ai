@@ -88,26 +88,48 @@ serve(async (req) => {
       );
     }
 
-    // Collect all R2 keys to delete
-    const r2KeysToDelete: string[] = [];
+    // Collect keys + URL variants to clean legacy rows reliably
+    const r2KeysToDelete = new Set<string>();
+    const imageUrlsToDelete = new Set<string>();
 
-    if (job.result_url?.startsWith("r2:")) {
-      r2KeysToDelete.push(job.result_url.slice(3));
-    }
+    const addLookupCandidates = (value?: string | null) => {
+      if (!value || typeof value !== "string") return;
+      const raw = value.trim();
+      if (!raw) return;
+
+      imageUrlsToDelete.add(raw);
+
+      if (raw.startsWith("r2:")) {
+        const key = raw.slice(3);
+        if (!key) return;
+        r2KeysToDelete.add(key);
+        imageUrlsToDelete.add(key);
+        imageUrlsToDelete.add(`r2:${key}`);
+        return;
+      }
+
+      // Old rows may store raw key without r2: prefix
+      if (!/^https?:\/\//i.test(raw)) {
+        r2KeysToDelete.add(raw);
+        imageUrlsToDelete.add(`r2:${raw}`);
+      }
+    };
+
+    addLookupCandidates(job.result_url);
 
     // Check result_metadata for additional R2 keys (multi-image generations)
     const metadata = job.result_metadata as Record<string, any> | null;
+    if (metadata?.r2_key && typeof metadata.r2_key === "string") {
+      addLookupCandidates(metadata.r2_key);
+    }
     if (metadata?.r2_keys && Array.isArray(metadata.r2_keys)) {
       for (const key of metadata.r2_keys) {
-        const cleanKey = typeof key === "string" && key.startsWith("r2:") ? key.slice(3) : key;
-        if (typeof cleanKey === "string" && !r2KeysToDelete.includes(cleanKey)) {
-          r2KeysToDelete.push(cleanKey);
-        }
+        if (typeof key === "string") addLookupCandidates(key);
       }
     }
 
     // Delete R2 files in parallel (non-blocking — don't fail if R2 delete fails)
-    const r2Deletions = r2KeysToDelete.map(async (key) => {
+    const r2Deletions = Array.from(r2KeysToDelete).map(async (key) => {
       try {
         await deleteFromR2(key);
       } catch (e) {
@@ -115,16 +137,14 @@ serve(async (req) => {
       }
     });
 
-    // Also delete matching entries from the legacy 'generations' table
-    const generationsDeletion = (async () => {
-      for (const key of r2KeysToDelete) {
-        await adminClient
+    // Delete matching entries from legacy 'generations' table with both formats
+    const generationsDeletion = imageUrlsToDelete.size > 0
+      ? adminClient
           .from("generations")
           .delete()
           .eq("user_id", userId)
-          .eq("image_url", `r2:${key}`);
-      }
-    })();
+          .in("image_url", Array.from(imageUrlsToDelete))
+      : Promise.resolve({ error: null as unknown });
 
     // Soft-delete the job
     const jobSoftDelete = adminClient
@@ -133,7 +153,22 @@ serve(async (req) => {
       .eq("id", job_id)
       .eq("user_id", userId);
 
-    await Promise.all([...r2Deletions, generationsDeletion, jobSoftDelete]);
+    const [, generationsDeleteRes, jobSoftDeleteRes] = await Promise.all([
+      Promise.all(r2Deletions),
+      generationsDeletion,
+      jobSoftDelete,
+    ]);
+
+    if ((generationsDeleteRes as { error?: unknown })?.error) {
+      console.error("Legacy generations delete error:", (generationsDeleteRes as { error?: unknown }).error);
+    }
+
+    if (jobSoftDeleteRes.error) {
+      return new Response(
+        JSON.stringify({ error: "Erreur lors de la suppression en base" }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
 
     return new Response(
       JSON.stringify({ success: true }),
