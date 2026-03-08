@@ -735,7 +735,7 @@ const Dashboard = () => {
 
   const DELETE_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/delete-generation`;
 
-  const handleDeleteImage = async (img: GeneratedImage) => {
+  const handleDeleteImage = async (img: GeneratedImage, options?: { silent?: boolean }) => {
     if (!user) return;
     try {
       const { data: sessionData } = await supabase.auth.getSession();
@@ -751,14 +751,20 @@ const Dashboard = () => {
         await supabase.from("generations").delete().eq("user_id", user.id).eq("image_url", img.url);
       }
       setGalleryImages((prev) => prev.filter((g) => g.url !== img.url));
+      setSelectedGalleryItems((prev) => {
+        const next = new Set(prev);
+        next.delete(getImageSelectionKey(img));
+        return next;
+      });
       setPreviewImage(null);
-      toast.success("Image supprimée définitivement");
-    } catch {
-      toast.error("Erreur lors de la suppression");
+      if (!options?.silent) toast.success("Image supprimée définitivement");
+    } catch (error) {
+      if (!options?.silent) toast.error("Erreur lors de la suppression");
+      throw error;
     }
   };
 
-  const handleDeleteVideo = async (vid: GeneratedVideo) => {
+  const handleDeleteVideo = async (vid: GeneratedVideo, options?: { silent?: boolean }) => {
     if (!user) return;
     try {
       const { data: sessionData } = await supabase.auth.getSession();
@@ -773,10 +779,48 @@ const Dashboard = () => {
         await supabase.from("generations").delete().eq("user_id", user.id).eq("image_url", vid.url);
       }
       setGalleryVideos((prev) => prev.filter((g) => g.url !== vid.url));
+      setSelectedGalleryItems((prev) => {
+        const next = new Set(prev);
+        next.delete(getVideoSelectionKey(vid));
+        return next;
+      });
       setPreviewVideo(null);
-      toast.success("Vidéo supprimée définitivement");
-    } catch {
-      toast.error("Erreur lors de la suppression");
+      if (!options?.silent) toast.success("Vidéo supprimée définitivement");
+    } catch (error) {
+      if (!options?.silent) toast.error("Erreur lors de la suppression");
+      throw error;
+    }
+  };
+
+  const handleBatchDeleteSelection = async () => {
+    if (!user || batchDeletingSelection || selectionCount === 0) return;
+
+    const imagesToDelete = galleryImages.filter((img) => selectedGalleryItems.has(getImageSelectionKey(img)));
+    const videosToDelete = galleryVideos.filter((vid) => selectedGalleryItems.has(getVideoSelectionKey(vid)));
+
+    if (imagesToDelete.length + videosToDelete.length === 0) {
+      clearSelection();
+      return;
+    }
+
+    setBatchDeletingSelection(true);
+
+    try {
+      const results = await Promise.allSettled([
+        ...imagesToDelete.map((img) => handleDeleteImage(img, { silent: true })),
+        ...videosToDelete.map((vid) => handleDeleteVideo(vid, { silent: true })),
+      ]);
+
+      const successCount = results.filter((r) => r.status === "fulfilled").length;
+      const totalCount = results.length;
+
+      if (successCount === totalCount) {
+        toast.success(`${successCount} génération(s) supprimée(s)`);
+      } else {
+        toast.warning(`${successCount}/${totalCount} génération(s) supprimée(s)`);
+      }
+    } finally {
+      setBatchDeletingSelection(false);
     }
   };
 
