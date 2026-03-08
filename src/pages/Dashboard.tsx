@@ -1347,9 +1347,15 @@ const Dashboard = () => {
           {/* Balance indicator */}
           <div className="text-center">
             <span className="text-[11px] text-muted-foreground">
-              Il vous reste <span className="font-bold text-foreground">{balance}</span> cauris
-              {balance < calculateCaurisCost(selectedModel, modelSettings, numImages) && (
-                <> · <a href="/pricing" className="text-primary underline underline-offset-2 font-semibold">Recharger</a></>
+              {user ? (
+                <>
+                  Il vous reste <span className="font-bold text-foreground">{balance}</span> cauris
+                  {balance < calculateCaurisCost(selectedModel, modelSettings, numImages) && (
+                    <> · <a href="/pricing" className="text-primary underline underline-offset-2 font-semibold">Recharger</a></>
+                  )}
+                </>
+              ) : (
+                <a href="/auth" className="text-primary underline underline-offset-2 font-semibold">Connecte-toi pour générer</a>
               )}
             </span>
           </div>
