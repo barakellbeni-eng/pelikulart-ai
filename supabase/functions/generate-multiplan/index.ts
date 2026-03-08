@@ -10,6 +10,17 @@ const corsHeaders = {
 
 const LOVABLE_AI_ENDPOINT = "https://ai.gateway.lovable.dev/v1/chat/completions";
 
+const PLAN_TYPE_MAP: Record<string, string> = {
+  "close-up": "close-up shot",
+  "macro": "macro shot",
+  "serre": "tight/medium close-up shot",
+  "americain": "american shot (knee-level framing)",
+  "large": "wide shot",
+  "tres-large": "extreme wide shot",
+  "plongee": "high-angle (bird's eye) shot",
+  "contre-plongee": "low-angle (worm's eye) shot",
+};
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -47,7 +58,7 @@ serve(async (req) => {
     const adminClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
     const body = await req.json();
-    const { image_url, plan_type, mode, plan_index, project_id } = body;
+    const { image_url, plan_type, project_id } = body;
 
     if (!image_url) {
       return new Response(
@@ -56,8 +67,7 @@ serve(async (req) => {
       );
     }
 
-    // Cost: 3 cauris for "vary" (4 images), 2 cauris for single plan
-    const cost = mode === "vary" ? 3 : 2;
+    const cost = 2;
     const { data: deductResult, error: deductError } = await adminClient.rpc("deduct_cauris", {
       p_user_id: userId, p_amount: cost,
     });
@@ -69,153 +79,76 @@ serve(async (req) => {
       );
     }
 
-    const planTypeMap: Record<string, string> = {
-      "close-up": "close-up shot",
-      "macro": "macro shot",
-      "serre": "tight/medium close-up shot",
-      "americain": "american shot (knee-level framing)",
-      "large": "wide shot",
-      "tres-large": "extreme wide shot",
-      "plongee": "high-angle (bird's eye) shot",
-      "contre-plongee": "low-angle (worm's eye) shot",
-    };
+    const planLabel = PLAN_TYPE_MAP[plan_type] || plan_type;
+    const prompt = `Recreate this exact image as a cinematic ${planLabel}. Keep the same subject, same scene, same colors, same lighting. Only adapt the framing and camera angle to match a ${planLabel}. Output one high-quality cinematic image.`;
 
-    const planLabel = planTypeMap[plan_type] || plan_type;
+    console.log(`Multi-plan: generating ${planLabel}`);
 
-    const angleVariations = [
-      "from the front, slightly to the left",
-      "from the right side, 45 degrees",
-      "from a higher angle, looking down",
-      "from a lower angle, looking up",
-    ];
+    const messages = [{
+      role: "user",
+      content: [
+        { type: "text", text: prompt },
+        { type: "image_url", image_url: { url: image_url } },
+      ],
+    }];
 
-    let prompt: string;
-    if (mode === "vary") {
-      // prompt will be customized per iteration below
-      prompt = "";
-    } else {
-      prompt = `Generate only the ${plan_index === 1 ? "first" : plan_index === 2 ? "second" : plan_index === 3 ? "third" : "fourth"} cinematic shot of this image as a ${planLabel}. Keep the same subject, same scene, same lighting, change only the camera angle. Output one high-quality image.`;
-    }
+    let imageCandidates: string[] = [];
+    const MAX_RETRIES = 2;
 
-    const numImages = mode === "vary" ? 4 : 1;
-    const savedImages: { url: string; job_id: string }[] = [];
+    for (let attempt = 0; attempt <= MAX_RETRIES && imageCandidates.length === 0; attempt++) {
+      if (attempt > 0) console.log(`Retry attempt ${attempt}`);
 
-    for (let i = 0; i < numImages; i++) {
-      const iterationPrompt = mode === "vary"
-        ? `Generate a different cinematic camera angle of this exact image as a ${planLabel}, shot ${angleVariations[i]}. Keep the same subject, same scene, same lighting. Only the camera angle changes. Output one high-quality cinematic image.`
-        : prompt;
+      const aiResp = await fetch(LOVABLE_AI_ENDPOINT, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "google/gemini-2.5-flash-image",
+          messages,
+          modalities: ["image", "text"],
+        }),
+      });
 
-      const messages = [{
-        role: "user",
-        content: [
-          { type: "text", text: iterationPrompt },
-          { type: "image_url", image_url: { url: image_url } },
-        ],
-      }];
-
-      console.log(`Multi-plan: generating image ${i + 1}/${numImages}`);
-
-      let imageCandidates: string[] = [];
-      const MAX_RETRIES = 2;
-
-      for (let attempt = 0; attempt <= MAX_RETRIES && imageCandidates.length === 0; attempt++) {
-        if (attempt > 0) console.log(`Retry attempt ${attempt} for image ${i + 1}`);
-
-        const aiResp = await fetch(LOVABLE_AI_ENDPOINT, {
-          method: "POST",
-          headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
-          body: JSON.stringify({
-            model: "google/gemini-2.5-flash-image",
-            messages,
-            modalities: ["image", "text"],
-          }),
-        });
-
-        if (!aiResp.ok) {
-          const errText = await aiResp.text();
-          console.error("AI error:", aiResp.status, errText);
-          if (aiResp.status === 429) {
-            await adminClient.rpc("add_cauris", { p_user_id: userId, p_amount: cost });
-            return new Response(JSON.stringify({ error: "Limite de requêtes atteinte." }), {
-              status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
-            });
-          }
-          if (aiResp.status === 402) {
-            await adminClient.rpc("add_cauris", { p_user_id: userId, p_amount: cost });
-            return new Response(JSON.stringify({ error: "Crédits IA insuffisants." }), {
-              status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
-            });
-          }
-          break;
+      if (!aiResp.ok) {
+        const errText = await aiResp.text();
+        console.error("AI error:", aiResp.status, errText);
+        if (aiResp.status === 429 || aiResp.status === 402) {
+          await adminClient.rpc("add_cauris", { p_user_id: userId, p_amount: cost });
+          return new Response(
+            JSON.stringify({ error: aiResp.status === 429 ? "Limite de requêtes atteinte." : "Crédits IA insuffisants." }),
+            { status: aiResp.status, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+          );
         }
+        break;
+      }
 
-        const aiData = await aiResp.json();
-        const choice = aiData?.choices?.[0];
+      const aiData = await aiResp.json();
+      const choice = aiData?.choices?.[0];
 
-        const messageImages = choice?.message?.images;
-        if (Array.isArray(messageImages)) {
-          for (const img of messageImages) {
-            const url = img?.image_url?.url;
-            if (typeof url === "string" && url) imageCandidates.push(url);
-          }
-        }
-
-        const messageContent = choice?.message?.content;
-        if (Array.isArray(messageContent)) {
-          for (const part of messageContent) {
-            const url = part?.image_url?.url;
-            if (part?.type === "image_url" && typeof url === "string" && url) imageCandidates.push(url);
-          }
-        }
-
-        if (typeof messageContent === "string" && messageContent.startsWith("data:image")) {
-          imageCandidates.push(messageContent);
+      // Extract images from all possible response formats
+      const messageImages = choice?.message?.images;
+      if (Array.isArray(messageImages)) {
+        for (const img of messageImages) {
+          const url = img?.image_url?.url;
+          if (typeof url === "string" && url) imageCandidates.push(url);
         }
       }
 
-      // Take first candidate
-      const imageSource = imageCandidates[0];
-      if (!imageSource) continue;
-
-      try {
-        let storageKey: string;
-        if (imageSource.startsWith("http://") || imageSource.startsWith("https://")) {
-          const resp = await fetch(imageSource);
-          if (!resp.ok) continue;
-          const bytes = new Uint8Array(await resp.arrayBuffer());
-          storageKey = await uploadBytes(bytes, userId, "image/png", "png");
-        } else {
-          const raw = imageSource.replace(/^data:image\/\w+;base64,/, "");
-          const binaryStr = atob(raw);
-          const bytes = new Uint8Array(binaryStr.length);
-          for (let j = 0; j < binaryStr.length; j++) bytes[j] = binaryStr.charCodeAt(j);
-          storageKey = await uploadBytes(bytes, userId, "image/png", "png");
+      const messageContent = choice?.message?.content;
+      if (Array.isArray(messageContent)) {
+        for (const part of messageContent) {
+          if (part?.type === "image_url" && typeof part?.image_url?.url === "string") {
+            imageCandidates.push(part.image_url.url);
+          }
         }
+      }
 
-        const publicUrl = getPublicUrl(storageKey);
-        const internalPrompt = mode === "vary" ? `Multi-Plan ${planLabel} #${i + 1}` : `Multi-Plan ${planLabel} Plan ${plan_index}`;
-
-        // Save to generation_jobs
-        const { data: jobData, error: jobError } = await adminClient.from("generation_jobs").insert({
-          user_id: userId,
-          tool_type: "image",
-          model: "nano-banana",
-          prompt: internalPrompt,
-          provider: "lovable-ai",
-          status: "completed",
-          result_url: publicUrl,
-          credits_used: mode === "vary" ? 1 : cost,
-          completed_at: new Date().toISOString(),
-          project_id: project_id || null,
-        }).select("id").single();
-
-        savedImages.push({ url: publicUrl, job_id: jobData?.id || "" });
-      } catch (uploadErr) {
-        console.error("Upload error:", uploadErr);
+      if (typeof messageContent === "string" && messageContent.startsWith("data:image")) {
+        imageCandidates.push(messageContent);
       }
     }
 
-    if (savedImages.length === 0) {
+    const imageSource = imageCandidates[0];
+    if (!imageSource) {
       await adminClient.rpc("add_cauris", { p_user_id: userId, p_amount: cost });
       return new Response(
         JSON.stringify({ error: "Aucune image générée. Réessayez." }),
@@ -223,8 +156,45 @@ serve(async (req) => {
       );
     }
 
+    // Upload to storage
+    let storageKey: string;
+    if (imageSource.startsWith("http://") || imageSource.startsWith("https://")) {
+      const resp = await fetch(imageSource);
+      if (!resp.ok) {
+        await adminClient.rpc("add_cauris", { p_user_id: userId, p_amount: cost });
+        return new Response(
+          JSON.stringify({ error: "Erreur de téléchargement de l'image." }),
+          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+      const bytes = new Uint8Array(await resp.arrayBuffer());
+      storageKey = await uploadBytes(bytes, userId, "image/png", "png");
+    } else {
+      const raw = imageSource.replace(/^data:image\/\w+;base64,/, "");
+      const binaryStr = atob(raw);
+      const bytes = new Uint8Array(binaryStr.length);
+      for (let j = 0; j < binaryStr.length; j++) bytes[j] = binaryStr.charCodeAt(j);
+      storageKey = await uploadBytes(bytes, userId, "image/png", "png");
+    }
+
+    const publicUrl = getPublicUrl(storageKey);
+
+    // Save to generation_jobs
+    const { data: jobData } = await adminClient.from("generation_jobs").insert({
+      user_id: userId,
+      tool_type: "image",
+      model: "nano-banana",
+      prompt: `Multi-Plan ${planLabel}`,
+      provider: "lovable-ai",
+      status: "completed",
+      result_url: publicUrl,
+      credits_used: cost,
+      completed_at: new Date().toISOString(),
+      project_id: project_id || null,
+    }).select("id").single();
+
     return new Response(
-      JSON.stringify({ images: savedImages, new_balance: deductResult }),
+      JSON.stringify({ image: { url: publicUrl, job_id: jobData?.id || "" }, new_balance: deductResult }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   } catch (e) {
