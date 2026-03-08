@@ -196,18 +196,18 @@ const Gallery = () => {
     }
   };
 
-  // --- Grid classes based on card size & view type ---
+  // --- Grid classes based on zoom level & view type ---
+  const zoomColumns: Record<number, { masonry: string; grid: string }> = {
+    1: { masonry: "columns-4 md:columns-5 lg:columns-6 gap-1.5 space-y-1.5", grid: "grid grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-1.5" },
+    2: { masonry: "columns-3 md:columns-4 lg:columns-5 gap-2 space-y-2", grid: "grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2" },
+    3: { masonry: "columns-2 md:columns-3 gap-3 space-y-3", grid: "grid grid-cols-2 md:grid-cols-3 gap-3" },
+    4: { masonry: "columns-2 md:columns-2 gap-4 space-y-4", grid: "grid grid-cols-2 md:grid-cols-2 gap-4" },
+    5: { masonry: "columns-1 md:columns-2 gap-4 space-y-4", grid: "grid grid-cols-1 md:grid-cols-2 gap-4" },
+  };
   const gridClass = useMemo(() => {
-    if (prefs.viewType === "masonry") {
-      if (prefs.cardSize === "S") return "columns-3 md:columns-4 lg:columns-5 gap-2 space-y-2";
-      if (prefs.cardSize === "L") return "columns-1 md:columns-2 gap-4 space-y-4";
-      return "columns-2 md:columns-3 gap-3 space-y-3";
-    }
-    // Grid view
-    if (prefs.cardSize === "S") return "grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2";
-    if (prefs.cardSize === "L") return "grid grid-cols-1 md:grid-cols-2 gap-4";
-    return "grid grid-cols-2 md:grid-cols-3 gap-3";
-  }, [prefs.cardSize, prefs.viewType]);
+    const z = zoomColumns[prefs.zoom] || zoomColumns[3];
+    return prefs.viewType === "masonry" ? z.masonry : z.grid;
+  }, [prefs.zoom, prefs.viewType]);
 
   const isGrid = prefs.viewType === "grid";
 
