@@ -35,6 +35,11 @@ const DELETE_GENERATION_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1
 
 // ─── Helpers ───
 
+function normalizeMediaRef(url: string): string {
+  if (!url) return "";
+  return url.startsWith("r2:") ? url.slice(3) : url;
+}
+
 function groupByDate(items: MediaItem[]): { label: string; items: MediaItem[] }[] {
   const groups = new Map<string, MediaItem[]>();
   const now = new Date();
