@@ -1423,44 +1423,46 @@ const Dashboard = () => {
             ))}
           </div>
 
-          {/* Model Selector */}
-          <div className="space-y-2">
-            <label className="text-[11px] text-muted-foreground font-semibold uppercase tracking-wider">
-              Modèle
-            </label>
-            <div className="relative">
-              <button
-                onClick={() => setShowModelDropdown(!showModelDropdown)}
-                className="w-full flex items-center gap-2.5 glass glass-hover rounded-xl px-3 py-2.5"
-              >
+          {activeTab === "video" ? (
+            /* ═══════════════════════════════════════════════
+               VIDEO-SPECIFIC SETTINGS LAYOUT (matches reference)
+               ═══════════════════════════════════════════════ */
+            <>
+              {/* Hero card with model cover */}
+              <div className="relative rounded-2xl overflow-hidden h-40">
                 {getBrandLogo(selectedModel.brand, selectedModel.id) ? (
-                  <img src={getBrandLogo(selectedModel.brand, selectedModel.id)!} alt={selectedModel.brand} className="w-8 h-8 rounded-md object-contain shrink-0 pointer-events-none select-none" draggable={false} onContextMenu={(e) => e.preventDefault()} />
-                ) : (
-                  <span className="w-8 h-8 rounded-md bg-white/[0.06] flex items-center justify-center text-[11px] font-bold text-muted-foreground shrink-0 uppercase">
-                    {selectedModel.brand.slice(0, 2)}
-                  </span>
-                )}
-                <div className="flex-1 text-left">
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-sm font-medium text-foreground leading-tight">
-                      {selectedModel.name}
-                    </span>
-                    {selectedModel.recommended && (
-                      <span className="shrink-0 px-1.5 py-0.5 rounded-full text-[7px] font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/20">
-                        ★
-                      </span>
-                    )}
+                  <div className="absolute inset-0 bg-gradient-to-br from-white/[0.08] to-white/[0.02] flex items-end">
+                    <img
+                      src={getBrandLogo(selectedModel.brand, selectedModel.id)!}
+                      alt={selectedModel.brand}
+                      className="absolute top-3 right-3 w-12 h-12 rounded-lg object-contain pointer-events-none select-none opacity-60"
+                      draggable={false}
+                      onContextMenu={(e) => e.preventDefault()}
+                    />
                   </div>
+                ) : (
+                  <div className="absolute inset-0 bg-gradient-to-br from-white/[0.08] to-white/[0.02]" />
+                )}
+                {referencePreviews[0] && (
+                  <img src={referencePreviews[0]} alt="cover" className="absolute inset-0 w-full h-full object-cover" />
+                )}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                <div className="absolute bottom-3 left-3 z-10">
+                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">
+                    {selectedModel.brand}
+                  </span>
+                  <p className="text-sm font-semibold text-white/90">{selectedModel.name}</p>
                 </div>
-                <span className="text-[10px] font-bold text-primary mr-1">{calculateCaurisCost(selectedModel, modelSettings, numImages)} c</span>
-                <span className="text-[9px] text-muted-foreground mr-1">⏱ {selectedModel.estimatedTime}</span>
-                <ChevronDown
-                  className={`w-4 h-4 text-muted-foreground transition-transform ${
-                    showModelDropdown ? "rotate-180" : ""
-                  }`}
-                />
-              </button>
+                <button
+                  onClick={() => setShowModelDropdown(!showModelDropdown)}
+                  className="absolute top-3 right-3 z-10 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary text-primary-foreground text-[11px] font-bold hover:bg-primary/90 transition-colors"
+                >
+                  <Wand2 className="w-3 h-3" />
+                  Change
+                </button>
+              </div>
 
+              {/* Model Dropdown (shared) */}
               <AnimatePresence>
                 {showModelDropdown && (
                   <motion.div
@@ -1469,7 +1471,7 @@ const Dashboard = () => {
                     exit={{ opacity: 0, x: -8 }}
                     className="fixed left-4 right-4 md:left-[288px] md:right-auto top-[120px] md:w-72 bg-card border border-white/[0.08] rounded-xl p-1 z-[100] max-h-[70vh] overflow-y-auto shadow-2xl"
                   >
-                    {getModelsByTypeGrouped(activeTab === "video" ? "video" : activeTab === "audio" ? "audio" : "image").map((group) => (
+                    {getModelsByTypeGrouped("video").map((group) => (
                       <div key={group.brand}>
                         <div className="px-2.5 py-1.5 text-[9px] font-bold uppercase tracking-widest text-muted-foreground/50 sticky top-0 bg-card z-10">
                           {group.brand}
@@ -1479,9 +1481,7 @@ const Dashboard = () => {
                             key={model.id}
                             onClick={() => handleSelectModel(model)}
                             className={`w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-left transition-colors ${
-                              selectedModel.id === model.id
-                                ? "bg-primary/10"
-                                : "hover:bg-white/[0.04]"
+                              selectedModel.id === model.id ? "bg-primary/10" : "hover:bg-white/[0.04]"
                             }`}
                           >
                             {getBrandLogo(model.brand, model.id) ? (
@@ -1492,9 +1492,7 @@ const Dashboard = () => {
                               </span>
                             )}
                             <div className="flex items-center gap-1.5 flex-1 min-w-0">
-                              <span className="text-xs font-medium text-foreground whitespace-nowrap">
-                                {model.name}
-                              </span>
+                              <span className="text-xs font-medium text-foreground whitespace-nowrap">{model.name}</span>
                               {model.recommended && (
                                 <span className="shrink-0 px-1.5 py-0.5 rounded-full text-[8px] font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/20">
                                   Populaire
@@ -1503,13 +1501,9 @@ const Dashboard = () => {
                             </div>
                             <div className="flex items-center gap-1.5 shrink-0">
                               <span className="text-[9px] text-muted-foreground/60">⏱ {model.estimatedTime}</span>
-                              <span className="text-[10px] text-muted-foreground font-medium">
-                                {model.caurisCost}c
-                              </span>
+                              <span className="text-[10px] text-muted-foreground font-medium">{model.caurisCost}c</span>
                             </div>
-                            {selectedModel.id === model.id && (
-                              <Check className="w-3.5 h-3.5 text-primary shrink-0" />
-                            )}
+                            {selectedModel.id === model.id && <Check className="w-3.5 h-3.5 text-primary shrink-0" />}
                           </button>
                         ))}
                       </div>
@@ -1517,239 +1511,535 @@ const Dashboard = () => {
                   </motion.div>
                 )}
               </AnimatePresence>
-            </div>
-          </div>
 
-          {/* Model-Specific Settings (exclude ratio/resolution/image_size — shown below prompt) */}
-          <div className="space-y-3">
-            <label className="text-[11px] text-muted-foreground font-semibold uppercase tracking-wider">
-              Réglages — {selectedModel.brand} {selectedModel.name}
-            </label>
-            <div className="space-y-3">
-              {selectedModel.settings
-                .filter((s) => s.key !== "aspect_ratio" && s.key !== "image_size" && s.key !== "resolution")
-                .map((setting) => renderSetting(setting))}
-            </div>
-          </div>
-
-          {/* Image Reference (only for image-to-image models) */}
-          {selectedModel.supportsImageInput && (
-            <div className="space-y-2">
-              <label className="text-[11px] text-muted-foreground font-semibold uppercase tracking-wider flex items-center justify-between">
-                <span>Images source ({referencePreviews.length}/{selectedModel.maxInputImages || 1})</span>
-                {referencePreviews.length > 0 && (
-                  <button onClick={() => removeReferenceImage()} className="text-[10px] text-destructive hover:underline">
-                    Tout supprimer
-                  </button>
-                )}
-              </label>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={handleImageUpload}
-              />
-              <div
-                className={`grid grid-cols-3 gap-2 rounded-xl transition-all ${isDraggingOverUpload ? "ring-2 ring-primary/50 bg-primary/5" : ""}`}
-                onDragOver={(e) => { if (e.dataTransfer.types.includes("text/x-gallery-image")) { e.preventDefault(); setIsDraggingOverUpload(true); } }}
-                onDragLeave={() => setIsDraggingOverUpload(false)}
-                onDrop={handleDropOnUpload}
-              >
-                {referencePreviews.map((preview, idx) => (
-                  <motion.div
-                    key={`img-${idx}`}
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="relative aspect-square rounded-xl overflow-hidden border border-white/[0.08] group"
+              {/* Start frame / End frame */}
+              <div className="grid grid-cols-2 gap-3">
+                {["Start frame", "End frame"].map((label, idx) => (
+                  <div
+                    key={label}
+                    className="relative flex flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-border/60 bg-white/[0.02] hover:border-primary/30 hover:bg-white/[0.04] transition-all cursor-pointer aspect-[4/3]"
+                    onClick={() => {
+                      if (idx === 0) setShowMediaPicker(true);
+                    }}
                   >
-                    <img
-                      src={preview}
-                      alt={`@img${idx + 1}`}
-                      className="w-full h-full object-cover"
-                    />
-                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent px-1.5 py-1">
-                      <span className="text-[10px] font-mono text-white/90">@img{idx + 1}</span>
-                    </div>
-                    <button
-                      onClick={() => removeReferenceImage(idx)}
-                      className="absolute top-1 right-1 w-5 h-5 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      <X className="w-3 h-3 text-white" />
-                    </button>
-                  </motion.div>
+                    <span className="absolute top-2 right-2 text-[9px] text-muted-foreground/60 font-medium">Optional</span>
+                    {idx === 0 && referencePreviews[0] ? (
+                      <>
+                        <img src={referencePreviews[0]} alt="Start frame" className="absolute inset-0 w-full h-full object-cover rounded-xl" />
+                        <button
+                          onClick={(e) => { e.stopPropagation(); removeReferenceImage(0); }}
+                          className="absolute top-1.5 left-1.5 w-5 h-5 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center z-10"
+                        >
+                          <X className="w-3 h-3 text-white" />
+                        </button>
+                      </>
+                    ) : idx === 1 && referencePreviews[1] ? (
+                      <>
+                        <img src={referencePreviews[1]} alt="End frame" className="absolute inset-0 w-full h-full object-cover rounded-xl" />
+                        <button
+                          onClick={(e) => { e.stopPropagation(); removeReferenceImage(1); }}
+                          className="absolute top-1.5 left-1.5 w-5 h-5 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center z-10"
+                        >
+                          <X className="w-3 h-3 text-white" />
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <Image className="w-6 h-6 text-muted-foreground/40" />
+                        <span className="text-[11px] text-muted-foreground/60 font-medium">{label}</span>
+                      </>
+                    )}
+                  </div>
                 ))}
-                {referencePreviews.length < (selectedModel.maxInputImages || 1) && (
-                  <div className="flex flex-col gap-2">
-                    <motion.button
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      onClick={() => setShowMediaPicker(true)}
-                      className="aspect-square flex flex-col items-center justify-center gap-1.5 rounded-xl border-2 border-dashed border-border hover:border-primary/40 bg-muted/5 hover:bg-muted/10 transition-all cursor-pointer"
-                    >
-                      <Upload className="w-5 h-5 text-muted-foreground" />
-                      <span className="text-[9px] text-muted-foreground font-medium">Ajouter</span>
-                    </motion.button>
+              </div>
+
+              {/* Hidden file input */}
+              <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
+
+              {/* Multi-shot toggle */}
+              <div className="rounded-xl bg-white/[0.03] border border-white/[0.06] p-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-sm font-semibold text-foreground">Multi-shot</span>
+                    <button className="text-muted-foreground hover:text-foreground transition-colors" title="Créez des vidéos multi-plans">
+                      <Info className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                  {/* Visual-only toggle (placeholder for future multi-shot feature) */}
+                  <div className="w-10 h-5 rounded-full bg-white/[0.08] relative cursor-pointer" onClick={() => navigate("/studio/multi-plan")}>
+                    <div className="absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-muted-foreground/60 transition-all" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Prompt */}
+              <div
+                className={`relative rounded-xl bg-white/[0.03] border border-white/[0.06] transition-all ${isDraggingOverPrompt ? "ring-2 ring-primary/50 bg-primary/5" : ""}`}
+                onDragOver={(e) => { if (e.dataTransfer.types.includes("text/x-gallery-image")) { e.preventDefault(); setIsDraggingOverPrompt(true); } }}
+                onDragLeave={() => setIsDraggingOverPrompt(false)}
+                onDrop={handleDropOnPrompt}
+              >
+                <Textarea
+                  value={prompt}
+                  onChange={(e) => { if (e.target.value.length <= 2000) setPrompt(e.target.value); }}
+                  maxLength={2000}
+                  placeholder='Describe your video, like "A woman walking through a neon-lit city". Add elements using @'
+                  className="min-h-[120px] max-h-[240px] overflow-y-auto bg-transparent border-0 rounded-xl resize-y text-sm text-foreground placeholder:text-muted-foreground/50 focus-visible:ring-0 pb-12 pr-3"
+                />
+                {isDraggingOverPrompt && (
+                  <div className="absolute inset-0 z-10 flex items-center justify-center rounded-xl bg-primary/10 border-2 border-dashed border-primary/40 pointer-events-none">
+                    <span className="text-xs font-semibold text-primary">Déposer pour décrire l'image → prompt</span>
                   </div>
                 )}
-              </div>
-              {referencePreviews.length === 0 && (
-                <span className="text-[9px] text-muted-foreground/50">PNG, JPG — max 10 Mo par image</span>
-              )}
-            </div>
-          )}
-
-          {/* Prompt */}
-          <div className="space-y-2">
-            <label className="text-[11px] text-muted-foreground font-semibold uppercase tracking-wider">
-              Prompt
-            </label>
-            <div
-              className={`relative rounded-xl transition-all ${isDraggingOverPrompt ? "ring-2 ring-primary/50 bg-primary/5" : ""}`}
-              onDragOver={(e) => { if (e.dataTransfer.types.includes("text/x-gallery-image")) { e.preventDefault(); setIsDraggingOverPrompt(true); } }}
-              onDragLeave={() => setIsDraggingOverPrompt(false)}
-              onDrop={handleDropOnPrompt}
-            >
-              <Textarea
-                value={prompt}
-                onChange={(e) => {
-                  if (e.target.value.length <= 2000) setPrompt(e.target.value);
-                }}
-                maxLength={2000}
-                placeholder="Décrivez votre image en détail : sujet, style, couleurs, lumière, ambiance..."
-                className="min-h-[200px] max-h-[360px] overflow-y-auto bg-white/[0.03] border border-white/[0.06] rounded-xl resize-y text-sm text-foreground placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-primary/30 pb-10 pr-3"
-              />
-              {/* Bottom bar inside textarea */}
-              {isDraggingOverPrompt && (
-                <div className="absolute inset-0 z-10 flex items-center justify-center rounded-xl bg-primary/10 border-2 border-dashed border-primary/40 pointer-events-none">
-                  <span className="text-xs font-semibold text-primary">Déposer pour décrire l'image →  prompt</span>
-                </div>
-              )}
-              <div className="absolute bottom-2 left-2 right-2 flex items-center justify-between pointer-events-none">
-                <div className="flex items-center gap-1 pointer-events-auto">
-                  {/* Image → Texte */}
-                  <button
-                    onClick={() => describeInputRef.current?.click()}
-                    disabled={isDescribingImage}
-                    className="w-7 h-7 rounded-lg flex items-center justify-center bg-white/[0.06] hover:bg-white/[0.12] text-muted-foreground hover:text-foreground transition-all disabled:opacity-40 disabled:cursor-not-allowed backdrop-blur-sm border border-white/[0.06]"
-                    title="Image → Texte : convertir une image en prompt"
-                  >
-                    {isDescribingImage ? (
-                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                    ) : (
-                      <Image className="w-3.5 h-3.5" />
-                    )}
-                  </button>
-                  <input
-                    ref={describeInputRef}
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={handleDescribeImage}
-                  />
-                  {/* Améliorer */}
+                {/* Bottom chips: Enhance / Sound / Elements */}
+                <div className="absolute bottom-2.5 left-2.5 right-2.5 flex items-center gap-2">
                   <button
                     onClick={handleEnhancePrompt}
                     disabled={!prompt.trim() || isEnhancing}
-                    className="w-7 h-7 rounded-lg flex items-center justify-center bg-white/[0.06] hover:bg-white/[0.12] text-muted-foreground hover:text-foreground transition-all disabled:opacity-40 disabled:cursor-not-allowed backdrop-blur-sm border border-white/[0.06]"
-                    title="Améliorer le prompt avec l'IA"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/[0.06] hover:bg-white/[0.12] text-[11px] font-medium text-muted-foreground hover:text-foreground transition-all disabled:opacity-40 border border-white/[0.06]"
                   >
-                    {isEnhancing ? (
-                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                    ) : (
-                      <Wand2 className="w-3.5 h-3.5" />
-                    )}
+                    {isEnhancing ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />}
+                    Enhance on
                   </button>
-                  {/* Effacer */}
-                  {prompt.length > 0 && (
+                  {selectedModel.settings.some(s => s.key === "sound" || s.key === "generate_audio") && (
                     <button
-                      onClick={() => setPrompt("")}
-                      className="w-7 h-7 rounded-lg flex items-center justify-center bg-white/[0.06] hover:bg-white/[0.12] text-muted-foreground hover:text-foreground transition-all backdrop-blur-sm border border-white/[0.06]"
-                      title="Effacer le prompt"
+                      onClick={() => {
+                        const soundKey = selectedModel.settings.find(s => s.key === "sound") ? "sound" : "generate_audio";
+                        updateSetting(soundKey, !modelSettings[soundKey]);
+                      }}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-medium transition-all border ${
+                        modelSettings["sound"] || modelSettings["generate_audio"]
+                          ? "bg-primary/10 text-primary border-primary/20"
+                          : "bg-white/[0.06] text-muted-foreground hover:text-foreground border-white/[0.06] hover:bg-white/[0.12]"
+                      }`}
                     >
-                      <X className="w-3.5 h-3.5" />
+                      <Music className="w-3 h-3" />
+                      {modelSettings["sound"] || modelSettings["generate_audio"] ? "On" : "Off"}
                     </button>
                   )}
+                  <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/[0.06] hover:bg-white/[0.12] text-[11px] font-medium text-muted-foreground hover:text-foreground transition-all border border-white/[0.06]">
+                    @ Elements
+                  </button>
                 </div>
-                <span className={`pointer-events-auto text-[10px] font-medium tabular-nums ${prompt.length > 1800 ? "text-red-400" : prompt.length > 1400 ? "text-amber-400" : "text-muted-foreground/50"}`}>
-                  {prompt.length}/2000
-                </span>
-            </div>
-          </div>
+              </div>
 
-          {/* Controls below prompt: Ratio / Resolution / Image Size */}
-          <div className="space-y-3 mt-3">
-            <div className="flex flex-wrap items-center gap-2">
-              {selectedModel.settings
-                .filter((s) => s.key === "aspect_ratio" || s.key === "image_size" || s.key === "resolution")
-                .map((setting) => renderSetting(setting))}
-            </div>
-
-            {/* Number of images */}
-            {(selectedModel.maxImages || 1) > 1 && (() => {
-              const maxImg = selectedModel.maxImages || 1;
-              const numImgDropdownId = "num-images-dropdown";
-              return (
-                <div className="flex items-center justify-between">
-                  <label className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">
-                    Nombre d'images
-                  </label>
-                  <div className="relative">
-                    <button
-                      onClick={() => setOpenRatioDropdown(openRatioDropdown === numImgDropdownId ? null : numImgDropdownId)}
-                      className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md glass text-[11px] font-medium text-foreground hover:bg-muted/40 transition-all"
-                    >
-                      <span className="inline-flex items-center justify-center" style={{ width: 24, height: 24 }}>
-                        <span className="border-[1.5px] border-current rounded-[2px] flex items-center justify-center" style={{ width: 16, height: 16 }}>
-                          <span className="text-[8px] font-bold leading-none">{numImages}</span>
-                        </span>
-                      </span>
-                      <span>{numImages} image{numImages > 1 ? "s" : ""}</span>
-                      <ChevronDown className={`w-3.5 h-3.5 text-muted-foreground transition-transform ${openRatioDropdown === numImgDropdownId ? "rotate-180" : ""}`} />
-                    </button>
-                    <AnimatePresence>
-                      {openRatioDropdown === numImgDropdownId && (
-                        <motion.div
-                          initial={{ opacity: 0, y: -4 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: -4 }}
-                          transition={{ duration: 0.15 }}
-                          className="absolute z-50 bottom-full left-0 mb-1 min-w-[160px] rounded-lg glass border border-border/50 shadow-xl py-1 backdrop-blur-xl"
-                        >
-                          {Array.from({ length: maxImg }, (_, i) => i + 1).map((n) => {
-                            const isSelected = n === numImages;
-                            return (
-                              <button
-                                key={n}
-                                onClick={() => {
-                                  setNumImages(n);
-                                  setOpenRatioDropdown(null);
-                                }}
-                                className={`flex items-center gap-2.5 w-full px-3 py-2 text-[11px] font-medium transition-all text-left ${
-                                  isSelected
-                                    ? "text-foreground bg-primary/10"
-                                    : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
-                                }`}
-                              >
-                                <span className="inline-flex items-center justify-center" style={{ width: 24, height: 24 }}>
-                                  <span className={`border-[1.5px] rounded-[2px] flex items-center justify-center ${isSelected ? "border-primary" : "border-current"}`} style={{ width: 16, height: 16 }}>
-                                    <span className="text-[8px] font-bold leading-none">{n}</span>
-                                  </span>
-                                </span>
-                                <span>{n} image{n > 1 ? "s" : ""}</span>
-                                {isSelected && <Check className="w-3 h-3 ml-auto text-primary shrink-0" />}
-                              </button>
-                            );
-                          })}
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
+              {/* Model compact row */}
+              <button
+                onClick={() => setShowModelDropdown(!showModelDropdown)}
+                className="w-full flex items-center gap-3 rounded-xl bg-white/[0.03] border border-white/[0.06] px-3 py-2.5 hover:bg-white/[0.05] transition-all"
+              >
+                <div className="flex-1 text-left">
+                  <span className="text-[10px] text-muted-foreground/60 font-medium block">Model</span>
+                  <div className="flex items-center gap-2 mt-0.5">
+                    <span className="text-sm font-semibold text-foreground">{selectedModel.name}</span>
+                    {getBrandLogo(selectedModel.brand, selectedModel.id) && (
+                      <img
+                        src={getBrandLogo(selectedModel.brand, selectedModel.id)!}
+                        alt={selectedModel.brand}
+                        className="w-5 h-5 rounded object-contain pointer-events-none select-none"
+                        draggable={false}
+                        onContextMenu={(e) => e.preventDefault()}
+                      />
+                    )}
                   </div>
                 </div>
-              );
-            })()}
-          </div>
-        </div>
+                <ChevronDown className="w-4 h-4 text-muted-foreground" />
+              </button>
+
+              {/* Settings chips row: Duration, Ratio, Resolution */}
+              <div className="flex items-center gap-2">
+                {selectedModel.settings
+                  .filter((s) => s.key === "duration" || s.key === "aspect_ratio" || s.key === "resolution")
+                  .map((setting) => {
+                    const val = modelSettings[setting.key];
+                    const opt = setting.options?.find(o => o.value === String(val));
+                    const displayLabel = setting.key === "duration"
+                      ? `${val}s`
+                      : opt?.label || String(val);
+                    const icon = setting.key === "duration"
+                      ? "⏱"
+                      : setting.key === "aspect_ratio"
+                        ? "▭"
+                        : "◇";
+                    return (
+                      <div key={setting.key} className="relative flex-1">
+                        <button
+                          onClick={() => setOpenRatioDropdown(openRatioDropdown === setting.key ? null : setting.key)}
+                          className="w-full flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl bg-white/[0.03] border border-white/[0.06] hover:bg-white/[0.06] transition-all text-[12px] font-medium text-foreground"
+                        >
+                          <span className="text-muted-foreground">{icon}</span>
+                          {displayLabel}
+                        </button>
+                        <AnimatePresence>
+                          {openRatioDropdown === setting.key && setting.options && (
+                            <motion.div
+                              initial={{ opacity: 0, y: -4 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              exit={{ opacity: 0, y: -4 }}
+                              transition={{ duration: 0.15 }}
+                              className="absolute z-50 bottom-full left-0 right-0 mb-1 rounded-lg bg-card border border-white/[0.08] shadow-xl py-1 backdrop-blur-xl"
+                            >
+                              {setting.options.map((opt) => (
+                                <button
+                                  key={opt.value}
+                                  onClick={() => { updateSetting(setting.key, opt.value); setOpenRatioDropdown(null); }}
+                                  className={`flex items-center gap-2 w-full px-3 py-2 text-[11px] font-medium transition-all text-left ${
+                                    String(val) === opt.value
+                                      ? "text-foreground bg-primary/10"
+                                      : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
+                                  }`}
+                                >
+                                  {opt.label}
+                                  {String(val) === opt.value && <Check className="w-3 h-3 ml-auto text-primary" />}
+                                </button>
+                              ))}
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </div>
+                    );
+                  })}
+              </div>
+
+              {/* Mode setting (if exists, e.g. Kling 3.0 std/pro) */}
+              {selectedModel.settings
+                .filter((s) => s.key !== "aspect_ratio" && s.key !== "resolution" && s.key !== "duration" && s.key !== "sound" && s.key !== "generate_audio")
+                .map((setting) => renderSetting(setting))}
+            </>
+          ) : (
+            /* ═══════════════════════════════════════════════
+               IMAGE / AUDIO SETTINGS LAYOUT (existing)
+               ═══════════════════════════════════════════════ */
+            <>
+              {/* Model Selector */}
+              <div className="space-y-2">
+                <label className="text-[11px] text-muted-foreground font-semibold uppercase tracking-wider">
+                  Modèle
+                </label>
+                <div className="relative">
+                  <button
+                    onClick={() => setShowModelDropdown(!showModelDropdown)}
+                    className="w-full flex items-center gap-2.5 glass glass-hover rounded-xl px-3 py-2.5"
+                  >
+                    {getBrandLogo(selectedModel.brand, selectedModel.id) ? (
+                      <img src={getBrandLogo(selectedModel.brand, selectedModel.id)!} alt={selectedModel.brand} className="w-8 h-8 rounded-md object-contain shrink-0 pointer-events-none select-none" draggable={false} onContextMenu={(e) => e.preventDefault()} />
+                    ) : (
+                      <span className="w-8 h-8 rounded-md bg-white/[0.06] flex items-center justify-center text-[11px] font-bold text-muted-foreground shrink-0 uppercase">
+                        {selectedModel.brand.slice(0, 2)}
+                      </span>
+                    )}
+                    <div className="flex-1 text-left">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-sm font-medium text-foreground leading-tight">
+                          {selectedModel.name}
+                        </span>
+                        {selectedModel.recommended && (
+                          <span className="shrink-0 px-1.5 py-0.5 rounded-full text-[7px] font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/20">
+                            ★
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <span className="text-[10px] font-bold text-primary mr-1">{calculateCaurisCost(selectedModel, modelSettings, numImages)} c</span>
+                    <span className="text-[9px] text-muted-foreground mr-1">⏱ {selectedModel.estimatedTime}</span>
+                    <ChevronDown
+                      className={`w-4 h-4 text-muted-foreground transition-transform ${
+                        showModelDropdown ? "rotate-180" : ""
+                      }`}
+                    />
+                  </button>
+
+                  <AnimatePresence>
+                    {showModelDropdown && (
+                      <motion.div
+                        initial={{ opacity: 0, x: -8 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -8 }}
+                        className="fixed left-4 right-4 md:left-[288px] md:right-auto top-[120px] md:w-72 bg-card border border-white/[0.08] rounded-xl p-1 z-[100] max-h-[70vh] overflow-y-auto shadow-2xl"
+                      >
+                        {getModelsByTypeGrouped(activeTab === "audio" ? "audio" : "image").map((group) => (
+                          <div key={group.brand}>
+                            <div className="px-2.5 py-1.5 text-[9px] font-bold uppercase tracking-widest text-muted-foreground/50 sticky top-0 bg-card z-10">
+                              {group.brand}
+                            </div>
+                            {group.models.map((model) => (
+                              <button
+                                key={model.id}
+                                onClick={() => handleSelectModel(model)}
+                                className={`w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-left transition-colors ${
+                                  selectedModel.id === model.id
+                                    ? "bg-primary/10"
+                                    : "hover:bg-white/[0.04]"
+                                }`}
+                              >
+                                {getBrandLogo(model.brand, model.id) ? (
+                                  <img src={getBrandLogo(model.brand, model.id)!} alt={model.brand} className="w-7 h-7 rounded-md object-contain shrink-0 pointer-events-none select-none" draggable={false} onContextMenu={(e) => e.preventDefault()} />
+                                ) : (
+                                  <span className="w-7 h-7 rounded bg-white/[0.06] flex items-center justify-center text-[10px] font-bold text-muted-foreground shrink-0 uppercase">
+                                    {model.brand.slice(0, 2)}
+                                  </span>
+                                )}
+                                <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                                  <span className="text-xs font-medium text-foreground whitespace-nowrap">
+                                    {model.name}
+                                  </span>
+                                  {model.recommended && (
+                                    <span className="shrink-0 px-1.5 py-0.5 rounded-full text-[8px] font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/20">
+                                      Populaire
+                                    </span>
+                                  )}
+                                </div>
+                                <div className="flex items-center gap-1.5 shrink-0">
+                                  <span className="text-[9px] text-muted-foreground/60">⏱ {model.estimatedTime}</span>
+                                  <span className="text-[10px] text-muted-foreground font-medium">
+                                    {model.caurisCost}c
+                                  </span>
+                                </div>
+                                {selectedModel.id === model.id && (
+                                  <Check className="w-3.5 h-3.5 text-primary shrink-0" />
+                                )}
+                              </button>
+                            ))}
+                          </div>
+                        ))}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              </div>
+
+              {/* Model-Specific Settings (exclude ratio/resolution/image_size — shown below prompt) */}
+              <div className="space-y-3">
+                <label className="text-[11px] text-muted-foreground font-semibold uppercase tracking-wider">
+                  Réglages — {selectedModel.brand} {selectedModel.name}
+                </label>
+                <div className="space-y-3">
+                  {selectedModel.settings
+                    .filter((s) => s.key !== "aspect_ratio" && s.key !== "image_size" && s.key !== "resolution")
+                    .map((setting) => renderSetting(setting))}
+                </div>
+              </div>
+
+              {/* Image Reference (only for image-to-image models) */}
+              {selectedModel.supportsImageInput && (
+                <div className="space-y-2">
+                  <label className="text-[11px] text-muted-foreground font-semibold uppercase tracking-wider flex items-center justify-between">
+                    <span>Images source ({referencePreviews.length}/{selectedModel.maxInputImages || 1})</span>
+                    {referencePreviews.length > 0 && (
+                      <button onClick={() => removeReferenceImage()} className="text-[10px] text-destructive hover:underline">
+                        Tout supprimer
+                      </button>
+                    )}
+                  </label>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleImageUpload}
+                  />
+                  <div
+                    className={`grid grid-cols-3 gap-2 rounded-xl transition-all ${isDraggingOverUpload ? "ring-2 ring-primary/50 bg-primary/5" : ""}`}
+                    onDragOver={(e) => { if (e.dataTransfer.types.includes("text/x-gallery-image")) { e.preventDefault(); setIsDraggingOverUpload(true); } }}
+                    onDragLeave={() => setIsDraggingOverUpload(false)}
+                    onDrop={handleDropOnUpload}
+                  >
+                    {referencePreviews.map((preview, idx) => (
+                      <motion.div
+                        key={`img-${idx}`}
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="relative aspect-square rounded-xl overflow-hidden border border-white/[0.08] group"
+                      >
+                        <img
+                          src={preview}
+                          alt={`@img${idx + 1}`}
+                          className="w-full h-full object-cover"
+                        />
+                        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent px-1.5 py-1">
+                          <span className="text-[10px] font-mono text-white/90">@img{idx + 1}</span>
+                        </div>
+                        <button
+                          onClick={() => removeReferenceImage(idx)}
+                          className="absolute top-1 right-1 w-5 h-5 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <X className="w-3 h-3 text-white" />
+                        </button>
+                      </motion.div>
+                    ))}
+                    {referencePreviews.length < (selectedModel.maxInputImages || 1) && (
+                      <div className="flex flex-col gap-2">
+                        <motion.button
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          onClick={() => setShowMediaPicker(true)}
+                          className="aspect-square flex flex-col items-center justify-center gap-1.5 rounded-xl border-2 border-dashed border-border hover:border-primary/40 bg-muted/5 hover:bg-muted/10 transition-all cursor-pointer"
+                        >
+                          <Upload className="w-5 h-5 text-muted-foreground" />
+                          <span className="text-[9px] text-muted-foreground font-medium">Ajouter</span>
+                        </motion.button>
+                      </div>
+                    )}
+                  </div>
+                  {referencePreviews.length === 0 && (
+                    <span className="text-[9px] text-muted-foreground/50">PNG, JPG — max 10 Mo par image</span>
+                  )}
+                </div>
+              )}
+
+              {/* Prompt */}
+              <div className="space-y-2">
+                <label className="text-[11px] text-muted-foreground font-semibold uppercase tracking-wider">
+                  Prompt
+                </label>
+                <div
+                  className={`relative rounded-xl transition-all ${isDraggingOverPrompt ? "ring-2 ring-primary/50 bg-primary/5" : ""}`}
+                  onDragOver={(e) => { if (e.dataTransfer.types.includes("text/x-gallery-image")) { e.preventDefault(); setIsDraggingOverPrompt(true); } }}
+                  onDragLeave={() => setIsDraggingOverPrompt(false)}
+                  onDrop={handleDropOnPrompt}
+                >
+                  <Textarea
+                    value={prompt}
+                    onChange={(e) => {
+                      if (e.target.value.length <= 2000) setPrompt(e.target.value);
+                    }}
+                    maxLength={2000}
+                    placeholder="Décrivez votre image en détail : sujet, style, couleurs, lumière, ambiance..."
+                    className="min-h-[200px] max-h-[360px] overflow-y-auto bg-white/[0.03] border border-white/[0.06] rounded-xl resize-y text-sm text-foreground placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-primary/30 pb-10 pr-3"
+                  />
+                  {/* Bottom bar inside textarea */}
+                  {isDraggingOverPrompt && (
+                    <div className="absolute inset-0 z-10 flex items-center justify-center rounded-xl bg-primary/10 border-2 border-dashed border-primary/40 pointer-events-none">
+                      <span className="text-xs font-semibold text-primary">Déposer pour décrire l'image →  prompt</span>
+                    </div>
+                  )}
+                  <div className="absolute bottom-2 left-2 right-2 flex items-center justify-between pointer-events-none">
+                    <div className="flex items-center gap-1 pointer-events-auto">
+                      {/* Image → Texte */}
+                      <button
+                        onClick={() => describeInputRef.current?.click()}
+                        disabled={isDescribingImage}
+                        className="w-7 h-7 rounded-lg flex items-center justify-center bg-white/[0.06] hover:bg-white/[0.12] text-muted-foreground hover:text-foreground transition-all disabled:opacity-40 disabled:cursor-not-allowed backdrop-blur-sm border border-white/[0.06]"
+                        title="Image → Texte : convertir une image en prompt"
+                      >
+                        {isDescribingImage ? (
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        ) : (
+                          <Image className="w-3.5 h-3.5" />
+                        )}
+                      </button>
+                      <input
+                        ref={describeInputRef}
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={handleDescribeImage}
+                      />
+                      {/* Améliorer */}
+                      <button
+                        onClick={handleEnhancePrompt}
+                        disabled={!prompt.trim() || isEnhancing}
+                        className="w-7 h-7 rounded-lg flex items-center justify-center bg-white/[0.06] hover:bg-white/[0.12] text-muted-foreground hover:text-foreground transition-all disabled:opacity-40 disabled:cursor-not-allowed backdrop-blur-sm border border-white/[0.06]"
+                        title="Améliorer le prompt avec l'IA"
+                      >
+                        {isEnhancing ? (
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        ) : (
+                          <Wand2 className="w-3.5 h-3.5" />
+                        )}
+                      </button>
+                      {/* Effacer */}
+                      {prompt.length > 0 && (
+                        <button
+                          onClick={() => setPrompt("")}
+                          className="w-7 h-7 rounded-lg flex items-center justify-center bg-white/[0.06] hover:bg-white/[0.12] text-muted-foreground hover:text-foreground transition-all backdrop-blur-sm border border-white/[0.06]"
+                          title="Effacer le prompt"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                    </div>
+                    <span className={`pointer-events-auto text-[10px] font-medium tabular-nums ${prompt.length > 1800 ? "text-red-400" : prompt.length > 1400 ? "text-amber-400" : "text-muted-foreground/50"}`}>
+                      {prompt.length}/2000
+                    </span>
+                </div>
+              </div>
+            </div>
+
+              {/* Controls below prompt: Ratio / Resolution / Image Size */}
+              <div className="space-y-3 mt-3">
+                <div className="flex flex-wrap items-center gap-2">
+                  {selectedModel.settings
+                    .filter((s) => s.key === "aspect_ratio" || s.key === "image_size" || s.key === "resolution")
+                    .map((setting) => renderSetting(setting))}
+                </div>
+
+                {/* Number of images */}
+                {(selectedModel.maxImages || 1) > 1 && (() => {
+                  const maxImg = selectedModel.maxImages || 1;
+                  const numImgDropdownId = "num-images-dropdown";
+                  return (
+                    <div className="flex items-center justify-between">
+                      <label className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">
+                        Nombre d'images
+                      </label>
+                      <div className="relative">
+                        <button
+                          onClick={() => setOpenRatioDropdown(openRatioDropdown === numImgDropdownId ? null : numImgDropdownId)}
+                          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md glass text-[11px] font-medium text-foreground hover:bg-muted/40 transition-all"
+                        >
+                          <span className="inline-flex items-center justify-center" style={{ width: 24, height: 24 }}>
+                            <span className="border-[1.5px] border-current rounded-[2px] flex items-center justify-center" style={{ width: 16, height: 16 }}>
+                              <span className="text-[8px] font-bold leading-none">{numImages}</span>
+                            </span>
+                          </span>
+                          <span>{numImages} image{numImages > 1 ? "s" : ""}</span>
+                          <ChevronDown className={`w-3.5 h-3.5 text-muted-foreground transition-transform ${openRatioDropdown === numImgDropdownId ? "rotate-180" : ""}`} />
+                        </button>
+                        <AnimatePresence>
+                          {openRatioDropdown === numImgDropdownId && (
+                            <motion.div
+                              initial={{ opacity: 0, y: -4 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              exit={{ opacity: 0, y: -4 }}
+                              transition={{ duration: 0.15 }}
+                              className="absolute z-50 bottom-full left-0 mb-1 min-w-[160px] rounded-lg glass border border-border/50 shadow-xl py-1 backdrop-blur-xl"
+                            >
+                              {Array.from({ length: maxImg }, (_, i) => i + 1).map((n) => {
+                                const isSelected = n === numImages;
+                                return (
+                                  <button
+                                    key={n}
+                                    onClick={() => {
+                                      setNumImages(n);
+                                      setOpenRatioDropdown(null);
+                                    }}
+                                    className={`flex items-center gap-2.5 w-full px-3 py-2 text-[11px] font-medium transition-all text-left ${
+                                      isSelected
+                                        ? "text-foreground bg-primary/10"
+                                        : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
+                                    }`}
+                                  >
+                                    <span className="inline-flex items-center justify-center" style={{ width: 24, height: 24 }}>
+                                      <span className={`border-[1.5px] rounded-[2px] flex items-center justify-center ${isSelected ? "border-primary" : "border-current"}`} style={{ width: 16, height: 16 }}>
+                                        <span className="text-[8px] font-bold leading-none">{n}</span>
+                                      </span>
+                                    </span>
+                                    <span>{n} image{n > 1 ? "s" : ""}</span>
+                                    {isSelected && <Check className="w-3 h-3 ml-auto text-primary shrink-0" />}
+                                  </button>
+                                );
+                              })}
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </div>
+                    </div>
+                  );
+                })()}
+              </div>
+            </>
+          )}
         </div>
 
         {/* ===== PINNED BOTTOM BAR ===== */}
