@@ -84,9 +84,9 @@ serve(async (req) => {
 
     let prompt: string;
     if (mode === "vary") {
-      prompt = `Generate 4 different cinematic ${planLabel} angles of this exact image, same subject, same scene, same lighting, only the camera angle changes. Output 4 separate high-quality images.`;
+      prompt = `Generate a cinematic ${planLabel} of this exact image, same subject, same scene, same lighting, only the camera angle changes. High-quality cinematic output.`;
     } else {
-      prompt = `Generate a cinematic Plan ${plan_index} variation of this exact image as a ${planLabel}. Keep the same subject, same scene, same lighting, only change the camera angle slightly. Output one high-quality image.`;
+      prompt = `Generate only the ${plan_index === 1 ? "first" : plan_index === 2 ? "second" : plan_index === 3 ? "third" : "fourth"} cinematic shot of this image as a ${planLabel}. Keep the same subject, same scene, same lighting, change only the camera angle. Output one high-quality image.`;
     }
 
     const numImages = mode === "vary" ? 4 : 1;
