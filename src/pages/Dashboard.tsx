@@ -1832,23 +1832,24 @@ const Dashboard = () => {
             ))}
           </div>
           <div className="flex items-center gap-2">
-            {/* View toggle: Grid / List / Masonry */}
+            {/* 3 niveaux importants du zoom (liés au slider) */}
             <div className="flex items-center bg-card border border-border rounded-lg overflow-hidden h-8">
               {([
-                { value: "grid" as const, icon: LayoutGrid, label: "Grille" },
-                { value: "row" as const, icon: Grid3X3, label: "Liste" },
-              ] as const).map((v) => (
+                { label: "S", level: 1 },
+                { label: "M", level: 3 },
+                { label: "L", level: 5 },
+              ] as const).map((z) => (
                 <button
-                  key={v.value}
-                  onClick={() => setGalleryLayout(v.value)}
-                  className={`w-8 h-8 flex items-center justify-center transition-colors border-r border-border last:border-r-0 ${
-                    galleryLayout === v.value
+                  key={z.level}
+                  onClick={() => handleSizeSliderChange(z.level)}
+                  className={`w-8 h-8 text-[11px] font-semibold transition-colors border-r border-border last:border-r-0 ${
+                    gallerySizeLevel === z.level
                       ? "bg-primary/10 text-primary"
                       : "text-muted-foreground hover:text-foreground"
                   }`}
-                  title={v.label}
+                  title={`Zoom ${z.label}`}
                 >
-                  <v.icon className="w-3.5 h-3.5" />
+                  {z.label}
                 </button>
               ))}
             </div>
