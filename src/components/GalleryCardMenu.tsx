@@ -1,14 +1,15 @@
 import { useState, useRef, useEffect } from "react";
-import { MoreHorizontal, Download, FolderPlus, ArrowRightLeft, Trash2 } from "lucide-react";
+import { MoreHorizontal, Download, FolderPlus, ArrowRightLeft, Trash2, ClipboardCopy } from "lucide-react";
 
 interface GalleryCardMenuProps {
   onDownload: () => void;
   onDelete: () => void;
+  onCopyPrompt?: () => void;
   onAddToProject?: () => void;
   onMoveProject?: () => void;
 }
 
-export default function GalleryCardMenu({ onDownload, onDelete, onAddToProject, onMoveProject }: GalleryCardMenuProps) {
+export default function GalleryCardMenu({ onDownload, onDelete, onCopyPrompt, onAddToProject, onMoveProject }: GalleryCardMenuProps) {
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -22,6 +23,7 @@ export default function GalleryCardMenu({ onDownload, onDelete, onAddToProject, 
   }, [open]);
 
   const items = [
+    ...(onCopyPrompt ? [{ label: "Copier le prompt", icon: ClipboardCopy, action: onCopyPrompt }] : []),
     { label: "Télécharger", icon: Download, action: onDownload },
     ...(onAddToProject ? [{ label: "Ajouter à un projet", icon: FolderPlus, action: onAddToProject }] : []),
     ...(onMoveProject ? [{ label: "Déplacer vers un projet", icon: ArrowRightLeft, action: onMoveProject }] : []),

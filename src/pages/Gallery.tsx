@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
-import { X, Download, Calendar, Cpu, Trash2, Loader2, Image as ImageIcon, Film, Music, Check } from "lucide-react";
+import { X, Download, Calendar, Cpu, Trash2, Loader2, Image as ImageIcon, Film, Music, Check, ClipboardCopy } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -331,7 +331,14 @@ const Gallery = () => {
                       )}
 
                       {/* Hover actions */}
-                      <div className="absolute top-2 right-2 z-30 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                       <div className="absolute top-2 right-2 z-30 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button
+                          onClick={(e) => { e.stopPropagation(); navigator.clipboard.writeText(item.prompt); toast.success("Prompt copié !"); }}
+                          className="w-7 h-7 rounded-lg flex items-center justify-center bg-background/70 backdrop-blur-sm hover:bg-background/90 transition-all text-muted-foreground hover:text-foreground shadow-sm"
+                          title="Copier le prompt"
+                        >
+                          <ClipboardCopy className="w-3.5 h-3.5" />
+                        </button>
                         <button
                           onClick={(e) => { e.stopPropagation(); handleDownload(item); }}
                           className="w-7 h-7 rounded-lg flex items-center justify-center bg-background/70 backdrop-blur-sm hover:bg-background/90 transition-all text-muted-foreground hover:text-foreground shadow-sm"
@@ -347,6 +354,7 @@ const Gallery = () => {
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
                         <GalleryCardMenu
+                          onCopyPrompt={() => { navigator.clipboard.writeText(item.prompt); toast.success("Prompt copié !"); }}
                           onDownload={() => handleDownload(item)}
                           onDelete={() => setDeleteTarget(item)}
                           onMoveProject={() => {
@@ -455,6 +463,9 @@ const Gallery = () => {
                   <span className="flex items-center gap-1">🐚 {selected.credits_used}</span>
                 </div>
                 <div className="flex gap-2">
+                  <button onClick={() => { navigator.clipboard.writeText(selected.prompt); toast.success("Prompt copié !"); }} className="px-4 py-3 rounded-xl bg-muted/30 text-foreground hover:bg-muted/50 transition-colors text-sm" title="Copier le prompt">
+                    <ClipboardCopy className="w-4 h-4" />
+                  </button>
                   <button onClick={() => handleDownload(selected)} className="btn-generate flex-1 flex items-center justify-center gap-2 text-sm py-3">
                     <Download className="w-4 h-4" /> Télécharger
                   </button>
