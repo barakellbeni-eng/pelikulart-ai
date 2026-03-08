@@ -443,23 +443,39 @@ const MultiPlan = () => {
           </div>
 
           {/* Generate button */}
-          <button
-            onClick={handleGenerate}
-            disabled={!sourceImage || isGenerating || !user}
-            className="w-full py-2.5 rounded-lg bg-primary text-primary-foreground text-xs font-semibold flex items-center justify-center gap-2 disabled:opacity-25 disabled:cursor-not-allowed transition-all hover:brightness-110"
-          >
-            {isGenerating ? (
-              <>
-                <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                Génération...
-              </>
-            ) : (
-              <>
-                <Camera className="w-3.5 h-3.5" />
-                Générer · 2 cauris
-              </>
-            )}
-          </button>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={() => !isAnyJobRunning && handleGenerate()}
+                  disabled={!sourceImage || isGenerating || !user}
+                  className="w-full py-2.5 rounded-lg bg-primary text-primary-foreground text-xs font-semibold flex items-center justify-center gap-2 disabled:opacity-25 disabled:cursor-not-allowed transition-all hover:brightness-110"
+                >
+                  {isGenerating ? (
+                    <>
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      Génération...
+                    </>
+                  ) : isAnyJobRunning ? (
+                    <>
+                      <Lock className="w-3.5 h-3.5" />
+                      Générer · 2 cauris
+                    </>
+                  ) : (
+                    <>
+                      <Camera className="w-3.5 h-3.5" />
+                      Générer · 2 cauris
+                    </>
+                  )}
+                </button>
+              </TooltipTrigger>
+              {isAnyJobRunning && !isGenerating && (
+                <TooltipContent side="top">
+                  <p className="text-xs">Patientez, génération en cours</p>
+                </TooltipContent>
+              )}
+            </Tooltip>
+          </TooltipProvider>
 
           {/* Ratio */}
           <div className="space-y-1.5">
