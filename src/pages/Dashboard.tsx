@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useSyncExternalStore, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 
 import { Textarea } from "@/components/ui/textarea";
 import { Slider } from "@/components/ui/slider";
