@@ -524,15 +524,31 @@ async function processKie(jobId: string, userId: string, body: any) {
     const input: Record<string, any> = { prompt };
 
     if (tool_type === "image") {
-      // Image-specific params
-      if (rawSettings.image_size) input.image_size = rawSettings.image_size;
-      else if (rawSettings.aspect_ratio) input.image_size = rawSettings.aspect_ratio;
+      // Different models use different param names per KIE API docs
+      if (KIE_ASPECT_RESOLUTION_MODELS.has(kieModel)) {
+        // nano-banana-pro, nano-banana-2 use aspect_ratio + resolution
+        if (rawSettings.aspect_ratio) input.aspect_ratio = rawSettings.aspect_ratio;
+        if (rawSettings.resolution) input.resolution = rawSettings.resolution;
+      } else {
+        // google/nano-banana, google/nano-banana-edit use image_size
+        if (rawSettings.image_size) input.image_size = rawSettings.image_size;
+        else if (rawSettings.aspect_ratio) input.image_size = rawSettings.aspect_ratio;
+      }
       if (rawSettings.output_format) input.output_format = rawSettings.output_format;
-      // Handle image inputs for edit models
-      if (image_urls && Array.isArray(image_urls) && image_urls.length > 0) {
-        input.image_urls = image_urls.slice(0, 5);
-      } else if (image_url) {
-        input.image_urls = [image_url];
+      if (rawSettings.google_search !== undefined) input.google_search = rawSettings.google_search;
+
+      // Handle image inputs — param name differs per model
+      const imageList = (image_urls && Array.isArray(image_urls) && image_urls.length > 0)
+        ? image_urls : (image_url ? [image_url] : []);
+
+      if (imageList.length > 0) {
+        if (KIE_IMAGE_INPUT_MODELS.has(kieModel)) {
+          // nano-banana-pro & nano-banana-2 use image_input
+          input.image_input = imageList.slice(0, 14);
+        } else {
+          // google/nano-banana-edit uses image_urls
+          input.image_urls = imageList.slice(0, 10);
+        }
       }
     } else if (tool_type === "video") {
       // Video-specific params (Kling 3.0)
