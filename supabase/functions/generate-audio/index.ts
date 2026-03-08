@@ -89,7 +89,7 @@ serve(async (req) => {
     const adminClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
     const body = await req.json();
-    const { prompt, model_id = "stable-audio", cauris_cost = 0, ...rawSettings } = body;
+    const { prompt, model_id = "stable-audio", cauris_cost = 0, project_id, ...rawSettings } = body;
 
     if (!prompt || typeof prompt !== "string") {
       return new Response(
@@ -200,6 +200,7 @@ serve(async (req) => {
         prompt: prompt.slice(0, 5000),
         image_url: `r2:${r2Key}`,
         media_type: "audio",
+        project_id: project_id || null,
       });
       const signedUrl = await getR2SignedUrl(r2Key, 3600);
       return new Response(

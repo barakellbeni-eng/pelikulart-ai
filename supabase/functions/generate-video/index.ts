@@ -133,6 +133,7 @@ serve(async (req) => {
               prompt: body.prompt?.slice(0, 5000) || "video",
               image_url: `r2:${r2Key}`,
               media_type: "video",
+              project_id: body.project_id || null,
             });
             const signedUrl = await getR2SignedUrl(r2Key, 3600);
             return new Response(
@@ -251,6 +252,7 @@ serve(async (req) => {
           prompt: prompt.slice(0, 5000),
           image_url: `r2:${r2Key}`,
           media_type: "video",
+          project_id: project_id || null,
         });
         const signedUrl = await getR2SignedUrl(r2Key, 3600);
         return new Response(
