@@ -105,18 +105,19 @@ const MultiPlan = () => {
     if (!user) return;
     const { data, error } = await supabase
       .from("generation_jobs")
-      .select("id, result_url, prompt, created_at")
+      .select("*")
       .eq("user_id", user.id)
       .like("prompt", "Multi-Plan%")
       .is("deleted_at", null)
       .order("created_at", { ascending: false });
 
     if (!error && data) {
-      const items = data
-        .filter((d) => d.result_url)
-        .map((d) => ({
+      const items = (data as any[])
+        .filter((d: any) => d.result_url)
+        .map((d: any) => ({
           id: d.id,
           url: d.result_url!,
+          originalUrl: d.result_url_original || d.result_url,
           prompt: d.prompt,
           created_at: d.created_at,
         }));
