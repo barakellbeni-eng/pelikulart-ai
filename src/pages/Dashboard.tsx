@@ -36,6 +36,7 @@ import { FAL_MODELS, getModelById, getDefaultSettings, getModelsByType, getModel
 import { getBrandLogo } from "@/lib/brandLogos";
 import GenerationProgress from "@/components/GenerationProgress";
 import ActiveJobsPanel from "@/components/ActiveJobsPanel";
+import MediaPickerModal from "@/components/MediaPickerModal";
 import { useActiveJobs } from "@/hooks/useActiveJobs";
 import { getGenerationJob, startGeneration, completeGeneration, failGeneration, subscribeGeneration } from "@/hooks/useGenerationStore";
 import { getSignedUrl, getSignedUrls } from "@/lib/storage";
