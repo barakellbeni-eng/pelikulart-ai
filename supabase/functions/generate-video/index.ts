@@ -75,7 +75,7 @@ serve(async (req) => {
     const adminClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
     const body = await req.json();
-    const { prompt, model_id = "veo3", image_url, action, status_url, response_url, cauris_cost = 0, ...rawSettings } = body;
+    const { prompt, model_id = "veo3", image_url, action, status_url, response_url, cauris_cost = 0, project_id, ...rawSettings } = body;
 
     // === POLL ACTION ===
     if (action === "poll") {
@@ -133,6 +133,7 @@ serve(async (req) => {
               prompt: body.prompt?.slice(0, 5000) || "video",
               image_url: `r2:${r2Key}`,
               media_type: "video",
+              project_id: body.project_id || null,
             });
             const signedUrl = await getR2SignedUrl(r2Key, 3600);
             return new Response(
@@ -251,6 +252,7 @@ serve(async (req) => {
           prompt: prompt.slice(0, 5000),
           image_url: `r2:${r2Key}`,
           media_type: "video",
+          project_id: project_id || null,
         });
         const signedUrl = await getR2SignedUrl(r2Key, 3600);
         return new Response(

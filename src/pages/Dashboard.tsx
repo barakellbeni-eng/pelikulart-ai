@@ -4,6 +4,7 @@ import { Slider } from "@/components/ui/slider";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useCauris } from "@/hooks/useCauris";
+import { useProjects } from "@/hooks/useProjects";
 import {
   Image,
   Video,
@@ -89,6 +90,7 @@ const Dashboard = () => {
   const { user } = useAuth();
   const { balance, deduct, refetch: refetchCauris } = useCauris();
   const { activeJobs, recentJobs, dismissJob, refetch: refetchJobs } = useActiveJobs();
+  const { selectedProjectId, updateCover } = useProjects();
   const [activeTab, setActiveTab] = useState<"image" | "video" | "audio">("image");
   const [prompt, setPrompt] = useState("");
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -227,11 +229,17 @@ const Dashboard = () => {
   useEffect(() => {
     if (!user) return;
     const loadHistory = async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from("generations")
         .select("*")
         .order("created_at", { ascending: false })
         .limit(50);
+
+      if (selectedProjectId) {
+        query = query.eq("project_id", selectedProjectId);
+      }
+
+      const { data, error } = await query;
       if (!error && data) {
         // Resolve signed URLs for all items
         const allUrls = (data as any[]).map((g: any) => g.image_url as string);
@@ -261,7 +269,7 @@ const Dashboard = () => {
       }
     };
     loadHistory();
-  }, [user]);
+  }, [user, selectedProjectId]);
 
   // No more fake progress — just show hourglass while generating
 
@@ -429,6 +437,7 @@ const Dashboard = () => {
           num_images: Math.min(currentNumImages, currentModel.maxImages || 1),
           output_format: "png",
           cauris_cost: imgCostForPayload,
+          project_id: selectedProjectId || undefined,
           ...cleanSettings,
         };
         if (currentRefImages.length > 0 && currentModel.supportsImageInput) {
@@ -480,6 +489,10 @@ const Dashboard = () => {
         }
 
         setGalleryImages((prev) => [...newImages, ...prev]);
+        // Auto-update project cover with first image
+        if (selectedProjectId && newImages.length > 0) {
+          updateCover(selectedProjectId, newImages[0].url);
+        }
         // Credits already deducted server-side; just refresh balance
         if (data.new_balance !== undefined) {
           refetchCauris();
@@ -525,6 +538,7 @@ const Dashboard = () => {
           prompt: currentPrompt,
           model_id: currentModel.id,
           cauris_cost: cost,
+          project_id: selectedProjectId || undefined,
           ...cleanSettings,
         };
         if (currentRefImages.length > 0 && currentModel.supportsImageInput) {
@@ -625,6 +639,7 @@ const Dashboard = () => {
           prompt: currentPrompt,
           model_id: currentModel.id,
           cauris_cost: cost,
+          project_id: selectedProjectId || undefined,
           ...cleanSettings,
         };
         if (currentRefImages.length > 0 && currentModel.supportsImageInput) {

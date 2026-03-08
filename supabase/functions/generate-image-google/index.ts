@@ -51,7 +51,7 @@ serve(async (req) => {
     const adminClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
     const body = await req.json();
-    const { prompt, num_images = 1, cauris_cost = 0, image_url, ...rawSettings } = body;
+    const { prompt, num_images = 1, cauris_cost = 0, image_url, project_id, ...rawSettings } = body;
 
     // --- Validation ---
     if (!prompt || typeof prompt !== "string") {
@@ -202,6 +202,7 @@ serve(async (req) => {
             aspect_ratio: modelSettings.aspect_ratio || null,
             resolution: modelSettings.resolution || null,
             output_format: "png",
+            project_id: project_id || null,
           });
 
           const signedUrl = await getR2SignedUrl(r2Key, 3600);

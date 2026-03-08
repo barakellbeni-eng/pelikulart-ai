@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { getSignedUrl, getSignedUrls } from "@/lib/storage";
 import { toast } from "sonner";
+import { useProjects } from "@/hooks/useProjects";
 
 interface GalleryItem {
   id: string;
@@ -23,6 +24,7 @@ const DELETE_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/delete-gen
 
 const Gallery = () => {
   const { user } = useAuth();
+  const { selectedProjectId } = useProjects();
   const [items, setItems] = useState<GalleryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<GalleryItem | null>(null);
@@ -32,12 +34,18 @@ const Gallery = () => {
   const fetchGallery = useCallback(async () => {
     if (!user) { setItems([]); setLoading(false); return; }
 
-    const { data, error } = await supabase
+    let query = supabase
       .from("generation_jobs")
       .select("id, tool_type, prompt, model, result_url, result_metadata, created_at, credits_used")
       .eq("status", "completed")
       .order("created_at", { ascending: false })
       .limit(100);
+
+    if (selectedProjectId) {
+      query = query.eq("project_id", selectedProjectId);
+    }
+
+    const { data, error } = await query;
 
     if (error || !data) {
       setLoading(false);
@@ -58,7 +66,7 @@ const Gallery = () => {
 
     setItems(resolved);
     setLoading(false);
-  }, [user]);
+  }, [user, selectedProjectId]);
 
   useEffect(() => {
     fetchGallery();
