@@ -156,7 +156,7 @@ const MultiPlan = () => {
     }
   };
 
-  const latestPlanResult = Object.entries(planResults).sort(([a], [b]) => Number(b) - Number(a))[0]?.[1];
+  const hasAnyPlanResult = Object.keys(planResults).length > 0;
 
   return (
     <div className="h-full overflow-y-auto scroll-smooth">
