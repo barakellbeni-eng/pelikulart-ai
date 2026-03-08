@@ -627,6 +627,26 @@ const Dashboard = () => {
 
         const authHeader = `Bearer ${accessToken || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`;
 
+        // Route KIE models to start-generation (async job system)
+        const isKieModel = currentModel.provider === "kie" || currentModel.endpoint === "kie";
+        if (isKieModel) {
+          payload.tool_type = "video";
+          const resp = await fetch(START_GENERATION_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Authorization: authHeader },
+            body: JSON.stringify(payload),
+          });
+          if (!resp.ok) {
+            const err = await resp.json().catch(() => ({ error: "Erreur inconnue" }));
+            throw new Error(err.error || `Erreur ${resp.status}`);
+          }
+          const data = await resp.json();
+          toast.info("Génération vidéo lancée en arrière-plan...");
+          if (data.new_balance !== undefined) refetchCauris();
+          completeGeneration();
+          return;
+        }
+
         const resp = await fetch(GENERATE_VIDEO_URL, {
           method: "POST",
           headers: { "Content-Type": "application/json", Authorization: authHeader },
