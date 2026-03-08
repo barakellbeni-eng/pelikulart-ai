@@ -2382,7 +2382,16 @@ const Dashboard = () => {
                             </button>
                           </div>
                           <div className="absolute bottom-0 left-0 right-0 p-2.5 flex items-end justify-between">
-                            <span className="text-[10px] text-white/80 font-medium truncate flex-1">{vid.prompt || ""}</span>
+                            {/* Model logo bottom-left */}
+                            {(() => {
+                              const model = vid.modelId ? getModelById(vid.modelId) : null;
+                              const logo = model ? getBrandLogo(model.brand, model.id) : null;
+                              return logo ? (
+                                <img src={logo} alt={model!.brand} className="w-5 h-5 rounded object-contain pointer-events-none shrink-0" draggable={false} />
+                              ) : (
+                                <span className="text-[10px] text-white/80 font-medium truncate flex-1">{vid.prompt || ""}</span>
+                              );
+                            })()}
                             <div className="flex items-center gap-1.5">
                               <button
                                 onClick={(e) => { e.stopPropagation(); handleDeleteVideo(vid); }}
