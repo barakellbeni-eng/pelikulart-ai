@@ -985,6 +985,47 @@ const Dashboard = () => {
     }
   };
 
+  const handleDeleteAudio = async (aud: GeneratedAudio) => {
+    if (!user) return;
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData?.session?.access_token;
+      if (token && aud.id) {
+        await fetch(DELETE_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ job_id: aud.id }),
+        });
+      }
+      setGalleryAudios((prev) => prev.filter((a) => a.url !== aud.url));
+      toast.success("Audio supprimé");
+    } catch {
+      toast.error("Erreur lors de la suppression");
+    }
+  };
+
+  const toggleDashAudioPlay = (id: string, url: string) => {
+    if (playingDashAudioId === id) {
+      dashAudioRefs.current[id]?.pause();
+      setPlayingDashAudioId(null);
+      return;
+    }
+    if (playingDashAudioId && dashAudioRefs.current[playingDashAudioId]) {
+      dashAudioRefs.current[playingDashAudioId].pause();
+    }
+    if (!dashAudioRefs.current[id]) {
+      dashAudioRefs.current[id] = new Audio(url);
+      dashAudioRefs.current[id].onended = () => setPlayingDashAudioId(null);
+    }
+    dashAudioRefs.current[id].play();
+    setPlayingDashAudioId(id);
+  };
+
+  const handleSizeSliderChange = (val: number) => {
+    setGallerySizeLevel(val);
+    localStorage.setItem("gallerySizeLevel", String(val));
+  };
+
   const handleBatchDeleteSelection = async () => {
     if (!user || batchDeletingSelection || selectionCount === 0) return;
 
