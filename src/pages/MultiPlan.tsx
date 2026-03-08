@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Upload, Loader2, Camera, Download, Trash2, X, Scissors, RefreshCw, Video, RotateCcw, Crosshair } from "lucide-react";
+import { Upload, Loader2, Camera, Download, Trash2, X, Scissors, RefreshCw, Video, RotateCcw, Crosshair, Lock, CheckCircle2 } from "lucide-react";
 import GenerationProgress from "@/components/GenerationProgress";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useCauris } from "@/hooks/useCauris";
 import MediaPickerModal from "@/components/MediaPickerModal";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import DeleteConfirmModal from "@/components/DeleteConfirmModal";
 
 const MULTIPLAN_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-multiplan`;
