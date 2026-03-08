@@ -347,7 +347,8 @@ const Gallery = () => {
                           <VideoThumbnail src={item.displayUrl || ""} />
                         </div>
                       ) : item.tool_type === "audio" ? (
-                        <div className={`w-full ${isGrid ? "aspect-video" : "h-28"} bg-muted/30 flex items-center justify-center relative overflow-hidden`}>
+                        <div className={`w-full ${isGrid ? "aspect-[3/4]" : "aspect-square"} relative overflow-hidden`}>
+                          {/* Thumbnail or fallback */}
                           {item.result_metadata?.thumbnail_url ? (
                             <img
                               src={item.result_metadata.thumbnail_url}
@@ -356,10 +357,28 @@ const Gallery = () => {
                               loading="lazy"
                             />
                           ) : (
-                            <Music className="w-8 h-8 text-muted-foreground/30" />
+                            <div className="w-full h-full bg-muted/30 flex items-center justify-center">
+                              <Music className="w-12 h-12 text-muted-foreground/20" />
+                            </div>
                           )}
-                          <div className="absolute bottom-1.5 left-1.5 bg-background/70 backdrop-blur-sm rounded px-1.5 py-0.5">
-                            <Music className="w-3 h-3 text-foreground" />
+                          {/* Dark gradient overlay */}
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                          {/* Prompt text overlay */}
+                          <div className="absolute bottom-10 left-3 right-3">
+                            <p className="text-white text-xs leading-relaxed line-clamp-3 drop-shadow-lg">
+                              {item.prompt}
+                            </p>
+                          </div>
+                          {/* Audio indicator bottom-left */}
+                          <div className="absolute bottom-2.5 left-3 flex items-center gap-1.5 bg-white/15 backdrop-blur-md rounded-full px-2 py-1">
+                            <Music className="w-3 h-3 text-white" />
+                            {item.result_metadata?.duration ? (
+                              <span className="text-[10px] text-white font-medium">
+                                {Math.floor(item.result_metadata.duration / 60).toString().padStart(2, "0")}:{Math.floor(item.result_metadata.duration % 60).toString().padStart(2, "0")}
+                              </span>
+                            ) : (
+                              <span className="text-[10px] text-white font-medium">Audio</span>
+                            )}
                           </div>
                         </div>
                       ) : null}
