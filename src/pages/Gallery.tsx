@@ -66,7 +66,7 @@ const Gallery = () => {
 
     setItems(resolved);
     setLoading(false);
-  }, [user]);
+  }, [user, selectedProjectId]);
 
   useEffect(() => {
     fetchGallery();
