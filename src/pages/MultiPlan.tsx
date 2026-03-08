@@ -516,6 +516,49 @@ const MultiPlan = () => {
         </div>
       )}
 
+      {/* Preview Modal */}
+      <AnimatePresence>
+        {previewImage && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] bg-background/80 backdrop-blur-xl flex items-center justify-center p-4"
+            onClick={() => setPreviewImage(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              className="glass-card max-w-lg w-full p-5 space-y-4 max-h-[90vh] overflow-y-auto"
+            >
+              <div className="flex items-center justify-between">
+                <h2 className="font-semibold text-foreground text-sm">{previewImage.label}</h2>
+                <button onClick={() => setPreviewImage(null)} className="text-muted-foreground hover:text-foreground transition-colors">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <img src={previewImage.url} alt={previewImage.label} className="w-full rounded-xl" />
+              <div className="flex gap-2">
+                <button
+                  onClick={() => { handleDownload(previewImage.url, previewImage.label); }}
+                  className="btn-generate flex-1 flex items-center justify-center gap-2 text-sm py-3"
+                >
+                  <Download className="w-4 h-4" /> Télécharger
+                </button>
+                <button
+                  onClick={() => { setPreviewImage(null); }}
+                  className="px-4 py-3 rounded-xl bg-muted/30 text-foreground hover:bg-muted/50 transition-colors text-sm"
+                >
+                  Fermer
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <MediaPickerModal
         open={showMediaPicker}
         onClose={() => setShowMediaPicker(false)}
