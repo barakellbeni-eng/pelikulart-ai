@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useSyncExternalStore, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 
 import { Textarea } from "@/components/ui/textarea";
 import { Slider } from "@/components/ui/slider";
@@ -29,6 +30,7 @@ import {
   Check,
   Trash2,
   Film,
+  Camera,
   RefreshCw,
   Info,
   FolderInput,
@@ -94,6 +96,7 @@ interface GeneratedAudio {
 }
 
 const Dashboard = () => {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const { balance, deduct, refetch: refetchCauris } = useCauris();
   const { refetch: refetchJobs } = useActiveJobs(user?.id ?? null);
@@ -1975,6 +1978,13 @@ const Dashboard = () => {
                                 title="Animer en vidéo"
                               >
                                 <Film className="w-3 h-3 text-white" />
+                              </button>
+                              <button
+                                onClick={(e) => { e.stopPropagation(); navigate("/studio/multi-plan", { state: { sourceImage: img.url } }); }}
+                                className="w-6 h-6 rounded-md bg-white/10 backdrop-blur-sm flex items-center justify-center hover:bg-white/25 transition-colors"
+                                title="Multi-Shot"
+                              >
+                                <Camera className="w-3 h-3 text-white" />
                               </button>
                               <button
                                 onClick={(e) => { e.stopPropagation(); handleRecreateImage(img); }}
