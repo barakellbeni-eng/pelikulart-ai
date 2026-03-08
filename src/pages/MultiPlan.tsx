@@ -97,7 +97,6 @@ const MultiPlan = () => {
       setMainResult(result);
       refreshBalance();
       toast.success("Image générée !");
-      scrollTo(resultRef);
     } catch (e: any) {
       toast.error(e.message);
     } finally {
