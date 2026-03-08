@@ -2018,6 +2018,25 @@ const Dashboard = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Media Picker Modal */}
+      <MediaPickerModal
+        open={showMediaPicker}
+        onClose={() => setShowMediaPicker(false)}
+        accept={activeTab === "video" ? ["image", "video"] : activeTab === "audio" ? ["image", "audio"] : ["image"]}
+        onSelect={(url, item) => {
+          const maxInput = selectedModel.maxInputImages || 1;
+          if (referenceImages.length >= maxInput) {
+            toast.error(`Maximum ${maxInput} images pour ce modèle`);
+            return;
+          }
+          // Use the signed display URL for preview, and the R2 URL for the actual reference
+          const displayUrl = item.displayUrl || url;
+          setReferenceImages((prev) => [...prev, displayUrl]);
+          setReferencePreviews((prev) => [...prev, displayUrl]);
+          toast.success("Média ajouté comme référence !");
+        }}
+      />
     </div>
   );
 };
