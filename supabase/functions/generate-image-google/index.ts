@@ -100,7 +100,7 @@ serve(async (req) => {
       fullPrompt += `\nResolution: ${modelSettings.resolution}`;
     }
 
-    const content: any[] = [{ type: "text", text: `Generate an image.\n${fullPrompt}` }];
+    const content: any[] = [{ type: "text", text: `Generate an image based on this description: ${fullPrompt}` }];
     if (image_url) {
       content.push({ type: "image_url", image_url: { url: image_url } });
     }
@@ -111,70 +111,90 @@ serve(async (req) => {
     for (let i = 0; i < safeNumImages; i++) {
       console.log(`Generating image ${i + 1}/${safeNumImages} via Lovable AI gateway`);
 
-      const aiResp = await fetch(LOVABLE_AI_ENDPOINT, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${LOVABLE_API_KEY}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model: "google/gemini-2.5-flash-image",
-          messages,
-          modalities: ["image", "text"],
-        }),
-      });
+      let imageCandidates: string[] = [];
+      const MAX_RETRIES = 2;
 
-      if (!aiResp.ok) {
-        const errText = await aiResp.text();
-        console.error("Lovable AI error:", aiResp.status, errText);
+      for (let attempt = 0; attempt <= MAX_RETRIES && imageCandidates.length === 0; attempt++) {
+        const promptMessages = attempt === 0
+          ? messages
+          : [{ role: "user", content: [{ type: "text", text: `Create a high quality image: ${fullPrompt}. Output only the image.` }] }];
 
-        if (savedImages.length === 0) {
-          await adminClient.rpc("add_cauris", { p_user_id: userId, p_amount: cost });
-
-          if (aiResp.status === 429) {
-            return new Response(
-              JSON.stringify({ error: "Limite de requêtes atteinte. Réessayez dans quelques secondes." }),
-              { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } },
-            );
-          }
-          if (aiResp.status === 402) {
-            return new Response(
-              JSON.stringify({ error: "Crédits IA insuffisants pour effectuer la génération." }),
-              { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } },
-            );
-          }
+        if (attempt > 0) {
+          console.log(`Retry attempt ${attempt} for image ${i + 1}`);
         }
-        break;
-      }
 
-      const aiData = await aiResp.json();
-      const choice = aiData?.choices?.[0];
-      const imageCandidates: string[] = [];
-
-      const messageImages = choice?.message?.images;
-      if (Array.isArray(messageImages)) {
-        for (const img of messageImages) {
-          const url = img?.image_url?.url;
-          if (typeof url === "string" && url) imageCandidates.push(url);
-        }
-      }
-
-      const messageContent = choice?.message?.content;
-      if (Array.isArray(messageContent)) {
-        for (const part of messageContent) {
-          const url = part?.image_url?.url;
-          if (part?.type === "image_url" && typeof url === "string" && url) {
-            imageCandidates.push(url);
-          }
-        }
-      }
-
-      if (!imageCandidates.length) {
-        console.error("No image returned by Lovable AI", {
-          hasMessageImages: Array.isArray(messageImages),
-          contentIsArray: Array.isArray(messageContent),
-          finishReason: choice?.finish_reason ?? null,
+        const aiResp = await fetch(LOVABLE_AI_ENDPOINT, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${LOVABLE_API_KEY}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            model: "google/gemini-2.5-flash-image",
+            messages: promptMessages,
+            modalities: ["image", "text"],
+          }),
         });
+
+        if (!aiResp.ok) {
+          const errText = await aiResp.text();
+          console.error("Lovable AI error:", aiResp.status, errText);
+
+          if (savedImages.length === 0 && attempt === MAX_RETRIES) {
+            await adminClient.rpc("add_cauris", { p_user_id: userId, p_amount: cost });
+
+            if (aiResp.status === 429) {
+              return new Response(
+                JSON.stringify({ error: "Limite de requêtes atteinte. Réessayez dans quelques secondes." }),
+                { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+              );
+            }
+            if (aiResp.status === 402) {
+              return new Response(
+                JSON.stringify({ error: "Crédits IA insuffisants pour effectuer la génération." }),
+                { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+              );
+            }
+          }
+          if (!aiResp.ok) break;
+        }
+
+        const aiData = await aiResp.json();
+        const choice = aiData?.choices?.[0];
+
+        // Check message.images array
+        const messageImages = choice?.message?.images;
+        if (Array.isArray(messageImages)) {
+          for (const img of messageImages) {
+            const url = img?.image_url?.url;
+            if (typeof url === "string" && url) imageCandidates.push(url);
+          }
+        }
+
+        // Check message.content array parts
+        const messageContent = choice?.message?.content;
+        if (Array.isArray(messageContent)) {
+          for (const part of messageContent) {
+            const url = part?.image_url?.url;
+            if (part?.type === "image_url" && typeof url === "string" && url) {
+              imageCandidates.push(url);
+            }
+          }
+        }
+
+        // Check if content is a base64 string directly
+        if (typeof messageContent === "string" && messageContent.startsWith("data:image")) {
+          imageCandidates.push(messageContent);
+        }
+
+        if (!imageCandidates.length) {
+          console.warn(`Attempt ${attempt}: No image returned`, {
+            hasMessageImages: Array.isArray(messageImages),
+            contentIsArray: Array.isArray(messageContent),
+            contentType: typeof messageContent,
+            finishReason: choice?.finish_reason ?? null,
+          });
+        }
       }
 
       for (const imageSource of imageCandidates) {
