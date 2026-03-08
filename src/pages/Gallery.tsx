@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { X, Download, Calendar, Cpu, Trash2, Loader2, Image as ImageIcon, Film, Music, Check } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
@@ -10,6 +10,8 @@ import VideoThumbnail from "@/components/VideoThumbnail";
 import DeleteConfirmModal from "@/components/DeleteConfirmModal";
 import GalleryCardMenu from "@/components/GalleryCardMenu";
 import { useGallerySelection } from "@/hooks/useGallerySelection";
+import { useGalleryPreferences } from "@/hooks/useGalleryPreferences";
+import GalleryToolbar from "@/components/GalleryToolbar";
 
 interface GalleryItem {
   id: string;
@@ -34,11 +36,38 @@ const Gallery = () => {
   const [selected, setSelected] = useState<GalleryItem | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<GalleryItem | null>(null);
-  const [filter, setFilter] = useState<"all" | "image" | "video" | "audio">("all");
   const [removingIds, setRemovingIds] = useState<Set<string>>(new Set());
   const [batchDeleting, setBatchDeleting] = useState(false);
 
-  const filtered = filter === "all" ? items : items.filter((i) => i.tool_type === filter);
+  const { prefs, update } = useGalleryPreferences();
+
+  // --- Filtering & Sorting ---
+  const filtered = useMemo(() => {
+    let list = [...items];
+
+    // Type filter
+    if (prefs.typeFilter !== "all") {
+      list = list.filter((i) => i.tool_type === prefs.typeFilter);
+    }
+
+    // Date filter
+    if (prefs.dateFilter !== "all") {
+      const now = new Date();
+      const start = new Date();
+      if (prefs.dateFilter === "today") start.setHours(0, 0, 0, 0);
+      else if (prefs.dateFilter === "week") start.setDate(now.getDate() - 7);
+      else if (prefs.dateFilter === "month") start.setMonth(now.getMonth() - 1);
+      list = list.filter((i) => new Date(i.created_at) >= start);
+    }
+
+    // Sort
+    if (prefs.sortBy === "newest") list.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    else if (prefs.sortBy === "oldest") list.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+    else if (prefs.sortBy === "type") list.sort((a, b) => a.tool_type.localeCompare(b.tool_type));
+    else if (prefs.sortBy === "model") list.sort((a, b) => a.model.localeCompare(b.model));
+
+    return list;
+  }, [items, prefs.typeFilter, prefs.dateFilter, prefs.sortBy]);
 
   const {
     selectedIds,
@@ -65,9 +94,7 @@ const Gallery = () => {
       .order("created_at", { ascending: false })
       .limit(100);
 
-    if (selectedProjectId) {
-      query = query.eq("project_id", selectedProjectId);
-    }
+    if (selectedProjectId) query = query.eq("project_id", selectedProjectId);
 
     const { data, error } = await query;
     if (error || !data) { setLoading(false); return; }
@@ -76,17 +103,13 @@ const Gallery = () => {
     const urls = validItems.map((d) => d.result_url);
     const signedUrls = await getSignedUrls(urls);
 
-    const resolved = validItems.map((item, i) => ({
-      ...item,
-      displayUrl: signedUrls[i],
-    }));
-
-    setItems(resolved);
+    setItems(validItems.map((item, i) => ({ ...item, displayUrl: signedUrls[i] })));
     setLoading(false);
   }, [user, selectedProjectId]);
 
   useEffect(() => { fetchGallery(); }, [fetchGallery]);
 
+  // --- Delete handlers (unchanged logic) ---
   const handleDelete = async (item: GalleryItem) => {
     if (deleting) return;
     setDeleting(item.id);
@@ -94,77 +117,43 @@ const Gallery = () => {
       const { data: sessionData } = await supabase.auth.getSession();
       const token = sessionData?.session?.access_token;
       if (!token) throw new Error("Non authentifié");
-
       const resp = await fetch(DELETE_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ job_id: item.id }),
       });
-
-      if (!resp.ok) {
-        const err = await resp.json().catch(() => ({ error: "Erreur" }));
-        throw new Error(err.error || "Erreur de suppression");
-      }
-
+      if (!resp.ok) { const err = await resp.json().catch(() => ({ error: "Erreur" })); throw new Error(err.error || "Erreur de suppression"); }
       setItems((prev) => prev.filter((i) => i.id !== item.id));
       if (selected?.id === item.id) setSelected(null);
       toast.success("Génération supprimée");
-    } catch (e: any) {
-      toast.error(e.message || "Erreur lors de la suppression");
-    } finally {
-      setDeleting(null);
-      setDeleteTarget(null);
-    }
+    } catch (e: any) { toast.error(e.message || "Erreur lors de la suppression"); }
+    finally { setDeleting(null); setDeleteTarget(null); }
   };
 
   const handleBatchDelete = async () => {
     if (batchDeleting || selectionCount === 0) return;
     setBatchDeleting(true);
-
     try {
       const { data: sessionData } = await supabase.auth.getSession();
       const token = sessionData?.session?.access_token;
       if (!token) throw new Error("Non authentifié");
-
       const idsToDelete = Array.from(selectedIds);
-
-      // Staggered removal animation
       setRemovingIds(new Set(idsToDelete));
-
-      // Wait for animation to complete (300ms + 50ms * count)
       await new Promise((r) => setTimeout(r, 300 + idsToDelete.length * 50));
-
-      // Delete all in parallel
       const results = await Promise.allSettled(
         idsToDelete.map((id) =>
-          fetch(DELETE_URL, {
-            method: "POST",
-            headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-            body: JSON.stringify({ job_id: id }),
-          })
+          fetch(DELETE_URL, { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }, body: JSON.stringify({ job_id: id }) })
         )
       );
-
       const successIds = new Set<string>();
-      results.forEach((r, i) => {
-        if (r.status === "fulfilled" && r.value.ok) successIds.add(idsToDelete[i]);
-      });
-
+      results.forEach((r, i) => { if (r.status === "fulfilled" && r.value.ok) successIds.add(idsToDelete[i]); });
       setItems((prev) => prev.filter((i) => !successIds.has(i.id)));
       clearSelection();
       setRemovingIds(new Set());
-
-      if (successIds.size === idsToDelete.length) {
-        toast.success(`${successIds.size} génération(s) supprimée(s)`);
-      } else {
-        toast.warning(`${successIds.size}/${idsToDelete.length} supprimée(s)`);
-      }
-    } catch (e: any) {
-      toast.error(e.message || "Erreur lors de la suppression");
-      setRemovingIds(new Set());
-    } finally {
-      setBatchDeleting(false);
-    }
+      if (successIds.size === idsToDelete.length) toast.success(`${successIds.size} génération(s) supprimée(s)`);
+      else toast.warning(`${successIds.size}/${idsToDelete.length} supprimée(s)`);
+    } catch (e: any) { toast.error(e.message || "Erreur lors de la suppression"); setRemovingIds(new Set()); }
+    finally { setBatchDeleting(false); }
   };
 
   const handleDownload = async (item: GalleryItem) => {
@@ -181,19 +170,12 @@ const Gallery = () => {
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(blobUrl);
-    } catch {
-      toast.error("Erreur lors du téléchargement");
-    }
+    } catch { toast.error("Erreur lors du téléchargement"); }
   };
 
   const handleMoveToProject = async (item: GalleryItem, projectId: string | null) => {
-    const { error } = await supabase
-      .from("generation_jobs")
-      .update({ project_id: projectId })
-      .eq("id", item.id);
-
+    const { error } = await supabase.from("generation_jobs").update({ project_id: projectId }).eq("id", item.id);
     if (error) { toast.error("Erreur lors du déplacement"); return; }
-
     setItems((prev) => prev.map((i) => (i.id === item.id ? { ...i, project_id: projectId } : i)));
     const projectName = projectId ? projects.find((p) => p.id === projectId)?.name || "projet" : "aucun projet";
     toast.success(`Déplacé vers ${projectName}`);
@@ -205,13 +187,6 @@ const Gallery = () => {
     return <ImageIcon className="w-3 h-3" />;
   };
 
-  const filterButtons: { key: typeof filter; label: string }[] = [
-    { key: "all", label: "Tout" },
-    { key: "image", label: "Images" },
-    { key: "video", label: "Vidéos" },
-    { key: "audio", label: "Audio" },
-  ];
-
   const handleCardClick = (item: GalleryItem, e: React.MouseEvent) => {
     if (isDragging) return;
     if (e.ctrlKey || e.metaKey || selectionCount > 0) {
@@ -221,42 +196,50 @@ const Gallery = () => {
     }
   };
 
+  // --- Grid classes based on card size & view type ---
+  const gridClass = useMemo(() => {
+    if (prefs.viewType === "masonry") {
+      if (prefs.cardSize === "S") return "columns-3 md:columns-4 lg:columns-5 gap-2 space-y-2";
+      if (prefs.cardSize === "L") return "columns-1 md:columns-2 gap-4 space-y-4";
+      return "columns-2 md:columns-3 gap-3 space-y-3";
+    }
+    // Grid view
+    if (prefs.cardSize === "S") return "grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2";
+    if (prefs.cardSize === "L") return "grid grid-cols-1 md:grid-cols-2 gap-4";
+    return "grid grid-cols-2 md:grid-cols-3 gap-3";
+  }, [prefs.cardSize, prefs.viewType]);
+
+  const isGrid = prefs.viewType === "grid";
+
   return (
     <div className="min-h-screen pb-24 md:pb-8">
+      {/* Header */}
       <header className="sticky top-0 z-50 glass border-b border-white/[0.06] px-4 py-3">
-        <div className="max-w-4xl mx-auto flex items-center justify-between">
+        <div className="max-w-5xl mx-auto flex items-center justify-between">
           <div>
             <h1 className="text-xl font-bold">
               <span className="text-gradient-gold">Mes Générations</span>
             </h1>
             <p className="text-xs text-muted-foreground mt-0.5">{filtered.length} créations</p>
           </div>
-          <div className="flex gap-1">
-            {filterButtons.map((f) => (
-              <button
-                key={f.key}
-                onClick={() => setFilter(f.key)}
-                className={`px-3 py-1 text-xs rounded-full transition-colors ${
-                  filter === f.key
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-muted/50 text-muted-foreground hover:bg-muted"
-                }`}
-              >
-                {f.label}
-              </button>
-            ))}
-          </div>
         </div>
       </header>
 
+      {/* Toolbar */}
+      <div className="sticky top-[57px] z-40">
+        <div className="max-w-5xl mx-auto">
+          <GalleryToolbar prefs={prefs} update={update} />
+        </div>
+      </div>
+
+      {/* Main content */}
       <main
         ref={containerRef}
-        className="max-w-4xl mx-auto px-4 pt-6 relative select-none"
+        className="max-w-5xl mx-auto px-4 pt-6 relative select-none"
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
       >
-        {/* Drag selection rectangle */}
         {dragBox && (
           <div
             className="absolute border-2 border-primary/50 bg-primary/10 rounded-sm pointer-events-none z-40"
@@ -273,7 +256,7 @@ const Gallery = () => {
             <p className="text-sm">Aucune génération pour le moment</p>
           </div>
         ) : (
-          <div className="columns-2 md:columns-3 gap-3 space-y-3">
+          <div className={gridClass}>
             <AnimatePresence mode="popLayout">
               {filtered.map((item, i) => {
                 const removing = removingIds.has(item.id);
@@ -292,11 +275,9 @@ const Gallery = () => {
                     }
                     exit={{ opacity: 0, scale: 0.85, transition: { duration: 0.3, ease: "easeOut" } }}
                     transition={{ delay: i * 0.03, layout: { duration: 0.4, ease: "easeInOut" } }}
-                    className={`glass-card overflow-hidden cursor-pointer group break-inside-avoid relative transition-all duration-200 ${
-                      isSelected(item.id)
-                        ? "ring-2 ring-primary ring-offset-2 ring-offset-background"
-                        : ""
-                    }`}
+                    className={`glass-card overflow-hidden cursor-pointer group relative transition-all duration-200 ${
+                      isGrid ? "break-inside-auto" : "break-inside-avoid"
+                    } ${isSelected(item.id) ? "ring-2 ring-primary ring-offset-2 ring-offset-background" : ""}`}
                     onClick={(e) => handleCardClick(item, e)}
                   >
                     {/* Selection checkmark */}
@@ -313,10 +294,15 @@ const Gallery = () => {
                       )}
                     </AnimatePresence>
 
-                    {/* Media area */}
+                    {/* Media */}
                     <div className="relative">
                       {item.tool_type === "image" ? (
-                        <img src={item.displayUrl} alt={item.prompt} className="w-full object-cover" loading="lazy" />
+                        <img
+                          src={item.displayUrl}
+                          alt={item.prompt}
+                          className={`w-full object-cover ${isGrid ? "aspect-square" : ""}`}
+                          loading="lazy"
+                        />
                       ) : item.tool_type === "video" ? (
                         <div className="relative">
                           <VideoThumbnail src={item.displayUrl || ""} />
@@ -327,7 +313,7 @@ const Gallery = () => {
                         </div>
                       )}
 
-                      {/* Hover action buttons - z-30 to be above video overlay */}
+                      {/* Hover actions */}
                       <div className="absolute top-2 right-2 z-30 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                         <button
                           onClick={(e) => { e.stopPropagation(); handleDownload(item); }}
@@ -355,16 +341,28 @@ const Gallery = () => {
                       </div>
                     </div>
 
-                    {/* Info */}
-                    <div className="p-3">
-                      <p className="text-xs text-muted-foreground line-clamp-2">{item.prompt}</p>
-                      <div className="flex items-center gap-2 mt-2">
-                        <span className="text-[10px] font-medium text-primary bg-primary/10 px-2 py-0.5 rounded-full flex items-center gap-1">
-                          {typeIcon(item.tool_type)}
-                          {item.model}
-                        </span>
+                    {/* Info (conditionally shown) */}
+                    {(prefs.showPrompt || prefs.showMeta) && (
+                      <div className="p-3">
+                        {prefs.showPrompt && (
+                          <p className="text-xs text-muted-foreground line-clamp-2">{item.prompt}</p>
+                        )}
+                        {prefs.showMeta && (
+                          <div className="flex items-center gap-2 mt-2 flex-wrap">
+                            <span className="text-[10px] font-medium text-primary bg-primary/10 px-2 py-0.5 rounded-full flex items-center gap-1">
+                              {typeIcon(item.tool_type)}
+                              {item.model}
+                            </span>
+                            <span className="text-[10px] text-muted-foreground">
+                              {new Date(item.created_at).toLocaleDateString("fr-FR")}
+                            </span>
+                            <span className="text-[10px] text-muted-foreground">
+                              🐚 {item.credits_used}
+                            </span>
+                          </div>
+                        )}
                       </div>
-                    </div>
+                    )}
                   </motion.div>
                 );
               })}
@@ -387,10 +385,7 @@ const Gallery = () => {
               {selectionCount} élément{selectionCount > 1 ? "s" : ""} sélectionné{selectionCount > 1 ? "s" : ""}
             </span>
             <div className="w-px h-5 bg-border" />
-            <button
-              onClick={clearSelection}
-              className="px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted/50 transition-colors"
-            >
+            <button onClick={clearSelection} className="px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted/50 transition-colors">
               Annuler
             </button>
             <button
@@ -398,11 +393,7 @@ const Gallery = () => {
               disabled={batchDeleting}
               className="px-4 py-1.5 text-sm bg-destructive text-destructive-foreground rounded-lg hover:bg-destructive/90 transition-colors font-medium flex items-center gap-2"
             >
-              {batchDeleting ? (
-                <Loader2 className="w-3.5 h-3.5 animate-spin" />
-              ) : (
-                <Trash2 className="w-3.5 h-3.5" />
-              )}
+              {batchDeleting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
               Supprimer la sélection
             </button>
           </motion.div>
@@ -432,7 +423,6 @@ const Gallery = () => {
                   <X className="w-5 h-5" />
                 </button>
               </div>
-
               {selected.tool_type === "image" ? (
                 <img src={selected.displayUrl} alt={selected.prompt} className="w-full rounded-xl" />
               ) : selected.tool_type === "video" ? (
@@ -440,7 +430,6 @@ const Gallery = () => {
               ) : (
                 <audio src={selected.displayUrl} controls className="w-full" />
               )}
-
               <div className="space-y-3">
                 <p className="text-sm text-foreground">{selected.prompt}</p>
                 <div className="flex items-center gap-4 text-xs text-muted-foreground">
@@ -462,7 +451,6 @@ const Gallery = () => {
         )}
       </AnimatePresence>
 
-      {/* Delete confirmation */}
       <DeleteConfirmModal
         open={!!deleteTarget}
         loading={!!deleting}
