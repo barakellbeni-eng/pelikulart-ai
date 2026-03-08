@@ -403,8 +403,12 @@ const Gallery = () => {
                           {/* Ripple icon */}
                           <div className="relative w-12 h-12 flex items-center justify-center">
                             <Music className="w-6 h-6 text-primary relative z-10" />
-                            <div className="ripple-ring absolute inset-0 rounded-full border-[1.5px] border-primary/30 hidden audio-playing:block" />
-                            <div className="ripple-ring-delayed absolute -inset-2 rounded-full border-[1.5px] border-primary/30 hidden audio-playing:block" />
+                            {playingAudioId === item.id && (
+                              <>
+                                <div className="ripple-ring absolute inset-0 rounded-full border-[1.5px] border-primary/30" />
+                                <div className="ripple-ring-delayed absolute -inset-2 rounded-full border-[1.5px] border-primary/30" />
+                              </>
+                            )}
                           </div>
 
                           {/* Waveform bars */}
