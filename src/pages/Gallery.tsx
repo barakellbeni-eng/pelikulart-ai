@@ -187,8 +187,19 @@ const Gallery = () => {
     return <ImageIcon className="w-3 h-3" />;
   };
 
+  const wasDraggingRef = useRef(false);
+
+  const handleContainerMouseUp = useCallback((e: React.MouseEvent) => {
+    wasDraggingRef.current = isDragging;
+    handleMouseUp();
+  }, [handleMouseUp, isDragging]);
+
   const handleCardClick = (item: GalleryItem, e: React.MouseEvent) => {
-    if (isDragging) return;
+    // Ignore click if we just finished a drag-select
+    if (wasDraggingRef.current) {
+      wasDraggingRef.current = false;
+      return;
+    }
     if (e.ctrlKey || e.metaKey || selectionCount > 0) {
       toggleSelect(item.id, e.ctrlKey || e.metaKey);
     } else {
