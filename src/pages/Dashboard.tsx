@@ -2017,7 +2017,7 @@ const Dashboard = () => {
       <MediaPickerModal
         open={showMediaPicker}
         onClose={() => setShowMediaPicker(false)}
-        accept={activeTab === "video" ? ["image", "video"] : activeTab === "audio" ? ["image", "audio"] : ["image"]}
+        accept={["image", "video", "audio"]}
         onSelect={(url, item) => {
           const maxInput = selectedModel.maxInputImages || 1;
           if (referenceImages.length >= maxInput) {
