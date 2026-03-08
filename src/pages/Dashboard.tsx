@@ -1695,7 +1695,7 @@ const Dashboard = () => {
                     </motion.div>
                   )}
 
-                  {allItems.map((item, i) => {
+                  {dateFilteredItems.map((item, i) => {
                     const model = (() => {
                       if (item.type === "image") {
                         const img = item.data as GeneratedImage;
@@ -1900,7 +1900,7 @@ const Dashboard = () => {
                   )
                 )}
 
-                {allItems.map((item, i) => {
+                {dateFilteredItems.map((item, i) => {
                   if (item.type === "image") {
                     const img = item.data as GeneratedImage;
                     const imageSelectionKey = getImageSelectionKey(img);
