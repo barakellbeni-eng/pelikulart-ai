@@ -573,6 +573,117 @@ export const FAL_MODELS: FalModel[] = [
       { key: "duration", label: "Durée (secondes)", type: "slider", min: 1, max: 15, step: 1, defaultValue: 5 },
     ],
   },
+
+  // ════════════════════════════════════════
+  //  KIE AI MODELS — Alternative Provider
+  // ════════════════════════════════════════
+
+  // ── KIE AI Image Models ──
+  {
+    id: "kie-nano-banana", type: "image", brand: "KIE·Google", name: "Nano Banana (KIE)",
+    endpoint: "kie", provider: "kie", kieModel: "google/nano-banana",
+    description: "Google Nano Banana via KIE AI", icon: "◆", color: "from-amber-500/20 to-amber-500/5",
+    maxImages: 4, supportsImageInput: false, caurisCost: 2, estimatedTime: "~5s",
+    settings: [
+      { ...ASPECT_RATIO_NANO_BANANA, key: "image_size" },
+    ],
+  },
+  {
+    id: "kie-nano-banana-pro", type: "image", brand: "KIE·Google", name: "Nano Banana Pro (KIE)",
+    endpoint: "kie", provider: "kie", kieModel: "google/nano-banana-pro",
+    description: "Google Nano Banana Pro via KIE AI", icon: "◈", color: "from-amber-500/20 to-amber-500/5",
+    maxImages: 4, supportsImageInput: false, caurisCost: 3, estimatedTime: "~5s",
+    settings: [
+      { ...ASPECT_RATIO_NANO_BANANA, key: "image_size" },
+    ],
+  },
+  {
+    id: "kie-nano-banana-edit", type: "image", brand: "KIE·Google", name: "Nano Banana Edit (KIE)",
+    endpoint: "kie", provider: "kie", kieModel: "google/nano-banana-edit",
+    description: "Édition d'image via KIE AI", icon: "◫", color: "from-amber-500/20 to-amber-500/5",
+    maxImages: 1, supportsImageInput: true, maxInputImages: 5, caurisCost: 4, estimatedTime: "~6s",
+    settings: [
+      { ...ASPECT_RATIO_NANO_BANANA, key: "image_size" },
+    ],
+  },
+  {
+    id: "kie-imagen4", type: "image", brand: "KIE·Google", name: "Imagen 4 (KIE)",
+    endpoint: "kie", provider: "kie", kieModel: "google/imagen4",
+    description: "Google Imagen 4 via KIE AI", icon: "○", color: "from-amber-500/20 to-amber-500/5",
+    maxImages: 4, supportsImageInput: false, caurisCost: 8, estimatedTime: "~10s",
+    settings: [ASPECT_RATIO_IMAGEN4],
+  },
+  {
+    id: "kie-imagen4-fast", type: "image", brand: "KIE·Google", name: "Imagen 4 Fast (KIE)",
+    endpoint: "kie", provider: "kie", kieModel: "google/imagen4-fast",
+    description: "Google Imagen 4 Fast via KIE AI", icon: "▹", color: "from-amber-500/20 to-amber-500/5",
+    maxImages: 4, supportsImageInput: false, caurisCost: 6, estimatedTime: "~5s",
+    settings: [ASPECT_RATIO_IMAGEN4],
+  },
+  {
+    id: "kie-imagen4-ultra", type: "image", brand: "KIE·Google", name: "Imagen 4 Ultra (KIE)",
+    endpoint: "kie", provider: "kie", kieModel: "google/imagen4-ultra",
+    description: "Google Imagen 4 Ultra via KIE AI", icon: "◈", color: "from-amber-500/20 to-amber-500/5",
+    maxImages: 4, supportsImageInput: false, caurisCost: 10, estimatedTime: "~15s",
+    settings: [ASPECT_RATIO_IMAGEN4],
+  },
+  {
+    id: "kie-flux2-pro-t2i", type: "image", brand: "KIE·FLUX", name: "Flux 2 Pro (KIE)",
+    endpoint: "kie", provider: "kie", kieModel: "flux-2/pro-text-to-image",
+    description: "FLUX 2 Pro via KIE AI", icon: "◆", color: "from-amber-500/20 to-amber-500/5",
+    maxImages: 4, supportsImageInput: false, caurisCost: 8, estimatedTime: "~12s",
+    settings: [ASPECT_RATIO_FLUX_PRO],
+  },
+  {
+    id: "kie-seedream-v45", type: "image", brand: "KIE·Seedream", name: "Seedream 4.5 (KIE)",
+    endpoint: "kie", provider: "kie", kieModel: "seedream-4.5",
+    description: "Seedream 4.5 via KIE AI", icon: "◈", color: "from-amber-500/20 to-amber-500/5",
+    maxImages: 4, supportsImageInput: false, caurisCost: 6, estimatedTime: "~5s",
+    settings: [
+      { key: "aspect_ratio", label: "Ratio", type: "select", options: [
+        { value: "1:1", label: "1:1 — Carré" }, { value: "16:9", label: "16:9 — Cinématique" }, { value: "9:16", label: "9:16 — Vertical" },
+        { value: "4:3", label: "4:3 — Photo classique" }, { value: "3:4", label: "3:4 — Portrait" },
+      ], defaultValue: "1:1" },
+    ],
+  },
+
+  // ── KIE AI Video Models ──
+  {
+    id: "kie-kling-30", type: "video", brand: "KIE·Kling", name: "Kling 3.0 (KIE)",
+    endpoint: "kie", provider: "kie", kieModel: "kling-3.0/video",
+    description: "Kling 3.0 via KIE AI — multi-shot & elements", icon: "◆", color: "from-amber-500/20 to-amber-500/5",
+    maxImages: 1, supportsImageInput: true, caurisCost: 60, caurisCost10s: 120, estimatedTime: "~2min",
+    settings: [
+      { key: "duration", label: "Durée", type: "select", options: [
+        { value: "5", label: "5s" }, { value: "10", label: "10s" },
+      ], defaultValue: "5" },
+      { key: "aspect_ratio", label: "Ratio", type: "select", options: [
+        { value: "16:9", label: "16:9" }, { value: "9:16", label: "9:16" }, { value: "1:1", label: "1:1" },
+      ], defaultValue: "16:9" },
+      { key: "mode", label: "Mode", type: "select", options: [
+        { value: "std", label: "Standard" }, { value: "pro", label: "Pro" },
+      ], defaultValue: "std" },
+      { key: "sound", label: "Effets sonores", type: "toggle", defaultValue: false },
+    ],
+  },
+
+  // ── KIE AI Audio Models ──
+  {
+    id: "kie-elevenlabs-sfx", type: "audio", brand: "KIE·ElevenLabs", name: "Sound Effects v2 (KIE)",
+    endpoint: "kie", provider: "kie", kieModel: "elevenlabs/sound-effect-v2",
+    description: "Effets sonores via KIE AI + ElevenLabs", icon: "◆", color: "from-amber-500/20 to-amber-500/5",
+    maxImages: 1, supportsImageInput: false, caurisCost: 5, estimatedTime: "~10s",
+    settings: [
+      { key: "duration", label: "Durée (secondes)", type: "slider", min: 1, max: 22, step: 1, defaultValue: 5 },
+    ],
+  },
+  {
+    id: "kie-elevenlabs-tts", type: "audio", brand: "KIE·ElevenLabs", name: "TTS Multilingual (KIE)",
+    endpoint: "kie", provider: "kie", kieModel: "elevenlabs/text-to-speech-multilingual-v2",
+    description: "Text-to-Speech multilingue via KIE AI", icon: "○", color: "from-amber-500/20 to-amber-500/5",
+    maxImages: 1, supportsImageInput: false, caurisCost: 3, estimatedTime: "~5s",
+    settings: [],
+  },
 ];
 
 // ─── Helpers ───
