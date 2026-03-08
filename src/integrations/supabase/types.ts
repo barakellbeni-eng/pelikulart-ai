@@ -179,6 +179,45 @@ export type Database = {
         }
         Relationships: []
       }
+      user_media: {
+        Row: {
+          created_at: string
+          deleted_at: string | null
+          file_name: string
+          file_size: number
+          file_type: string
+          id: string
+          mime_type: string
+          r2_key: string
+          r2_url: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          deleted_at?: string | null
+          file_name: string
+          file_size?: number
+          file_type: string
+          id?: string
+          mime_type: string
+          r2_key: string
+          r2_url?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          deleted_at?: string | null
+          file_name?: string
+          file_size?: number
+          file_type?: string
+          id?: string
+          mime_type?: string
+          r2_key?: string
+          r2_url?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       waitlist: {
         Row: {
           created_at: string
