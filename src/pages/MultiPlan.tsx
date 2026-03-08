@@ -349,6 +349,25 @@ const MultiPlan = () => {
             </div>
           </div>
 
+          {/* Generate button - primary action */}
+          <button
+            onClick={handleGenerate}
+            disabled={!sourceImage || isGenerating || !user}
+            className="w-full py-2.5 rounded-lg bg-primary text-primary-foreground text-xs font-semibold flex items-center justify-center gap-2 disabled:opacity-25 disabled:cursor-not-allowed transition-all hover:brightness-110"
+          >
+            {isGenerating ? (
+              <>
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                Génération...
+              </>
+            ) : (
+              <>
+                <Camera className="w-3.5 h-3.5" />
+                Générer · 2 cauris
+              </>
+            )}
+          </button>
+
           {/* Ratio */}
           <div className="space-y-1.5">
             <label className="text-[10px] text-muted-foreground uppercase tracking-widest">Ratio</label>
