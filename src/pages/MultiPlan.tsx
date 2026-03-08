@@ -201,8 +201,8 @@ const MultiPlan = () => {
                   exit={{ opacity: 0 }}
                 >
                   {isGenerating && !mainResult ? (
-                    <div className="aspect-video rounded-lg bg-muted/5 flex items-center justify-center border border-border/20">
-                      <Loader2 className="w-6 h-6 text-primary/30 animate-spin" />
+                    <div className="aspect-video rounded-lg bg-muted/5 flex flex-col items-center justify-center border border-border/20 gap-3">
+                      <GenerationProgress estimatedTime="~15s" />
                     </div>
                   ) : mainResult ? (
                     <div className="relative group rounded-lg overflow-hidden bg-black/30">
