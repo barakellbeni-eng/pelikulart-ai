@@ -58,6 +58,12 @@ const typeOptions: { key: TypeFilter; label: string }[] = [
   { key: "audio", label: "Audio" },
 ];
 
+const sourceOptions: { key: SourceFilter; label: string }[] = [
+  { key: "all", label: "Tout" },
+  { key: "standard", label: "Standard" },
+  { key: "multiplan", label: "Multi-Plan" },
+];
+
 function Chip({
   active,
   onClick,
