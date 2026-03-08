@@ -89,6 +89,7 @@ interface GeneratedVideo {
   url: string;
   prompt?: string;
   timestamp?: number;
+  modelId?: string;
 }
 
 interface GeneratedAudio {
@@ -709,7 +710,7 @@ const Dashboard = () => {
                 .single();
 
               if (jobRow?.status === "completed" && jobRow.result_url) {
-                setGalleryVideos((prev) => [{ url: jobRow.result_url!, prompt: currentPrompt, timestamp: Date.now() }, ...prev]);
+                setGalleryVideos((prev) => [{ url: jobRow.result_url!, prompt: currentPrompt, timestamp: Date.now(), modelId: selectedModel.id }, ...prev]);
                 toast.success("Vidéo générée !");
                 refetchCauris();
                 completeGeneration();
@@ -740,7 +741,7 @@ const Dashboard = () => {
         const data = await resp.json();
 
         if (data.video_url) {
-          setGalleryVideos((prev) => [{ url: data.video_url, prompt: currentPrompt, timestamp: Date.now() }, ...prev]);
+          setGalleryVideos((prev) => [{ url: data.video_url, prompt: currentPrompt, timestamp: Date.now(), modelId: selectedModel.id }, ...prev]);
           toast.success("Vidéo générée !");
           refetchCauris();
           completeGeneration();
@@ -761,7 +762,7 @@ const Dashboard = () => {
               const pollData = await pollResp.json();
 
               if (pollData.status === "COMPLETED" && pollData.video_url) {
-                setGalleryVideos((prev) => [{ url: pollData.video_url, prompt: currentPrompt, timestamp: Date.now() }, ...prev]);
+                setGalleryVideos((prev) => [{ url: pollData.video_url, prompt: currentPrompt, timestamp: Date.now(), modelId: selectedModel.id }, ...prev]);
                 toast.success("Vidéo générée !");
                 refetchCauris();
                 completeGeneration();
@@ -2247,12 +2248,22 @@ const Dashboard = () => {
                           </button>
 
                           {/* Type badge */}
-                          <div className="absolute top-1.5 left-1.5">
+                          <div className="absolute top-1.5 left-1.5 z-10">
                             <span className="flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-blue-500/80 backdrop-blur-sm text-[9px] font-bold text-white uppercase">
                               <Image className="w-2.5 h-2.5" />
                               IMG
                             </span>
                           </div>
+                          {/* Model logo — always visible, bottom-right */}
+                          {(() => {
+                            const model = img.modelId ? getModelById(img.modelId) : null;
+                            const logo = model ? getBrandLogo(model.brand, model.id) : null;
+                            return logo ? (
+                              <div className="absolute bottom-1.5 right-1.5 z-10">
+                                <img src={logo} alt={model!.brand} className="w-5 h-5 rounded object-contain pointer-events-none drop-shadow-md" draggable={false} onContextMenu={(e) => e.preventDefault()} />
+                              </div>
+                            ) : null;
+                          })()}
                           <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                             <div className="absolute top-1.5 right-11 flex items-center gap-1">
                               {img.prompt && (
@@ -2287,16 +2298,7 @@ const Dashboard = () => {
                               </button>
                             </div>
                             <div className="absolute bottom-0 left-0 right-0 p-2.5 flex items-end justify-between">
-                              {/* Model logo bottom-left */}
-                              {(() => {
-                                const model = img.modelId ? getModelById(img.modelId) : null;
-                                const logo = model ? getBrandLogo(model.brand, model.id) : null;
-                                return logo ? (
-                                  <img src={logo} alt={model!.brand} className="w-5 h-5 rounded object-contain pointer-events-none" draggable={false} />
-                                ) : (
-                                  <span className="text-[10px] text-white/80 font-medium">{img.resolution || ""}</span>
-                                );
-                              })()}
+                              <span className="text-[10px] text-white/80 font-medium">{img.resolution || ""}</span>
                               <div className="flex items-center gap-1.5">
                                 <button
                                   onClick={(e) => { e.stopPropagation(); handleDeleteImage(img); }}
@@ -2362,6 +2364,16 @@ const Dashboard = () => {
                             VID
                           </span>
                         </div>
+                        {/* Model logo — always visible, bottom-right */}
+                        {(() => {
+                          const model = vid.modelId ? getModelById(vid.modelId) : null;
+                          const logo = model ? getBrandLogo(model.brand, model.id) : null;
+                          return logo ? (
+                            <div className="absolute bottom-1.5 right-1.5 z-10">
+                              <img src={logo} alt={model!.brand} className="w-5 h-5 rounded object-contain pointer-events-none drop-shadow-md" draggable={false} onContextMenu={(e) => e.preventDefault()} />
+                            </div>
+                          ) : null;
+                        })()}
                         <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
                           <div className="absolute top-1.5 right-11 flex items-center gap-1">
                             {vid.prompt && (
