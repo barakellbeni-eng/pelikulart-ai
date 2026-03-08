@@ -1832,6 +1832,27 @@ const Dashboard = () => {
             ))}
           </div>
           <div className="flex items-center gap-2">
+            {/* View toggle: Grid / List / Masonry */}
+            <div className="flex items-center bg-card border border-border rounded-lg overflow-hidden h-8">
+              {([
+                { value: "grid" as const, icon: LayoutGrid, label: "Grille" },
+                { value: "row" as const, icon: Grid3X3, label: "Liste" },
+              ] as const).map((v) => (
+                <button
+                  key={v.value}
+                  onClick={() => setGalleryLayout(v.value)}
+                  className={`w-8 h-8 flex items-center justify-center transition-colors border-r border-border last:border-r-0 ${
+                    galleryLayout === v.value
+                      ? "bg-primary/10 text-primary"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                  title={v.label}
+                >
+                  <v.icon className="w-3.5 h-3.5" />
+                </button>
+              ))}
+            </div>
+
             {/* Size slider */}
             <div className="flex items-center gap-1.5 bg-card border border-border rounded-lg px-2.5 h-8">
               <ZoomOut className="w-3 h-3 text-muted-foreground" />
