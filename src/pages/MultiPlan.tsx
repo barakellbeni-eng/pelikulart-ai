@@ -61,6 +61,7 @@ interface PersistedItem {
 const MultiPlan = () => {
   const { user } = useAuth();
   const { refetch: refreshBalance } = useCauris();
+  const navigate = useNavigate();
   const location = useLocation();
 
   const [sourceImage, setSourceImage] = useState<string | null>(null);
