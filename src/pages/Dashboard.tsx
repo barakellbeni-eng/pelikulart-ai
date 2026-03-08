@@ -1933,6 +1933,93 @@ const Dashboard = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Auth Gate Modal */}
+      <AnimatePresence>
+        {showAuthModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+            onClick={() => setShowAuthModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-card rounded-2xl p-8 max-w-sm w-full text-center shadow-2xl border border-border"
+            >
+              <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
+                <User className="w-8 h-8 text-primary" />
+              </div>
+              <h3 className="text-xl font-bold text-foreground mb-2">Connecte-toi pour générer</h3>
+              <p className="text-muted-foreground text-sm mb-6">
+                Crée un compte gratuit ou connecte-toi pour commencer à générer des images, vidéos et audios avec l'IA.
+              </p>
+              <a
+                href="/auth"
+                className="btn-generate w-full flex items-center justify-center gap-2 text-sm py-3"
+              >
+                <Sparkles className="w-4 h-4" />
+                Se connecter / S'inscrire
+              </a>
+              <button
+                onClick={() => setShowAuthModal(false)}
+                className="mt-3 text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Continuer à explorer
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Credits Gate Modal */}
+      <AnimatePresence>
+        {showCreditsModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+            onClick={() => setShowCreditsModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-card rounded-2xl p-8 max-w-sm w-full text-center shadow-2xl border border-border"
+            >
+              <div className="w-16 h-16 rounded-full bg-amber-500/10 flex items-center justify-center mx-auto mb-4">
+                <Sparkles className="w-8 h-8 text-amber-500" />
+              </div>
+              <h3 className="text-xl font-bold text-foreground mb-2">Crédits insuffisants</h3>
+              <p className="text-muted-foreground text-sm mb-2">
+                Il te faut <span className="font-bold text-foreground">{calculateCaurisCost(selectedModel, modelSettings, numImages)} cauris</span> pour cette génération.
+              </p>
+              <p className="text-muted-foreground text-sm mb-6">
+                Ton solde actuel : <span className="font-bold text-foreground">{balance} cauris</span>
+              </p>
+              <a
+                href="/pricing"
+                className="btn-generate w-full flex items-center justify-center gap-2 text-sm py-3"
+              >
+                <Wand2 className="w-4 h-4" />
+                Acheter des cauris
+              </a>
+              <button
+                onClick={() => setShowCreditsModal(false)}
+                className="mt-3 text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Fermer
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
