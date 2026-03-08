@@ -217,10 +217,13 @@ const MultiPlan = () => {
   const handleCutAll = async () => {
     if (!cadrageSource || !user || isCuttingAll || loadingPlan !== null) return;
     setIsCuttingAll(true);
+    setQueueStatus({ 1: 'waiting', 2: 'waiting', 3: 'waiting', 4: 'waiting' });
 
     try {
       for (let i = 1; i <= 4; i++) {
+        setQueueStatus(prev => ({ ...prev, [i]: 'running' }));
         await callGenerate(cadrageSource, selectedPlan, i);
+        setQueueStatus(prev => ({ ...prev, [i]: 'done' }));
       }
       await loadGallery();
       refreshBalance();
@@ -231,6 +234,8 @@ const MultiPlan = () => {
       refreshBalance();
     } finally {
       setIsCuttingAll(false);
+      // Reset queue after a short delay so user sees the "done" state
+      setTimeout(() => setQueueStatus({ 1: 'idle', 2: 'idle', 3: 'idle', 4: 'idle' }), 3000);
     }
   };
 
