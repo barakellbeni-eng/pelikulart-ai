@@ -258,11 +258,12 @@ const MultiPlan = () => {
                 key={`plan-${idx}`}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="relative group rounded-lg overflow-hidden bg-black/30"
+                className="relative group rounded-lg overflow-hidden bg-black/30 cursor-pointer"
+                onClick={() => setPreviewImage({ url: result.url, label: `Cadrage ${Number(idx) + 1}` })}
               >
                 <img
                   src={result.url}
-                  alt={`Plan ${Number(idx) + 1}`}
+                  alt={`Cadrage ${Number(idx) + 1}`}
                   className="w-full max-h-[50vh] object-contain"
                   draggable
                   onDragStart={(e) => {
@@ -270,14 +271,22 @@ const MultiPlan = () => {
                     e.dataTransfer.effectAllowed = "copy";
                   }}
                 />
-                <button
-                  onClick={() => handleDownload(result.url, `plan-${Number(idx) + 1}`)}
-                  className="absolute top-2 right-2 w-7 h-7 rounded bg-background/60 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                >
-                  <Download className="w-3.5 h-3.5 text-foreground" />
-                </button>
+                <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <button
+                    onClick={(e) => { e.stopPropagation(); handleDownload(result.url, `cadrage-${Number(idx) + 1}`); }}
+                    className="w-7 h-7 rounded-lg flex items-center justify-center bg-background/70 backdrop-blur-sm hover:bg-background/90 transition-all text-muted-foreground hover:text-foreground shadow-sm"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setPlanResults((prev) => { const next = { ...prev }; delete next[Number(idx)]; return next; }); }}
+                    className="w-7 h-7 rounded-lg flex items-center justify-center bg-destructive/80 backdrop-blur-sm hover:bg-destructive transition-all text-destructive-foreground shadow-sm"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
                 <div className="absolute bottom-2 left-2 px-2 py-0.5 rounded bg-background/60 backdrop-blur-sm text-[9px] uppercase tracking-widest text-muted-foreground">
-                  Plan {Number(idx) + 1}
+                  Cadrage {Number(idx) + 1}
                 </div>
               </motion.div>
             ))}
