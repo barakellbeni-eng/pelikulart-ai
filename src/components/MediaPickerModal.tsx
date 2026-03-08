@@ -236,27 +236,42 @@ export default function MediaPickerModal({ open, onClose, onSelect, accept, titl
     if (file) handleUpload(file);
   };
 
-  // Delete handler (uploads only)
+  // Delete handler (uploads and generations)
   const handleDelete = async (item: MediaItem) => {
-    if (deleting || item.source !== "upload") return;
+    if (deleting) return;
     setDeleting(item.id);
     try {
       const { data: sessionData } = await supabase.auth.getSession();
       const token = sessionData?.session?.access_token;
       if (!token) throw new Error("Non authentifié");
 
-      const resp = await fetch(DELETE_MEDIA_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ media_id: item.id }),
-      });
-
-      if (!resp.ok) {
-        const err = await resp.json().catch(() => ({ error: "Erreur" }));
-        throw new Error(err.error || "Erreur de suppression");
+      if (item.source === "upload") {
+        const resp = await fetch(DELETE_MEDIA_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ media_id: item.id }),
+        });
+        if (!resp.ok) {
+          const err = await resp.json().catch(() => ({ error: "Erreur" }));
+          throw new Error(err.error || "Erreur de suppression");
+        }
+      } else {
+        // Generation: call delete-generation
+        const resp = await fetch(DELETE_GENERATION_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ job_id: item.id }),
+        });
+        if (!resp.ok) {
+          const err = await resp.json().catch(() => ({ error: "Erreur" }));
+          throw new Error(err.error || "Erreur de suppression");
+        }
       }
 
       setItems((prev) => prev.filter((i) => i.id !== item.id));
