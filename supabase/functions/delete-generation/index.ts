@@ -46,7 +46,7 @@ serve(async (req) => {
       );
     }
 
-    // Fetch the job — must belong to user
+    // Try generation_jobs first
     const { data: job, error: jobError } = await adminClient
       .from("generation_jobs")
       .select("id, user_id, result_url, result_metadata")
@@ -55,10 +55,36 @@ serve(async (req) => {
       .is("deleted_at", null)
       .single();
 
+    // If not found in generation_jobs, try legacy generations table
     if (jobError || !job) {
+      const { data: legacyGen, error: legacyError } = await adminClient
+        .from("generations")
+        .select("id, user_id, image_url")
+        .eq("id", job_id)
+        .eq("user_id", userId)
+        .single();
+
+      if (legacyError || !legacyGen) {
+        return new Response(
+          JSON.stringify({ error: "Job introuvable" }),
+          { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+
+      // Delete R2 file if applicable
+      const r2Key = legacyGen.image_url?.startsWith("r2:")
+        ? legacyGen.image_url.slice(3)
+        : legacyGen.image_url;
+      if (r2Key) {
+        try { await deleteFromR2(r2Key); } catch (e) { console.error("R2 delete failed:", e); }
+      }
+
+      // Hard delete from generations table
+      await adminClient.from("generations").delete().eq("id", job_id).eq("user_id", userId);
+
       return new Response(
-        JSON.stringify({ error: "Job introuvable" }),
-        { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        JSON.stringify({ success: true }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
 
