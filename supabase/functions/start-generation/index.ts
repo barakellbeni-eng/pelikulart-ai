@@ -521,7 +521,7 @@ async function processAudio(jobId: string, userId: string, body: any) {
     });
 
     await updateJob(adminClient, jobId, {
-      status: "completed", progress: 100, result_url: publicUrl, result_url_temp: publicUrl,
+      status: "completed", progress: 100, result_url: publicUrl, result_url_original: publicUrl, result_url_temp: publicUrl,
       result_metadata: { storage_keys: [storageKey], format: "wav" },
       completed_at: new Date().toISOString(),
     });
