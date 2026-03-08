@@ -132,11 +132,17 @@ const Dashboard = () => {
   const [previewVideo, setPreviewVideo] = useState<GeneratedVideo | null>(null);
   const [isEnhancing, setIsEnhancing] = useState(false);
   const [isDescribingImage, setIsDescribingImage] = useState(false);
-  const [galleryLayout, setGalleryLayout] = useState<"row" | "grid">("row");
+  const [galleryLayout, setGalleryLayout] = useState<"row" | "grid">("grid");
+  const [gallerySizeLevel, setGallerySizeLevel] = useState<number>(() => {
+    const saved = localStorage.getItem("gallerySizeLevel");
+    return saved ? parseInt(saved) : 3;
+  });
   const [galleryImageSize, setGalleryImageSize] = useState<"mini" | "small" | "medium" | "large">("medium");
   const [galleryFilter, setGalleryFilter] = useState<"all" | "image" | "video" | "audio">("all");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
+  const [playingDashAudioId, setPlayingDashAudioId] = useState<string | null>(null);
+  const dashAudioRefs = useRef<Record<string, HTMLAudioElement>>({});
   const describeInputRef = useRef<HTMLInputElement>(null);
   const [isDraggingOverPrompt, setIsDraggingOverPrompt] = useState(false);
   const [isDraggingOverUpload, setIsDraggingOverUpload] = useState(false);
