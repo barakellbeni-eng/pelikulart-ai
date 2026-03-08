@@ -378,83 +378,97 @@ const Gallery = () => {
                         <img
                           src={item.displayUrl}
                           alt={item.prompt}
-                          className={`w-full object-cover ${isGrid ? "aspect-video" : ""}`}
+                          className="w-full aspect-square object-cover"
                           loading="lazy"
                         />
                       ) : item.tool_type === "video" ? (
-                        <div className="relative">
+                        <div className="relative aspect-square bg-card flex items-center justify-center overflow-hidden">
                           <VideoThumbnail src={item.displayUrl || ""} />
+                          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                            <div className="w-9 h-9 rounded-full bg-primary/15 border border-primary/30 flex items-center justify-center">
+                              <Play className="w-3 h-3 text-primary ml-0.5" fill="currentColor" />
+                            </div>
+                          </div>
+                          {item.result_metadata?.duration && (
+                            <span className="absolute bottom-2 right-2 text-[10px] text-muted-foreground">
+                              {Math.floor(item.result_metadata.duration / 60)}:{Math.floor(item.result_metadata.duration % 60).toString().padStart(2, "0")}
+                            </span>
+                          )}
                         </div>
                       ) : item.tool_type === "audio" ? (
-                        <div className="w-full aspect-square bg-muted/20 flex flex-col items-center justify-center relative overflow-hidden">
-                          <Music className="w-10 h-10 text-primary/40 mb-2" />
-                          <p className="text-[10px] text-muted-foreground text-center px-3 line-clamp-2">{item.prompt}</p>
+                        <div
+                          className={`w-full aspect-square bg-gradient-to-br from-card to-muted/30 flex flex-col items-center justify-center gap-2.5 relative overflow-hidden cursor-pointer ${playingAudioId === item.id ? "audio-playing" : ""}`}
+                          onClick={(e) => { e.stopPropagation(); toggleAudioPlay(item.id, item.displayUrl || item.result_url); }}
+                        >
+                          {/* Ripple icon */}
+                          <div className="relative w-12 h-12 flex items-center justify-center">
+                            <Music className="w-6 h-6 text-primary relative z-10" />
+                            <div className="ripple-ring absolute inset-0 rounded-full border-[1.5px] border-primary/30 hidden audio-playing:block" />
+                            <div className="ripple-ring-delayed absolute -inset-2 rounded-full border-[1.5px] border-primary/30 hidden audio-playing:block" />
+                          </div>
+
+                          {/* Waveform bars */}
+                          <div className="flex items-center gap-[3px] h-5">
+                            {[6, 14, 10, 18, 8, 16, 12, 6].map((h, idx) => (
+                              <div
+                                key={idx}
+                                className="wave-bar w-[3px] rounded-sm bg-primary/20"
+                                style={{ height: `${h}px`, animationDelay: `${idx * 0.1}s` }}
+                              />
+                            ))}
+                          </div>
+
+                          {/* Play button */}
+                          <button
+                            className="absolute bottom-2 left-2 w-6 h-6 rounded-full bg-primary flex items-center justify-center transition-transform hover:scale-110"
+                            onClick={(e) => { e.stopPropagation(); toggleAudioPlay(item.id, item.displayUrl || item.result_url); }}
+                          >
+                            {playingAudioId === item.id ? (
+                              <Pause className="w-2.5 h-2.5 text-primary-foreground" fill="currentColor" />
+                            ) : (
+                              <Play className="w-2.5 h-2.5 text-primary-foreground ml-0.5" fill="currentColor" />
+                            )}
+                          </button>
+
                           {item.result_metadata?.duration && (
-                            <span className="absolute bottom-2 left-2 text-[9px] text-muted-foreground bg-muted/40 rounded-full px-2 py-0.5">
-                              {Math.floor(item.result_metadata.duration / 60).toString().padStart(2, "0")}:{Math.floor(item.result_metadata.duration % 60).toString().padStart(2, "0")}
+                            <span className="absolute bottom-2.5 right-2.5 text-[10px] text-muted-foreground">
+                              {Math.floor(item.result_metadata.duration / 60)}:{Math.floor(item.result_metadata.duration % 60).toString().padStart(2, "0")}
                             </span>
                           )}
                         </div>
                       ) : null}
 
-                      {/* Hover actions */}
-                       <div className="absolute top-2 right-2 z-30 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button
-                          onClick={(e) => { e.stopPropagation(); navigator.clipboard.writeText(item.prompt); toast.success("Prompt copié !"); }}
-                          className="w-7 h-7 rounded-lg flex items-center justify-center bg-background/70 backdrop-blur-sm hover:bg-background/90 transition-all text-muted-foreground hover:text-foreground shadow-sm"
-                          title="Copier le prompt"
-                        >
-                          <ClipboardCopy className="w-3.5 h-3.5" />
-                        </button>
+                      {/* Hover actions: Download, Recreate, Delete */}
+                      <div className="absolute top-2 right-2 z-30 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                         <button
                           onClick={(e) => { e.stopPropagation(); handleDownload(item); }}
-                          className="w-7 h-7 rounded-lg flex items-center justify-center bg-background/70 backdrop-blur-sm hover:bg-background/90 transition-all text-muted-foreground hover:text-foreground shadow-sm"
+                          className="w-[26px] h-[26px] rounded-md flex items-center justify-center bg-background/80 backdrop-blur-sm border border-border hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all text-foreground shadow-sm"
                           title="Télécharger"
                         >
-                          <Download className="w-3.5 h-3.5" />
+                          <Download className="w-3 h-3" />
+                        </button>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); navigator.clipboard.writeText(item.prompt); toast.success("Prompt copié pour recréer !"); }}
+                          className="w-[26px] h-[26px] rounded-md flex items-center justify-center bg-background/80 backdrop-blur-sm border border-border hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all text-foreground shadow-sm"
+                          title="Recréer"
+                        >
+                          <RotateCcw className="w-3 h-3" />
                         </button>
                         <button
                           onClick={(e) => { e.stopPropagation(); setDeleteTarget(item); }}
-                          className="w-7 h-7 rounded-lg flex items-center justify-center bg-destructive/80 backdrop-blur-sm hover:bg-destructive transition-all text-destructive-foreground shadow-sm"
+                          className="w-[26px] h-[26px] rounded-md flex items-center justify-center bg-background/80 backdrop-blur-sm border border-border hover:bg-destructive hover:text-destructive-foreground hover:border-destructive transition-all text-foreground shadow-sm"
                           title="Supprimer"
                         >
-                          <Trash2 className="w-3.5 h-3.5" />
+                          <X className="w-3 h-3" />
                         </button>
-                        <GalleryCardMenu
-                          onCopyPrompt={() => { navigator.clipboard.writeText(item.prompt); toast.success("Prompt copié !"); }}
-                          onDownload={() => handleDownload(item)}
-                          onDelete={() => setDeleteTarget(item)}
-                          onMoveProject={() => {
-                            const otherProjects = projects.filter((p) => p.id !== item.project_id);
-                            if (otherProjects.length === 0) { toast.info("Aucun autre projet disponible"); return; }
-                            handleMoveToProject(item, otherProjects[0].id);
-                          }}
-                        />
                       </div>
                     </div>
 
-                    {/* Info (conditionally shown) */}
-                    {(prefs.showPrompt || prefs.showMeta) && (
-                      <div className="p-3">
-                        {prefs.showPrompt && (
-                          <p className="text-xs text-muted-foreground line-clamp-2">{item.prompt}</p>
-                        )}
-                        {prefs.showMeta && (
-                          <div className="flex items-center gap-2 mt-2 flex-wrap">
-                            <span className="text-[10px] font-medium text-primary bg-primary/10 px-2 py-0.5 rounded-full flex items-center gap-1">
-                              {typeIcon(item.tool_type)}
-                              {item.model}
-                            </span>
-                            <span className="text-[10px] text-muted-foreground">
-                              {new Date(item.created_at).toLocaleDateString("fr-FR")}
-                            </span>
-                            <span className="text-[10px] text-muted-foreground">
-                              🐚 {item.credits_used}
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                    )}
+                    {/* Bottom info bar */}
+                    <div className="px-2.5 py-2 flex items-center justify-between border-t border-border/50">
+                      <span className="text-[10px] text-muted-foreground">{timeAgo(item.created_at)}</span>
+                      {typeTag(item.tool_type)}
+                    </div>
                   </motion.div>
                 );
               })}
