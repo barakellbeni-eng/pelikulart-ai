@@ -1,5 +1,5 @@
-import { useState, useCallback, useRef } from "react";
-import { Upload, Loader2, Camera, Download, RotateCcw } from "lucide-react";
+import { useState, useCallback } from "react";
+import { Upload, Loader2, Camera, Download } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -19,22 +19,23 @@ const PLAN_TYPES = [
   { id: "plongee", label: "Plongée", emoji: "🦅" },
   { id: "contre-plongee", label: "Contre-plongée", emoji: "🐜" },
 ] as const;
+
 const ASPECT_RATIOS = [
-  { id: "1:1", label: "1:1", icon: "◻️" },
-  { id: "16:9", label: "16:9", icon: "🖥️" },
-  { id: "9:16", label: "9:16", icon: "📱" },
-  { id: "4:3", label: "4:3", icon: "📺" },
-  { id: "3:4", label: "3:4", icon: "📋" },
+  { id: "1:1", label: "1:1" },
+  { id: "16:9", label: "16:9" },
+  { id: "9:16", label: "9:16" },
+  { id: "4:3", label: "4:3" },
+  { id: "3:4", label: "3:4" },
 ] as const;
 
 const RESOLUTIONS = [
-  { id: "2K", label: "2K", desc: "Standard" },
-  { id: "4K", label: "4K", desc: "Haute qualité" },
+  { id: "2K", label: "2K" },
+  { id: "4K", label: "4K" },
 ] as const;
 
-type PlanTypeId = typeof PLAN_TYPES[number]["id"];
-type AspectRatioId = typeof ASPECT_RATIOS[number]["id"];
-type ResolutionId = typeof RESOLUTIONS[number]["id"];
+type PlanTypeId = (typeof PLAN_TYPES)[number]["id"];
+type AspectRatioId = (typeof ASPECT_RATIOS)[number]["id"];
+type ResolutionId = (typeof RESOLUTIONS)[number]["id"];
 
 const MultiPlan = () => {
   const { user } = useAuth();
@@ -49,10 +50,6 @@ const MultiPlan = () => {
   const [planResults, setPlanResults] = useState<Record<number, { url: string; job_id: string }>>({});
   const [loadingPlan, setLoadingPlan] = useState<number | null>(null);
   const [showMediaPicker, setShowMediaPicker] = useState(false);
-
-  const resultRef = useRef<HTMLDivElement>(null);
-  const plansRef = useRef<HTMLDivElement>(null);
-  const planResultRef = useRef<HTMLDivElement>(null);
 
   const callGenerate = async (imageUrl: string, planType: string, planIndex?: number) => {
     const { data: sessionData } = await supabase.auth.getSession();
@@ -131,7 +128,6 @@ const MultiPlan = () => {
       const result = await callGenerate(mainResult.url, selectedPlan, planIndex + 1);
       setPlanResults((prev) => ({ ...prev, [planIndex]: result }));
       refreshBalance();
-      toast.success(`Plan ${planIndex + 1} généré !`);
     } catch (e: any) {
       toast.error(e.message);
     } finally {
@@ -156,308 +152,231 @@ const MultiPlan = () => {
     }
   };
 
-  const hasAnyPlanResult = Object.keys(planResults).length > 0;
-
   return (
-    <div className="h-full overflow-y-auto scroll-smooth">
-      <div className="max-w-4xl mx-auto px-4 py-6 space-y-8">
-        {/* Title */}
-        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
-          <h1 className="text-2xl font-bold">
-            <span className="text-gradient-gold">Multi-Plan</span>
-          </h1>
-          <p className="text-xs text-muted-foreground mt-1">
-            Générez des cadrages cinématiques de votre image
+    <div className="h-full overflow-y-auto scroll-smooth bg-background">
+      <div className="max-w-5xl mx-auto px-4 py-8 space-y-6">
+        {/* Header */}
+        <div>
+          <h1 className="text-lg font-semibold tracking-tight text-foreground">Multi-Plan</h1>
+          <p className="text-[11px] text-muted-foreground mt-0.5 tracking-wide uppercase">
+            Cadrages cinématiques
           </p>
+        </div>
+
+        {/* Source image */}
+        <motion.div onDragOver={(e) => e.preventDefault()} onDrop={handleDrop}>
+          {sourceImage ? (
+            <div className="relative rounded-lg overflow-hidden bg-black/40">
+              <img src={sourceImage} alt="Source" className="w-full max-h-[220px] object-contain" />
+              <button
+                onClick={() => { setSourceImage(null); setMainResult(null); setPlanResults({}); }}
+                className="absolute top-2 right-2 px-2 py-1 rounded text-[10px] font-medium bg-background/70 backdrop-blur-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Changer
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => setShowMediaPicker(true)}
+              className="w-full border border-dashed border-border/50 rounded-lg py-14 flex flex-col items-center gap-2 text-muted-foreground hover:border-primary/30 hover:text-foreground/70 transition-colors"
+            >
+              <Upload className="w-6 h-6" />
+              <span className="text-xs">Ajouter une image</span>
+            </button>
+          )}
         </motion.div>
 
-        {/* Upload zone */}
-        <motion.div onDragOver={(e) => e.preventDefault()} onDrop={handleDrop} layout>
-          <AnimatePresence mode="wait">
-            {sourceImage ? (
-              <motion.div
-                key="preview"
-                initial={{ opacity: 0, scale: 0.98 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.98 }}
-                className="relative rounded-2xl overflow-hidden border border-border bg-card"
-              >
-                <img src={sourceImage} alt="Source" className="w-full max-h-[280px] object-contain bg-black/20" />
-                <button
-                  onClick={() => { setSourceImage(null); setMainResult(null); setPlanResults({}); }}
-                  className="absolute top-3 right-3 px-3 py-1.5 rounded-lg bg-background/80 backdrop-blur-sm text-xs font-medium text-foreground hover:bg-background transition-colors"
-                >
-                  Changer
-                </button>
-              </motion.div>
-            ) : (
-              <motion.button
-                key="upload"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                onClick={() => setShowMediaPicker(true)}
-                className="w-full border-2 border-dashed border-border rounded-2xl py-16 flex flex-col items-center gap-3 text-muted-foreground hover:border-primary/50 hover:text-foreground transition-colors"
-              >
-                <Upload className="w-10 h-10" />
-                <span className="text-sm font-medium">Ajouter une image source</span>
-                <span className="text-xs text-muted-foreground/60">Cliquez ou glissez-déposez</span>
-              </motion.button>
-            )}
-          </AnimatePresence>
-        </motion.div>
-
-        {/* Plan type selector */}
-        <div className="space-y-2">
-          <label className="text-[11px] text-muted-foreground font-semibold uppercase tracking-wider">
-            Type de plan
-          </label>
-          <div className="flex flex-wrap gap-2">
-            {PLAN_TYPES.map((plan, i) => (
-              <motion.button
+        {/* Controls row — compact */}
+        <div className="flex flex-wrap items-center gap-3">
+          {/* Plan type */}
+          <div className="flex flex-wrap gap-1.5">
+            {PLAN_TYPES.map((plan) => (
+              <button
                 key={plan.id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.03 }}
                 onClick={() => setSelectedPlan(plan.id)}
-                className={`px-4 py-2 rounded-xl text-sm font-medium transition-all flex items-center gap-1.5 ${
+                className={`px-3 py-1.5 rounded text-[11px] font-medium transition-all ${
                   selectedPlan === plan.id
-                    ? "bg-primary text-primary-foreground shadow-lg shadow-primary/25 scale-105"
-                    : "bg-card border border-border text-muted-foreground hover:text-foreground hover:border-primary/30"
+                    ? "bg-primary/15 text-primary border border-primary/30"
+                    : "text-muted-foreground hover:text-foreground border border-transparent"
                 }`}
-                whileTap={{ scale: 0.97 }}
               >
-                <span>{plan.emoji}</span>
                 {plan.label}
-              </motion.button>
+              </button>
             ))}
           </div>
-        </div>
-        {/* Aspect ratio selector */}
-        <div className="space-y-2">
-          <label className="text-[11px] text-muted-foreground font-semibold uppercase tracking-wider">
-            Ratio
-          </label>
-          <div className="flex flex-wrap gap-2">
-            {ASPECT_RATIOS.map((ratio) => (
-              <motion.button
-                key={ratio.id}
-                onClick={() => setSelectedRatio(ratio.id)}
-                className={`px-4 py-2 rounded-xl text-sm font-medium transition-all flex items-center gap-1.5 ${
-                  selectedRatio === ratio.id
-                    ? "bg-primary text-primary-foreground shadow-lg shadow-primary/25 scale-105"
-                    : "bg-card border border-border text-muted-foreground hover:text-foreground hover:border-primary/30"
+
+          <div className="w-px h-5 bg-border/30" />
+
+          {/* Ratio */}
+          <div className="flex gap-1">
+            {ASPECT_RATIOS.map((r) => (
+              <button
+                key={r.id}
+                onClick={() => setSelectedRatio(r.id)}
+                className={`px-2 py-1 rounded text-[10px] font-mono transition-all ${
+                  selectedRatio === r.id
+                    ? "bg-primary/15 text-primary"
+                    : "text-muted-foreground hover:text-foreground"
                 }`}
-                whileTap={{ scale: 0.97 }}
               >
-                <span>{ratio.icon}</span>
-                {ratio.label}
-              </motion.button>
+                {r.label}
+              </button>
+            ))}
+          </div>
+
+          <div className="w-px h-5 bg-border/30" />
+
+          {/* Resolution */}
+          <div className="flex gap-1">
+            {RESOLUTIONS.map((r) => (
+              <button
+                key={r.id}
+                onClick={() => setSelectedResolution(r.id)}
+                className={`px-2 py-1 rounded text-[10px] font-mono transition-all ${
+                  selectedResolution === r.id
+                    ? "bg-primary/15 text-primary"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {r.label}
+              </button>
             ))}
           </div>
         </div>
 
-        {/* Resolution selector */}
-        <div className="space-y-2">
-          <label className="text-[11px] text-muted-foreground font-semibold uppercase tracking-wider">
-            Qualité
-          </label>
-          <div className="flex gap-2">
-            {RESOLUTIONS.map((res) => (
-              <motion.button
-                key={res.id}
-                onClick={() => setSelectedResolution(res.id)}
-                className={`px-5 py-2 rounded-xl text-sm font-medium transition-all ${
-                  selectedResolution === res.id
-                    ? "bg-primary text-primary-foreground shadow-lg shadow-primary/25 scale-105"
-                    : "bg-card border border-border text-muted-foreground hover:text-foreground hover:border-primary/30"
-                }`}
-                whileTap={{ scale: 0.97 }}
-              >
-                {res.label}
-                <span className="text-[10px] opacity-60 ml-1">{res.desc}</span>
-              </motion.button>
-            ))}
-          </div>
-        </div>
-
-        <motion.button
+        {/* Generate button */}
+        <button
           onClick={handleGenerate}
           disabled={!sourceImage || isGenerating || !user}
-          className="w-full py-4 rounded-2xl bg-primary text-primary-foreground font-bold text-base flex items-center justify-center gap-3 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
-          whileHover={!isGenerating && sourceImage ? { scale: 1.01 } : {}}
-          whileTap={!isGenerating && sourceImage ? { scale: 0.98 } : {}}
+          className="w-full py-3 rounded-lg bg-primary text-primary-foreground text-sm font-semibold flex items-center justify-center gap-2 disabled:opacity-30 disabled:cursor-not-allowed transition-all hover:brightness-110"
         >
           {isGenerating ? (
             <>
-              <Loader2 className="w-5 h-5 animate-spin" />
-              Génération en cours...
+              <Loader2 className="w-4 h-4 animate-spin" />
+              Génération...
             </>
           ) : (
             <>
-              <Camera className="w-5 h-5" />
-              Générer le plan
-              <span className="text-sm opacity-70 ml-1">· 2 cauris</span>
+              <Camera className="w-4 h-4" />
+              Générer · 2 cauris
             </>
           )}
-        </motion.button>
+        </button>
 
-        {/* Main result — hidden once plan results exist */}
-        <div ref={resultRef}>
-          <AnimatePresence>
-            {!hasAnyPlanResult && (mainResult || isGenerating) && (
-              <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, height: 0 }}
-                transition={{ type: "spring", damping: 20, stiffness: 200 }}
-                className="space-y-3"
+        {/* Main result (before plan selection) */}
+        <AnimatePresence>
+          {mainResult && Object.keys(planResults).length === 0 && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="relative rounded-lg overflow-hidden bg-black/30"
+            >
+              <img
+                src={mainResult.url}
+                alt="Résultat"
+                className="w-full max-h-[360px] object-contain"
+                draggable
+                onDragStart={(e) => {
+                  e.dataTransfer.setData("text/x-gallery-image", mainResult.url);
+                  e.dataTransfer.effectAllowed = "copy";
+                }}
+              />
+              <button
+                onClick={() => handleDownload(mainResult.url, "multiplan")}
+                className="absolute top-2 right-2 w-7 h-7 rounded bg-background/60 backdrop-blur-sm flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity"
               >
-                <label className="text-[11px] text-muted-foreground font-semibold uppercase tracking-wider">
-                  Résultat
-                </label>
-                {isGenerating && !mainResult ? (
-                  <div className="aspect-video rounded-2xl bg-muted/20 flex flex-col items-center justify-center gap-2 border border-border/50">
-                    <Loader2 className="w-8 h-8 text-primary/50 animate-spin" />
-                    <span className="text-xs text-muted-foreground/50">Génération en cours...</span>
-                  </div>
-                ) : mainResult ? (
-                  <div className="relative group rounded-2xl overflow-hidden border border-border">
-                    <img
-                      src={mainResult.url}
-                      alt="Résultat"
-                      className="w-full max-h-[400px] object-contain bg-black/20"
-                      draggable
-                      onDragStart={(e) => {
-                        e.dataTransfer.setData("text/x-gallery-image", mainResult.url);
-                        e.dataTransfer.effectAllowed = "copy";
-                      }}
-                    />
-                    <button
-                      onClick={() => handleDownload(mainResult.url, "multiplan")}
-                      className="absolute top-3 right-3 w-8 h-8 rounded-lg bg-background/80 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-background"
-                    >
-                      <Download className="w-4 h-4 text-foreground" />
-                    </button>
-                  </div>
-                ) : null}
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
+                <Download className="w-3.5 h-3.5 text-foreground" />
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-        {/* 4 Plan buttons */}
-        <div ref={plansRef}>
-          <AnimatePresence>
-            {mainResult && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="space-y-3"
-              >
-                <label className="text-[11px] text-muted-foreground font-semibold uppercase tracking-wider">
-                  Choisissez un plan
-                </label>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  {[1, 2, 3, 4].map((n) => {
-                    const idx = n - 1;
-                    const isLoading = loadingPlan === idx;
-                    const hasResult = !!planResults[idx];
+        {/* Loading placeholder for main gen */}
+        {isGenerating && !mainResult && (
+          <div className="flex items-center justify-center py-16">
+            <Loader2 className="w-6 h-6 text-primary/40 animate-spin" />
+          </div>
+        )}
 
-                    return (
-                      <motion.button
-                        key={n}
+        {/* 4 Plans — each with its result below */}
+        <AnimatePresence>
+          {mainResult && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="space-y-2"
+            >
+              <p className="text-[10px] text-muted-foreground uppercase tracking-widest">
+                Sélectionnez un plan · 2 cauris chacun
+              </p>
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                {[0, 1, 2, 3].map((idx) => {
+                  const isLoading = loadingPlan === idx;
+                  const result = planResults[idx];
+
+                  return (
+                    <div key={idx} className="space-y-2">
+                      {/* Plan button */}
+                      <button
                         onClick={() => handlePlanClick(idx)}
                         disabled={loadingPlan !== null}
-                        className={`py-5 rounded-xl text-sm font-bold transition-all border ${
+                        className={`w-full py-3 rounded-lg text-xs font-semibold transition-all border ${
                           isLoading
-                            ? "bg-primary/20 border-primary/40 text-primary"
-                            : hasResult
-                              ? "bg-primary/10 border-primary/30 text-primary"
-                              : "bg-card border-border text-foreground hover:border-primary/50 hover:bg-primary/5 hover:shadow-lg hover:shadow-primary/10"
-                        } ${loadingPlan !== null && !isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
-                        whileHover={loadingPlan === null ? { scale: 1.04, y: -3 } : {}}
-                        whileTap={loadingPlan === null ? { scale: 0.96 } : {}}
+                            ? "border-primary/30 bg-primary/5 text-primary"
+                            : result
+                              ? "border-primary/20 bg-primary/5 text-primary/80 hover:bg-primary/10"
+                              : "border-border/40 text-muted-foreground hover:border-primary/30 hover:text-foreground"
+                        } ${loadingPlan !== null && !isLoading ? "opacity-30 cursor-not-allowed" : ""}`}
                       >
                         {isLoading ? (
-                          <div className="flex flex-col items-center gap-1.5">
-                            <Loader2 className="w-4 h-4 animate-spin" />
-                            <span className="text-[10px]">Génération...</span>
-                          </div>
-                        ) : hasResult ? (
-                          <div className="flex flex-col items-center gap-1">
-                            <RotateCcw className="w-3.5 h-3.5" />
-                            <span>Plan {n}</span>
-                            <span className="text-[10px] text-muted-foreground/50 font-normal">Relancer</span>
-                          </div>
+                          <Loader2 className="w-3.5 h-3.5 animate-spin mx-auto" />
                         ) : (
-                          <div className="flex flex-col items-center gap-1">
-                            <span>Plan {n}</span>
-                            <span className="text-[10px] text-muted-foreground/50 font-normal">2 cauris</span>
-                          </div>
+                          `Plan ${idx + 1}`
                         )}
-                      </motion.button>
-                    );
-                  })}
-                </div>
-                <p className="text-[10px] text-muted-foreground/50">
-                  Chaque plan génère un cadrage unique · 2 cauris par plan
-                </p>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
+                      </button>
 
-        {/* Plan results grid with download */}
-        <div ref={planResultRef}>
-          <AnimatePresence>
-            {hasAnyPlanResult && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="space-y-3"
-              >
-                <label className="text-[11px] text-muted-foreground font-semibold uppercase tracking-wider">
-                  ✨ Plans générés — sauvegardés
-                </label>
-                <div className="grid grid-cols-2 gap-3">
-                  {[0, 1, 2, 3].map((idx) => {
-                    const result = planResults[idx];
-                    if (!result) return null;
-                    return (
-                      <motion.div
-                        key={result.job_id || idx}
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        className="relative group rounded-2xl overflow-hidden border border-primary/30 bg-card"
-                      >
-                        <img
-                          src={result.url}
-                          alt={`Plan ${idx + 1}`}
-                          className="w-full aspect-square object-cover"
-                          draggable
-                          onDragStart={(e) => {
-                            e.dataTransfer.setData("text/x-gallery-image", result.url);
-                            e.dataTransfer.effectAllowed = "copy";
-                          }}
-                        />
-                        <div className="absolute top-2 left-2 px-2 py-1 rounded-lg bg-background/80 backdrop-blur-sm text-[10px] font-bold text-foreground">
-                          Plan {idx + 1}
+                      {/* Result below */}
+                      <AnimatePresence>
+                        {result && (
+                          <motion.div
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            className="relative group rounded-lg overflow-hidden bg-black/30"
+                          >
+                            <img
+                              src={result.url}
+                              alt={`Plan ${idx + 1}`}
+                              className="w-full aspect-[3/4] object-cover"
+                              draggable
+                              onDragStart={(e) => {
+                                e.dataTransfer.setData("text/x-gallery-image", result.url);
+                                e.dataTransfer.effectAllowed = "copy";
+                              }}
+                            />
+                            <button
+                              onClick={() => handleDownload(result.url, `plan-${idx + 1}`)}
+                              className="absolute top-1.5 right-1.5 w-6 h-6 rounded bg-background/60 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                              <Download className="w-3 h-3 text-foreground" />
+                            </button>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+
+                      {/* Loading placeholder */}
+                      {isLoading && (
+                        <div className="w-full aspect-[3/4] rounded-lg bg-muted/10 flex items-center justify-center">
+                          <Loader2 className="w-4 h-4 text-primary/30 animate-spin" />
                         </div>
-                        <button
-                          onClick={() => handleDownload(result.url, `plan-${idx + 1}`)}
-                          className="absolute top-2 right-2 w-7 h-7 rounded-lg bg-background/80 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-background"
-                        >
-                          <Download className="w-3.5 h-3.5 text-foreground" />
-                        </button>
-                      </motion.div>
-                    );
-                  })}
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         <div className="h-8" />
       </div>
