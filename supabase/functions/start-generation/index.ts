@@ -109,6 +109,10 @@ const KIE_MODELS: Record<string, string> = {
   // Audio
   "kie-elevenlabs-sfx": "elevenlabs/sound-effect-v2",
   "kie-elevenlabs-tts": "elevenlabs/text-to-speech-multilingual-v2",
+  // Suno Music (uses separate /api/v1/generate endpoint)
+  "kie-suno-v5": "suno/v5",
+  "kie-suno-v4-5plus": "suno/v4_5plus",
+  "kie-suno-v4": "suno/v4",
 };
 
 // Auto-switch map: model_id → [t2i_model, i2i_model]
@@ -128,6 +132,14 @@ const KIE_IMAGE_INPUT_MODELS = new Set(["nano-banana-pro", "nano-banana-2"]);
 const KIE_INPUT_URLS_MODELS = new Set(["flux-2/pro-image-to-image", "bytedance/seedance-1.5-pro"]);
 // Models that use `aspect_ratio` + `resolution` (not `image_size`)
 const KIE_ASPECT_RESOLUTION_MODELS = new Set(["nano-banana-pro", "nano-banana-2", "seedream/4.5-text-to-image", "seedream/4.5-edit"]);
+
+// Suno models use a different API flow (/api/v1/generate + /api/v1/generate/record-info)
+const SUNO_MODELS = new Set(["kie-suno-v5", "kie-suno-v4-5plus", "kie-suno-v4"]);
+const SUNO_MODEL_MAP: Record<string, string> = {
+  "kie-suno-v5": "V5",
+  "kie-suno-v4-5plus": "V4_5PLUS",
+  "kie-suno-v4": "V4",
+};
 
 // ──────────────────────── HELPERS ────────────────────────
 
@@ -718,6 +730,148 @@ async function processKie(jobId: string, userId: string, body: any) {
   }
 }
 
+// ──────────────────────── SUNO MUSIC PROCESSOR ────────────────────────
+
+async function processSuno(jobId: string, userId: string, body: any) {
+  const adminClient = getAdminClient();
+  const KIE_API_KEY = Deno.env.get("KIE_AI_API_KEY");
+  if (!KIE_API_KEY) throw new Error("KIE_AI_API_KEY is not configured");
+
+  const { prompt, model_id, ...rawSettings } = body;
+  const sunoModel = SUNO_MODEL_MAP[model_id];
+  if (!sunoModel) throw new Error(`Unknown Suno model: ${model_id}`);
+
+  try {
+    await updateJob(adminClient, jobId, { status: "processing", started_at: new Date().toISOString() });
+
+    // Determine mode
+    const isInstrumental = rawSettings.audio_type === "instrumental";
+    const hasStyle = rawSettings.style && String(rawSettings.style).trim().length > 0;
+    const hasTitle = rawSettings.title && String(rawSettings.title).trim().length > 0;
+    const useCustomMode = hasStyle || hasTitle;
+
+    const payload: Record<string, any> = {
+      prompt,
+      model: sunoModel,
+      instrumental: isInstrumental,
+      customMode: useCustomMode,
+    };
+
+    if (useCustomMode) {
+      if (hasStyle) payload.style = String(rawSettings.style).slice(0, 1000);
+      if (hasTitle) payload.title = String(rawSettings.title).slice(0, 80);
+    }
+
+    console.log(`[Suno] Creating task: model=${sunoModel}, customMode=${useCustomMode}, instrumental=${isInstrumental}`);
+
+    // Step 1: Create generation task
+    const createResp = await fetch(`${KIE_AI_BASE}/api/v1/generate`, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${KIE_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!createResp.ok) {
+      const errText = await createResp.text();
+      throw new Error(`Suno API error: ${createResp.status} ${errText}`);
+    }
+
+    const createData = await createResp.json();
+    if (createData.code !== 200 || !createData.data?.taskId) {
+      throw new Error(`Suno error: ${createData.msg || "No taskId returned"}`);
+    }
+
+    const taskId = createData.data.taskId;
+    await updateJob(adminClient, jobId, { external_job_id: taskId, progress: 10 });
+
+    // Step 2: Poll for result via /api/v1/generate/record-info
+    let audioUrl: string | null = null;
+    let trackTitle = "";
+    let trackTags = "";
+    let trackDuration = 0;
+
+    for (let i = 0; i < 120; i++) {
+      await new Promise((r) => setTimeout(r, 5000));
+
+      const pollResp = await fetch(`${KIE_AI_BASE}/api/v1/generate/record-info?taskId=${taskId}`, {
+        headers: { "Authorization": `Bearer ${KIE_API_KEY}` },
+      });
+
+      let pollData: any;
+      try { pollData = await pollResp.json(); } catch { continue; }
+
+      if (pollData.code !== 200 || !pollData.data) continue;
+
+      const status = pollData.data.status;
+
+      if (status === "SUCCESS") {
+        const sunoData = pollData.data.response?.sunoData;
+        if (Array.isArray(sunoData) && sunoData.length > 0) {
+          // Pick the first track
+          const track = sunoData[0];
+          audioUrl = track.audioUrl || track.audio_url;
+          trackTitle = track.title || "";
+          trackTags = track.tags || "";
+          trackDuration = track.duration || 0;
+        }
+        break;
+      }
+
+      if (status === "FAILED" || status === "ERROR") {
+        throw new Error(`Suno generation failed: ${pollData.data.failReason || pollData.msg || "unknown"}`);
+      }
+
+      // Update progress (estimate)
+      const progressEstimate = Math.min(10 + i * 1.5, 85);
+      await updateJob(adminClient, jobId, { progress: Math.round(progressEstimate) });
+    }
+
+    if (!audioUrl) throw new Error("Suno generation timed out or returned no audio");
+
+    await updateJob(adminClient, jobId, { result_url_temp: audioUrl, progress: 90 });
+
+    // Step 3: Download and store
+    const storageKey = await downloadAndUpload(audioUrl, userId, "mp3");
+    const publicUrl = getPublicUrl(storageKey);
+
+    await adminClient.from("generations").insert({
+      user_id: userId,
+      prompt: prompt.slice(0, 5000),
+      image_url: publicUrl,
+      media_type: "audio",
+    });
+
+    await updateJob(adminClient, jobId, {
+      status: "completed",
+      progress: 100,
+      result_url: publicUrl,
+      result_url_original: publicUrl,
+      result_url_temp: publicUrl,
+      result_metadata: {
+        storage_keys: [storageKey],
+        format: "mp3",
+        provider: "suno",
+        suno_model: sunoModel,
+        title: trackTitle,
+        tags: trackTags,
+        duration: trackDuration,
+      },
+      completed_at: new Date().toISOString(),
+    });
+  } catch (err: any) {
+    console.error(`[job ${jobId}] Suno processing failed:`, err);
+    await updateJob(adminClient, jobId, {
+      status: "failed",
+      result_metadata: { error: err.message, provider: "suno" },
+      completed_at: new Date().toISOString(),
+    });
+    await adminClient.rpc("add_cauris", { p_user_id: userId, p_amount: body.cauris_cost || 6 });
+  }
+}
+
 // ──────────────────────── MAIN HANDLER ────────────────────────
 
 serve(async (req) => {
@@ -762,12 +916,15 @@ serve(async (req) => {
     }
 
     const isGoogleModel = model_id === "google-direct";
+    const isSunoModel = SUNO_MODELS.has(model_id);
     const isKieModel = !!KIE_MODELS[model_id];
     let provider = "fal";
     let endpoint: string | undefined;
 
     if (isGoogleModel) {
       provider = "lovable-ai";
+    } else if (isSunoModel) {
+      provider = "suno";
     } else if (isKieModel) {
       provider = "kie";
     } else if (tool_type === "image") {
@@ -778,7 +935,7 @@ serve(async (req) => {
       endpoint = AUDIO_ENDPOINTS[model_id];
     }
 
-    if (!isGoogleModel && !isKieModel && !endpoint) {
+    if (!isGoogleModel && !isKieModel && !isSunoModel && !endpoint) {
       return new Response(JSON.stringify({ error: "Modèle inconnu" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
@@ -843,7 +1000,8 @@ serve(async (req) => {
 
     const bgPromise = (async () => {
       try {
-        if (isKieModel) await processKie(jobId, userId, body);
+        if (isSunoModel) await processSuno(jobId, userId, body);
+        else if (isKieModel) await processKie(jobId, userId, body);
         else if (isGoogleModel) await processImageGoogle(jobId, userId, body);
         else if (tool_type === "image") await processImage(jobId, userId, body);
         else if (tool_type === "video") await processVideo(jobId, userId, body);
