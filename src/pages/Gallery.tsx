@@ -373,7 +373,7 @@ const Gallery = () => {
                         <img
                           src={item.displayUrl}
                           alt={item.prompt}
-                          className="w-full aspect-square object-cover"
+                          className={`w-full ${cardAspect} object-cover`}
                           loading="lazy"
                         />
                       ) : item.tool_type === "video" ? (
