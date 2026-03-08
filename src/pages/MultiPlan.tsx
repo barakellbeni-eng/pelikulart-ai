@@ -140,7 +140,7 @@ const MultiPlan = () => {
   const latestPlanResult = Object.entries(planResults).sort(([a], [b]) => Number(b) - Number(a))[0]?.[1];
 
   return (
-    <div className="flex-1 overflow-y-auto scroll-smooth">
+    <div className="h-full overflow-y-auto scroll-smooth">
       <div className="max-w-4xl mx-auto px-4 py-6 space-y-8">
         {/* Title */}
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
