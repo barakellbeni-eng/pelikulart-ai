@@ -507,6 +507,29 @@ const Dashboard = () => {
           }
         }
 
+        // Route KIE models to start-generation (async job system)
+        const isKieModel = currentModel.provider === "kie" || currentModel.endpoint === "kie";
+        if (isKieModel) {
+          payload.tool_type = "image";
+          const resp = await fetch(START_GENERATION_URL, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${accessToken || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+            },
+            body: JSON.stringify(payload),
+          });
+          if (!resp.ok) {
+            const err = await resp.json().catch(() => ({ error: "Erreur inconnue" }));
+            throw new Error(err.error || `Erreur ${resp.status}`);
+          }
+          const data = await resp.json();
+          toast.info("Génération lancée en arrière-plan...");
+          if (data.new_balance !== undefined) refetchCauris();
+          completeGeneration();
+          return;
+        }
+
         const imageEndpoint = currentModel.endpoint === "google-direct" ? GENERATE_IMAGE_GOOGLE_URL : GENERATE_IMAGE_URL;
         const resp = await fetch(imageEndpoint, {
           method: "POST",
@@ -548,11 +571,9 @@ const Dashboard = () => {
         }
 
         setGalleryImages((prev) => [...newImages, ...prev]);
-        // Auto-update project cover with first image
         if (selectedProjectId && newImages.length > 0) {
           updateCover(selectedProjectId, newImages[0].url);
         }
-        // Credits already deducted server-side; just refresh balance
         if (data.new_balance !== undefined) {
           refetchCauris();
         }
