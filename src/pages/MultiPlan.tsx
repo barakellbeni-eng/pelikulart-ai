@@ -8,8 +8,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useCauris } from "@/hooks/useCauris";
 import MediaPickerModal from "@/components/MediaPickerModal";
+import DeleteConfirmModal from "@/components/DeleteConfirmModal";
 
 const MULTIPLAN_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-multiplan`;
+const DELETE_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/delete-generation`;
 
 const PLAN_TYPES = [
   { id: "close-up", label: "Close-up" },
@@ -49,6 +51,13 @@ type PlanTypeId = (typeof PLAN_TYPES)[number]["id"];
 type AspectRatioId = (typeof ASPECT_RATIOS)[number]["id"];
 type ResolutionId = (typeof RESOLUTIONS)[number]["id"];
 
+interface PersistedItem {
+  id: string;
+  url: string;
+  prompt: string;
+  created_at: string;
+}
+
 const MultiPlan = () => {
   const { user } = useAuth();
   const { refetch: refreshBalance } = useCauris();
@@ -56,34 +65,59 @@ const MultiPlan = () => {
 
   const [sourceImage, setSourceImage] = useState<string | null>(null);
 
-  // Accept image from navigation state (e.g. sent from Dashboard)
   useEffect(() => {
     const stateImage = (location.state as any)?.sourceImage;
     if (stateImage && typeof stateImage === "string") {
       setSourceImage(stateImage);
     }
   }, [location.state]);
+
   const [selectedPlan, setSelectedPlan] = useState<PlanTypeId>("close-up");
   const [selectedRatio, setSelectedRatio] = useState<AspectRatioId>("1:1");
   const [selectedResolution, setSelectedResolution] = useState<ResolutionId>("2K");
   const [isGenerating, setIsGenerating] = useState(false);
-  const [mainResult, setMainResult] = useState<{ url: string; job_id: string } | null>(null);
-  const [planResults, setPlanResults] = useState<Record<number, { url: string; job_id: string }>>({});
   const [loadingPlan, setLoadingPlan] = useState<number | null>(null);
   const [showMediaPicker, setShowMediaPicker] = useState(false);
-  const [previewImage, setPreviewImage] = useState<{ url: string; label: string } | null>(null);
+  const [previewImage, setPreviewImage] = useState<PersistedItem | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<PersistedItem | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
-  // Session gallery: all generated images
-  const [sessionGallery, setSessionGallery] = useState<{ url: string; label: string }[]>([]);
-  const [selectedGalleryIndex, setSelectedGalleryIndex] = useState<number>(0);
+  // Persisted gallery from DB
+  const [gallery, setGallery] = useState<PersistedItem[]>([]);
+  const [loadingGallery, setLoadingGallery] = useState(true);
 
-  const addToGallery = (url: string, label: string) => {
-    setSessionGallery((prev) => {
-      const next = [...prev, { url, label }];
-      setSelectedGalleryIndex(next.length - 1);
-      return next;
-    });
-  };
+  // Latest main result (for cadrage buttons)
+  const [latestMainResult, setLatestMainResult] = useState<{ url: string; job_id: string } | null>(null);
+
+  // Load Multi-Plan generations from DB
+  const loadGallery = useCallback(async () => {
+    if (!user) return;
+    const { data, error } = await supabase
+      .from("generation_jobs")
+      .select("id, result_url, prompt, created_at")
+      .eq("user_id", user.id)
+      .like("prompt", "Multi-Plan%")
+      .is("deleted_at", null)
+      .order("created_at", { ascending: false });
+
+    if (!error && data) {
+      setGallery(
+        data
+          .filter((d) => d.result_url)
+          .map((d) => ({
+            id: d.id,
+            url: d.result_url!,
+            prompt: d.prompt,
+            created_at: d.created_at,
+          }))
+      );
+    }
+    setLoadingGallery(false);
+  }, [user]);
+
+  useEffect(() => {
+    loadGallery();
+  }, [loadGallery]);
 
   const callGenerate = async (imageUrl: string, planType: string, planIndex?: number) => {
     const { data: sessionData } = await supabase.auth.getSession();
@@ -110,8 +144,7 @@ const MultiPlan = () => {
 
   const handleMediaSelect = useCallback((url: string) => {
     setSourceImage(url);
-    setMainResult(null);
-    setPlanResults({});
+    setLatestMainResult(null);
     setShowMediaPicker(false);
   }, []);
 
@@ -120,8 +153,7 @@ const MultiPlan = () => {
     const imageUrl = e.dataTransfer.getData("text/x-gallery-image") || e.dataTransfer.getData("text/uri-list");
     if (imageUrl) {
       setSourceImage(imageUrl);
-      setMainResult(null);
-      setPlanResults({});
+      setLatestMainResult(null);
       return;
     }
     const file = e.dataTransfer.files?.[0];
@@ -129,8 +161,7 @@ const MultiPlan = () => {
       const reader = new FileReader();
       reader.onload = () => {
         setSourceImage(reader.result as string);
-        setMainResult(null);
-        setPlanResults({});
+        setLatestMainResult(null);
       };
       reader.readAsDataURL(file);
     }
@@ -139,13 +170,13 @@ const MultiPlan = () => {
   const handleGenerate = async () => {
     if (!sourceImage || !user || isGenerating) return;
     setIsGenerating(true);
-    setMainResult(null);
-    setPlanResults({});
+    setLatestMainResult(null);
 
     try {
       const result = await callGenerate(sourceImage, selectedPlan);
-      setMainResult(result);
-      addToGallery(result.url, "Multi-Plan");
+      setLatestMainResult(result);
+      // Reload gallery to include new result
+      await loadGallery();
       refreshBalance();
       toast.success("Image générée !");
     } catch (e: any) {
@@ -156,13 +187,12 @@ const MultiPlan = () => {
   };
 
   const handlePlanClick = async (planIndex: number) => {
-    if (!mainResult || !user || loadingPlan !== null) return;
+    if (!latestMainResult || !user || loadingPlan !== null) return;
     setLoadingPlan(planIndex);
 
     try {
-      const result = await callGenerate(mainResult.url, selectedPlan, planIndex + 1);
-      setPlanResults((prev) => ({ ...prev, [planIndex]: result }));
-      addToGallery(result.url, `Plan ${planIndex + 1}`);
+      await callGenerate(latestMainResult.url, selectedPlan, planIndex + 1);
+      await loadGallery();
       refreshBalance();
     } catch (e: any) {
       toast.error(e.message);
@@ -188,115 +218,102 @@ const MultiPlan = () => {
     }
   };
 
-  const hasResults = mainResult || Object.keys(planResults).length > 0;
+  const handleDelete = async (item: PersistedItem) => {
+    setDeleting(true);
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData?.session?.access_token;
+      if (!token) throw new Error("Non authentifié");
+
+      const resp = await fetch(DELETE_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ job_id: item.id }),
+      });
+
+      if (!resp.ok) throw new Error("Erreur lors de la suppression");
+
+      setGallery((prev) => prev.filter((g) => g.id !== item.id));
+      if (previewImage?.id === item.id) setPreviewImage(null);
+      toast.success("Image supprimée");
+    } catch (e: any) {
+      toast.error(e.message);
+    } finally {
+      setDeleting(false);
+      setDeleteTarget(null);
+    }
+  };
 
   return (
     <div className="h-full flex overflow-hidden">
       {/* ───── CENTER: Gallery / Results ───── */}
       <div className="flex-1 h-full overflow-y-auto p-6">
-        {!hasResults && !isGenerating ? (
+        {loadingGallery ? (
+          <div className="h-full flex items-center justify-center">
+            <Loader2 className="w-5 h-5 animate-spin text-muted-foreground/30" />
+          </div>
+        ) : gallery.length === 0 && !isGenerating ? (
           <div className="h-full flex items-center justify-center">
             <p className="text-muted-foreground/30 text-sm">
               Les résultats apparaîtront ici
             </p>
           </div>
         ) : (
-          <div className="max-w-3xl mx-auto space-y-6">
-            {/* Main result */}
-            <AnimatePresence>
-              {(mainResult || isGenerating) && (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                >
-                  {isGenerating && !mainResult ? (
-                    <div className="aspect-video rounded-lg bg-muted/5 flex flex-col items-center justify-center border border-border/20 gap-3">
-                      <GenerationProgress estimatedTime="~15s" />
-                    </div>
-                  ) : mainResult ? (
-                    <div
-                      className="relative group rounded-lg overflow-hidden bg-black/30 cursor-pointer"
-                      onClick={() => setPreviewImage({ url: mainResult.url, label: "Source générée" })}
-                    >
-                      <img
-                        src={mainResult.url}
-                        alt="Résultat"
-                        className="w-full max-h-[50vh] object-contain"
-                        draggable
-                        onDragStart={(e) => {
-                          e.dataTransfer.setData("text/x-gallery-image", mainResult.url);
-                          e.dataTransfer.effectAllowed = "copy";
-                        }}
-                      />
-                      <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button
-                          onClick={(e) => { e.stopPropagation(); handleDownload(mainResult.url, "multiplan"); }}
-                          className="w-7 h-7 rounded-lg flex items-center justify-center bg-background/70 backdrop-blur-sm hover:bg-background/90 transition-all text-muted-foreground hover:text-foreground shadow-sm"
-                        >
-                          <Download className="w-3.5 h-3.5" />
-                        </button>
-                        <button
-                          onClick={(e) => { e.stopPropagation(); setMainResult(null); }}
-                          className="w-7 h-7 rounded-lg flex items-center justify-center bg-destructive/80 backdrop-blur-sm hover:bg-destructive transition-all text-destructive-foreground shadow-sm"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                      <div className="absolute bottom-2 left-2 px-2 py-0.5 rounded bg-background/60 backdrop-blur-sm text-[9px] uppercase tracking-widest text-muted-foreground">
-                        Source générée
-                      </div>
-                    </div>
-                  ) : null}
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            {/* Plan results */}
-            {Object.entries(planResults).map(([idx, result]) => (
-              <motion.div
-                key={`plan-${idx}`}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="relative group rounded-lg overflow-hidden bg-black/30 cursor-pointer"
-                onClick={() => setPreviewImage({ url: result.url, label: `Cadrage ${Number(idx) + 1}` })}
-              >
-                <img
-                  src={result.url}
-                  alt={`Cadrage ${Number(idx) + 1}`}
-                  className="w-full max-h-[50vh] object-contain"
-                  draggable
-                  onDragStart={(e) => {
-                    e.dataTransfer.setData("text/x-gallery-image", result.url);
-                    e.dataTransfer.effectAllowed = "copy";
-                  }}
-                />
-                <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <button
-                    onClick={(e) => { e.stopPropagation(); handleDownload(result.url, `cadrage-${Number(idx) + 1}`); }}
-                    className="w-7 h-7 rounded-lg flex items-center justify-center bg-background/70 backdrop-blur-sm hover:bg-background/90 transition-all text-muted-foreground hover:text-foreground shadow-sm"
-                  >
-                    <Download className="w-3.5 h-3.5" />
-                  </button>
-                  <button
-                    onClick={(e) => { e.stopPropagation(); setPlanResults((prev) => { const next = { ...prev }; delete next[Number(idx)]; return next; }); }}
-                    className="w-7 h-7 rounded-lg flex items-center justify-center bg-destructive/80 backdrop-blur-sm hover:bg-destructive transition-all text-destructive-foreground shadow-sm"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-                <div className="absolute bottom-2 left-2 px-2 py-0.5 rounded bg-background/60 backdrop-blur-sm text-[9px] uppercase tracking-widest text-muted-foreground">
-                  Cadrage {Number(idx) + 1}
-                </div>
-              </motion.div>
-            ))}
-
-            {/* Loading plan placeholder */}
-            {loadingPlan !== null && !planResults[loadingPlan] && (
+          <div className="max-w-4xl mx-auto space-y-4">
+            {/* Loading placeholder */}
+            {isGenerating && (
               <div className="aspect-video rounded-lg bg-muted/5 flex flex-col items-center justify-center border border-border/20 gap-3">
                 <GenerationProgress estimatedTime="~15s" />
               </div>
             )}
+
+            {loadingPlan !== null && (
+              <div className="aspect-video rounded-lg bg-muted/5 flex flex-col items-center justify-center border border-border/20 gap-3">
+                <GenerationProgress estimatedTime="~15s" />
+              </div>
+            )}
+
+            {/* Persisted gallery grid */}
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+              {gallery.map((item) => (
+                <motion.div
+                  key={item.id}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="relative group rounded-lg overflow-hidden bg-black/30 cursor-pointer"
+                  onClick={() => setPreviewImage(item)}
+                >
+                  <img
+                    src={item.url}
+                    alt={item.prompt}
+                    className="w-full aspect-square object-cover"
+                    loading="lazy"
+                    draggable
+                    onDragStart={(e) => {
+                      e.dataTransfer.setData("text/x-gallery-image", item.url);
+                      e.dataTransfer.effectAllowed = "copy";
+                    }}
+                  />
+                  <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button
+                      onClick={(e) => { e.stopPropagation(); handleDownload(item.url, item.id.slice(0, 8)); }}
+                      className="w-7 h-7 rounded-lg flex items-center justify-center bg-background/70 backdrop-blur-sm hover:bg-background/90 transition-all text-muted-foreground hover:text-foreground shadow-sm"
+                    >
+                      <Download className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); setDeleteTarget(item); }}
+                      className="w-7 h-7 rounded-lg flex items-center justify-center bg-destructive/80 backdrop-blur-sm hover:bg-destructive transition-all text-destructive-foreground shadow-sm"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                  <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/60 to-transparent p-2 pt-6 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <p className="text-[9px] text-white/80 line-clamp-1">{item.prompt}</p>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
           </div>
         )}
       </div>
@@ -317,7 +334,6 @@ const MultiPlan = () => {
               {sourceImage ? (
                 <div className="relative rounded-lg overflow-hidden bg-black/40 group/plans">
                   <img src={sourceImage} alt="Source" className="w-full aspect-video object-cover" />
-                  {/* Plan overlay on hover */}
                   <div className="absolute inset-0 grid grid-cols-2 grid-rows-2 opacity-0 group-hover/plans:opacity-100 transition-opacity duration-300 pointer-events-none">
                     {[1, 2, 3, 4].map((num) => (
                       <div
@@ -332,7 +348,7 @@ const MultiPlan = () => {
                     ))}
                   </div>
                   <button
-                    onClick={() => { setSourceImage(null); setMainResult(null); setPlanResults({}); }}
+                    onClick={() => { setSourceImage(null); setLatestMainResult(null); }}
                     className="absolute top-1.5 right-1.5 px-1.5 py-0.5 rounded text-[9px] font-medium bg-background/70 backdrop-blur-sm text-muted-foreground hover:text-foreground transition-colors z-10"
                   >
                     ✕
@@ -370,7 +386,7 @@ const MultiPlan = () => {
             </div>
           </div>
 
-          {/* Generate button - primary action */}
+          {/* Generate button */}
           <button
             onClick={handleGenerate}
             disabled={!sourceImage || isGenerating || !user}
@@ -429,14 +445,13 @@ const MultiPlan = () => {
             </div>
           </div>
 
-          {/* Plan buttons (only after main result) */}
-          {mainResult && (
+          {/* Cadrage buttons (only after main result) */}
+          {latestMainResult && (
             <div className="space-y-1.5">
-              <label className="text-[10px] text-muted-foreground uppercase tracking-widest">Plans</label>
+              <label className="text-[10px] text-muted-foreground uppercase tracking-widest">Cadrages</label>
               <div className="grid grid-cols-2 gap-1.5">
                 {[0, 1, 2, 3].map((idx) => {
                   const isLoading = loadingPlan === idx;
-                  const result = planResults[idx];
                   return (
                     <button
                       key={idx}
@@ -445,9 +460,7 @@ const MultiPlan = () => {
                       className={`py-2 rounded-lg text-[11px] font-medium transition-all border ${
                         isLoading
                           ? "border-primary/30 bg-primary/5 text-primary"
-                          : result
-                            ? "border-primary/15 bg-primary/5 text-primary/70 hover:bg-primary/10"
-                            : "border-border/30 text-muted-foreground hover:border-primary/20 hover:text-foreground"
+                          : "border-border/30 text-muted-foreground hover:border-primary/20 hover:text-foreground"
                       } ${loadingPlan !== null && !isLoading ? "opacity-20 cursor-not-allowed" : ""}`}
                     >
                       {isLoading ? (
@@ -462,59 +475,7 @@ const MultiPlan = () => {
             </div>
           )}
         </div>
-
-        {/* Sticky clear button */}
-        <div className="p-4 border-t border-border/20 space-y-2">
-          {hasResults && (
-            <button
-              onClick={() => {
-                setMainResult(null);
-                setPlanResults({});
-              }}
-              className="w-full py-2 rounded-lg border border-border/30 text-[10px] font-medium text-muted-foreground hover:text-foreground hover:border-destructive/30 hover:text-destructive flex items-center justify-center gap-1.5 transition-all"
-            >
-              <Trash2 className="w-3 h-3" />
-              Nettoyer le tableau
-            </button>
-          )}
-        </div>
       </div>
-
-      {/* ───── FAR RIGHT: Session Filmstrip Gallery ───── */}
-      {sessionGallery.length > 0 && (
-        <div className="w-[72px] h-full border-l border-border/20 bg-background/50 flex flex-col overflow-hidden shrink-0">
-          <div className="flex-1 overflow-y-auto py-3 px-2 space-y-2">
-            {sessionGallery.map((item, idx) => (
-              <motion.button
-                key={idx}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: idx * 0.05 }}
-                onClick={() => setSelectedGalleryIndex(idx)}
-                className={`w-full rounded-lg overflow-hidden border-2 transition-all ${
-                  selectedGalleryIndex === idx
-                    ? "border-primary ring-1 ring-primary/30"
-                    : "border-transparent hover:border-border/40"
-                }`}
-              >
-                <img
-                  src={item.url}
-                  alt={item.label}
-                  className="w-full aspect-square object-cover"
-                  draggable
-                  onDragStart={(e) => {
-                    e.dataTransfer.setData("text/x-gallery-image", item.url);
-                    e.dataTransfer.effectAllowed = "copy";
-                  }}
-                />
-              </motion.button>
-            ))}
-          </div>
-          <div className="px-2 py-2 border-t border-border/20 text-center">
-            <span className="text-[9px] text-muted-foreground/50">{sessionGallery.length}</span>
-          </div>
-        </div>
-      )}
 
       {/* Preview Modal */}
       <AnimatePresence>
@@ -534,30 +495,40 @@ const MultiPlan = () => {
               className="glass-card max-w-lg w-full p-5 space-y-4 max-h-[90vh] overflow-y-auto"
             >
               <div className="flex items-center justify-between">
-                <h2 className="font-semibold text-foreground text-sm">{previewImage.label}</h2>
+                <h2 className="font-semibold text-foreground text-sm">{previewImage.prompt}</h2>
                 <button onClick={() => setPreviewImage(null)} className="text-muted-foreground hover:text-foreground transition-colors">
                   <X className="w-5 h-5" />
                 </button>
               </div>
-              <img src={previewImage.url} alt={previewImage.label} className="w-full rounded-xl" />
+              <img src={previewImage.url} alt={previewImage.prompt} className="w-full rounded-xl" />
+              <p className="text-xs text-muted-foreground">
+                {new Date(previewImage.created_at).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" })}
+              </p>
               <div className="flex gap-2">
                 <button
-                  onClick={() => { handleDownload(previewImage.url, previewImage.label); }}
+                  onClick={() => handleDownload(previewImage.url, previewImage.id.slice(0, 8))}
                   className="btn-generate flex-1 flex items-center justify-center gap-2 text-sm py-3"
                 >
                   <Download className="w-4 h-4" /> Télécharger
                 </button>
                 <button
-                  onClick={() => { setPreviewImage(null); }}
-                  className="px-4 py-3 rounded-xl bg-muted/30 text-foreground hover:bg-muted/50 transition-colors text-sm"
+                  onClick={() => { setDeleteTarget(previewImage); }}
+                  className="px-4 py-3 rounded-xl bg-destructive/10 text-destructive hover:bg-destructive/20 transition-colors text-sm"
                 >
-                  Fermer
+                  <Trash2 className="w-4 h-4" />
                 </button>
               </div>
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
+
+      <DeleteConfirmModal
+        open={!!deleteTarget}
+        loading={deleting}
+        onCancel={() => setDeleteTarget(null)}
+        onConfirm={() => deleteTarget && handleDelete(deleteTarget)}
+      />
 
       <MediaPickerModal
         open={showMediaPicker}
