@@ -1582,19 +1582,51 @@ const Dashboard = () => {
                       return null;
                     })();
 
+                    const selectionKey =
+                      item.type === "image"
+                        ? getImageSelectionKey(item.data as GeneratedImage)
+                        : item.type === "video"
+                          ? getVideoSelectionKey(item.data as GeneratedVideo)
+                          : null;
+                    const isSelected = selectionKey ? selectedGalleryItems.has(selectionKey) : false;
+
                     return (
                       <motion.div
                         key={`feed-${item.type}-${i}-${item.ts}`}
                         initial={{ opacity: 0, y: 15 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: i * 0.03 }}
-                        className="rounded-xl bg-card/20 overflow-hidden"
+                        className={`relative rounded-xl bg-card/20 overflow-hidden ${isSelected ? "ring-2 ring-primary ring-offset-2 ring-offset-background" : ""}`}
                       >
+                        {selectionKey && (
+                          <button
+                            onMouseDown={(e) => e.stopPropagation()}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toggleSelection(selectionKey);
+                            }}
+                            className={`absolute top-3 left-3 z-20 h-9 w-9 rounded-xl border border-border/60 backdrop-blur-sm flex items-center justify-center transition-all ${
+                              isSelected
+                                ? "bg-primary text-primary-foreground"
+                                : "bg-card/70 text-muted-foreground hover:bg-card"
+                            }`}
+                            title="Sélectionner"
+                          >
+                            {isSelected ? <Check className="w-4 h-4" /> : <div className="w-4 h-4 rounded border-2 border-current" />}
+                          </button>
+                        )}
+
                         {/* Media */}
                         {item.type === "image" && (
                           <div
                             className="cursor-pointer"
-                            onClick={() => setPreviewImage(item.data as GeneratedImage)}
+                            onClick={() => {
+                              if (selectionCount > 0 && selectionKey) {
+                                toggleSelection(selectionKey);
+                                return;
+                              }
+                              setPreviewImage(item.data as GeneratedImage);
+                            }}
                           >
                             <img
                               src={(item.data as GeneratedImage).url}
@@ -1605,7 +1637,16 @@ const Dashboard = () => {
                           </div>
                         )}
                         {item.type === "video" && (
-                          <div className="cursor-pointer" onClick={() => setPreviewVideo(item.data as GeneratedVideo)}>
+                          <div
+                            className="cursor-pointer"
+                            onClick={() => {
+                              if (selectionCount > 0 && selectionKey) {
+                                toggleSelection(selectionKey);
+                                return;
+                              }
+                              setPreviewVideo(item.data as GeneratedVideo);
+                            }}
+                          >
                             <video
                               src={(item.data as GeneratedVideo).url}
                               controls
