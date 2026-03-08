@@ -19,8 +19,22 @@ const PLAN_TYPES = [
   { id: "plongee", label: "Plongée", emoji: "🦅" },
   { id: "contre-plongee", label: "Contre-plongée", emoji: "🐜" },
 ] as const;
+const ASPECT_RATIOS = [
+  { id: "1:1", label: "1:1", icon: "◻️" },
+  { id: "16:9", label: "16:9", icon: "🖥️" },
+  { id: "9:16", label: "9:16", icon: "📱" },
+  { id: "4:3", label: "4:3", icon: "📺" },
+  { id: "3:4", label: "3:4", icon: "📋" },
+] as const;
+
+const RESOLUTIONS = [
+  { id: "2K", label: "2K", desc: "Standard" },
+  { id: "4K", label: "4K", desc: "Haute qualité" },
+] as const;
 
 type PlanTypeId = typeof PLAN_TYPES[number]["id"];
+type AspectRatioId = typeof ASPECT_RATIOS[number]["id"];
+type ResolutionId = typeof RESOLUTIONS[number]["id"];
 
 const MultiPlan = () => {
   const { user } = useAuth();
