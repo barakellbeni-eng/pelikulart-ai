@@ -80,7 +80,7 @@ serve(async (req) => {
     }
 
     const planLabel = PLAN_TYPE_MAP[plan_type] || plan_type;
-    const prompt = `Recreate this exact image as a cinematic ${planLabel}. Keep the same subject, same scene, same colors, same lighting. Only adapt the framing and camera angle to match a ${planLabel}. High-quality cinematic output.`;
+    const prompt = `Recreate 4 ${planLabel} of this exact image, Keep the same subject, same scene, same colors, same lighting.`;
 
     console.log(`Multi-plan: generating ${planLabel} via Fal AI nano-banana-pro/edit`);
 
