@@ -60,6 +60,7 @@ const afrikaBoostKeywords = [
 
 interface GeneratedImage {
   url: string;
+  jobId?: string;
   width?: number;
   height?: number;
   prompt?: string;
@@ -73,12 +74,14 @@ interface GeneratedImage {
 
 interface GeneratedVideo {
   url: string;
+  jobId?: string;
   prompt?: string;
   timestamp?: number;
 }
 
 interface GeneratedAudio {
   url: string;
+  jobId?: string;
   prompt?: string;
   timestamp?: number;
   modelId?: string;
@@ -221,18 +224,19 @@ const Dashboard = () => {
 
 
 
-  // Load history from DB
+  // Load history from generation_jobs (completed jobs with permanent R2 URLs)
   useEffect(() => {
     if (!user) return;
     const loadHistory = async () => {
       const { data, error } = await supabase
-        .from("generations")
-        .select("*")
+        .from("generation_jobs")
+        .select("id, tool_type, model, prompt, result_url, result_url_temp, result_metadata, params, credits_used, created_at")
+        .eq("status", "completed")
         .order("created_at", { ascending: false })
-        .limit(50);
+        .limit(100);
       if (!error && data) {
-        // Resolve signed URLs for all items
-        const allUrls = (data as any[]).map((g: any) => g.image_url as string);
+        // Resolve signed URLs for R2 items
+        const allUrls = (data as any[]).map((g: any) => (g.result_url || g.result_url_temp || "") as string);
         const signedUrlList = await getSignedUrls(allUrls);
 
         const images: GeneratedImage[] = [];
@@ -240,17 +244,25 @@ const Dashboard = () => {
         const audios: GeneratedAudio[] = [];
         for (let idx = 0; idx < (data as any[]).length; idx++) {
           const g = (data as any[])[idx];
-          const item = {
-            url: signedUrlList[idx],
-            prompt: g.prompt,
-            timestamp: new Date(g.created_at).getTime(),
-          };
-          if (g.media_type === "video") {
-            videos.push(item);
-          } else if (g.media_type === "audio") {
-            audios.push(item);
+          const url = signedUrlList[idx];
+          if (!url) continue;
+          const ts = new Date(g.created_at).getTime();
+          if (g.tool_type === "video") {
+            videos.push({ url, jobId: g.id, prompt: g.prompt, timestamp: ts });
+          } else if (g.tool_type === "audio") {
+            audios.push({ url, jobId: g.id, prompt: g.prompt, timestamp: ts, modelId: g.model });
           } else {
-            images.push({ ...item, resolution: g.resolution });
+            const params = g.params as Record<string, any> | null;
+            images.push({
+              url,
+              jobId: g.id,
+              prompt: g.prompt,
+              resolution: params?.resolution || params?.image_size || "",
+              timestamp: ts,
+              modelId: g.model,
+              modelSettings: params || undefined,
+              caurisCost: g.credits_used,
+            });
           }
         }
         setGalleryImages(images);
@@ -682,20 +694,34 @@ const Dashboard = () => {
     }
   };
 
-  const handleDeleteImage = async (img: GeneratedImage) => {
-    if (!user) return;
+  const handleDeleteGeneration = async (jobId: string | undefined, type: "image" | "video" | "audio", url: string) => {
+    if (!user || !jobId) return;
     try {
-      const { error } = await supabase
-        .from("generations")
-        .delete()
-        .eq("user_id", user.id)
-        .eq("image_url", img.url);
-      if (error) throw error;
-      setGalleryImages((prev) => prev.filter((g) => g.url !== img.url));
-      setPreviewImage(null);
-      toast.success("Image supprimée");
-    } catch {
-      toast.error("Erreur lors de la suppression");
+      const { data: sessionData } = await supabase.auth.getSession();
+      const resp = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/delete-generation`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${sessionData?.session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+        },
+        body: JSON.stringify({ job_id: jobId }),
+      });
+      if (!resp.ok) {
+        const err = await resp.json().catch(() => ({ error: "Erreur" }));
+        throw new Error(err.error || "Erreur");
+      }
+      if (type === "image") {
+        setGalleryImages((prev) => prev.filter((g) => g.jobId !== jobId));
+        setPreviewImage(null);
+      } else if (type === "video") {
+        setGalleryVideos((prev) => prev.filter((g) => g.jobId !== jobId));
+        setPreviewVideo(null);
+      } else {
+        setGalleryAudios((prev) => prev.filter((g) => g.jobId !== jobId));
+      }
+      toast.success("Supprimé définitivement");
+    } catch (e: any) {
+      toast.error(e.message || "Erreur lors de la suppression");
     }
   };
 
@@ -1534,7 +1560,7 @@ const Dashboard = () => {
                                   <RefreshCw className="w-3.5 h-3.5 text-muted-foreground" />
                                 </button>
                                 <button
-                                  onClick={() => handleDeleteImage(item.data as GeneratedImage)}
+                                  onClick={() => handleDeleteGeneration((item.data as GeneratedImage).jobId, "image", (item.data as GeneratedImage).url)}
                                   className="w-7 h-7 rounded-lg bg-destructive/10 flex items-center justify-center hover:bg-destructive/20 transition-colors"
                                   title="Supprimer"
                                 >
@@ -1655,7 +1681,7 @@ const Dashboard = () => {
                               <span className="text-[10px] text-white/80 font-medium">{img.resolution || ""}</span>
                               <div className="flex items-center gap-1.5">
                                 <button
-                                  onClick={(e) => { e.stopPropagation(); handleDeleteImage(img); }}
+                                  onClick={(e) => { e.stopPropagation(); handleDeleteGeneration(img.jobId, "image", img.url); }}
                                   className="w-7 h-7 rounded-lg bg-destructive/20 backdrop-blur-sm flex items-center justify-center hover:bg-destructive/40 transition-colors"
                                 >
                                   <Trash2 className="w-3.5 h-3.5 text-destructive" />
@@ -1899,7 +1925,7 @@ const Dashboard = () => {
                   Partager
                 </button>
                 <button
-                  onClick={() => handleDeleteImage(previewImage)}
+                  onClick={() => handleDeleteGeneration(previewImage.jobId, "image", previewImage.url)}
                   className="flex items-center gap-2 px-3 py-2 rounded-xl bg-destructive/20 text-destructive text-sm font-semibold hover:bg-destructive/30 transition-colors"
                 >
                   <Trash2 className="w-4 h-4" />
