@@ -933,7 +933,7 @@ const Dashboard = () => {
   const [mobileSettingsOpen, setMobileSettingsOpen] = useState(false);
 
   return (
-    <div className="flex h-full min-h-0 overflow-hidden relative">
+    <div className="flex h-full min-h-0 overflow-hidden relative" style={{ height: '100%' }}>
       {/* Mobile settings toggle */}
       <button
         onClick={() => setMobileSettingsOpen(!mobileSettingsOpen)}
@@ -952,8 +952,8 @@ const Dashboard = () => {
           className="absolute inset-0 bg-black/60 md:hidden"
           onClick={() => setMobileSettingsOpen(false)}
         />
-        <div className="absolute right-0 top-0 bottom-0 w-[85vw] max-w-sm md:relative md:w-72 md:min-w-[288px] md:max-w-[288px] shrink-0 bg-card/95 md:bg-card/50 backdrop-blur-xl md:backdrop-blur-none flex flex-col overflow-hidden">
-        <div className="p-3 sm:p-4 space-y-3 sm:space-y-4 flex-1 overflow-y-auto min-h-0">
+        <div className="absolute right-0 top-0 bottom-0 w-[85vw] max-w-sm md:relative md:w-72 md:min-w-[288px] md:max-w-[288px] shrink-0 bg-card/95 md:bg-card/50 backdrop-blur-xl md:backdrop-blur-none flex flex-col h-full overflow-hidden">
+        <div className="p-3 sm:p-4 space-y-3 sm:space-y-4 flex-1 overflow-y-auto min-h-0 scrollbar-thin">
           {/* Tabs: Image / Video / Audio */}
           <div className="flex rounded-xl bg-white/[0.04] p-1">
            {(["image", "video", "audio"] as const).map((tab) => (
@@ -1359,7 +1359,7 @@ const Dashboard = () => {
       </div>
 
       {/* ===== RIGHT GALLERY (UNIFIED) ===== */}
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col h-full overflow-hidden">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 px-3 sm:px-5 py-2 sm:py-3">
           <div className="flex items-center gap-1 glass rounded-lg p-0.5 overflow-x-auto max-w-full scrollbar-hide">
             {([
@@ -1419,7 +1419,7 @@ const Dashboard = () => {
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-2 sm:p-4 pb-24 md:pb-4">
+        <div className="flex-1 overflow-y-auto p-2 sm:p-4 pb-24 md:pb-4 min-h-0 scrollbar-thin">
           {/* Active Jobs Panel */}
           {user && (activeJobs.length > 0 || recentJobs.length > 0) && (
             <div className="mb-4">
