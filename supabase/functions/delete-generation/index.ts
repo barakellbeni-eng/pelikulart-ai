@@ -13,13 +13,10 @@ const BUCKET = "generations";
 /** Extract the storage key from a public URL or r2: prefixed path */
 function extractStorageKey(url: string): string | null {
   if (!url) return null;
-  // Legacy r2: prefix
   if (url.startsWith("r2:")) return url.slice(3);
-  // Supabase public URL
   const marker = `/storage/v1/object/public/${BUCKET}/`;
   const idx = url.indexOf(marker);
   if (idx !== -1) return url.substring(idx + marker.length).split("?")[0];
-  // Raw key (no http)
   if (!url.startsWith("http")) return url;
   return null;
 }
@@ -75,18 +72,19 @@ serve(async (req) => {
         return new Response(JSON.stringify({ error: "Job introuvable" }), { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
 
-      // Delete file from storage
+      // Delete file from storage permanently
       const key = extractStorageKey(legacyGen.image_url);
       if (key) {
         try { await deleteFile(key); } catch (e) { console.error("Storage delete failed:", e); }
       }
 
+      // Hard delete from DB
       await adminClient.from("generations").delete().eq("id", job_id).eq("user_id", userId);
 
       return new Response(JSON.stringify({ success: true }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
-    // Collect keys to delete
+    // Collect keys to delete from storage
     const keysToDelete = new Set<string>();
     const imageUrlsToDelete = new Set<string>();
 
@@ -97,7 +95,6 @@ serve(async (req) => {
       imageUrlsToDelete.add(raw);
       const key = extractStorageKey(raw);
       if (key) keysToDelete.add(key);
-      // Also add alternate forms for legacy cleanup
       if (raw.startsWith("r2:")) {
         imageUrlsToDelete.add(raw.slice(3));
         imageUrlsToDelete.add(raw);
@@ -115,7 +112,7 @@ serve(async (req) => {
       for (const key of metadata.storage_keys) if (typeof key === "string") addCandidates(key);
     }
 
-    // Delete files in parallel
+    // Delete files from storage permanently
     const deletions = Array.from(keysToDelete).map(async (key) => {
       try { await deleteFile(key); } catch (e) { console.error(`Storage delete failed for ${key}:`, e); }
     });
@@ -125,21 +122,30 @@ serve(async (req) => {
       ? adminClient.from("generations").delete().eq("user_id", userId).in("image_url", Array.from(imageUrlsToDelete))
       : Promise.resolve({ error: null });
 
-    // Soft-delete the job
-    const jobSoftDelete = adminClient
+    // HARD DELETE the job from generation_jobs (not soft delete)
+    const jobHardDelete = adminClient
       .from("generation_jobs")
-      .update({ deleted_at: new Date().toISOString() })
+      .delete()
       .eq("id", job_id)
       .eq("user_id", userId);
 
-    const [, , jobSoftDeleteRes] = await Promise.all([
+    const [, , jobDeleteRes] = await Promise.all([
       Promise.all(deletions),
       generationsDeletion,
-      jobSoftDelete,
+      jobHardDelete,
     ]);
 
-    if (jobSoftDeleteRes.error) {
-      return new Response(JSON.stringify({ error: "Erreur lors de la suppression en base" }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    if (jobDeleteRes.error) {
+      // Fallback to soft delete if hard delete is blocked by RLS
+      const { error: softErr } = await adminClient
+        .from("generation_jobs")
+        .update({ deleted_at: new Date().toISOString() })
+        .eq("id", job_id)
+        .eq("user_id", userId);
+
+      if (softErr) {
+        return new Response(JSON.stringify({ error: "Erreur lors de la suppression en base" }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
     }
 
     return new Response(JSON.stringify({ success: true }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
