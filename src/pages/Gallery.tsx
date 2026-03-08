@@ -266,20 +266,17 @@ const Gallery = () => {
     }
   };
 
-  // --- Grid classes based on zoom level & view type ---
-  const zoomColumns: Record<number, { masonry: string; grid: string }> = {
-    1: { masonry: "columns-4 md:columns-5 lg:columns-6 gap-1.5 space-y-1.5", grid: "grid grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-1.5" },
-    2: { masonry: "columns-3 md:columns-4 lg:columns-5 gap-2 space-y-2", grid: "grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2" },
-    3: { masonry: "columns-2 md:columns-3 gap-3 space-y-3", grid: "grid grid-cols-2 md:grid-cols-3 gap-3" },
-    4: { masonry: "columns-2 md:columns-2 gap-4 space-y-4", grid: "grid grid-cols-2 md:grid-cols-2 gap-4" },
-    5: { masonry: "columns-1 md:columns-2 gap-4 space-y-4", grid: "grid grid-cols-1 md:grid-cols-2 gap-4" },
-  };
-  const gridClass = useMemo(() => {
-    const z = zoomColumns[prefs.zoom] || zoomColumns[3];
-    return prefs.viewType === "masonry" ? z.masonry : z.grid;
-  }, [prefs.zoom, prefs.viewType]);
+  // --- Grid style based on zoom (5 levels) ---
+  const gridStyle = useMemo(() => {
+    const val = prefs.zoom;
+    const sizes = [80, 130, 180, 240, 0]; // 0 = full width
+    const size = sizes[val - 1];
+    if (val === 5) return { gridTemplateColumns: "1fr" };
+    if (val === 4) return { gridTemplateColumns: "repeat(2, 1fr)" };
+    return { gridTemplateColumns: `repeat(auto-fill, minmax(${size}px, 1fr))` };
+  }, [prefs.zoom]);
 
-  const isGrid = prefs.viewType === "grid";
+  const cardAspect = prefs.zoom >= 4 ? "aspect-video" : "aspect-square";
 
   return (
     <div className="min-h-screen pb-24 md:pb-8">
@@ -326,7 +323,7 @@ const Gallery = () => {
             <p className="text-sm">Aucune génération pour le moment</p>
           </div>
         ) : (
-          <div className={gridClass}>
+          <div className="grid gap-3" style={gridStyle}>
             <AnimatePresence mode="popLayout">
               {filtered.map((item, i) => {
                 const removing = removingIds.has(item.id);
@@ -345,9 +342,7 @@ const Gallery = () => {
                     }
                     exit={{ opacity: 0, scale: 0.85, transition: { duration: 0.3, ease: "easeOut" } }}
                     transition={{ delay: i * 0.03, layout: { duration: 0.4, ease: "easeInOut" } }}
-                    className={`glass-card overflow-hidden cursor-pointer group relative transition-all duration-200 ${
-                      isGrid ? "break-inside-auto" : "break-inside-avoid"
-                    } ${isSelected(item.id) ? "ring-2 ring-primary ring-offset-2 ring-offset-background" : ""}`}
+                    className={`glass-card overflow-hidden cursor-pointer group relative transition-all duration-200 ${isSelected(item.id) ? "ring-2 ring-primary ring-offset-2 ring-offset-background" : ""}`}
                     onClick={(e) => handleCardClick(item, e)}
                   >
                     {/* Selection checkbox — visible on hover OR when any selection exists */}
@@ -378,11 +373,11 @@ const Gallery = () => {
                         <img
                           src={item.displayUrl}
                           alt={item.prompt}
-                          className="w-full aspect-square object-cover"
+                          className={`w-full ${cardAspect} object-cover`}
                           loading="lazy"
                         />
                       ) : item.tool_type === "video" ? (
-                        <div className="relative aspect-square bg-card flex items-center justify-center overflow-hidden">
+                        <div className={`relative ${cardAspect} bg-card flex items-center justify-center overflow-hidden`}>
                           <VideoThumbnail src={item.displayUrl || ""} />
                           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                             <div className="w-9 h-9 rounded-full bg-primary/15 border border-primary/30 flex items-center justify-center">
@@ -397,7 +392,7 @@ const Gallery = () => {
                         </div>
                       ) : item.tool_type === "audio" ? (
                         <div
-                          className={`w-full aspect-square bg-gradient-to-br from-card to-muted/30 flex flex-col items-center justify-center gap-2.5 relative overflow-hidden cursor-pointer ${playingAudioId === item.id ? "audio-playing" : ""}`}
+                          className={`w-full ${cardAspect} bg-gradient-to-br from-card to-muted/30 flex flex-col items-center justify-center gap-2.5 relative overflow-hidden cursor-pointer ${playingAudioId === item.id ? "audio-playing" : ""}`}
                           onClick={(e) => { e.stopPropagation(); toggleAudioPlay(item.id, item.displayUrl || item.result_url); }}
                         >
                           {/* Ripple icon */}
