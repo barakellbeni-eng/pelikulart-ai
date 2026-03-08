@@ -90,6 +90,7 @@ const Dashboard = () => {
   const { user } = useAuth();
   const { balance, deduct, refetch: refetchCauris } = useCauris();
   const { activeJobs, recentJobs, dismissJob, refetch: refetchJobs } = useActiveJobs();
+  const { selectedProjectId, updateCover } = useProjects();
   const [activeTab, setActiveTab] = useState<"image" | "video" | "audio">("image");
   const [prompt, setPrompt] = useState("");
   const [showAuthModal, setShowAuthModal] = useState(false);
