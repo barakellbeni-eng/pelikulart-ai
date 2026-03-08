@@ -12,10 +12,10 @@ interface ActiveJobsPanelProps {
 const toolIcons = {
   image: Image,
   video: Video,
-  audio: Music,
+  audio: Music
 };
 
-function JobCard({ job, onDismiss }: { job: ActiveJob; onDismiss: (id: string) => void }) {
+function JobCard({ job, onDismiss }: {job: ActiveJob;onDismiss: (id: string) => void;}) {
   const isActive = job.status === "pending" || job.status === "processing";
   const isCompleted = job.status === "completed";
   const isFailed = job.status === "failed";
@@ -51,36 +51,36 @@ function JobCard({ job, onDismiss }: { job: ActiveJob; onDismiss: (id: string) =
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, scale: 0.95, y: -10 }}
       className={`relative rounded-xl border overflow-hidden ${
-        isActive
-          ? "border-primary/30 bg-primary/5"
-          : isCompleted
-          ? "border-emerald-500/20 bg-emerald-500/5"
-          : "border-destructive/20 bg-destructive/5"
-      }`}
-    >
+      isActive ?
+      "border-primary/30 bg-primary/5" :
+      isCompleted ?
+      "border-emerald-500/20 bg-emerald-500/5" :
+      "border-destructive/20 bg-destructive/5"}`
+      }>
+      
       {/* Progress bar */}
-      {isActive && (
-        <div className="absolute top-0 left-0 right-0 h-[2px] bg-muted/20">
+      {isActive &&
+      <div className="absolute top-0 left-0 right-0 h-[2px] bg-muted/20">
           <motion.div
-            className="h-full bg-primary rounded-full"
-            animate={{ width: `${displayProgress}%` }}
-            transition={{ duration: 0.5, ease: "easeOut" }}
-          />
+          className="h-full bg-primary rounded-full"
+          animate={{ width: `${displayProgress}%` }}
+          transition={{ duration: 0.5, ease: "easeOut" }} />
+        
         </div>
-      )}
+      }
 
       <div className="p-3 flex items-start gap-3">
         {/* Icon */}
         <div className={`shrink-0 w-9 h-9 rounded-lg flex items-center justify-center ${
-          isActive ? "bg-primary/20" : isCompleted ? "bg-emerald-500/20" : "bg-destructive/20"
-        }`}>
-          {isActive ? (
-            <Loader2 className="w-4 h-4 text-primary animate-spin" />
-          ) : isCompleted ? (
-            <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-          ) : (
-            <XCircle className="w-4 h-4 text-destructive" />
-          )}
+        isActive ? "bg-primary/20" : isCompleted ? "bg-emerald-500/20" : "bg-destructive/20"}`
+        }>
+          {isActive ?
+          <Loader2 className="w-4 h-4 text-primary animate-spin" /> :
+          isCompleted ?
+          <CheckCircle2 className="w-4 h-4 text-emerald-400" /> :
+
+          <XCircle className="w-4 h-4 text-destructive" />
+          }
         </div>
 
         {/* Content */}
@@ -95,50 +95,50 @@ function JobCard({ job, onDismiss }: { job: ActiveJob; onDismiss: (id: string) =
           </div>
           <p className="text-xs text-foreground/80 line-clamp-1">{job.prompt}</p>
           
-          {isActive && (
-            <p className="text-[10px] text-primary mt-1 font-medium">
+          {isActive &&
+          <p className="text-[10px] text-primary mt-1 font-medium">
               {job.status === "pending" ? "En attente..." : `En cours ${Math.round(displayProgress)}%`}
             </p>
-          )}
+          }
 
-          {isFailed && (
-            <div className="mt-1.5 space-y-0.5">
+          {isFailed &&
+          <div className="mt-1.5 space-y-0.5">
               <p className="text-[10px] text-destructive font-medium">Échec de la génération</p>
               <p className="text-[10px] text-muted-foreground">
                 <RefreshCw className="w-2.5 h-2.5 inline mr-0.5" />
                 {job.credits_used} cauris remboursés
               </p>
             </div>
-          )}
+          }
 
-          {isCompleted && displayUrl && (
-            <div className="mt-2 rounded-lg overflow-hidden max-w-[200px]">
-              {job.tool_type === "video" ? (
-                <video src={displayUrl} controls className="w-full rounded-lg" />
-              ) : job.tool_type === "audio" ? (
-                <audio src={displayUrl} controls className="w-full" />
-              ) : (
-                <img src={displayUrl} alt="" className="w-full rounded-lg" loading="lazy" />
-              )}
-              {job.result_url_temp && !job.result_url && (
-                <p className="text-[9px] text-muted-foreground/50 mt-0.5 italic">Sauvegarde en cours...</p>
-              )}
+          {isCompleted && displayUrl &&
+          <div className="mt-2 rounded-lg overflow-hidden max-w-[200px]">
+              {job.tool_type === "video" ?
+            <video src={displayUrl} controls className="w-full rounded-lg" /> :
+            job.tool_type === "audio" ?
+            <audio src={displayUrl} controls className="w-full" /> :
+
+            <img src={displayUrl} alt="" className="w-full rounded-lg" loading="lazy" />
+            }
+              {job.result_url_temp && !job.result_url &&
+            <p className="text-[9px] text-muted-foreground/50 mt-0.5 italic">Sauvegarde en cours...</p>
+            }
             </div>
-          )}
+          }
         </div>
 
         {/* Dismiss */}
-        {!isActive && (
-          <button
-            onClick={() => onDismiss(job.id)}
-            className="shrink-0 w-6 h-6 rounded-md flex items-center justify-center hover:bg-muted/30 transition-colors"
-          >
+        {!isActive &&
+        <button
+          onClick={() => onDismiss(job.id)}
+          className="shrink-0 w-6 h-6 rounded-md flex items-center justify-center hover:bg-muted/30 transition-colors">
+          
             <X className="w-3 h-3 text-muted-foreground" />
           </button>
-        )}
+        }
       </div>
-    </motion.div>
-  );
+    </motion.div>);
+
 }
 
 export default function ActiveJobsPanel({ activeJobs, recentJobs, onDismiss }: ActiveJobsPanelProps) {
@@ -151,37 +151,37 @@ export default function ActiveJobsPanel({ activeJobs, recentJobs, onDismiss }: A
     <div className="space-y-2">
       {/* Active jobs */}
       <AnimatePresence mode="popLayout">
-        {activeJobs.map((job) => (
-          <JobCard key={job.id} job={job} onDismiss={onDismiss} />
-        ))}
+        {activeJobs.map((job) =>
+        <JobCard key={job.id} job={job} onDismiss={onDismiss} />
+        )}
       </AnimatePresence>
 
       {/* Recent completed/failed toggle */}
-      {recentJobs.length > 0 && (
-        <div>
-          <button
-            onClick={() => setShowRecent(!showRecent)}
-            className="flex items-center gap-1.5 text-[10px] text-muted-foreground hover:text-foreground transition-colors font-medium"
-          >
-            {showRecent ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
-            {recentJobs.length} récent{recentJobs.length > 1 ? "s" : ""}
-          </button>
-          <AnimatePresence>
-            {showRecent && (
-              <motion.div
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: "auto", opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                className="space-y-2 mt-2 overflow-hidden"
-              >
-                {recentJobs.slice(0, 5).map((job) => (
-                  <JobCard key={job.id} job={job} onDismiss={onDismiss} />
-                ))}
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-      )}
-    </div>
-  );
+      {recentJobs.length > 0
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      }
+    </div>);
+
 }
