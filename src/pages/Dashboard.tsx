@@ -123,8 +123,11 @@ const Dashboard = () => {
   const [previewVideo, setPreviewVideo] = useState<GeneratedVideo | null>(null);
   const [isEnhancing, setIsEnhancing] = useState(false);
   const [isDescribingImage, setIsDescribingImage] = useState(false);
-  const [gridSize, setGridSize] = useState<"small" | "medium" | "large" | "feed">("feed");
+  const [galleryLayout, setGalleryLayout] = useState<"row" | "grid">("row");
+  const [galleryImageSize, setGalleryImageSize] = useState<"mini" | "small" | "medium" | "large">("medium");
   const [galleryFilter, setGalleryFilter] = useState<"all" | "image" | "video" | "audio">("all");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
   const describeInputRef = useRef<HTMLInputElement>(null);
   const [isDraggingOverPrompt, setIsDraggingOverPrompt] = useState(false);
   const [isDraggingOverUpload, setIsDraggingOverUpload] = useState(false);
