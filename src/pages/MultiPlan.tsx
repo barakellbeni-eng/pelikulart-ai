@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import { Upload, Loader2, Camera, Download, Trash2 } from "lucide-react";
+import { Upload, Loader2, Camera, Download, Trash2, X } from "lucide-react";
 import GenerationProgress from "@/components/GenerationProgress";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
@@ -71,6 +71,7 @@ const MultiPlan = () => {
   const [planResults, setPlanResults] = useState<Record<number, { url: string; job_id: string }>>({});
   const [loadingPlan, setLoadingPlan] = useState<number | null>(null);
   const [showMediaPicker, setShowMediaPicker] = useState(false);
+  const [previewImage, setPreviewImage] = useState<{ url: string; label: string } | null>(null);
 
   // Session gallery: all generated images
   const [sessionGallery, setSessionGallery] = useState<{ url: string; label: string }[]>([]);
@@ -214,7 +215,10 @@ const MultiPlan = () => {
                       <GenerationProgress estimatedTime="~15s" />
                     </div>
                   ) : mainResult ? (
-                    <div className="relative group rounded-lg overflow-hidden bg-black/30">
+                    <div
+                      className="relative group rounded-lg overflow-hidden bg-black/30 cursor-pointer"
+                      onClick={() => setPreviewImage({ url: mainResult.url, label: "Source générée" })}
+                    >
                       <img
                         src={mainResult.url}
                         alt="Résultat"
@@ -225,12 +229,20 @@ const MultiPlan = () => {
                           e.dataTransfer.effectAllowed = "copy";
                         }}
                       />
-                      <button
-                        onClick={() => handleDownload(mainResult.url, "multiplan")}
-                        className="absolute top-2 right-2 w-7 h-7 rounded bg-background/60 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                      >
-                        <Download className="w-3.5 h-3.5 text-foreground" />
-                      </button>
+                      <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handleDownload(mainResult.url, "multiplan"); }}
+                          className="w-7 h-7 rounded-lg flex items-center justify-center bg-background/70 backdrop-blur-sm hover:bg-background/90 transition-all text-muted-foreground hover:text-foreground shadow-sm"
+                        >
+                          <Download className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); setMainResult(null); }}
+                          className="w-7 h-7 rounded-lg flex items-center justify-center bg-destructive/80 backdrop-blur-sm hover:bg-destructive transition-all text-destructive-foreground shadow-sm"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
                       <div className="absolute bottom-2 left-2 px-2 py-0.5 rounded bg-background/60 backdrop-blur-sm text-[9px] uppercase tracking-widest text-muted-foreground">
                         Source générée
                       </div>
@@ -246,11 +258,12 @@ const MultiPlan = () => {
                 key={`plan-${idx}`}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="relative group rounded-lg overflow-hidden bg-black/30"
+                className="relative group rounded-lg overflow-hidden bg-black/30 cursor-pointer"
+                onClick={() => setPreviewImage({ url: result.url, label: `Cadrage ${Number(idx) + 1}` })}
               >
                 <img
                   src={result.url}
-                  alt={`Plan ${Number(idx) + 1}`}
+                  alt={`Cadrage ${Number(idx) + 1}`}
                   className="w-full max-h-[50vh] object-contain"
                   draggable
                   onDragStart={(e) => {
@@ -258,14 +271,22 @@ const MultiPlan = () => {
                     e.dataTransfer.effectAllowed = "copy";
                   }}
                 />
-                <button
-                  onClick={() => handleDownload(result.url, `plan-${Number(idx) + 1}`)}
-                  className="absolute top-2 right-2 w-7 h-7 rounded bg-background/60 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                >
-                  <Download className="w-3.5 h-3.5 text-foreground" />
-                </button>
+                <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <button
+                    onClick={(e) => { e.stopPropagation(); handleDownload(result.url, `cadrage-${Number(idx) + 1}`); }}
+                    className="w-7 h-7 rounded-lg flex items-center justify-center bg-background/70 backdrop-blur-sm hover:bg-background/90 transition-all text-muted-foreground hover:text-foreground shadow-sm"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setPlanResults((prev) => { const next = { ...prev }; delete next[Number(idx)]; return next; }); }}
+                    className="w-7 h-7 rounded-lg flex items-center justify-center bg-destructive/80 backdrop-blur-sm hover:bg-destructive transition-all text-destructive-foreground shadow-sm"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
                 <div className="absolute bottom-2 left-2 px-2 py-0.5 rounded bg-background/60 backdrop-blur-sm text-[9px] uppercase tracking-widest text-muted-foreground">
-                  Plan {Number(idx) + 1}
+                  Cadrage {Number(idx) + 1}
                 </div>
               </motion.div>
             ))}
@@ -494,6 +515,49 @@ const MultiPlan = () => {
           </div>
         </div>
       )}
+
+      {/* Preview Modal */}
+      <AnimatePresence>
+        {previewImage && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] bg-background/80 backdrop-blur-xl flex items-center justify-center p-4"
+            onClick={() => setPreviewImage(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              className="glass-card max-w-lg w-full p-5 space-y-4 max-h-[90vh] overflow-y-auto"
+            >
+              <div className="flex items-center justify-between">
+                <h2 className="font-semibold text-foreground text-sm">{previewImage.label}</h2>
+                <button onClick={() => setPreviewImage(null)} className="text-muted-foreground hover:text-foreground transition-colors">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <img src={previewImage.url} alt={previewImage.label} className="w-full rounded-xl" />
+              <div className="flex gap-2">
+                <button
+                  onClick={() => { handleDownload(previewImage.url, previewImage.label); }}
+                  className="btn-generate flex-1 flex items-center justify-center gap-2 text-sm py-3"
+                >
+                  <Download className="w-4 h-4" /> Télécharger
+                </button>
+                <button
+                  onClick={() => { setPreviewImage(null); }}
+                  className="px-4 py-3 rounded-xl bg-muted/30 text-foreground hover:bg-muted/50 transition-colors text-sm"
+                >
+                  Fermer
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <MediaPickerModal
         open={showMediaPicker}
