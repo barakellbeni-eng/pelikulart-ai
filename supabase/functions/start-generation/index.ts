@@ -90,23 +90,40 @@ const KIE_AI_BASE = "https://api.kie.ai";
 
 // ── KIE AI model IDs mapped to their KIE model names ──
 const KIE_MODELS: Record<string, string> = {
-  "kie-nano-banana": "google/nano-banana", // auto-switches to google/nano-banana-edit when images provided
+  // Image
+  "kie-nano-banana": "google/nano-banana",       // auto → google/nano-banana-edit with image
   "kie-nano-banana-pro": "nano-banana-pro",
   "kie-nano-banana-2": "nano-banana-2",
   "kie-imagen4": "google/imagen4",
   "kie-imagen4-fast": "google/imagen4-fast",
   "kie-imagen4-ultra": "google/imagen4-ultra",
-  "kie-flux2-pro-t2i": "flux-2/pro-text-to-image",
-  "kie-seedream-v45": "seedream-4.5",
-  "kie-kling-30": "kling-3.0/video",
+  "kie-flux2-pro": "flux-2/pro-text-to-image",   // auto → flux-2/pro-image-to-image with image
+  "kie-seedream-v45": "seedream/4.5-text-to-image", // auto → seedream/4.5-edit with image
+  // Video
+  "kie-kling-30": "kling-3.0",
+  "kie-kling-26": "kling-2.6/text-to-video",     // auto → kling-2.6/image-to-video with image
+  "kie-wan-26": "wan/2-6-text-to-video",          // auto → wan/2-6-image-to-video with image
+  "kie-seedance-15-pro": "bytedance/seedance-1.5-pro",
+  // Audio
   "kie-elevenlabs-sfx": "elevenlabs/sound-effect-v2",
   "kie-elevenlabs-tts": "elevenlabs/text-to-speech-multilingual-v2",
 };
 
-// Models that use `image_input` param (not `image_urls`)
+// Auto-switch map: model_id → [t2i_model, i2i_model]
+const KIE_AUTO_SWITCH: Record<string, [string, string]> = {
+  "kie-nano-banana": ["google/nano-banana", "google/nano-banana-edit"],
+  "kie-flux2-pro": ["flux-2/pro-text-to-image", "flux-2/pro-image-to-image"],
+  "kie-seedream-v45": ["seedream/4.5-text-to-image", "seedream/4.5-edit"],
+  "kie-kling-26": ["kling-2.6/text-to-video", "kling-2.6/image-to-video"],
+  "kie-wan-26": ["wan/2-6-text-to-video", "wan/2-6-image-to-video"],
+};
+
+// Models that use `image_input` param
 const KIE_IMAGE_INPUT_MODELS = new Set(["nano-banana-pro", "nano-banana-2"]);
+// Models that use `input_urls` param
+const KIE_INPUT_URLS_MODELS = new Set(["flux-2/pro-image-to-image", "bytedance/seedance-1.5-pro"]);
 // Models that use `aspect_ratio` + `resolution` (not `image_size`)
-const KIE_ASPECT_RESOLUTION_MODELS = new Set(["nano-banana-pro", "nano-banana-2"]);
+const KIE_ASPECT_RESOLUTION_MODELS = new Set(["nano-banana-pro", "nano-banana-2", "seedream/4.5-text-to-image", "seedream/4.5-edit"]);
 
 // ──────────────────────── HELPERS ────────────────────────
 
@@ -528,47 +545,61 @@ async function processKie(jobId: string, userId: string, body: any) {
     const hasImages = imageList.length > 0;
 
     if (tool_type === "image") {
-      // Auto-switch: kie-nano-banana → google/nano-banana-edit when images provided
-      if (model_id === "kie-nano-banana" && hasImages) {
-        kieModel = "google/nano-banana-edit";
-        console.log(`[KIE] Auto-switched to google/nano-banana-edit (image provided)`);
+      // Auto-switch based on image presence
+      if (hasImages && KIE_AUTO_SWITCH[model_id]) {
+        kieModel = KIE_AUTO_SWITCH[model_id][1]; // switch to I2I/Edit variant
+        console.log(`[KIE] Auto-switched to ${kieModel} (image provided)`);
       }
 
-      // Different models use different param names per KIE API docs
+      // Param routing per model
       if (KIE_ASPECT_RESOLUTION_MODELS.has(kieModel)) {
-        // nano-banana-pro, nano-banana-2 use aspect_ratio + resolution
         if (rawSettings.aspect_ratio) input.aspect_ratio = rawSettings.aspect_ratio;
         if (rawSettings.resolution) input.resolution = rawSettings.resolution;
       } else {
-        // google/nano-banana, google/nano-banana-edit use image_size
+        // google/nano-banana, google/nano-banana-edit, imagen4, etc. use image_size
         if (rawSettings.image_size) input.image_size = rawSettings.image_size;
         else if (rawSettings.aspect_ratio) input.image_size = rawSettings.aspect_ratio;
       }
       if (rawSettings.output_format) input.output_format = rawSettings.output_format;
       if (rawSettings.google_search !== undefined) input.google_search = rawSettings.google_search;
 
-      // Handle image inputs — param name differs per model
+      // Image input param routing
       if (hasImages) {
         if (KIE_IMAGE_INPUT_MODELS.has(kieModel)) {
-          // nano-banana-pro & nano-banana-2 use image_input
           input.image_input = imageList.slice(0, 14);
+        } else if (KIE_INPUT_URLS_MODELS.has(kieModel)) {
+          input.input_urls = imageList.slice(0, 8);
         } else {
-          // google/nano-banana-edit uses image_urls
           input.image_urls = imageList.slice(0, 10);
         }
       }
     } else if (tool_type === "video") {
-      // Video-specific params (Kling 3.0)
+      // Auto-switch video T2V → I2V
+      if (hasImages && KIE_AUTO_SWITCH[model_id]) {
+        kieModel = KIE_AUTO_SWITCH[model_id][1];
+        console.log(`[KIE] Auto-switched to ${kieModel} (image provided)`);
+      }
+
       if (rawSettings.duration) input.duration = String(rawSettings.duration);
       if (rawSettings.aspect_ratio) input.aspect_ratio = rawSettings.aspect_ratio;
+      if (rawSettings.resolution) input.resolution = rawSettings.resolution;
       if (rawSettings.mode) input.mode = rawSettings.mode;
       if (rawSettings.sound !== undefined) input.sound = rawSettings.sound;
-      input.multi_shots = false;
-      if (image_url) input.image_urls = [image_url];
+      if (rawSettings.generate_audio !== undefined) input.generate_audio = rawSettings.generate_audio;
+
+      // Kling 3.0 specific
+      if (kieModel === "kling-3.0") input.multi_shots = false;
+
+      // Image input for video
+      if (hasImages) {
+        if (KIE_INPUT_URLS_MODELS.has(kieModel)) {
+          input.input_urls = imageList.slice(0, 2);
+        } else {
+          input.image_urls = imageList.slice(0, 1);
+        }
+      }
     } else if (tool_type === "audio") {
-      // Audio-specific params (ElevenLabs)
       if (rawSettings.duration) input.duration = rawSettings.duration;
-      // For TTS, use prompt as text
       if (kieModel.includes("text-to-speech")) {
         input.text = prompt;
         delete input.prompt;
