@@ -1964,6 +1964,7 @@ const Dashboard = () => {
                     </span>
                 </div>
               </div>
+            </div>
 
               {/* Controls below prompt: Ratio / Resolution / Image Size */}
               <div className="space-y-3 mt-3">
