@@ -286,7 +286,7 @@ const MultiPlan = () => {
                   <img
                     src={item.url}
                     alt={item.prompt}
-                    className="w-full aspect-square object-cover"
+                    className="w-full max-h-[60vh] object-contain"
                     loading="lazy"
                     draggable
                     onDragStart={(e) => {
