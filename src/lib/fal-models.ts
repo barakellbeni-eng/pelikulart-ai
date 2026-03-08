@@ -582,7 +582,7 @@ export const FAL_MODELS: FalModel[] = [
   {
     id: "kie-nano-banana", type: "image", brand: "KIE·Google", name: "Nano Banana (KIE)",
     endpoint: "kie", provider: "kie", kieModel: "google/nano-banana",
-    description: "Google Nano Banana via KIE AI", icon: "◆", color: "from-amber-500/20 to-amber-500/5",
+    description: "Google Nano Banana via KIE AI — T2I", icon: "◆", color: "from-amber-500/20 to-amber-500/5",
     maxImages: 4, supportsImageInput: false, caurisCost: 2, estimatedTime: "~5s",
     settings: [
       { ...ASPECT_RATIO_NANO_BANANA, key: "image_size" },
@@ -590,18 +590,34 @@ export const FAL_MODELS: FalModel[] = [
   },
   {
     id: "kie-nano-banana-pro", type: "image", brand: "KIE·Google", name: "Nano Banana Pro (KIE)",
-    endpoint: "kie", provider: "kie", kieModel: "google/nano-banana-pro",
-    description: "Google Nano Banana Pro via KIE AI", icon: "◈", color: "from-amber-500/20 to-amber-500/5",
-    maxImages: 4, supportsImageInput: false, caurisCost: 3, estimatedTime: "~5s",
+    endpoint: "kie", provider: "kie", kieModel: "nano-banana-pro",
+    description: "Google Nano Banana Pro via KIE AI — I2I & T2I", icon: "◈", color: "from-amber-500/20 to-amber-500/5",
+    maxImages: 4, supportsImageInput: true, maxInputImages: 8, caurisCost: 3, estimatedTime: "~5s",
     settings: [
-      { ...ASPECT_RATIO_NANO_BANANA, key: "image_size" },
+      ASPECT_RATIO_NANO_BANANA,
+      { key: "resolution", label: "Résolution", type: "select", options: [
+        { value: "1K", label: "1K" }, { value: "2K", label: "2K" }, { value: "4K", label: "4K" },
+      ], defaultValue: "1K" },
+    ],
+  },
+  {
+    id: "kie-nano-banana-2", type: "image", brand: "KIE·Google", name: "Nano Banana 2 (KIE)",
+    endpoint: "kie", provider: "kie", kieModel: "nano-banana-2",
+    description: "Nano Banana 2 via KIE AI — T2I + I2I optionnel, Google Search", icon: "★", color: "from-amber-500/20 to-amber-500/5",
+    maxImages: 4, supportsImageInput: true, maxInputImages: 14, caurisCost: 3, estimatedTime: "~5s", recommended: true,
+    settings: [
+      ASPECT_RATIO_NANO_BANANA,
+      { key: "resolution", label: "Résolution", type: "select", options: [
+        { value: "1K", label: "1K" }, { value: "2K", label: "2K" }, { value: "4K", label: "4K" },
+      ], defaultValue: "1K" },
+      { key: "google_search", label: "Google Search (infos temps réel)", type: "toggle", defaultValue: false },
     ],
   },
   {
     id: "kie-nano-banana-edit", type: "image", brand: "KIE·Google", name: "Nano Banana Edit (KIE)",
     endpoint: "kie", provider: "kie", kieModel: "google/nano-banana-edit",
-    description: "Édition d'image via KIE AI", icon: "◫", color: "from-amber-500/20 to-amber-500/5",
-    maxImages: 1, supportsImageInput: true, maxInputImages: 5, caurisCost: 4, estimatedTime: "~6s",
+    description: "Édition d'image via KIE AI (image requise)", icon: "◫", color: "from-amber-500/20 to-amber-500/5",
+    maxImages: 1, supportsImageInput: true, maxInputImages: 10, caurisCost: 4, estimatedTime: "~6s",
     settings: [
       { ...ASPECT_RATIO_NANO_BANANA, key: "image_size" },
     ],
