@@ -159,8 +159,8 @@ serve(async (req) => {
     // Try KIE AI (nano-banana-2) first
     if (KIE_AI_API_KEY) {
       try {
-        console.log(`Multi-plan: generating ${planLabel} ${aspect_ratio} ${resolution} via KIE AI (nano-banana-2)`);
-        imageResult = await kieGenerate(prompt, image_url, aspect_ratio, KIE_AI_API_KEY);
+        console.log(`Multi-plan: generating ${planLabel} ${aspect_ratio} ${safeResolution} via KIE AI (nano-banana-2)`);
+        imageResult = await kieGenerate(prompt, image_url, aspect_ratio, safeResolution, KIE_AI_API_KEY);
       } catch (kieErr: any) {
         console.error("KIE AI error:", kieErr.message);
       }
