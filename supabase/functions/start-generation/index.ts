@@ -239,6 +239,33 @@ async function kiePollTask(taskId: string, apiKey: string, maxAttempts = 150): P
   throw new Error("KIE AI generation timed out");
 }
 
+// ──────────────────────── AUDIO THUMBNAIL GENERATOR ────────────────────────
+
+async function generateAudioThumbnail(prompt: string, userId: string): Promise<string | null> {
+  const KIE_API_KEY = Deno.env.get("KIE_AI_API_KEY");
+  if (!KIE_API_KEY) return null;
+
+  try {
+    console.log("[Thumbnail] Generating thumbnail for audio via Z-Image Turbo");
+    const thumbPrompt = `Album cover art, cinematic, vibrant: ${prompt.slice(0, 500)}`;
+    const input = { prompt: thumbPrompt, aspect_ratio: "1:1" };
+
+    const taskId = await kieCreateTask("z-image-turbo", input, KIE_API_KEY);
+    const result = await kiePollTask(taskId, KIE_API_KEY, 60);
+
+    const resultUrls: string[] = result.resultUrls || [];
+    if (resultUrls.length === 0) return null;
+
+    const { displayKey } = await downloadAndUploadDual(resultUrls[0], userId, "png");
+    const thumbnailUrl = getPublicUrl(displayKey);
+    console.log("[Thumbnail] Generated:", thumbnailUrl);
+    return thumbnailUrl;
+  } catch (err) {
+    console.error("[Thumbnail] Failed (non-blocking):", err);
+    return null;
+  }
+}
+
 // ──────────────────────── BACKGROUND PROCESSORS ────────────────────────
 
 async function processImage(jobId: string, userId: string, body: any) {
