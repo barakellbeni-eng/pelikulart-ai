@@ -76,6 +76,7 @@ const MultiPlan = () => {
   const [selectedRatio, setSelectedRatio] = useState<AspectRatioId>("1:1");
   const [selectedResolution, setSelectedResolution] = useState<ResolutionId>("2K");
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isCuttingAll, setIsCuttingAll] = useState(false);
   const [loadingPlan, setLoadingPlan] = useState<number | null>(null);
   const [showMediaPicker, setShowMediaPicker] = useState(false);
   const [showCadragePicker, setShowCadragePicker] = useState(false);
