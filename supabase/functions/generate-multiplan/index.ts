@@ -227,7 +227,7 @@ serve(async (req) => {
     const { data: jobData } = await adminClient.from("generation_jobs").insert({
       user_id: userId,
       tool_type: "image",
-      model: usedProvider === "kie" ? "kie-nano-banana-edit" : "nano-banana-pro-edit",
+      model: usedProvider === "kie" ? "kie-nano-banana-2" : "nano-banana-pro-edit",
       prompt: `Multi-Plan ${planLabel}`,
       provider: usedProvider,
       status: "completed",
