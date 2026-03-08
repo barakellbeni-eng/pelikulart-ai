@@ -13,6 +13,7 @@ import ProfileRing from "@/components/ProfileRing";
 import PublicNavbar from "@/components/pelikulart/PublicNavbar";
 import PublicFooter from "@/components/pelikulart/PublicFooter";
 import ScrollToTop from "@/components/pelikulart/ScrollToTop";
+import GlobalActiveJobs from "@/components/GlobalActiveJobs";
 
 import StudioSplash from "@/components/pelikulart/StudioSplash";
 
@@ -77,6 +78,7 @@ const AuthenticatedLayout = ({ children }: { children: React.ReactNode }) => {
             </div>
           </header>
           <div className={isCreatePage ? "flex-1 min-h-0 overflow-hidden" : "flex-1 min-h-0"}>{children}</div>
+          <GlobalActiveJobs />
         </main>
       </div>
     </SidebarProvider>

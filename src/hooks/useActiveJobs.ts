@@ -1,6 +1,5 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useSyncExternalStore } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
 
 export interface ActiveJob {
   id: string;
@@ -20,86 +19,145 @@ export interface ActiveJob {
 
 const POLL_INTERVAL = 5000;
 
-export function useActiveJobs() {
-  const { user } = useAuth();
-  const [jobs, setJobs] = useState<ActiveJob[]>([]);
-  const [loading, setLoading] = useState(true);
-  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+// ── Singleton store ──
+let jobs: ActiveJob[] = [];
+let loading = true;
+let currentUserId: string | null = null;
+let pollTimer: ReturnType<typeof setInterval> | null = null;
+let realtimeChannel: any = null;
+const listeners = new Set<() => void>();
 
-  const fetchJobs = useCallback(async () => {
-    if (!user) {
-      setJobs([]);
-      setLoading(false);
-      return;
-    }
+function notify() {
+  listeners.forEach((l) => l());
+}
 
-    const { data, error } = await supabase
-      .from("generation_jobs")
-      .select("id, tool_type, model, prompt, status, progress, result_url, result_url_temp, credits_used, created_at, started_at, completed_at, result_metadata")
-      .in("status", ["pending", "processing", "completed", "failed"])
-      .is("deleted_at", null)
-      .order("created_at", { ascending: false })
-      .limit(20);
+function getSnapshot() {
+  return jobs;
+}
 
-    if (!error && data) {
-      setJobs(data as ActiveJob[]);
-    }
-    setLoading(false);
-  }, [user]);
+function subscribe(listener: () => void) {
+  listeners.add(listener);
+  return () => listeners.delete(listener);
+}
 
-  // Initial fetch
+async function fetchJobs() {
+  if (!currentUserId) {
+    jobs = [];
+    loading = false;
+    notify();
+    return;
+  }
+
+  const { data, error } = await supabase
+    .from("generation_jobs")
+    .select("id, tool_type, model, prompt, status, progress, result_url, result_url_temp, credits_used, created_at, started_at, completed_at, result_metadata")
+    .in("status", ["pending", "processing", "completed", "failed"])
+    .is("deleted_at", null)
+    .order("created_at", { ascending: false })
+    .limit(20);
+
+  if (!error && data) {
+    jobs = data as ActiveJob[];
+  }
+  loading = false;
+  notify();
+}
+
+function startPolling() {
+  stopPolling();
+  const hasActive = jobs.some((j) => j.status === "pending" || j.status === "processing");
+  if (hasActive) {
+    pollTimer = setInterval(fetchJobs, POLL_INTERVAL);
+  }
+}
+
+function stopPolling() {
+  if (pollTimer) {
+    clearInterval(pollTimer);
+    pollTimer = null;
+  }
+}
+
+function setupRealtime(userId: string) {
+  cleanupRealtime();
+  realtimeChannel = supabase
+    .channel("active-jobs-global")
+    .on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "generation_jobs",
+        filter: `user_id=eq.${userId}`,
+      },
+      () => {
+        fetchJobs();
+      }
+    )
+    .subscribe();
+}
+
+function cleanupRealtime() {
+  if (realtimeChannel) {
+    supabase.removeChannel(realtimeChannel);
+    realtimeChannel = null;
+  }
+}
+
+function initForUser(userId: string) {
+  if (currentUserId === userId) return;
+  currentUserId = userId;
+  loading = true;
+  notify();
+  fetchJobs().then(() => {
+    startPolling();
+  });
+  setupRealtime(userId);
+}
+
+function clearForLogout() {
+  currentUserId = null;
+  jobs = [];
+  loading = false;
+  stopPolling();
+  cleanupRealtime();
+  notify();
+}
+
+// Re-evaluate polling whenever jobs change
+let prevJobsRef = jobs;
+
+/**
+ * Hook that provides persistent active jobs across navigation.
+ * Uses a singleton store so state survives component unmounts.
+ */
+export function useActiveJobs(userId?: string | null) {
+  const currentJobs = useSyncExternalStore(subscribe, getSnapshot);
+
+  // Init/cleanup based on userId
   useEffect(() => {
-    fetchJobs();
-  }, [fetchJobs]);
-
-  // Poll only active jobs
-  useEffect(() => {
-    const hasActive = jobs.some((j) => j.status === "pending" || j.status === "processing");
-    
-    if (hasActive) {
-      pollRef.current = setInterval(fetchJobs, POLL_INTERVAL);
-    } else if (pollRef.current) {
-      clearInterval(pollRef.current);
-      pollRef.current = null;
+    if (userId) {
+      initForUser(userId);
+    } else if (userId === null) {
+      clearForLogout();
     }
+  }, [userId]);
 
-    return () => {
-      if (pollRef.current) clearInterval(pollRef.current);
-    };
-  }, [jobs, fetchJobs]);
-
-  // Also subscribe to realtime changes
+  // Re-evaluate polling when jobs change
   useEffect(() => {
-    if (!user) return;
-
-    const channel = supabase
-      .channel("active-jobs")
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "generation_jobs",
-          filter: `user_id=eq.${user.id}`,
-        },
-        () => {
-          // Refetch on any change
-          fetchJobs();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [user, fetchJobs]);
+    if (currentJobs !== prevJobsRef) {
+      prevJobsRef = currentJobs;
+      startPolling();
+    }
+  }, [currentJobs]);
 
   const dismissJob = useCallback((jobId: string) => {
-    setJobs((prev) => prev.filter((j) => j.id !== jobId));
+    jobs = jobs.filter((j) => j.id !== jobId);
+    notify();
   }, []);
 
-  const activeJobs = jobs.filter((j) => j.status === "pending" || j.status === "processing");
-  const recentJobs = jobs.filter((j) => j.status === "completed" || j.status === "failed");
+  const activeJobs = currentJobs.filter((j) => j.status === "pending" || j.status === "processing");
+  const recentJobs = currentJobs.filter((j) => j.status === "completed" || j.status === "failed");
 
-  return { jobs, activeJobs, recentJobs, loading, refetch: fetchJobs, dismissJob };
+  return { jobs: currentJobs, activeJobs, recentJobs, loading, refetch: fetchJobs, dismissJob };
 }
