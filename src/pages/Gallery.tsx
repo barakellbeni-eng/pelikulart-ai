@@ -266,20 +266,17 @@ const Gallery = () => {
     }
   };
 
-  // --- Grid classes based on zoom level & view type ---
-  const zoomColumns: Record<number, { masonry: string; grid: string }> = {
-    1: { masonry: "columns-4 md:columns-5 lg:columns-6 gap-1.5 space-y-1.5", grid: "grid grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-1.5" },
-    2: { masonry: "columns-3 md:columns-4 lg:columns-5 gap-2 space-y-2", grid: "grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2" },
-    3: { masonry: "columns-2 md:columns-3 gap-3 space-y-3", grid: "grid grid-cols-2 md:grid-cols-3 gap-3" },
-    4: { masonry: "columns-2 md:columns-2 gap-4 space-y-4", grid: "grid grid-cols-2 md:grid-cols-2 gap-4" },
-    5: { masonry: "columns-1 md:columns-2 gap-4 space-y-4", grid: "grid grid-cols-1 md:grid-cols-2 gap-4" },
-  };
-  const gridClass = useMemo(() => {
-    const z = zoomColumns[prefs.zoom] || zoomColumns[3];
-    return prefs.viewType === "masonry" ? z.masonry : z.grid;
-  }, [prefs.zoom, prefs.viewType]);
+  // --- Grid style based on zoom (5 levels) ---
+  const gridStyle = useMemo(() => {
+    const val = prefs.zoom;
+    const sizes = [80, 130, 180, 240, 0]; // 0 = full width
+    const size = sizes[val - 1];
+    if (val === 5) return { gridTemplateColumns: "1fr" };
+    if (val === 4) return { gridTemplateColumns: "repeat(2, 1fr)" };
+    return { gridTemplateColumns: `repeat(auto-fill, minmax(${size}px, 1fr))` };
+  }, [prefs.zoom]);
 
-  const isGrid = prefs.viewType === "grid";
+  const cardAspect = prefs.zoom >= 4 ? "aspect-video" : "aspect-square";
 
   return (
     <div className="min-h-screen pb-24 md:pb-8">
