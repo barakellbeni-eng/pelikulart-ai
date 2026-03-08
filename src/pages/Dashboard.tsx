@@ -2157,7 +2157,7 @@ const Dashboard = () => {
                           e.dataTransfer.setData("text/x-gallery-image", img.url);
                           e.dataTransfer.effectAllowed = "copy";
                         }}
-                        className={`aspect-square relative group rounded-xl overflow-hidden cursor-grab active:cursor-grabbing`}
+                        className={`${cardAspect} relative group rounded-xl overflow-hidden cursor-grab active:cursor-grabbing`}
                       >
                         <motion.div
                           initial={{ opacity: 0, scale: 0.95 }}
