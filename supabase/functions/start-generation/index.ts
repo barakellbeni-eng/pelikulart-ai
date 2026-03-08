@@ -102,6 +102,8 @@ const KIE_MODELS: Record<string, string> = {
   // Video
   "kie-kling-30": "kling-3.0/video",
   "kie-kling-26": "kling-2.6/text-to-video",     // auto → kling-2.6/image-to-video with image
+  "kie-kling-25-turbo": "kling/v2-5-turbo-text-to-video-pro", // auto → kling/v2-5-turbo-image-to-video-pro with image
+  "kie-kling-21": "kling/v2-1-master-text-to-video", // auto → kling/v2-1-master-image-to-video with image
   "kie-wan-26": "wan/2-6-text-to-video",          // auto → wan/2-6-image-to-video with image
   "kie-seedance-15-pro": "bytedance/seedance-1.5-pro",
   // Audio
