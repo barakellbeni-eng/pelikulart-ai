@@ -35,6 +35,10 @@ import {
   Info,
   FolderInput,
   Package,
+  Play,
+  Pause,
+  ZoomIn,
+  ZoomOut,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
