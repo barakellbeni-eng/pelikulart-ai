@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Upload, Loader2, Camera, Download, Trash2, X, Scissors, RefreshCw, Video, RotateCcw, Crosshair } from "lucide-react";
+import { Upload, Loader2, Camera, Download, Trash2, X, Scissors, RefreshCw, Video, RotateCcw, Crosshair, Lock, CheckCircle2 } from "lucide-react";
 import GenerationProgress from "@/components/GenerationProgress";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useCauris } from "@/hooks/useCauris";
 import MediaPickerModal from "@/components/MediaPickerModal";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import DeleteConfirmModal from "@/components/DeleteConfirmModal";
 
 const MULTIPLAN_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-multiplan`;
@@ -79,6 +80,11 @@ const MultiPlan = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [isCuttingAll, setIsCuttingAll] = useState(false);
   const [loadingPlan, setLoadingPlan] = useState<number | null>(null);
+  // Queue state for "Découper tout": 'idle' | 'waiting' | 'running' | 'done'
+  const [queueStatus, setQueueStatus] = useState<Record<number, 'idle' | 'waiting' | 'running' | 'done'>>({
+    1: 'idle', 2: 'idle', 3: 'idle', 4: 'idle',
+  });
+  const isAnyJobRunning = isCuttingAll || isGenerating || loadingPlan !== null;
   const [showMediaPicker, setShowMediaPicker] = useState(false);
   const [showCadragePicker, setShowCadragePicker] = useState(false);
   const [cadrageSource, setCadrageSource] = useState<string | null>(null);
@@ -211,10 +217,13 @@ const MultiPlan = () => {
   const handleCutAll = async () => {
     if (!cadrageSource || !user || isCuttingAll || loadingPlan !== null) return;
     setIsCuttingAll(true);
+    setQueueStatus({ 1: 'waiting', 2: 'waiting', 3: 'waiting', 4: 'waiting' });
 
     try {
       for (let i = 1; i <= 4; i++) {
+        setQueueStatus(prev => ({ ...prev, [i]: 'running' }));
         await callGenerate(cadrageSource, selectedPlan, i);
+        setQueueStatus(prev => ({ ...prev, [i]: 'done' }));
       }
       await loadGallery();
       refreshBalance();
@@ -225,6 +234,8 @@ const MultiPlan = () => {
       refreshBalance();
     } finally {
       setIsCuttingAll(false);
+      // Reset queue after a short delay so user sees the "done" state
+      setTimeout(() => setQueueStatus({ 1: 'idle', 2: 'idle', 3: 'idle', 4: 'idle' }), 3000);
     }
   };
 
@@ -432,23 +443,39 @@ const MultiPlan = () => {
           </div>
 
           {/* Generate button */}
-          <button
-            onClick={handleGenerate}
-            disabled={!sourceImage || isGenerating || !user}
-            className="w-full py-2.5 rounded-lg bg-primary text-primary-foreground text-xs font-semibold flex items-center justify-center gap-2 disabled:opacity-25 disabled:cursor-not-allowed transition-all hover:brightness-110"
-          >
-            {isGenerating ? (
-              <>
-                <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                Génération...
-              </>
-            ) : (
-              <>
-                <Camera className="w-3.5 h-3.5" />
-                Générer · 2 cauris
-              </>
-            )}
-          </button>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={() => !isAnyJobRunning && handleGenerate()}
+                  disabled={!sourceImage || isGenerating || !user}
+                  className="w-full py-2.5 rounded-lg bg-primary text-primary-foreground text-xs font-semibold flex items-center justify-center gap-2 disabled:opacity-25 disabled:cursor-not-allowed transition-all hover:brightness-110"
+                >
+                  {isGenerating ? (
+                    <>
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      Génération...
+                    </>
+                  ) : isAnyJobRunning ? (
+                    <>
+                      <Lock className="w-3.5 h-3.5" />
+                      Générer · 2 cauris
+                    </>
+                  ) : (
+                    <>
+                      <Camera className="w-3.5 h-3.5" />
+                      Générer · 2 cauris
+                    </>
+                  )}
+                </button>
+              </TooltipTrigger>
+              {isAnyJobRunning && !isGenerating && (
+                <TooltipContent side="top">
+                  <p className="text-xs">Patientez, génération en cours</p>
+                </TooltipContent>
+              )}
+            </Tooltip>
+          </TooltipProvider>
 
           {/* Ratio */}
           <div className="space-y-1.5">
@@ -515,6 +542,46 @@ const MultiPlan = () => {
 
             {cadrageSource && (
               <div className="space-y-2 mt-2">
+                {/* Queue display when cutting all */}
+                {isCuttingAll && (
+                  <div className="rounded-lg border border-border/30 bg-muted/10 p-2.5 space-y-1.5">
+                    <p className="text-[9px] text-muted-foreground uppercase tracking-widest font-semibold mb-1">File d'attente</p>
+                    {[1, 2, 3, 4].map((idx) => {
+                      const status = queueStatus[idx];
+                      return (
+                        <div key={idx} className="flex items-center gap-2 py-1">
+                          {/* Spinner / Check */}
+                          <div className="w-4 h-4 shrink-0 flex items-center justify-center">
+                            {status === 'waiting' && (
+                              <div className="w-3.5 h-3.5 rounded-full border-2 border-muted-foreground/30" />
+                            )}
+                            {status === 'running' && (
+                              <Loader2 className="w-3.5 h-3.5 animate-spin" style={{ color: '#ccff00' }} />
+                            )}
+                            {status === 'done' && (
+                              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                            )}
+                          </div>
+                          {/* Label */}
+                          <span className={`text-[11px] flex-1 ${status === 'running' ? 'text-foreground font-medium' : 'text-muted-foreground'}`}>
+                            Plan {idx}
+                          </span>
+                          {/* Status text */}
+                          <span className={`text-[10px] ${
+                            status === 'waiting' ? 'text-muted-foreground/50' :
+                            status === 'running' ? 'text-[#ccff00] font-medium' :
+                            'text-emerald-400 font-medium'
+                          }`}>
+                            {status === 'waiting' && 'En attente'}
+                            {status === 'running' && 'En cours'}
+                            {status === 'done' && '✓ Prêt'}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+
                 <button
                   onClick={handleCutAll}
                   disabled={isCuttingAll || loadingPlan !== null}
@@ -536,23 +603,41 @@ const MultiPlan = () => {
                 <div className="grid grid-cols-2 gap-1.5">
                   {[0, 1, 2, 3].map((idx) => {
                     const isLoading = loadingPlan === idx;
+                    const locked = isAnyJobRunning && !isLoading;
                     return (
-                      <button
-                        key={idx}
-                        onClick={() => handlePlanClick(idx)}
-                        disabled={loadingPlan !== null || isCuttingAll}
-                        className={`py-2 rounded-lg text-[11px] font-medium transition-all border ${
-                          isLoading
-                            ? "border-primary/30 bg-primary/5 text-primary"
-                            : "border-border/30 text-muted-foreground hover:border-primary/20 hover:text-foreground"
-                        } ${(loadingPlan !== null && !isLoading) || isCuttingAll ? "opacity-20 cursor-not-allowed" : ""}`}
-                      >
-                        {isLoading ? (
-                          <Loader2 className="w-3 h-3 animate-spin mx-auto" />
-                        ) : (
-                          `Cadrage ${idx + 1}`
-                        )}
-                      </button>
+                      <TooltipProvider key={idx}>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <button
+                              onClick={() => !locked && handlePlanClick(idx)}
+                              disabled={isLoading}
+                              className={`py-2 rounded-lg text-[11px] font-medium transition-all border relative ${
+                                isLoading
+                                  ? "border-primary/30 bg-primary/5 text-primary"
+                                  : locked
+                                  ? "border-border/30 text-muted-foreground cursor-not-allowed"
+                                  : "border-border/30 text-muted-foreground hover:border-primary/20 hover:text-foreground"
+                              }`}
+                            >
+                              {isLoading ? (
+                                <Loader2 className="w-3 h-3 animate-spin mx-auto" />
+                              ) : locked ? (
+                                <span className="flex items-center justify-center gap-1">
+                                  <Lock className="w-3 h-3" />
+                                  Cadrage {idx + 1}
+                                </span>
+                              ) : (
+                                `Cadrage ${idx + 1}`
+                              )}
+                            </button>
+                          </TooltipTrigger>
+                          {locked && (
+                            <TooltipContent side="top">
+                              <p className="text-xs">Patientez, génération en cours</p>
+                            </TooltipContent>
+                          )}
+                        </Tooltip>
+                      </TooltipProvider>
                     );
                   })}
                 </div>
