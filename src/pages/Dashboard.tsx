@@ -1648,7 +1648,20 @@ const Dashboard = () => {
             }
             allItems.sort((a, b) => b.ts - a.ts);
 
-            const totalCount = allItems.length;
+            // Date range filter
+            const dateFilteredItems = allItems.filter((item) => {
+              if (dateFrom) {
+                const from = new Date(dateFrom).getTime();
+                if (item.ts < from) return false;
+              }
+              if (dateTo) {
+                const to = new Date(dateTo).getTime() + 86400000; // end of day
+                if (item.ts > to) return false;
+              }
+              return true;
+            });
+
+            const totalCount = dateFilteredItems.length;
 
             if (totalCount === 0 && !isGenerating) {
               return (
