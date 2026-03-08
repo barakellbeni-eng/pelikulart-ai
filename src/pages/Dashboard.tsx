@@ -1605,14 +1605,14 @@ const Dashboard = () => {
                               e.stopPropagation();
                               toggleSelection(selectionKey);
                             }}
-                            className={`absolute top-3 left-3 z-20 h-9 w-9 rounded-xl border border-border/60 backdrop-blur-sm flex items-center justify-center transition-all ${
+                            className={`absolute top-2 left-2 z-20 h-5 w-5 rounded-full flex items-center justify-center transition-all ${
                               isSelected
-                                ? "bg-primary text-primary-foreground"
-                                : "bg-card/70 text-muted-foreground hover:bg-card"
+                                ? "bg-primary text-primary-foreground scale-100 opacity-100"
+                                : "bg-background/60 text-muted-foreground opacity-0 group-hover:opacity-100 scale-90 group-hover:scale-100"
                             }`}
                             title="Sélectionner"
                           >
-                            {isSelected ? <Check className="w-4 h-4" /> : <div className="w-4 h-4 rounded border-2 border-current" />}
+                            {isSelected && <Check className="w-3 h-3" />}
                           </button>
                         )}
 
@@ -1816,14 +1816,14 @@ const Dashboard = () => {
                               e.stopPropagation();
                               toggleSelection(imageSelectionKey);
                             }}
-                            className={`absolute top-1.5 right-1.5 z-20 h-8 w-8 rounded-lg border border-border/60 backdrop-blur-sm flex items-center justify-center transition-all ${
+                            className={`absolute top-1.5 right-1.5 z-20 h-5 w-5 rounded-full flex items-center justify-center transition-all ${
                               imageSelected
-                                ? "bg-primary text-primary-foreground"
-                                : "bg-card/70 text-muted-foreground hover:bg-card"
+                                ? "bg-primary text-primary-foreground scale-100 opacity-100"
+                                : "bg-background/60 text-muted-foreground opacity-0 group-hover:opacity-100 scale-90 group-hover:scale-100"
                             }`}
                             title="Sélectionner"
                           >
-                            {imageSelected ? <Check className="w-4 h-4" /> : <div className="w-4 h-4 rounded border-2 border-current" />}
+                            {imageSelected && <Check className="w-3 h-3" />}
                           </button>
 
                           {/* Type badge */}
@@ -1902,14 +1902,14 @@ const Dashboard = () => {
                             e.stopPropagation();
                             toggleSelection(videoSelectionKey);
                           }}
-                          className={`absolute top-1.5 right-1.5 z-20 h-8 w-8 rounded-lg border border-border/60 backdrop-blur-sm flex items-center justify-center transition-all ${
+                          className={`absolute top-1.5 right-1.5 z-20 h-5 w-5 rounded-full flex items-center justify-center transition-all ${
                             videoSelected
-                              ? "bg-primary text-primary-foreground"
-                              : "bg-card/70 text-muted-foreground hover:bg-card"
+                              ? "bg-primary text-primary-foreground scale-100 opacity-100"
+                              : "bg-background/60 text-muted-foreground opacity-0 group-hover:opacity-100 scale-90 group-hover:scale-100"
                           }`}
                           title="Sélectionner"
                         >
-                          {videoSelected ? <Check className="w-4 h-4" /> : <div className="w-4 h-4 rounded border-2 border-current" />}
+                          {videoSelected && <Check className="w-3 h-3" />}
                         </button>
 
                         {/* Type badge */}
