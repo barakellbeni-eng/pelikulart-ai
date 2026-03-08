@@ -90,23 +90,40 @@ const KIE_AI_BASE = "https://api.kie.ai";
 
 // ── KIE AI model IDs mapped to their KIE model names ──
 const KIE_MODELS: Record<string, string> = {
-  "kie-nano-banana": "google/nano-banana", // auto-switches to google/nano-banana-edit when images provided
+  // Image
+  "kie-nano-banana": "google/nano-banana",       // auto → google/nano-banana-edit with image
   "kie-nano-banana-pro": "nano-banana-pro",
   "kie-nano-banana-2": "nano-banana-2",
   "kie-imagen4": "google/imagen4",
   "kie-imagen4-fast": "google/imagen4-fast",
   "kie-imagen4-ultra": "google/imagen4-ultra",
-  "kie-flux2-pro-t2i": "flux-2/pro-text-to-image",
-  "kie-seedream-v45": "seedream-4.5",
-  "kie-kling-30": "kling-3.0/video",
+  "kie-flux2-pro": "flux-2/pro-text-to-image",   // auto → flux-2/pro-image-to-image with image
+  "kie-seedream-v45": "seedream/4.5-text-to-image", // auto → seedream/4.5-edit with image
+  // Video
+  "kie-kling-30": "kling-3.0",
+  "kie-kling-26": "kling-2.6/text-to-video",     // auto → kling-2.6/image-to-video with image
+  "kie-wan-26": "wan/2-6-text-to-video",          // auto → wan/2-6-image-to-video with image
+  "kie-seedance-15-pro": "bytedance/seedance-1.5-pro",
+  // Audio
   "kie-elevenlabs-sfx": "elevenlabs/sound-effect-v2",
   "kie-elevenlabs-tts": "elevenlabs/text-to-speech-multilingual-v2",
 };
 
-// Models that use `image_input` param (not `image_urls`)
+// Auto-switch map: model_id → [t2i_model, i2i_model]
+const KIE_AUTO_SWITCH: Record<string, [string, string]> = {
+  "kie-nano-banana": ["google/nano-banana", "google/nano-banana-edit"],
+  "kie-flux2-pro": ["flux-2/pro-text-to-image", "flux-2/pro-image-to-image"],
+  "kie-seedream-v45": ["seedream/4.5-text-to-image", "seedream/4.5-edit"],
+  "kie-kling-26": ["kling-2.6/text-to-video", "kling-2.6/image-to-video"],
+  "kie-wan-26": ["wan/2-6-text-to-video", "wan/2-6-image-to-video"],
+};
+
+// Models that use `image_input` param
 const KIE_IMAGE_INPUT_MODELS = new Set(["nano-banana-pro", "nano-banana-2"]);
+// Models that use `input_urls` param
+const KIE_INPUT_URLS_MODELS = new Set(["flux-2/pro-image-to-image", "bytedance/seedance-1.5-pro"]);
 // Models that use `aspect_ratio` + `resolution` (not `image_size`)
-const KIE_ASPECT_RESOLUTION_MODELS = new Set(["nano-banana-pro", "nano-banana-2"]);
+const KIE_ASPECT_RESOLUTION_MODELS = new Set(["nano-banana-pro", "nano-banana-2", "seedream/4.5-text-to-image", "seedream/4.5-edit"]);
 
 // ──────────────────────── HELPERS ────────────────────────
 
