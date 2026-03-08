@@ -254,6 +254,7 @@ const Dashboard = () => {
         for (let idx = 0; idx < (data as any[]).length; idx++) {
           const g = (data as any[])[idx];
           const item = {
+            id: g.id,
             url: signedUrlList[idx],
             prompt: g.prompt,
             timestamp: new Date(g.created_at).getTime(),
@@ -702,23 +703,48 @@ const Dashboard = () => {
     }
   };
 
+  const DELETE_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/delete-generation`;
+
   const handleDeleteImage = async (img: GeneratedImage) => {
     if (!user) return;
     try {
-      // Try to find the generation_job for this image and delete via edge function
       const { data: sessionData } = await supabase.auth.getSession();
       const token = sessionData?.session?.access_token;
-      if (token) {
-        // Also delete from legacy generations table
-        await supabase
-          .from("generations")
-          .delete()
-          .eq("user_id", user.id)
-          .eq("image_url", img.url);
+      if (token && img.id) {
+        await fetch(DELETE_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ job_id: img.id }),
+        });
+      } else if (token) {
+        // Fallback: delete from legacy generations table directly
+        await supabase.from("generations").delete().eq("user_id", user.id).eq("image_url", img.url);
       }
       setGalleryImages((prev) => prev.filter((g) => g.url !== img.url));
       setPreviewImage(null);
-      toast.success("Image supprimée");
+      toast.success("Image supprimée définitivement");
+    } catch {
+      toast.error("Erreur lors de la suppression");
+    }
+  };
+
+  const handleDeleteVideo = async (vid: GeneratedVideo) => {
+    if (!user) return;
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData?.session?.access_token;
+      if (token && vid.id) {
+        await fetch(DELETE_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ job_id: vid.id }),
+        });
+      } else if (token) {
+        await supabase.from("generations").delete().eq("user_id", user.id).eq("image_url", vid.url);
+      }
+      setGalleryVideos((prev) => prev.filter((g) => g.url !== vid.url));
+      setPreviewVideo(null);
+      toast.success("Vidéo supprimée définitivement");
     } catch {
       toast.error("Erreur lors de la suppression");
     }
