@@ -127,6 +127,36 @@ const Dashboard = () => {
   const [isDraggingOverPrompt, setIsDraggingOverPrompt] = useState(false);
   const [isDraggingOverUpload, setIsDraggingOverUpload] = useState(false);
   const [showMediaPicker, setShowMediaPicker] = useState(false);
+  const [selectedGalleryItems, setSelectedGalleryItems] = useState<Set<string>>(new Set());
+  const [batchDeletingSelection, setBatchDeletingSelection] = useState(false);
+
+  const getImageSelectionKey = useCallback((img: GeneratedImage) => `image:${img.id ?? img.url}`, []);
+  const getVideoSelectionKey = useCallback((vid: GeneratedVideo) => `video:${vid.id ?? vid.url}`, []);
+
+  const toggleSelection = useCallback((key: string) => {
+    setSelectedGalleryItems((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  }, []);
+
+  const clearSelection = useCallback(() => setSelectedGalleryItems(new Set()), []);
+
+  const selectionCount = selectedGalleryItems.size;
+
+  useEffect(() => {
+    const validKeys = new Set<string>([
+      ...galleryImages.map(getImageSelectionKey),
+      ...galleryVideos.map(getVideoSelectionKey),
+    ]);
+
+    setSelectedGalleryItems((prev) => {
+      const next = new Set(Array.from(prev).filter((key) => validKeys.has(key)));
+      return next.size === prev.size ? prev : next;
+    });
+  }, [galleryImages, galleryVideos, getImageSelectionKey, getVideoSelectionKey]);
 
   // Helper: fetch a URL as base64 data URL
   const urlToBase64 = useCallback(async (url: string): Promise<string> => {
