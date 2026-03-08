@@ -87,6 +87,8 @@ const Dashboard = () => {
   const { balance, deduct, refetch: refetchCauris } = useCauris();
   const [activeTab, setActiveTab] = useState<"image" | "video" | "audio">("image");
   const [prompt, setPrompt] = useState("");
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [showCreditsModal, setShowCreditsModal] = useState(false);
 
   const imageModels = getModelsByType("image");
   const videoModels = getModelsByType("video");
@@ -213,40 +215,8 @@ const Dashboard = () => {
     setModelSettings((prev) => ({ ...prev, [key]: value }));
   };
 
-  // Helper: download a remote file and upload to Supabase storage, then insert into generations table
-  const persistMedia = useCallback(async (
-    remoteUrl: string,
-    mediaType: "video" | "audio",
-    promptText: string,
-    ext: string,
-    contentType: string,
-  ): Promise<string> => {
-    if (!user) return remoteUrl;
-    try {
-      const resp = await fetch(remoteUrl);
-      if (!resp.ok) return remoteUrl;
-      const blob = await resp.blob();
-      const arrayBuffer = await blob.arrayBuffer();
-      const fileName = `${user.id}/${crypto.randomUUID()}.${ext}`;
-      const { error: uploadError } = await supabase.storage
-        .from("generations")
-        .upload(fileName, new Uint8Array(arrayBuffer), { contentType, upsert: false });
-      if (uploadError) { console.error("Upload error:", uploadError); return remoteUrl; }
-      // Store the file path (not public URL) for signed URL generation
-      await supabase.from("generations").insert({
-        user_id: user.id,
-        prompt: promptText,
-        image_url: fileName,
-        media_type: mediaType,
-      } as any);
-      // Return a signed URL for immediate display
-      const signedUrl = await getSignedUrl(fileName);
-      return signedUrl;
-    } catch (e) {
-      console.error("persistMedia error:", e);
-      return remoteUrl;
-    }
-  }, [user]);
+
+
 
   // Load history from DB
   useEffect(() => {
@@ -404,13 +374,23 @@ const Dashboard = () => {
     }
   };
 
+  // Gate: check auth then credits before any generation
+  const gateGeneration = (cost: number): boolean => {
+    if (!user) {
+      setShowAuthModal(true);
+      return false;
+    }
+    if (balance < cost) {
+      setShowCreditsModal(true);
+      return false;
+    }
+    return true;
+  };
+
   const handleGenerate = async () => {
     if (!prompt.trim()) return;
     const cost = calculateCaurisCost(selectedModel, modelSettings, numImages);
-    if (balance < cost) {
-      toast.error(`Solde insuffisant ! Il vous faut ${cost} cauris. Rechargez votre compte.`);
-      return;
-    }
+    if (!gateGeneration(cost)) return;
 
     // Capture current values before resetting UI
     const currentPrompt = prompt;
@@ -513,10 +493,7 @@ const Dashboard = () => {
   const handleGenerateVideo = async () => {
     if (!prompt.trim()) return;
     const cost = calculateCaurisCost(selectedModel, modelSettings);
-    if (balance < cost) {
-      toast.error(`Solde insuffisant ! Il vous faut ${cost} cauris. Rechargez votre compte.`);
-      return;
-    }
+    if (!gateGeneration(cost)) return;
 
     const currentPrompt = prompt;
     const currentModel = selectedModel;
@@ -617,10 +594,7 @@ const Dashboard = () => {
   const handleGenerateAudio = async () => {
     if (!prompt.trim()) return;
     const cost = calculateCaurisCost(selectedModel, modelSettings);
-    if (balance < cost) {
-      toast.error(`Solde insuffisant ! Il vous faut ${cost} cauris.`);
-      return;
-    }
+    if (!gateGeneration(cost)) return;
 
     const currentPrompt = prompt;
     const currentModel = selectedModel;
@@ -1341,9 +1315,15 @@ const Dashboard = () => {
           {/* Balance indicator */}
           <div className="text-center">
             <span className="text-[11px] text-muted-foreground">
-              Il vous reste <span className="font-bold text-foreground">{balance}</span> cauris
-              {balance < calculateCaurisCost(selectedModel, modelSettings, numImages) && (
-                <> · <a href="/pricing" className="text-primary underline underline-offset-2 font-semibold">Recharger</a></>
+              {user ? (
+                <>
+                  Il vous reste <span className="font-bold text-foreground">{balance}</span> cauris
+                  {balance < calculateCaurisCost(selectedModel, modelSettings, numImages) && (
+                    <> · <a href="/pricing" className="text-primary underline underline-offset-2 font-semibold">Recharger</a></>
+                  )}
+                </>
+              ) : (
+                <a href="/auth" className="text-primary underline underline-offset-2 font-semibold">Connecte-toi pour générer</a>
               )}
             </span>
           </div>
@@ -1922,6 +1902,93 @@ const Dashboard = () => {
                 className="absolute top-2 right-2 w-8 h-8 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center hover:bg-black/80 transition-colors"
               >
                 <X className="w-4 h-4 text-white" />
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Auth Gate Modal */}
+      <AnimatePresence>
+        {showAuthModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+            onClick={() => setShowAuthModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-card rounded-2xl p-8 max-w-sm w-full text-center shadow-2xl border border-border"
+            >
+              <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
+                <User className="w-8 h-8 text-primary" />
+              </div>
+              <h3 className="text-xl font-bold text-foreground mb-2">Connecte-toi pour générer</h3>
+              <p className="text-muted-foreground text-sm mb-6">
+                Crée un compte gratuit ou connecte-toi pour commencer à générer des images, vidéos et audios avec l'IA.
+              </p>
+              <a
+                href="/auth"
+                className="btn-generate w-full flex items-center justify-center gap-2 text-sm py-3"
+              >
+                <Sparkles className="w-4 h-4" />
+                Se connecter / S'inscrire
+              </a>
+              <button
+                onClick={() => setShowAuthModal(false)}
+                className="mt-3 text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Continuer à explorer
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Credits Gate Modal */}
+      <AnimatePresence>
+        {showCreditsModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+            onClick={() => setShowCreditsModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-card rounded-2xl p-8 max-w-sm w-full text-center shadow-2xl border border-border"
+            >
+              <div className="w-16 h-16 rounded-full bg-amber-500/10 flex items-center justify-center mx-auto mb-4">
+                <Sparkles className="w-8 h-8 text-amber-500" />
+              </div>
+              <h3 className="text-xl font-bold text-foreground mb-2">Crédits insuffisants</h3>
+              <p className="text-muted-foreground text-sm mb-2">
+                Il te faut <span className="font-bold text-foreground">{calculateCaurisCost(selectedModel, modelSettings, numImages)} cauris</span> pour cette génération.
+              </p>
+              <p className="text-muted-foreground text-sm mb-6">
+                Ton solde actuel : <span className="font-bold text-foreground">{balance} cauris</span>
+              </p>
+              <a
+                href="/pricing"
+                className="btn-generate w-full flex items-center justify-center gap-2 text-sm py-3"
+              >
+                <Wand2 className="w-4 h-4" />
+                Acheter des cauris
+              </a>
+              <button
+                onClick={() => setShowCreditsModal(false)}
+                className="mt-3 text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Fermer
               </button>
             </motion.div>
           </motion.div>
