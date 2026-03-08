@@ -35,6 +35,8 @@ import { toast } from "sonner";
 import { FAL_MODELS, getModelById, getDefaultSettings, getModelsByType, getModelsByTypeGrouped, calculateCaurisCost, type FalModel } from "@/lib/fal-models";
 import { getBrandLogo } from "@/lib/brandLogos";
 import GenerationProgress from "@/components/GenerationProgress";
+import ActiveJobsPanel from "@/components/ActiveJobsPanel";
+import { useActiveJobs } from "@/hooks/useActiveJobs";
 import { getGenerationJob, startGeneration, completeGeneration, failGeneration, subscribeGeneration } from "@/hooks/useGenerationStore";
 import { getSignedUrl, getSignedUrls } from "@/lib/storage";
 
@@ -85,6 +87,7 @@ interface GeneratedAudio {
 const Dashboard = () => {
   const { user } = useAuth();
   const { balance, deduct, refetch: refetchCauris } = useCauris();
+  const { activeJobs, recentJobs, dismissJob, refetch: refetchJobs } = useActiveJobs();
   const [activeTab, setActiveTab] = useState<"image" | "video" | "audio">("image");
   const [prompt, setPrompt] = useState("");
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -1393,6 +1396,12 @@ const Dashboard = () => {
         </div>
 
         <div className="flex-1 overflow-y-auto p-2 sm:p-4 pb-24 md:pb-4">
+          {/* Active Jobs Panel */}
+          {user && (activeJobs.length > 0 || recentJobs.length > 0) && (
+            <div className="mb-4">
+              <ActiveJobsPanel activeJobs={activeJobs} recentJobs={recentJobs} onDismiss={dismissJob} />
+            </div>
+          )}
           {(() => {
             // Build unified gallery items
             type UnifiedItem = { type: "image"; data: GeneratedImage; ts: number } | { type: "video"; data: GeneratedVideo; ts: number } | { type: "audio"; data: GeneratedAudio; ts: number };
