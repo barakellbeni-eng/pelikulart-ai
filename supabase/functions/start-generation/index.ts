@@ -534,11 +534,9 @@ async function processAudio(jobId: string, userId: string, body: any) {
       user_id: userId, prompt: prompt.slice(0, 5000), image_url: publicUrl, media_type: "audio",
     });
 
-    const thumbnailUrl = await generateAudioThumbnail(prompt, userId);
-
     await updateJob(adminClient, jobId, {
       status: "completed", progress: 100, result_url: publicUrl, result_url_original: publicUrl, result_url_temp: publicUrl,
-      result_metadata: { storage_keys: [storageKey], format: "wav", ...(thumbnailUrl ? { thumbnail_url: thumbnailUrl } : {}) },
+      result_metadata: { storage_keys: [storageKey], format: "wav" },
       completed_at: new Date().toISOString(),
     });
   } catch (err: any) {
