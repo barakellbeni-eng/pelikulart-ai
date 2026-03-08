@@ -431,6 +431,7 @@ const Dashboard = () => {
           num_images: Math.min(currentNumImages, currentModel.maxImages || 1),
           output_format: "png",
           cauris_cost: imgCostForPayload,
+          project_id: selectedProjectId || undefined,
           ...cleanSettings,
         };
         if (currentRefImages.length > 0 && currentModel.supportsImageInput) {
@@ -527,6 +528,7 @@ const Dashboard = () => {
           prompt: currentPrompt,
           model_id: currentModel.id,
           cauris_cost: cost,
+          project_id: selectedProjectId || undefined,
           ...cleanSettings,
         };
         if (currentRefImages.length > 0 && currentModel.supportsImageInput) {
@@ -627,6 +629,7 @@ const Dashboard = () => {
           prompt: currentPrompt,
           model_id: currentModel.id,
           cauris_cost: cost,
+          project_id: selectedProjectId || undefined,
           ...cleanSettings,
         };
         if (currentRefImages.length > 0 && currentModel.supportsImageInput) {
