@@ -507,11 +507,11 @@ const Dashboard = () => {
           }
         }
 
-        // Route KIE models to start-generation (async job system)
+        // Route KIE models to start-generation (async job system with polling)
         const isKieModel = currentModel.provider === "kie" || currentModel.endpoint === "kie";
         if (isKieModel) {
           payload.tool_type = "image";
-          const resp = await fetch(START_GENERATION_URL, {
+          const kieResp = await fetch(START_GENERATION_URL, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -519,13 +519,58 @@ const Dashboard = () => {
             },
             body: JSON.stringify(payload),
           });
-          if (!resp.ok) {
-            const err = await resp.json().catch(() => ({ error: "Erreur inconnue" }));
-            throw new Error(err.error || `Erreur ${resp.status}`);
+          if (!kieResp.ok) {
+            const err = await kieResp.json().catch(() => ({ error: "Erreur inconnue" }));
+            throw new Error(err.error || `Erreur ${kieResp.status}`);
           }
-          const data = await resp.json();
-          toast.info("Génération lancée en arrière-plan...");
-          if (data.new_balance !== undefined) refetchCauris();
+          const kieData = await kieResp.json();
+          if (kieData.new_balance !== undefined) refetchCauris();
+
+          // Poll generation_jobs until completed/failed
+          const jobId = kieData.job_id;
+          if (jobId) {
+            const maxPolls = 200;
+            for (let i = 0; i < maxPolls; i++) {
+              await new Promise((r) => setTimeout(r, 3000));
+              const { data: jobRow } = await supabase
+                .from("generation_jobs")
+                .select("status, result_url, result_url_temp, result_metadata")
+                .eq("id", jobId)
+                .single();
+
+              if (jobRow?.status === "completed") {
+                // Fetch new generations from DB and add to gallery
+                const { data: newGens } = await supabase
+                  .from("generations")
+                  .select("*")
+                  .order("created_at", { ascending: false })
+                  .limit(Math.min(currentNumImages, 4));
+
+                if (newGens?.length) {
+                  const newImages: GeneratedImage[] = newGens.map((g: any) => ({
+                    url: g.image_url,
+                    prompt: g.prompt,
+                    timestamp: new Date(g.created_at).getTime(),
+                    modelId: currentModel.id,
+                    modelSettings: currentSettings,
+                    caurisCost: imgCostForPayload,
+                    numImages: currentNumImages,
+                  }));
+                  setGalleryImages((prev) => [...newImages, ...prev]);
+                  if (selectedProjectId && newImages.length > 0) {
+                    updateCover(selectedProjectId, newImages[0].url);
+                  }
+                }
+                completeGeneration();
+                return;
+              }
+              if (jobRow?.status === "failed") {
+                const errMsg = (jobRow.result_metadata as any)?.error || "La génération a échoué";
+                throw new Error(errMsg);
+              }
+            }
+            throw new Error("La génération a pris trop de temps (timeout)");
+          }
           completeGeneration();
           return;
         }
@@ -627,22 +672,47 @@ const Dashboard = () => {
 
         const authHeader = `Bearer ${accessToken || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`;
 
-        // Route KIE models to start-generation (async job system)
+        // Route KIE models to start-generation with polling
         const isKieModel = currentModel.provider === "kie" || currentModel.endpoint === "kie";
         if (isKieModel) {
           payload.tool_type = "video";
-          const resp = await fetch(START_GENERATION_URL, {
+          const kieResp = await fetch(START_GENERATION_URL, {
             method: "POST",
             headers: { "Content-Type": "application/json", Authorization: authHeader },
             body: JSON.stringify(payload),
           });
-          if (!resp.ok) {
-            const err = await resp.json().catch(() => ({ error: "Erreur inconnue" }));
-            throw new Error(err.error || `Erreur ${resp.status}`);
+          if (!kieResp.ok) {
+            const err = await kieResp.json().catch(() => ({ error: "Erreur inconnue" }));
+            throw new Error(err.error || `Erreur ${kieResp.status}`);
           }
-          const data = await resp.json();
-          toast.info("Génération vidéo lancée en arrière-plan...");
-          if (data.new_balance !== undefined) refetchCauris();
+          const kieData = await kieResp.json();
+          if (kieData.new_balance !== undefined) refetchCauris();
+
+          const jobId = kieData.job_id;
+          if (jobId) {
+            const maxPolls = 200;
+            for (let i = 0; i < maxPolls; i++) {
+              await new Promise((r) => setTimeout(r, 3000));
+              const { data: jobRow } = await supabase
+                .from("generation_jobs")
+                .select("status, result_url, result_metadata")
+                .eq("id", jobId)
+                .single();
+
+              if (jobRow?.status === "completed" && jobRow.result_url) {
+                setGalleryVideos((prev) => [{ url: jobRow.result_url!, prompt: currentPrompt, timestamp: Date.now() }, ...prev]);
+                toast.success("Vidéo générée !");
+                refetchCauris();
+                completeGeneration();
+                return;
+              }
+              if (jobRow?.status === "failed") {
+                const errMsg = (jobRow.result_metadata as any)?.error || "La génération vidéo a échoué";
+                throw new Error(errMsg);
+              }
+            }
+            throw new Error("La génération vidéo a pris trop de temps (timeout)");
+          }
           completeGeneration();
           return;
         }
@@ -746,11 +816,11 @@ const Dashboard = () => {
           payload.image_url = currentRefImages[0];
         }
 
-        // Route KIE models to start-generation (async job system)
+        // Route KIE models to start-generation with polling
         const isKieModel = currentModel.provider === "kie" || currentModel.endpoint === "kie";
         if (isKieModel) {
           payload.tool_type = "audio";
-          const resp = await fetch(START_GENERATION_URL, {
+          const kieResp = await fetch(START_GENERATION_URL, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -758,13 +828,41 @@ const Dashboard = () => {
             },
             body: JSON.stringify(payload),
           });
-          if (!resp.ok) {
-            const err = await resp.json().catch(() => ({ error: "Erreur inconnue" }));
-            throw new Error(err.error || `Erreur ${resp.status}`);
+          if (!kieResp.ok) {
+            const err = await kieResp.json().catch(() => ({ error: "Erreur inconnue" }));
+            throw new Error(err.error || `Erreur ${kieResp.status}`);
           }
-          const data = await resp.json();
-          toast.info("Génération audio lancée en arrière-plan...");
-          if (data.new_balance !== undefined) refetchCauris();
+          const kieData = await kieResp.json();
+          if (kieData.new_balance !== undefined) refetchCauris();
+
+          const jobId = kieData.job_id;
+          if (jobId) {
+            const maxPolls = 200;
+            for (let i = 0; i < maxPolls; i++) {
+              await new Promise((r) => setTimeout(r, 3000));
+              const { data: jobRow } = await supabase
+                .from("generation_jobs")
+                .select("status, result_url, result_metadata")
+                .eq("id", jobId)
+                .single();
+
+              if (jobRow?.status === "completed" && jobRow.result_url) {
+                setGalleryAudios((prev) => [
+                  { url: jobRow.result_url!, prompt: currentPrompt, timestamp: Date.now(), modelId: currentModel.id },
+                  ...prev,
+                ]);
+                toast.success("Audio généré !");
+                refetchCauris();
+                completeGeneration();
+                return;
+              }
+              if (jobRow?.status === "failed") {
+                const errMsg = (jobRow.result_metadata as any)?.error || "La génération audio a échoué";
+                throw new Error(errMsg);
+              }
+            }
+            throw new Error("La génération audio a pris trop de temps (timeout)");
+          }
           completeGeneration();
           return;
         }
