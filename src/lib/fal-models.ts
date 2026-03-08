@@ -354,6 +354,51 @@ export const FAL_MODELS: FalModel[] = [
     maxImages: 1, supportsImageInput: false, caurisCost: 3, estimatedTime: "~5s",
     settings: [],
   },
+
+  // ── Suno Music (via KIE AI) ──
+  {
+    id: "kie-suno-v5", type: "audio", brand: "Suno", name: "Suno V5",
+    endpoint: "kie", provider: "kie", kieModel: "suno/v5",
+    description: "Musique IA de pointe — expression musicale supérieure, génération rapide, jusqu'à 8 min",
+    icon: "♫", color: "from-amber-500/20 to-orange-500/10",
+    maxImages: 1, supportsImageInput: false, caurisCost: 8, estimatedTime: "~2-4 min",
+    recommended: true,
+    settings: [
+      { key: "audio_type", label: "Type", type: "select", options: [
+        { value: "music", label: "🎵 Musique" }, { value: "instrumental", label: "🎹 Instrumental" },
+      ], defaultValue: "music" },
+      { key: "style", label: "Style musical", type: "text", defaultValue: "", description: "Ex: Pop, Rock, Jazz, Afrobeat, Lo-fi..." },
+      { key: "title", label: "Titre du morceau", type: "text", defaultValue: "", description: "Titre optionnel (max 80 car.)" },
+    ],
+  },
+  {
+    id: "kie-suno-v4-5plus", type: "audio", brand: "Suno", name: "Suno V4.5+",
+    endpoint: "kie", provider: "kie", kieModel: "suno/v4_5plus",
+    description: "Son riche, nouvelles façons de créer, jusqu'à 8 min",
+    icon: "♫", color: "from-amber-500/20 to-orange-500/10",
+    maxImages: 1, supportsImageInput: false, caurisCost: 6, estimatedTime: "~2-4 min",
+    settings: [
+      { key: "audio_type", label: "Type", type: "select", options: [
+        { value: "music", label: "🎵 Musique" }, { value: "instrumental", label: "🎹 Instrumental" },
+      ], defaultValue: "music" },
+      { key: "style", label: "Style musical", type: "text", defaultValue: "", description: "Ex: Pop, Rock, Jazz, Afrobeat, Lo-fi..." },
+      { key: "title", label: "Titre du morceau", type: "text", defaultValue: "", description: "Titre optionnel (max 80 car.)" },
+    ],
+  },
+  {
+    id: "kie-suno-v4", type: "audio", brand: "Suno", name: "Suno V4",
+    endpoint: "kie", provider: "kie", kieModel: "suno/v4",
+    description: "Qualité vocale améliorée, jusqu'à 4 min",
+    icon: "♫", color: "from-amber-500/20 to-orange-500/10",
+    maxImages: 1, supportsImageInput: false, caurisCost: 5, estimatedTime: "~2-3 min",
+    settings: [
+      { key: "audio_type", label: "Type", type: "select", options: [
+        { value: "music", label: "🎵 Musique" }, { value: "instrumental", label: "🎹 Instrumental" },
+      ], defaultValue: "music" },
+      { key: "style", label: "Style musical", type: "text", defaultValue: "", description: "Ex: Pop, Rock, Jazz, Afrobeat, Lo-fi..." },
+      { key: "title", label: "Titre du morceau", type: "text", defaultValue: "", description: "Titre optionnel (max 80 car.)" },
+    ],
+  },
 ];
 
 // ─── Helpers ───
