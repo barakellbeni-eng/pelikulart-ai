@@ -188,7 +188,7 @@ const Gallery = () => {
 
   const wasDraggingRef = useRef(false);
 
-  const handleContainerMouseUp = useCallback((e: React.MouseEvent) => {
+  const handleContainerMouseUp = useCallback(() => {
     wasDraggingRef.current = handleMouseUp();
   }, [handleMouseUp]);
 
