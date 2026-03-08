@@ -19,6 +19,7 @@ import StudioSplash from "@/components/pelikulart/StudioSplash";
 
 // Studio pages
 import StudioHome from "./pages/StudioHome";
+import CameraControl from "./pages/CameraControl";
 import Dashboard from "./pages/Dashboard";
 import MultiPlan from "./pages/MultiPlan";
 import Pricing from "./pages/Pricing";
