@@ -342,9 +342,7 @@ const Gallery = () => {
                     }
                     exit={{ opacity: 0, scale: 0.85, transition: { duration: 0.3, ease: "easeOut" } }}
                     transition={{ delay: i * 0.03, layout: { duration: 0.4, ease: "easeInOut" } }}
-                    className={`glass-card overflow-hidden cursor-pointer group relative transition-all duration-200 ${
-                      isGrid ? "break-inside-auto" : "break-inside-avoid"
-                    } ${isSelected(item.id) ? "ring-2 ring-primary ring-offset-2 ring-offset-background" : ""}`}
+                    className={`glass-card overflow-hidden cursor-pointer group relative transition-all duration-200 ${isSelected(item.id) ? "ring-2 ring-primary ring-offset-2 ring-offset-background" : ""}`}
                     onClick={(e) => handleCardClick(item, e)}
                   >
                     {/* Selection checkbox — visible on hover OR when any selection exists */}
