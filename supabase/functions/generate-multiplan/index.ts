@@ -24,8 +24,8 @@ const PLAN_TYPE_MAP: Record<string, string> = {
 };
 
 // ── KIE AI helpers ──
-async function kieGenerate(prompt: string, imageUrl: string, imageSize: any, apiKey: string): Promise<string> {
-  // Create task using nano-banana-2
+async function kieGenerate(prompt: string, imageUrl: string, aspectRatio: string, resolution: string, apiKey: string): Promise<string> {
+  // Create task using nano-banana-2 with real aspect_ratio + resolution
   const createResp = await fetch(`${KIE_AI_BASE}/api/v1/jobs/createTask`, {
     method: "POST",
     headers: { "Authorization": `Bearer ${apiKey}`, "Content-Type": "application/json" },
@@ -34,7 +34,8 @@ async function kieGenerate(prompt: string, imageUrl: string, imageSize: any, api
       input: {
         prompt,
         image_input: [imageUrl],
-        image_size: typeof imageSize === "object" ? "1:1" : imageSize,
+        aspect_ratio: aspectRatio,
+        resolution: resolution,
         output_format: "png",
       },
     }),
@@ -136,15 +137,9 @@ serve(async (req) => {
       );
     }
 
-    const ratioSizes: Record<string, Record<string, { width: number; height: number }>> = {
-      "1:1":  { "2K": { width: 2048, height: 2048 }, "4K": { width: 4096, height: 4096 } },
-      "16:9": { "2K": { width: 2048, height: 1152 }, "4K": { width: 3840, height: 2160 } },
-      "9:16": { "2K": { width: 1152, height: 2048 }, "4K": { width: 2160, height: 3840 } },
-      "4:3":  { "2K": { width: 2048, height: 1536 }, "4K": { width: 4096, height: 3072 } },
-      "3:4":  { "2K": { width: 1536, height: 2048 }, "4K": { width: 3072, height: 4096 } },
-    };
-
-    const imageSize = ratioSizes[aspect_ratio]?.[resolution] || ratioSizes["1:1"]["2K"];
+    // Resolution validation
+    const validResolutions = ["1K", "2K", "4K"];
+    const safeResolution = validResolutions.includes(resolution) ? resolution : "2K";
     const planLabel = PLAN_TYPE_MAP[plan_type] || plan_type;
 
     const planPrompts: Record<number, string> = {
@@ -164,8 +159,8 @@ serve(async (req) => {
     // Try KIE AI (nano-banana-2) first
     if (KIE_AI_API_KEY) {
       try {
-        console.log(`Multi-plan: generating ${planLabel} ${aspect_ratio} ${resolution} via KIE AI (nano-banana-2)`);
-        imageResult = await kieGenerate(prompt, image_url, aspect_ratio, KIE_AI_API_KEY);
+        console.log(`Multi-plan: generating ${planLabel} ${aspect_ratio} ${safeResolution} via KIE AI (nano-banana-2)`);
+        imageResult = await kieGenerate(prompt, image_url, aspect_ratio, safeResolution, KIE_AI_API_KEY);
       } catch (kieErr: any) {
         console.error("KIE AI error:", kieErr.message);
       }
@@ -176,11 +171,20 @@ serve(async (req) => {
       try {
         console.log(`Multi-plan: falling back to Fal AI for ${planLabel}`);
         usedProvider = "fal";
+        // Build pixel dimensions for Fal AI
+        const ratioSizes: Record<string, Record<string, { width: number; height: number }>> = {
+          "1:1":  { "1K": { width: 1024, height: 1024 }, "2K": { width: 2048, height: 2048 }, "4K": { width: 4096, height: 4096 } },
+          "16:9": { "1K": { width: 1024, height: 576 },  "2K": { width: 2048, height: 1152 }, "4K": { width: 3840, height: 2160 } },
+          "9:16": { "1K": { width: 576, height: 1024 },  "2K": { width: 1152, height: 2048 }, "4K": { width: 2160, height: 3840 } },
+          "4:3":  { "1K": { width: 1024, height: 768 },  "2K": { width: 2048, height: 1536 }, "4K": { width: 4096, height: 3072 } },
+          "3:4":  { "1K": { width: 768, height: 1024 },  "2K": { width: 1536, height: 2048 }, "4K": { width: 3072, height: 4096 } },
+        };
+        const falImageSize = ratioSizes[aspect_ratio]?.[safeResolution] || ratioSizes["1:1"]["2K"];
         const falResp = await fetch(FAL_ENDPOINT, {
           method: "POST",
           headers: { Authorization: `Key ${FAL_API_KEY}`, "Content-Type": "application/json" },
           body: JSON.stringify({
-            prompt, image_urls: [image_url], num_images: 1, output_format: "png", image_size: imageSize,
+            prompt, image_urls: [image_url], num_images: 1, output_format: "png", image_size: falImageSize,
           }),
         });
 

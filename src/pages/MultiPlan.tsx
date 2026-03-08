@@ -30,6 +30,7 @@ const ASPECT_RATIOS = [
 ] as const;
 
 const RESOLUTIONS = [
+  { id: "1K", label: "1K" },
   { id: "2K", label: "2K" },
   { id: "4K", label: "4K" },
 ] as const;
