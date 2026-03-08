@@ -19,6 +19,7 @@ interface GalleryItem {
   prompt: string;
   model: string;
   result_url: string;
+  result_url_original?: string | null;
   result_metadata: Record<string, any> | null;
   created_at: string;
   credits_used: number;
