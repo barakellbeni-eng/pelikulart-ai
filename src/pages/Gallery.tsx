@@ -221,14 +221,13 @@ const Gallery = () => {
                     )}
                   </button>
                 </div>
-                  <div className="p-3">
-                    <p className="text-xs text-muted-foreground line-clamp-2">{item.prompt}</p>
-                    <div className="flex items-center gap-2 mt-2">
-                      <span className="text-[10px] font-medium text-primary bg-primary/10 px-2 py-0.5 rounded-full flex items-center gap-1">
-                        {typeIcon(item.tool_type)}
-                        {item.model}
-                      </span>
-                    </div>
+                <div className="p-3" onClick={() => setSelected(item)}>
+                  <p className="text-xs text-muted-foreground line-clamp-2">{item.prompt}</p>
+                  <div className="flex items-center gap-2 mt-2">
+                    <span className="text-[10px] font-medium text-primary bg-primary/10 px-2 py-0.5 rounded-full flex items-center gap-1">
+                      {typeIcon(item.tool_type)}
+                      {item.model}
+                    </span>
                   </div>
                 </div>
               </motion.div>
