@@ -96,6 +96,7 @@ interface GeneratedAudio {
 }
 
 const Dashboard = () => {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const { balance, deduct, refetch: refetchCauris } = useCauris();
   const { refetch: refetchJobs } = useActiveJobs(user?.id ?? null);
