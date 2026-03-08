@@ -741,7 +741,7 @@ const Dashboard = () => {
         const data = await resp.json();
 
         if (data.video_url) {
-          setGalleryVideos((prev) => [{ url: data.video_url, prompt: currentPrompt, timestamp: Date.now() }, ...prev]);
+          setGalleryVideos((prev) => [{ url: data.video_url, prompt: currentPrompt, timestamp: Date.now(), modelId: selectedModel.id }, ...prev]);
           toast.success("Vidéo générée !");
           refetchCauris();
           completeGeneration();
