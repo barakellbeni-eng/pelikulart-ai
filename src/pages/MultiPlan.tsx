@@ -323,14 +323,37 @@ const MultiPlan = () => {
                   />
                   <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                     <button
+                      onClick={(e) => { e.stopPropagation(); navigate("/studio/create?mode=image", { state: { recreateParams: { prompt: item.prompt, sourceImage: item.url } } }); }}
+                      className="w-7 h-7 rounded-lg flex items-center justify-center bg-background/70 backdrop-blur-sm hover:bg-background/90 transition-all text-muted-foreground hover:text-foreground shadow-sm"
+                      title="Recréer"
+                    >
+                      <RotateCcw className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); navigate("/studio/create?mode=video", { state: { sourceImage: item.url } }); }}
+                      className="w-7 h-7 rounded-lg flex items-center justify-center bg-background/70 backdrop-blur-sm hover:bg-background/90 transition-all text-muted-foreground hover:text-foreground shadow-sm"
+                      title="Envoyer vers vidéo"
+                    >
+                      <Video className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); setSourceImage(item.url); setLatestMainResult(null); toast.success("Image définie comme source Multi-Plan"); }}
+                      className="w-7 h-7 rounded-lg flex items-center justify-center bg-background/70 backdrop-blur-sm hover:bg-background/90 transition-all text-muted-foreground hover:text-foreground shadow-sm"
+                      title="Envoyer vers Multi-Shot"
+                    >
+                      <Crosshair className="w-3.5 h-3.5" />
+                    </button>
+                    <button
                       onClick={(e) => { e.stopPropagation(); handleDownload(item.url, item.id.slice(0, 8)); }}
                       className="w-7 h-7 rounded-lg flex items-center justify-center bg-background/70 backdrop-blur-sm hover:bg-background/90 transition-all text-muted-foreground hover:text-foreground shadow-sm"
+                      title="Télécharger"
                     >
                       <Download className="w-3.5 h-3.5" />
                     </button>
                     <button
                       onClick={(e) => { e.stopPropagation(); setDeleteTarget(item); }}
                       className="w-7 h-7 rounded-lg flex items-center justify-center bg-destructive/80 backdrop-blur-sm hover:bg-destructive transition-all text-destructive-foreground shadow-sm"
+                      title="Supprimer"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
