@@ -258,6 +258,7 @@ export const FAL_MODELS: FalModel[] = [
       { key: "mode", label: "Mode", type: "select", options: [
         { value: "std", label: "Standard" }, { value: "pro", label: "Pro" },
       ], defaultValue: "std" },
+      { key: "multi_shots", label: "Multi-Shot", type: "toggle", defaultValue: false },
       { key: "sound", label: "Effets sonores", type: "toggle", defaultValue: false },
     ],
   },
