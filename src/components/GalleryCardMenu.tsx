@@ -9,7 +9,7 @@ interface GalleryCardMenuProps {
   onMoveProject?: () => void;
 }
 
-export default function GalleryCardMenu({ onDownload, onDelete, onAddToProject, onMoveProject }: GalleryCardMenuProps) {
+export default function GalleryCardMenu({ onDownload, onDelete, onCopyPrompt, onAddToProject, onMoveProject }: GalleryCardMenuProps) {
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
