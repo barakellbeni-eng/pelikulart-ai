@@ -10,14 +10,14 @@ import MediaPickerModal from "@/components/MediaPickerModal";
 const MULTIPLAN_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-multiplan`;
 
 const PLAN_TYPES = [
-  { id: "close-up", label: "Close-up", emoji: "🔍" },
-  { id: "macro", label: "Macro", emoji: "🔬" },
-  { id: "serre", label: "Serré", emoji: "📷" },
-  { id: "americain", label: "Américain", emoji: "🎬" },
-  { id: "large", label: "Large", emoji: "🌄" },
-  { id: "tres-large", label: "Très large", emoji: "🏔️" },
-  { id: "plongee", label: "Plongée", emoji: "🦅" },
-  { id: "contre-plongee", label: "Contre-plongée", emoji: "🐜" },
+  { id: "close-up", label: "Close-up" },
+  { id: "macro", label: "Macro" },
+  { id: "serre", label: "Serré" },
+  { id: "americain", label: "Américain" },
+  { id: "large", label: "Large" },
+  { id: "tres-large", label: "Très large" },
+  { id: "plongee", label: "Plongée" },
+  { id: "contre-plongee", label: "Contre-plongée" },
 ] as const;
 
 const ASPECT_RATIOS = [
@@ -152,197 +152,92 @@ const MultiPlan = () => {
     }
   };
 
+  const hasResults = mainResult || Object.keys(planResults).length > 0;
+
   return (
-    <div className="h-full overflow-y-auto scroll-smooth bg-background">
-      <div className="max-w-5xl mx-auto px-4 py-8 space-y-6">
-        {/* Header */}
-        <div>
-          <h1 className="text-lg font-semibold tracking-tight text-foreground">Multi-Plan</h1>
-          <p className="text-[11px] text-muted-foreground mt-0.5 tracking-wide uppercase">
-            Cadrages cinématiques
-          </p>
-        </div>
-
-        {/* Source image */}
-        <motion.div onDragOver={(e) => e.preventDefault()} onDrop={handleDrop}>
-          {sourceImage ? (
-            <div className="relative rounded-lg overflow-hidden bg-black/40">
-              <img src={sourceImage} alt="Source" className="w-full max-h-[220px] object-contain" />
-              <button
-                onClick={() => { setSourceImage(null); setMainResult(null); setPlanResults({}); }}
-                className="absolute top-2 right-2 px-2 py-1 rounded text-[10px] font-medium bg-background/70 backdrop-blur-sm text-muted-foreground hover:text-foreground transition-colors"
-              >
-                Changer
-              </button>
-            </div>
-          ) : (
-            <button
-              onClick={() => setShowMediaPicker(true)}
-              className="w-full border border-dashed border-border/50 rounded-lg py-14 flex flex-col items-center gap-2 text-muted-foreground hover:border-primary/30 hover:text-foreground/70 transition-colors"
-            >
-              <Upload className="w-6 h-6" />
-              <span className="text-xs">Ajouter une image</span>
-            </button>
-          )}
-        </motion.div>
-
-        {/* Controls row — compact */}
-        <div className="flex flex-wrap items-center gap-3">
-          {/* Plan type */}
-          <div className="flex flex-wrap gap-1.5">
-            {PLAN_TYPES.map((plan) => (
-              <button
-                key={plan.id}
-                onClick={() => setSelectedPlan(plan.id)}
-                className={`px-3 py-1.5 rounded text-[11px] font-medium transition-all ${
-                  selectedPlan === plan.id
-                    ? "bg-primary/15 text-primary border border-primary/30"
-                    : "text-muted-foreground hover:text-foreground border border-transparent"
-                }`}
-              >
-                {plan.label}
-              </button>
-            ))}
+    <div className="h-full flex overflow-hidden">
+      {/* ───── CENTER: Gallery / Results ───── */}
+      <div className="flex-1 h-full overflow-y-auto p-6">
+        {!hasResults && !isGenerating ? (
+          <div className="h-full flex items-center justify-center">
+            <p className="text-muted-foreground/30 text-sm">
+              Les résultats apparaîtront ici
+            </p>
           </div>
+        ) : (
+          <div className="max-w-3xl mx-auto space-y-6">
+            {/* Main result */}
+            <AnimatePresence>
+              {(mainResult || isGenerating) && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                >
+                  {isGenerating && !mainResult ? (
+                    <div className="aspect-video rounded-lg bg-muted/5 flex items-center justify-center border border-border/20">
+                      <Loader2 className="w-6 h-6 text-primary/30 animate-spin" />
+                    </div>
+                  ) : mainResult ? (
+                    <div className="relative group rounded-lg overflow-hidden bg-black/30">
+                      <img
+                        src={mainResult.url}
+                        alt="Résultat"
+                        className="w-full max-h-[50vh] object-contain"
+                        draggable
+                        onDragStart={(e) => {
+                          e.dataTransfer.setData("text/x-gallery-image", mainResult.url);
+                          e.dataTransfer.effectAllowed = "copy";
+                        }}
+                      />
+                      <button
+                        onClick={() => handleDownload(mainResult.url, "multiplan")}
+                        className="absolute top-2 right-2 w-7 h-7 rounded bg-background/60 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <Download className="w-3.5 h-3.5 text-foreground" />
+                      </button>
+                      <div className="absolute bottom-2 left-2 px-2 py-0.5 rounded bg-background/60 backdrop-blur-sm text-[9px] uppercase tracking-widest text-muted-foreground">
+                        Source générée
+                      </div>
+                    </div>
+                  ) : null}
+                </motion.div>
+              )}
+            </AnimatePresence>
 
-          <div className="w-px h-5 bg-border/30" />
-
-          {/* Ratio */}
-          <div className="flex gap-1">
-            {ASPECT_RATIOS.map((r) => (
-              <button
-                key={r.id}
-                onClick={() => setSelectedRatio(r.id)}
-                className={`px-2 py-1 rounded text-[10px] font-mono transition-all ${
-                  selectedRatio === r.id
-                    ? "bg-primary/15 text-primary"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                {r.label}
-              </button>
-            ))}
-          </div>
-
-          <div className="w-px h-5 bg-border/30" />
-
-          {/* Resolution */}
-          <div className="flex gap-1">
-            {RESOLUTIONS.map((r) => (
-              <button
-                key={r.id}
-                onClick={() => setSelectedResolution(r.id)}
-                className={`px-2 py-1 rounded text-[10px] font-mono transition-all ${
-                  selectedResolution === r.id
-                    ? "bg-primary/15 text-primary"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                {r.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Generate button */}
-        <button
-          onClick={handleGenerate}
-          disabled={!sourceImage || isGenerating || !user}
-          className="w-full py-3 rounded-lg bg-primary text-primary-foreground text-sm font-semibold flex items-center justify-center gap-2 disabled:opacity-30 disabled:cursor-not-allowed transition-all hover:brightness-110"
-        >
-          {isGenerating ? (
-            <>
-              <Loader2 className="w-4 h-4 animate-spin" />
-              Génération...
-            </>
-          ) : (
-            <>
-              <Camera className="w-4 h-4" />
-              Générer · 2 cauris
-            </>
-          )}
-        </button>
-
-        {/* Main result (before plan selection) */}
-        <AnimatePresence>
-          {mainResult && Object.keys(planResults).length === 0 && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="relative rounded-lg overflow-hidden bg-black/30"
-            >
-              <img
-                src={mainResult.url}
-                alt="Résultat"
-                className="w-full max-h-[360px] object-contain"
-                draggable
-                onDragStart={(e) => {
-                  e.dataTransfer.setData("text/x-gallery-image", mainResult.url);
-                  e.dataTransfer.effectAllowed = "copy";
-                }}
-              />
-              <button
-                onClick={() => handleDownload(mainResult.url, "multiplan")}
-                className="absolute top-2 right-2 w-7 h-7 rounded bg-background/60 backdrop-blur-sm flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity"
-              >
-                <Download className="w-3.5 h-3.5 text-foreground" />
-              </button>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Loading placeholder for main gen */}
-        {isGenerating && !mainResult && (
-          <div className="flex items-center justify-center py-16">
-            <Loader2 className="w-6 h-6 text-primary/40 animate-spin" />
-          </div>
-        )}
-
-        {/* 4 Plans — each with its result below */}
-        <AnimatePresence>
-          {mainResult && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="space-y-2"
-            >
-              <p className="text-[10px] text-muted-foreground uppercase tracking-widest">
-                Sélectionnez un plan · 2 cauris chacun
-              </p>
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* Plan results grid */}
+            {mainResult && (
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
                 {[0, 1, 2, 3].map((idx) => {
                   const isLoading = loadingPlan === idx;
                   const result = planResults[idx];
 
                   return (
-                    <div key={idx} className="space-y-2">
-                      {/* Plan button */}
+                    <div key={idx} className="space-y-1.5">
                       <button
                         onClick={() => handlePlanClick(idx)}
                         disabled={loadingPlan !== null}
-                        className={`w-full py-3 rounded-lg text-xs font-semibold transition-all border ${
+                        className={`w-full py-2.5 rounded-lg text-[11px] font-medium transition-all border ${
                           isLoading
                             ? "border-primary/30 bg-primary/5 text-primary"
                             : result
-                              ? "border-primary/20 bg-primary/5 text-primary/80 hover:bg-primary/10"
-                              : "border-border/40 text-muted-foreground hover:border-primary/30 hover:text-foreground"
-                        } ${loadingPlan !== null && !isLoading ? "opacity-30 cursor-not-allowed" : ""}`}
+                              ? "border-primary/15 bg-primary/5 text-primary/70 hover:bg-primary/10"
+                              : "border-border/30 text-muted-foreground hover:border-primary/20 hover:text-foreground"
+                        } ${loadingPlan !== null && !isLoading ? "opacity-20 cursor-not-allowed" : ""}`}
                       >
                         {isLoading ? (
-                          <Loader2 className="w-3.5 h-3.5 animate-spin mx-auto" />
+                          <Loader2 className="w-3 h-3 animate-spin mx-auto" />
                         ) : (
                           `Plan ${idx + 1}`
                         )}
                       </button>
 
-                      {/* Result below */}
                       <AnimatePresence>
                         {result && (
                           <motion.div
                             initial={{ opacity: 0, scale: 0.95 }}
                             animate={{ opacity: 1, scale: 1 }}
-                            className="relative group rounded-lg overflow-hidden bg-black/30"
+                            className="relative group rounded-lg overflow-hidden bg-black/20"
                           >
                             <img
                               src={result.url}
@@ -364,21 +259,136 @@ const MultiPlan = () => {
                         )}
                       </AnimatePresence>
 
-                      {/* Loading placeholder */}
                       {isLoading && (
-                        <div className="w-full aspect-[3/4] rounded-lg bg-muted/10 flex items-center justify-center">
-                          <Loader2 className="w-4 h-4 text-primary/30 animate-spin" />
+                        <div className="w-full aspect-[3/4] rounded-lg bg-muted/5 flex items-center justify-center border border-border/10">
+                          <Loader2 className="w-3.5 h-3.5 text-primary/20 animate-spin" />
                         </div>
                       )}
                     </div>
                   );
                 })}
               </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+            )}
+          </div>
+        )}
+      </div>
 
-        <div className="h-8" />
+      {/* ───── RIGHT: Settings Panel ───── */}
+      <div className="w-[280px] h-full border-l border-border/30 bg-card/30 flex flex-col overflow-hidden shrink-0">
+        <div className="flex-1 overflow-y-auto p-4 space-y-5">
+          {/* Title */}
+          <div>
+            <h2 className="text-sm font-semibold text-foreground">Multi-Plan</h2>
+            <p className="text-[10px] text-muted-foreground mt-0.5">Cadrages cinématiques</p>
+          </div>
+
+          {/* Source image */}
+          <div className="space-y-1.5">
+            <label className="text-[10px] text-muted-foreground uppercase tracking-widest">Source</label>
+            <motion.div onDragOver={(e) => e.preventDefault()} onDrop={handleDrop}>
+              {sourceImage ? (
+                <div className="relative rounded-lg overflow-hidden bg-black/40">
+                  <img src={sourceImage} alt="Source" className="w-full aspect-video object-cover" />
+                  <button
+                    onClick={() => { setSourceImage(null); setMainResult(null); setPlanResults({}); }}
+                    className="absolute top-1.5 right-1.5 px-1.5 py-0.5 rounded text-[9px] font-medium bg-background/70 backdrop-blur-sm text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    ✕
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => setShowMediaPicker(true)}
+                  className="w-full border border-dashed border-border/40 rounded-lg py-8 flex flex-col items-center gap-1.5 text-muted-foreground/50 hover:border-primary/20 hover:text-muted-foreground transition-colors"
+                >
+                  <Upload className="w-5 h-5" />
+                  <span className="text-[10px]">Image source</span>
+                </button>
+              )}
+            </motion.div>
+          </div>
+
+          {/* Plan type */}
+          <div className="space-y-1.5">
+            <label className="text-[10px] text-muted-foreground uppercase tracking-widest">Type de plan</label>
+            <div className="grid grid-cols-2 gap-1">
+              {PLAN_TYPES.map((plan) => (
+                <button
+                  key={plan.id}
+                  onClick={() => setSelectedPlan(plan.id)}
+                  className={`px-2 py-1.5 rounded text-[10px] font-medium text-left transition-all ${
+                    selectedPlan === plan.id
+                      ? "bg-primary/15 text-primary"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {plan.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Ratio */}
+          <div className="space-y-1.5">
+            <label className="text-[10px] text-muted-foreground uppercase tracking-widest">Ratio</label>
+            <div className="flex gap-1">
+              {ASPECT_RATIOS.map((r) => (
+                <button
+                  key={r.id}
+                  onClick={() => setSelectedRatio(r.id)}
+                  className={`flex-1 py-1.5 rounded text-[10px] font-mono text-center transition-all ${
+                    selectedRatio === r.id
+                      ? "bg-primary/15 text-primary"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {r.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Resolution */}
+          <div className="space-y-1.5">
+            <label className="text-[10px] text-muted-foreground uppercase tracking-widest">Qualité</label>
+            <div className="flex gap-1">
+              {RESOLUTIONS.map((r) => (
+                <button
+                  key={r.id}
+                  onClick={() => setSelectedResolution(r.id)}
+                  className={`flex-1 py-1.5 rounded text-[10px] font-mono text-center transition-all ${
+                    selectedResolution === r.id
+                      ? "bg-primary/15 text-primary"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {r.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Sticky generate button */}
+        <div className="p-4 border-t border-border/20">
+          <button
+            onClick={handleGenerate}
+            disabled={!sourceImage || isGenerating || !user}
+            className="w-full py-2.5 rounded-lg bg-primary text-primary-foreground text-xs font-semibold flex items-center justify-center gap-2 disabled:opacity-25 disabled:cursor-not-allowed transition-all hover:brightness-110"
+          >
+            {isGenerating ? (
+              <>
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                Génération...
+              </>
+            ) : (
+              <>
+                <Camera className="w-3.5 h-3.5" />
+                Générer · 2 cauris
+              </>
+            )}
+          </button>
+        </div>
       </div>
 
       <MediaPickerModal
