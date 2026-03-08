@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
-import { downloadAndUpload, uploadBytes, getPublicUrl } from "../_shared/storage.ts";
+import { downloadAndUpload, downloadAndUploadDual, uploadBytes, uploadBytesDual, getPublicUrl } from "../_shared/storage.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -324,6 +324,7 @@ async function processImageGoogle(jobId: string, userId: string, body: any) {
     const messages = [{ role: "user", content }];
 
     const storageKeys: string[] = [];
+    const displayKeys: string[] = [];
 
     for (let i = 0; i < safeNumImages; i++) {
       const aiResp = await fetch(LOVABLE_AI_ENDPOINT, {
@@ -356,36 +357,43 @@ async function processImageGoogle(jobId: string, userId: string, body: any) {
       }
 
       for (const imageSource of imageCandidates) {
-        let storageKey: string;
+        let originalKey: string;
+        let displayKey: string;
         if (imageSource.startsWith("http://") || imageSource.startsWith("https://")) {
-          storageKey = await downloadAndUpload(imageSource, userId, "png");
+          const dual = await downloadAndUploadDual(imageSource, userId, "png");
+          originalKey = dual.originalKey;
+          displayKey = dual.displayKey;
         } else {
           const raw = imageSource.replace(/^data:image\/\w+;base64,/, "");
           const binaryStr = atob(raw);
           const bytes = new Uint8Array(binaryStr.length);
           for (let j = 0; j < binaryStr.length; j++) bytes[j] = binaryStr.charCodeAt(j);
-          storageKey = await uploadBytes(bytes, userId, "image/png", "png");
+          const dual = await uploadBytesDual(bytes, userId, "image/png", "png");
+          originalKey = dual.originalKey;
+          displayKey = dual.displayKey;
         }
-        storageKeys.push(storageKey);
+        storageKeys.push(originalKey);
+        displayKeys.push(displayKey);
 
-        const publicUrl = getPublicUrl(storageKey);
+        const dUrl = getPublicUrl(displayKey);
         await adminClient.from("generations").insert({
-          user_id: userId, prompt: prompt.slice(0, 5000), image_url: publicUrl,
+          user_id: userId, prompt: prompt.slice(0, 5000), image_url: dUrl,
           aspect_ratio: modelSettings.aspect_ratio || null, resolution: modelSettings.resolution || null, output_format: "png",
         });
 
         if (storageKeys.length === 1) {
-          await updateJob(adminClient, jobId, { result_url_temp: publicUrl, progress: 50 });
+          await updateJob(adminClient, jobId, { result_url_temp: dUrl, progress: 50 });
         }
       }
     }
 
     if (storageKeys.length === 0) throw new Error("No images generated");
 
-    const publicUrl = getPublicUrl(storageKeys[0]);
+    const displayUrl = getPublicUrl(displayKeys[0]);
+    const originalUrl = getPublicUrl(storageKeys[0]);
     await updateJob(adminClient, jobId, {
-      status: "completed", progress: 100, result_url: publicUrl, result_url_temp: publicUrl,
-      result_metadata: { storage_keys: storageKeys, count: storageKeys.length, format: "png" },
+      status: "completed", progress: 100, result_url: displayUrl, result_url_original: originalUrl, result_url_temp: displayUrl,
+      result_metadata: { storage_keys: storageKeys, display_keys: displayKeys, count: storageKeys.length, format: "png" },
       completed_at: new Date().toISOString(),
     });
   } catch (err: any) {
@@ -439,7 +447,7 @@ async function processVideo(jobId: string, userId: string, body: any) {
     });
 
     await updateJob(adminClient, jobId, {
-      status: "completed", progress: 100, result_url: publicUrl, result_url_temp: publicUrl,
+      status: "completed", progress: 100, result_url: publicUrl, result_url_original: publicUrl, result_url_temp: publicUrl,
       result_metadata: { storage_keys: [storageKey], format: "mp4" },
       completed_at: new Date().toISOString(),
     });
@@ -513,7 +521,7 @@ async function processAudio(jobId: string, userId: string, body: any) {
     });
 
     await updateJob(adminClient, jobId, {
-      status: "completed", progress: 100, result_url: publicUrl, result_url_temp: publicUrl,
+      status: "completed", progress: 100, result_url: publicUrl, result_url_original: publicUrl, result_url_temp: publicUrl,
       result_metadata: { storage_keys: [storageKey], format: "wav" },
       completed_at: new Date().toISOString(),
     });
@@ -658,33 +666,46 @@ async function processKie(jobId: string, userId: string, body: any) {
     await updateJob(adminClient, jobId, { result_url_temp: urlsToProcess[0], progress: 50 });
 
     const storageKeys: string[] = [];
+    const displayKeys: string[] = [];
+    const isImageType = !isVideo && !isAudio;
     for (const url of urlsToProcess) {
       try {
-        const storageKey = await downloadAndUpload(url, userId, format);
-        storageKeys.push(storageKey);
-        const publicUrl = getPublicUrl(storageKey);
-
-        await adminClient.from("generations").insert({
-          user_id: userId,
-          prompt: prompt.slice(0, 5000),
-          image_url: publicUrl,
-          media_type: mediaType,
-          aspect_ratio: rawSettings.aspect_ratio || rawSettings.image_size || null,
-        });
+        if (isImageType) {
+          const { originalKey, displayKey } = await downloadAndUploadDual(url, userId, format);
+          storageKeys.push(originalKey);
+          displayKeys.push(displayKey);
+          const dUrl = getPublicUrl(displayKey);
+          await adminClient.from("generations").insert({
+            user_id: userId, prompt: prompt.slice(0, 5000), image_url: dUrl,
+            media_type: mediaType, aspect_ratio: rawSettings.aspect_ratio || rawSettings.image_size || null,
+          });
+        } else {
+          const storageKey = await downloadAndUpload(url, userId, format);
+          storageKeys.push(storageKey);
+          displayKeys.push(storageKey);
+          const publicUrl = getPublicUrl(storageKey);
+          await adminClient.from("generations").insert({
+            user_id: userId, prompt: prompt.slice(0, 5000), image_url: publicUrl,
+            media_type: mediaType, aspect_ratio: rawSettings.aspect_ratio || rawSettings.image_size || null,
+          });
+        }
       } catch (dlErr) {
         console.error(`[KIE] Download error for ${url}:`, dlErr);
-        // Use temp URL as fallback
         storageKeys.push(url);
+        displayKeys.push(url);
       }
     }
 
-    const finalUrl = storageKeys.length > 0
+    const finalDisplayUrl = displayKeys.length > 0
+      ? (displayKeys[0].startsWith("http") ? displayKeys[0] : getPublicUrl(displayKeys[0]))
+      : urlsToProcess[0];
+    const finalOriginalUrl = storageKeys.length > 0
       ? (storageKeys[0].startsWith("http") ? storageKeys[0] : getPublicUrl(storageKeys[0]))
       : urlsToProcess[0];
 
     await updateJob(adminClient, jobId, {
-      status: "completed", progress: 100, result_url: finalUrl, result_url_temp: finalUrl,
-      result_metadata: { storage_keys: storageKeys, count: storageKeys.length, format, provider: "kie" },
+      status: "completed", progress: 100, result_url: finalDisplayUrl, result_url_original: finalOriginalUrl, result_url_temp: finalDisplayUrl,
+      result_metadata: { storage_keys: storageKeys, display_keys: displayKeys, count: storageKeys.length, format, provider: "kie" },
       completed_at: new Date().toISOString(),
     });
   } catch (err: any) {

@@ -55,6 +55,7 @@ type ResolutionId = (typeof RESOLUTIONS)[number]["id"];
 interface PersistedItem {
   id: string;
   url: string;
+  originalUrl?: string;
   prompt: string;
   created_at: string;
 }
@@ -104,18 +105,19 @@ const MultiPlan = () => {
     if (!user) return;
     const { data, error } = await supabase
       .from("generation_jobs")
-      .select("id, result_url, prompt, created_at")
+      .select("*")
       .eq("user_id", user.id)
       .like("prompt", "Multi-Plan%")
       .is("deleted_at", null)
       .order("created_at", { ascending: false });
 
     if (!error && data) {
-      const items = data
-        .filter((d) => d.result_url)
-        .map((d) => ({
+      const items = (data as any[])
+        .filter((d: any) => d.result_url)
+        .map((d: any) => ({
           id: d.id,
           url: d.result_url!,
+          originalUrl: d.result_url_original || d.result_url,
           prompt: d.prompt,
           created_at: d.created_at,
         }));
@@ -244,9 +246,10 @@ const MultiPlan = () => {
       const response = await fetch(url);
       const blob = await response.blob();
       const blobUrl = URL.createObjectURL(blob);
+      const date = new Date().toISOString().slice(0, 10).replace(/-/g, '');
       const a = document.createElement("a");
       a.href = blobUrl;
-      a.download = `pelikulart-${name}.png`;
+      a.download = `pelikulart_image_${date}_${name}.png`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -355,7 +358,7 @@ const MultiPlan = () => {
                       <Crosshair className="w-3.5 h-3.5" />
                     </button>
                     <button
-                      onClick={(e) => { e.stopPropagation(); handleDownload(item.url, item.id.slice(0, 8)); }}
+                      onClick={(e) => { e.stopPropagation(); handleDownload(item.originalUrl || item.url, item.id.slice(0, 8)); }}
                       className="w-7 h-7 rounded-lg flex items-center justify-center bg-background/70 backdrop-blur-sm hover:bg-background/90 transition-all text-muted-foreground hover:text-foreground shadow-sm"
                       title="Télécharger"
                     >
@@ -676,7 +679,7 @@ const MultiPlan = () => {
               </p>
               <div className="flex gap-2">
                 <button
-                  onClick={() => handleDownload(previewImage.url, previewImage.id.slice(0, 8))}
+                  onClick={() => handleDownload(previewImage.originalUrl || previewImage.url, previewImage.id.slice(0, 8))}
                   className="btn-generate flex-1 flex items-center justify-center gap-2 text-sm py-3"
                 >
                   <Download className="w-4 h-4" /> Télécharger

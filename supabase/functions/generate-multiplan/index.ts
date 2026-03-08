@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
-import { uploadBytes, downloadAndUpload, getPublicUrl } from "../_shared/storage.ts";
+import { downloadAndUploadDual, getPublicUrl } from "../_shared/storage.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -219,23 +219,17 @@ serve(async (req) => {
       );
     }
 
-    // Download and upload to storage
-    let publicUrl: string;
+    // Download and upload to storage (dual quality)
+    let displayUrl: string;
+    let originalUrl: string;
     try {
-      if (usedProvider === "kie") {
-        // KIE returns direct URLs, download and store
-        const storageKey = await downloadAndUpload(imageResult, userId, "png");
-        publicUrl = getPublicUrl(storageKey);
-      } else {
-        const imgResp = await fetch(imageResult);
-        if (!imgResp.ok) throw new Error("Download failed");
-        const bytes = new Uint8Array(await imgResp.arrayBuffer());
-        const storageKey = await uploadBytes(bytes, userId, "image/png", "png");
-        publicUrl = getPublicUrl(storageKey);
-      }
+      const { originalKey, displayKey } = await downloadAndUploadDual(imageResult, userId, "png");
+      originalUrl = getPublicUrl(originalKey);
+      displayUrl = getPublicUrl(displayKey);
     } catch (dlErr) {
       console.error("Storage upload error:", dlErr);
-      publicUrl = imageResult; // Use temp URL as fallback
+      displayUrl = imageResult;
+      originalUrl = imageResult;
     }
 
     // Save to generation_jobs
@@ -246,14 +240,15 @@ serve(async (req) => {
       prompt: plan_index ? `Multi-Plan ${planLabel} #${plan_index}` : `Multi-Plan ${planLabel}`,
       provider: usedProvider,
       status: "completed",
-      result_url: publicUrl,
+      result_url: displayUrl,
+      result_url_original: originalUrl,
       credits_used: cost,
       completed_at: new Date().toISOString(),
       project_id: project_id || null,
-    }).select("id").single();
+    } as any).select("id").single();
 
     return new Response(
-      JSON.stringify({ image: { url: publicUrl, job_id: jobData?.id || "" }, new_balance: deductResult }),
+      JSON.stringify({ image: { url: displayUrl, originalUrl, job_id: jobData?.id || "" }, new_balance: deductResult }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   } catch (e) {

@@ -19,6 +19,7 @@ interface GalleryItem {
   prompt: string;
   model: string;
   result_url: string;
+  result_url_original?: string | null;
   result_metadata: Record<string, any> | null;
   created_at: string;
   credits_used: number;
@@ -94,7 +95,7 @@ const Gallery = () => {
 
     let query = supabase
       .from("generation_jobs")
-      .select("id, tool_type, prompt, model, result_url, result_metadata, created_at, credits_used, project_id")
+      .select("*")
       .eq("status", "completed")
       .is("deleted_at", null)
       .order("created_at", { ascending: false })
@@ -105,7 +106,20 @@ const Gallery = () => {
     const { data, error } = await query;
     if (error || !data) { setLoading(false); return; }
 
-    const validItems = (data as GalleryItem[]).filter((d) => d.result_url);
+    const validItems: GalleryItem[] = (data as any[])
+      .filter((d: any) => d.result_url)
+      .map((d: any) => ({
+        id: d.id,
+        tool_type: d.tool_type,
+        prompt: d.prompt,
+        model: d.model,
+        result_url: d.result_url,
+        result_url_original: d.result_url_original || d.result_url,
+        result_metadata: d.result_metadata,
+        created_at: d.created_at,
+        credits_used: d.credits_used,
+        project_id: d.project_id,
+      }));
     const urls = validItems.map((d) => d.result_url);
     const signedUrls = await getSignedUrls(urls);
 
@@ -164,14 +178,15 @@ const Gallery = () => {
 
   const handleDownload = async (item: GalleryItem) => {
     try {
-      const url = item.displayUrl || item.result_url;
+      const url = item.result_url_original || item.displayUrl || item.result_url;
       const response = await fetch(url);
       const blob = await response.blob();
       const blobUrl = URL.createObjectURL(blob);
       const ext = item.tool_type === "video" ? "mp4" : item.tool_type === "audio" ? "mp3" : "png";
+      const date = new Date(item.created_at).toISOString().slice(0, 10).replace(/-/g, '');
       const a = document.createElement("a");
       a.href = blobUrl;
-      a.download = `pelikulart-${item.id.slice(0, 8)}.${ext}`;
+      a.download = `pelikulart_${item.tool_type}_${date}_${item.id.slice(0, 8)}.${ext}`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
