@@ -39,6 +39,7 @@ const creationTools = [
   { title: "Générer Vidéo", url: "/studio/create?mode=video", icon: Video },
   { title: "Générer Audio", url: "/studio/create?mode=audio", icon: Music },
   { title: "Multi-Plan", url: "/studio/multi-plan", icon: Clapperboard },
+  { title: "Camera Control", url: "/studio/camera", icon: Camera },
 ];
 
 
