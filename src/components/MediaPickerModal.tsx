@@ -459,12 +459,7 @@ export default function MediaPickerModal({ open, onClose, onSelect, accept, titl
                                 loading="lazy"
                               />
                             ) : item.file_type === "video" ? (
-                              <div className="w-full aspect-square bg-muted/30 flex items-center justify-center relative">
-                                <video src={item.displayUrl} className="w-full h-full object-cover" muted playsInline />
-                                <div className="absolute inset-0 flex items-center justify-center">
-                                  <Film className="w-6 h-6 text-foreground/50" />
-                                </div>
-                              </div>
+                              <VideoThumbnail src={item.displayUrl || ""} aspectSquare />
                             ) : (
                               <div className="w-full aspect-square bg-muted/30 flex items-center justify-center">
                                 <Music className="w-6 h-6 text-muted-foreground/50" />
