@@ -1757,7 +1757,7 @@ const Dashboard = () => {
                         exit={{ opacity: 0, x: -8 }}
                         className="fixed left-4 right-4 md:left-[288px] md:right-auto top-[120px] md:w-72 bg-card border border-white/[0.08] rounded-xl p-1 z-[100] max-h-[70vh] overflow-y-auto shadow-2xl"
                       >
-                        {getModelsByTypeGrouped(activeTab === "video" ? "video" : activeTab === "audio" ? "audio" : "image").map((group) => (
+                        {getModelsByTypeGrouped(activeTab === "audio" ? "audio" : "image").map((group) => (
                           <div key={group.brand}>
                             <div className="px-2.5 py-1.5 text-[9px] font-bold uppercase tracking-widest text-muted-foreground/50 sticky top-0 bg-card z-10">
                               {group.brand}
