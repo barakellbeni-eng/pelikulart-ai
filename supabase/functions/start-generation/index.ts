@@ -102,6 +102,8 @@ const KIE_MODELS: Record<string, string> = {
   // Video
   "kie-kling-30": "kling-3.0/video",
   "kie-kling-26": "kling-2.6/text-to-video",     // auto → kling-2.6/image-to-video with image
+  "kie-kling-25-turbo": "kling/v2-5-turbo-text-to-video-pro", // auto → kling/v2-5-turbo-image-to-video-pro with image
+  "kie-kling-21": "kling/v2-1-master-text-to-video", // auto → kling/v2-1-master-image-to-video with image
   "kie-wan-26": "wan/2-6-text-to-video",          // auto → wan/2-6-image-to-video with image
   "kie-seedance-15-pro": "bytedance/seedance-1.5-pro",
   // Audio
@@ -115,6 +117,8 @@ const KIE_AUTO_SWITCH: Record<string, [string, string]> = {
   "kie-flux2-pro": ["flux-2/pro-text-to-image", "flux-2/pro-image-to-image"],
   "kie-seedream-v45": ["seedream/4.5-text-to-image", "seedream/4.5-edit"],
   "kie-kling-26": ["kling-2.6/text-to-video", "kling-2.6/image-to-video"],
+  "kie-kling-25-turbo": ["kling/v2-5-turbo-text-to-video-pro", "kling/v2-5-turbo-image-to-video-pro"],
+  "kie-kling-21": ["kling/v2-1-master-text-to-video", "kling/v2-1-master-image-to-video"],
   "kie-wan-26": ["wan/2-6-text-to-video", "wan/2-6-image-to-video"],
 };
 
@@ -574,7 +578,7 @@ async function processKie(jobId: string, userId: string, body: any) {
         }
       }
     } else if (tool_type === "video") {
-      // Auto-switch video T2V → I2V (Kling 2.6, Wan 2.6)
+      // Auto-switch video T2V → I2V
       if (hasImages && KIE_AUTO_SWITCH[model_id]) {
         kieModel = KIE_AUTO_SWITCH[model_id][1];
         console.log(`[KIE] Auto-switched to ${kieModel} (image provided)`);
@@ -583,6 +587,8 @@ async function processKie(jobId: string, userId: string, body: any) {
       if (rawSettings.duration) input.duration = String(rawSettings.duration);
       if (rawSettings.resolution) input.resolution = rawSettings.resolution;
       if (rawSettings.generate_audio !== undefined) input.generate_audio = rawSettings.generate_audio;
+      if (rawSettings.negative_prompt) input.negative_prompt = rawSettings.negative_prompt;
+      if (rawSettings.cfg_scale !== undefined) input.cfg_scale = rawSettings.cfg_scale;
 
       // Kling 2.6 I2V does NOT support aspect_ratio, only T2V does
       const isKling26I2V = kieModel === "kling-2.6/image-to-video";
@@ -599,8 +605,16 @@ async function processKie(jobId: string, userId: string, body: any) {
 
       // Image input for video
       if (hasImages) {
+        // V2.5 Turbo I2V and V2.1 Master I2V use singular `image_url`
+        const singularImageUrlModels = new Set([
+          "kling/v2-5-turbo-image-to-video-pro",
+          "kling/v2-1-master-image-to-video",
+        ]);
+
         if (KIE_INPUT_URLS_MODELS.has(kieModel)) {
           input.input_urls = imageList.slice(0, 2);
+        } else if (singularImageUrlModels.has(kieModel)) {
+          input.image_url = imageList[0];
         } else {
           input.image_urls = imageList.slice(0, 1);
         }

@@ -265,7 +265,7 @@ export const FAL_MODELS: FalModel[] = [
   {
     id: "kie-kling-26", type: "video", brand: "Kling", name: "Kling 2.6",
     endpoint: "kie", provider: "kie", kieModel: "kling-2.6/text-to-video",
-    description: "T2V ou I2V auto selon image uploadée", icon: "◇", color: "from-white/20 to-white/5",
+    description: "T2V ou I2V auto, audio natif", icon: "◇", color: "from-white/20 to-white/5",
     maxImages: 1, supportsImageInput: true, caurisCost: 40, caurisCost10s: 80, estimatedTime: "~1min",
     settings: [
       DURATION_5_10,
@@ -273,6 +273,31 @@ export const FAL_MODELS: FalModel[] = [
         { value: "16:9", label: "16:9" }, { value: "9:16", label: "9:16" }, { value: "1:1", label: "1:1" },
       ], defaultValue: "16:9" },
       { key: "sound", label: "Effets sonores", type: "toggle", defaultValue: false },
+    ],
+  },
+
+  // ── Kling 2.5 Turbo (KIE) ──
+  {
+    id: "kie-kling-25-turbo", type: "video", brand: "Kling", name: "Kling 2.5 Turbo",
+    endpoint: "kie", provider: "kie", kieModel: "kling/v2-5-turbo-text-to-video-pro",
+    description: "T2V ou I2V auto, rapide et fluide", icon: "▸", color: "from-white/20 to-white/5",
+    maxImages: 1, supportsImageInput: true, caurisCost: 30, caurisCost10s: 60, estimatedTime: "~45s",
+    settings: [
+      DURATION_5_10,
+      { key: "aspect_ratio", label: "Ratio", type: "select", options: [
+        { value: "16:9", label: "16:9" }, { value: "9:16", label: "9:16" }, { value: "1:1", label: "1:1" },
+      ], defaultValue: "16:9" },
+    ],
+  },
+
+  // ── Kling V2.1 (KIE) ──
+  {
+    id: "kie-kling-21", type: "video", brand: "Kling", name: "Kling V2.1",
+    endpoint: "kie", provider: "kie", kieModel: "kling/v2-1-master-text-to-video",
+    description: "T2V ou I2V auto, qualité Master", icon: "◇", color: "from-white/20 to-white/5",
+    maxImages: 1, supportsImageInput: true, caurisCost: 25, caurisCost10s: 50, estimatedTime: "~1min",
+    settings: [
+      DURATION_5_10,
     ],
   },
 
