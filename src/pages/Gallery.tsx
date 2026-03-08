@@ -346,11 +346,23 @@ const Gallery = () => {
                         <div className="relative">
                           <VideoThumbnail src={item.displayUrl || ""} />
                         </div>
-                      ) : (
-                        <div className="w-full h-28 bg-muted/30 flex items-center justify-center">
-                          <Music className="w-8 h-8 text-muted-foreground/30" />
+                      ) : item.tool_type === "audio" ? (
+                        <div className={`w-full ${isGrid ? "aspect-video" : "h-28"} bg-muted/30 flex items-center justify-center relative overflow-hidden`}>
+                          {item.result_metadata?.thumbnail_url ? (
+                            <img
+                              src={item.result_metadata.thumbnail_url}
+                              alt={item.prompt}
+                              className="w-full h-full object-cover"
+                              loading="lazy"
+                            />
+                          ) : (
+                            <Music className="w-8 h-8 text-muted-foreground/30" />
+                          )}
+                          <div className="absolute bottom-1.5 left-1.5 bg-background/70 backdrop-blur-sm rounded px-1.5 py-0.5">
+                            <Music className="w-3 h-3 text-foreground" />
+                          </div>
                         </div>
-                      )}
+                      ) : null}
 
                       {/* Hover actions */}
                        <div className="absolute top-2 right-2 z-30 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">

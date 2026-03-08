@@ -222,6 +222,20 @@ export const FAL_MODELS: FalModel[] = [
     settings: [ASPECT_RATIO_FLUX_PRO],
   },
 
+  // ── Z-Image Turbo (KIE) ──
+  {
+    id: "kie-zimage-turbo", type: "image", brand: "Z-Image", name: "Z-Image Turbo",
+    endpoint: "kie", provider: "kie", kieModel: "z-image-turbo",
+    description: "Ultra rapide, photoréaliste, très économique", icon: "⚡", color: "from-white/20 to-white/5",
+    maxImages: 4, supportsImageInput: false, caurisCost: 1, estimatedTime: "~3s",
+    settings: [
+      { key: "aspect_ratio", label: "Ratio", type: "select", options: [
+        { value: "1:1", label: "1:1 — Carré" }, { value: "16:9", label: "16:9 — Cinématique" }, { value: "9:16", label: "9:16 — Vertical" },
+        { value: "4:3", label: "4:3 — Photo classique" }, { value: "3:4", label: "3:4 — Portrait" },
+      ], defaultValue: "1:1" },
+    ],
+  },
+
   // ── Seedream 4.5 (KIE) ──
   {
     id: "kie-seedream-v45", type: "image", brand: "Seedream", name: "Seedream 4.5",
@@ -342,7 +356,7 @@ export const FAL_MODELS: FalModel[] = [
     id: "kie-elevenlabs-sfx", type: "audio", brand: "ElevenLabs", name: "Sound Effects v2",
     endpoint: "kie", provider: "kie", kieModel: "elevenlabs/sound-effect-v2",
     description: "Effets sonores via ElevenLabs", icon: "◆", color: "from-white/20 to-white/5",
-    maxImages: 1, supportsImageInput: false, caurisCost: 5, estimatedTime: "~10s",
+    maxImages: 1, supportsImageInput: false, caurisCost: 6, estimatedTime: "~10s",
     settings: [
       { key: "duration", label: "Durée (secondes)", type: "slider", min: 1, max: 22, step: 1, defaultValue: 5 },
     ],
@@ -351,7 +365,7 @@ export const FAL_MODELS: FalModel[] = [
     id: "kie-elevenlabs-tts", type: "audio", brand: "ElevenLabs", name: "TTS Multilingual",
     endpoint: "kie", provider: "kie", kieModel: "elevenlabs/text-to-speech-multilingual-v2",
     description: "Text-to-Speech multilingue", icon: "○", color: "from-white/20 to-white/5",
-    maxImages: 1, supportsImageInput: false, caurisCost: 3, estimatedTime: "~5s",
+    maxImages: 1, supportsImageInput: false, caurisCost: 4, estimatedTime: "~5s",
     settings: [],
   },
 
@@ -361,7 +375,7 @@ export const FAL_MODELS: FalModel[] = [
     endpoint: "kie", provider: "kie", kieModel: "suno/v5",
     description: "Musique IA de pointe — expression musicale supérieure, génération rapide, jusqu'à 8 min",
     icon: "♫", color: "from-amber-500/20 to-orange-500/10",
-    maxImages: 1, supportsImageInput: false, caurisCost: 8, estimatedTime: "~2-4 min",
+    maxImages: 1, supportsImageInput: false, caurisCost: 9, estimatedTime: "~2-4 min",
     recommended: true,
     settings: [
       { key: "audio_type", label: "Type", type: "select", options: [
@@ -376,7 +390,7 @@ export const FAL_MODELS: FalModel[] = [
     endpoint: "kie", provider: "kie", kieModel: "suno/v4_5plus",
     description: "Son riche, nouvelles façons de créer, jusqu'à 8 min",
     icon: "♫", color: "from-amber-500/20 to-orange-500/10",
-    maxImages: 1, supportsImageInput: false, caurisCost: 6, estimatedTime: "~2-4 min",
+    maxImages: 1, supportsImageInput: false, caurisCost: 7, estimatedTime: "~2-4 min",
     settings: [
       { key: "audio_type", label: "Type", type: "select", options: [
         { value: "music", label: "🎵 Musique" }, { value: "instrumental", label: "🎹 Instrumental" },
@@ -390,7 +404,7 @@ export const FAL_MODELS: FalModel[] = [
     endpoint: "kie", provider: "kie", kieModel: "suno/v4",
     description: "Qualité vocale améliorée, jusqu'à 4 min",
     icon: "♫", color: "from-amber-500/20 to-orange-500/10",
-    maxImages: 1, supportsImageInput: false, caurisCost: 5, estimatedTime: "~2-3 min",
+    maxImages: 1, supportsImageInput: false, caurisCost: 6, estimatedTime: "~2-3 min",
     settings: [
       { key: "audio_type", label: "Type", type: "select", options: [
         { value: "music", label: "🎵 Musique" }, { value: "instrumental", label: "🎹 Instrumental" },

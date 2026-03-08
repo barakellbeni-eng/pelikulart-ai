@@ -116,8 +116,12 @@ function JobCard({ job, onDismiss }: {job: ActiveJob;onDismiss: (id: string) => 
               {job.tool_type === "video" ?
             <video src={displayUrl} controls className="w-full rounded-lg" /> :
             job.tool_type === "audio" ?
-            <audio src={displayUrl} controls className="w-full" /> :
-
+            <div>
+              {(job.result_metadata as any)?.thumbnail_url && (
+                <img src={(job.result_metadata as any).thumbnail_url} alt="" className="w-full rounded-lg mb-1" loading="lazy" />
+              )}
+              <audio src={displayUrl} controls className="w-full" />
+            </div> :
             <img src={displayUrl} alt="" className="w-full rounded-lg" loading="lazy" />
             }
               {job.result_url_temp && !job.result_url &&
