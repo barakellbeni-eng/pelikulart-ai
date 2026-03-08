@@ -1,6 +1,6 @@
 import { useRef, useMemo } from "react";
-import { Canvas, useFrame } from "@react-three/fiber";
-import { OrbitControls, Grid, Environment } from "@react-three/drei";
+import { Canvas, useFrame, extend } from "@react-three/fiber";
+import { OrbitControls, Grid, Environment, Line } from "@react-three/drei";
 import * as THREE from "three";
 
 interface CameraSceneProps {
