@@ -31,6 +31,7 @@ interface MediaPickerModalProps {
 
 const UPLOAD_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/upload-media`;
 const DELETE_MEDIA_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/delete-media`;
+const DELETE_GENERATION_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/delete-generation`;
 
 // ─── Helpers ───
 
