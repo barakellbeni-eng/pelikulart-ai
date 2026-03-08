@@ -1440,17 +1440,15 @@ const Dashboard = () => {
                                 {model.brand.slice(0, 2)}
                               </span>
                             )}
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-1.5">
-                                <span className="text-xs font-medium text-foreground truncate whitespace-nowrap">
-                                  {model.name}
+                            <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                              <span className="text-xs font-medium text-foreground whitespace-nowrap">
+                                {model.name}
+                              </span>
+                              {model.recommended && (
+                                <span className="shrink-0 px-1.5 py-0.5 rounded-full text-[8px] font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/20">
+                                  Populaire
                                 </span>
-                                {model.recommended && (
-                                  <span className="shrink-0 px-1.5 py-0.5 rounded-full text-[8px] font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/20">
-                                    Populaire
-                                  </span>
-                                )}
-                              </div>
+                              )}
                             </div>
                             <div className="flex items-center gap-1.5 shrink-0">
                               <span className="text-[9px] text-muted-foreground/60">⏱ {model.estimatedTime}</span>
