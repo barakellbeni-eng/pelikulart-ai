@@ -526,6 +526,46 @@ const MultiPlan = () => {
 
             {cadrageSource && (
               <div className="space-y-2 mt-2">
+                {/* Queue display when cutting all */}
+                {isCuttingAll && (
+                  <div className="rounded-lg border border-border/30 bg-muted/10 p-2.5 space-y-1.5">
+                    <p className="text-[9px] text-muted-foreground uppercase tracking-widest font-semibold mb-1">File d'attente</p>
+                    {[1, 2, 3, 4].map((idx) => {
+                      const status = queueStatus[idx];
+                      return (
+                        <div key={idx} className="flex items-center gap-2 py-1">
+                          {/* Spinner / Check */}
+                          <div className="w-4 h-4 shrink-0 flex items-center justify-center">
+                            {status === 'waiting' && (
+                              <div className="w-3.5 h-3.5 rounded-full border-2 border-muted-foreground/30" />
+                            )}
+                            {status === 'running' && (
+                              <Loader2 className="w-3.5 h-3.5 animate-spin" style={{ color: '#ccff00' }} />
+                            )}
+                            {status === 'done' && (
+                              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                            )}
+                          </div>
+                          {/* Label */}
+                          <span className={`text-[11px] flex-1 ${status === 'running' ? 'text-foreground font-medium' : 'text-muted-foreground'}`}>
+                            Plan {idx}
+                          </span>
+                          {/* Status text */}
+                          <span className={`text-[10px] ${
+                            status === 'waiting' ? 'text-muted-foreground/50' :
+                            status === 'running' ? 'text-[#ccff00] font-medium' :
+                            'text-emerald-400 font-medium'
+                          }`}>
+                            {status === 'waiting' && 'En attente'}
+                            {status === 'running' && 'En cours'}
+                            {status === 'done' && '✓ Prêt'}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+
                 <button
                   onClick={handleCutAll}
                   disabled={isCuttingAll || loadingPlan !== null}
@@ -547,23 +587,41 @@ const MultiPlan = () => {
                 <div className="grid grid-cols-2 gap-1.5">
                   {[0, 1, 2, 3].map((idx) => {
                     const isLoading = loadingPlan === idx;
+                    const locked = isAnyJobRunning && !isLoading;
                     return (
-                      <button
-                        key={idx}
-                        onClick={() => handlePlanClick(idx)}
-                        disabled={loadingPlan !== null || isCuttingAll}
-                        className={`py-2 rounded-lg text-[11px] font-medium transition-all border ${
-                          isLoading
-                            ? "border-primary/30 bg-primary/5 text-primary"
-                            : "border-border/30 text-muted-foreground hover:border-primary/20 hover:text-foreground"
-                        } ${(loadingPlan !== null && !isLoading) || isCuttingAll ? "opacity-20 cursor-not-allowed" : ""}`}
-                      >
-                        {isLoading ? (
-                          <Loader2 className="w-3 h-3 animate-spin mx-auto" />
-                        ) : (
-                          `Cadrage ${idx + 1}`
-                        )}
-                      </button>
+                      <TooltipProvider key={idx}>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <button
+                              onClick={() => !locked && handlePlanClick(idx)}
+                              disabled={isLoading}
+                              className={`py-2 rounded-lg text-[11px] font-medium transition-all border relative ${
+                                isLoading
+                                  ? "border-primary/30 bg-primary/5 text-primary"
+                                  : locked
+                                  ? "border-border/30 text-muted-foreground cursor-not-allowed"
+                                  : "border-border/30 text-muted-foreground hover:border-primary/20 hover:text-foreground"
+                              }`}
+                            >
+                              {isLoading ? (
+                                <Loader2 className="w-3 h-3 animate-spin mx-auto" />
+                              ) : locked ? (
+                                <span className="flex items-center justify-center gap-1">
+                                  <Lock className="w-3 h-3" />
+                                  Cadrage {idx + 1}
+                                </span>
+                              ) : (
+                                `Cadrage ${idx + 1}`
+                              )}
+                            </button>
+                          </TooltipTrigger>
+                          {locked && (
+                            <TooltipContent side="top">
+                              <p className="text-xs">Patientez, génération en cours</p>
+                            </TooltipContent>
+                          )}
+                        </Tooltip>
+                      </TooltipProvider>
                     );
                   })}
                 </div>
