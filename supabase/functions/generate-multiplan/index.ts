@@ -154,10 +154,10 @@ serve(async (req) => {
     const planLabel = PLAN_TYPE_MAP[plan_type] || plan_type;
 
     const planPrompts: Record<number, string> = {
-      1: `Reframe this image as a ${planLabel}, variation 1. Keep the exact same subject, scene, colors and lighting. Change only the camera angle and framing to match a ${planLabel}.`,
-      2: `Reframe this image as a ${planLabel}, variation 2. Keep the exact same subject, scene, colors and lighting. Change only the camera angle and framing to match a ${planLabel}.`,
-      3: `Reframe this image as a ${planLabel}, variation 3. Keep the exact same subject, scene, colors and lighting. Change only the camera angle and framing to match a ${planLabel}.`,
-      4: `Reframe this image as a ${planLabel}, variation 4. Keep the exact same subject, scene, colors and lighting. Change only the camera angle and framing to match a ${planLabel}.`,
+      1: "Select only the first shot of this image",
+      2: "Select only the second shot of this image",
+      3: "Select only the third shot of this image",
+      4: "Select only the fourth shot of this image",
     };
 
     const prompt = plan_index && planPrompts[plan_index]
