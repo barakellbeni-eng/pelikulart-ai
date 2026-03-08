@@ -143,7 +143,7 @@ export const FAL_MODELS: FalModel[] = [
   // ── Pelikulart Maison (Google AI Studio direct) ──
   {
     id: "pelikulart-nano-banana", type: "image", brand: "Pelikulart", name: "Pelikulart Nano Banana",
-    endpoint: "google-direct",
+    endpoint: "google-direct", provider: "google-direct",
     description: "Gemini Flash Image — API maison, rapide", icon: "★", color: "from-primary/30 to-primary/10",
     maxImages: 4, supportsImageInput: true, maxInputImages: 1, caurisCost: 2, estimatedTime: "~3s", recommended: true,
     settings: [
