@@ -101,10 +101,14 @@ serve(async (req) => {
     const savedImages: { url: string; job_id: string }[] = [];
 
     for (let i = 0; i < numImages; i++) {
+      const iterationPrompt = mode === "vary"
+        ? `Generate a different cinematic camera angle of this exact image as a ${planLabel}, shot ${angleVariations[i]}. Keep the same subject, same scene, same lighting. Only the camera angle changes. Output one high-quality cinematic image.`
+        : prompt;
+
       const messages = [{
         role: "user",
         content: [
-          { type: "text", text: prompt + (numImages > 1 ? ` (variation ${i + 1} of ${numImages})` : "") },
+          { type: "text", text: iterationPrompt },
           { type: "image_url", image_url: { url: image_url } },
         ],
       }];
