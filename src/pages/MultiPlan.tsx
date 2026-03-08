@@ -302,13 +302,14 @@ const MultiPlan = () => {
           )}
         </motion.button>
 
-        {/* Main result */}
+        {/* Main result — hidden once plan results exist */}
         <div ref={resultRef}>
           <AnimatePresence>
-            {(mainResult || isGenerating) && (
+            {!hasAnyPlanResult && (mainResult || isGenerating) && (
               <motion.div
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, height: 0 }}
                 transition={{ type: "spring", damping: 20, stiffness: 200 }}
                 className="space-y-3"
               >
@@ -345,7 +346,7 @@ const MultiPlan = () => {
           </AnimatePresence>
         </div>
 
-        {/* 4 Plan buttons — only visible when main result exists */}
+        {/* 4 Plan buttons */}
         <div ref={plansRef}>
           <AnimatePresence>
             {mainResult && (
@@ -355,7 +356,7 @@ const MultiPlan = () => {
                 className="space-y-3"
               >
                 <label className="text-[11px] text-muted-foreground font-semibold uppercase tracking-wider">
-                  Affiner — choisissez un plan
+                  Choisissez un plan
                 </label>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                   {[1, 2, 3, 4].map((n) => {
@@ -383,12 +384,16 @@ const MultiPlan = () => {
                             <Loader2 className="w-4 h-4 animate-spin" />
                             <span className="text-[10px]">Génération...</span>
                           </div>
+                        ) : hasResult ? (
+                          <div className="flex flex-col items-center gap-1">
+                            <RotateCcw className="w-3.5 h-3.5" />
+                            <span>Plan {n}</span>
+                            <span className="text-[10px] text-muted-foreground/50 font-normal">Relancer</span>
+                          </div>
                         ) : (
                           <div className="flex flex-col items-center gap-1">
                             <span>Plan {n}</span>
-                            <span className="text-[10px] text-muted-foreground/50 font-normal">
-                              {hasResult ? "✓ Généré" : "2 cauris"}
-                            </span>
+                            <span className="text-[10px] text-muted-foreground/50 font-normal">2 cauris</span>
                           </div>
                         )}
                       </motion.button>
@@ -403,40 +408,51 @@ const MultiPlan = () => {
           </AnimatePresence>
         </div>
 
-        {/* Latest plan result */}
+        {/* Plan results grid with download */}
         <div ref={planResultRef}>
           <AnimatePresence>
-            {latestPlanResult && (
+            {hasAnyPlanResult && (
               <motion.div
-                key={latestPlanResult.job_id}
-                initial={{ opacity: 0, y: 40, scale: 0.95 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                transition={{ type: "spring", damping: 18, stiffness: 180 }}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
                 className="space-y-3"
               >
                 <label className="text-[11px] text-muted-foreground font-semibold uppercase tracking-wider">
-                  ✨ Plan affiné — sauvegardé
+                  ✨ Plans générés — sauvegardés
                 </label>
-                <div className="rounded-2xl overflow-hidden border-2 border-primary/40 bg-card shadow-2xl shadow-primary/10">
-                  <img
-                    src={latestPlanResult.url}
-                    alt="Plan affiné"
-                    className="w-full max-h-[500px] object-contain bg-black/20"
-                    draggable
-                    onDragStart={(e) => {
-                      e.dataTransfer.setData("text/x-gallery-image", latestPlanResult.url);
-                      e.dataTransfer.effectAllowed = "copy";
-                    }}
-                  />
-                  <div className="p-3 flex items-center justify-end">
-                    <button
-                      onClick={() => handleDownload(latestPlanResult.url, "plan-final")}
-                      className="px-4 py-2 rounded-xl bg-primary/10 text-primary text-sm font-medium flex items-center gap-2 hover:bg-primary/20 transition-colors"
-                    >
-                      <Download className="w-4 h-4" />
-                      Télécharger
-                    </button>
-                  </div>
+                <div className="grid grid-cols-2 gap-3">
+                  {[0, 1, 2, 3].map((idx) => {
+                    const result = planResults[idx];
+                    if (!result) return null;
+                    return (
+                      <motion.div
+                        key={result.job_id || idx}
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="relative group rounded-2xl overflow-hidden border border-primary/30 bg-card"
+                      >
+                        <img
+                          src={result.url}
+                          alt={`Plan ${idx + 1}`}
+                          className="w-full aspect-square object-cover"
+                          draggable
+                          onDragStart={(e) => {
+                            e.dataTransfer.setData("text/x-gallery-image", result.url);
+                            e.dataTransfer.effectAllowed = "copy";
+                          }}
+                        />
+                        <div className="absolute top-2 left-2 px-2 py-1 rounded-lg bg-background/80 backdrop-blur-sm text-[10px] font-bold text-foreground">
+                          Plan {idx + 1}
+                        </div>
+                        <button
+                          onClick={() => handleDownload(result.url, `plan-${idx + 1}`)}
+                          className="absolute top-2 right-2 w-7 h-7 rounded-lg bg-background/80 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-background"
+                        >
+                          <Download className="w-3.5 h-3.5 text-foreground" />
+                        </button>
+                      </motion.div>
+                    );
+                  })}
                 </div>
               </motion.div>
             )}
