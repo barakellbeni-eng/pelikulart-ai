@@ -109,6 +109,10 @@ const KIE_MODELS: Record<string, string> = {
   // Audio
   "kie-elevenlabs-sfx": "elevenlabs/sound-effect-v2",
   "kie-elevenlabs-tts": "elevenlabs/text-to-speech-multilingual-v2",
+  // Suno Music (uses separate /api/v1/generate endpoint)
+  "kie-suno-v5": "suno/v5",
+  "kie-suno-v4-5plus": "suno/v4_5plus",
+  "kie-suno-v4": "suno/v4",
 };
 
 // Auto-switch map: model_id → [t2i_model, i2i_model]
