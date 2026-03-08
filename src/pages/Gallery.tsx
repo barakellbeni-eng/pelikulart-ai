@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { X, Download, Calendar, Cpu, Trash2, Loader2, Image as ImageIcon, Film, Music, Check } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
@@ -249,7 +249,7 @@ const Gallery = () => {
         className="max-w-5xl mx-auto px-4 pt-6 relative select-none"
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
+        onMouseUp={handleContainerMouseUp}
       >
         {dragBox && (
           <div
