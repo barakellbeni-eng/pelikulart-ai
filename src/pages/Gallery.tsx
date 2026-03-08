@@ -212,7 +212,7 @@ const Gallery = () => {
                   <button
                     onClick={(e) => { e.stopPropagation(); handleDelete(item); }}
                     disabled={deleting === item.id}
-                    className="absolute top-2 right-2 z-10 opacity-60 group-hover:opacity-100 transition-opacity bg-background/70 backdrop-blur-sm hover:bg-destructive text-muted-foreground hover:text-destructive-foreground rounded-full p-1.5"
+                    className="absolute top-2 right-2 z-10 opacity-90 group-hover:opacity-100 transition-all bg-destructive/80 backdrop-blur-sm hover:bg-destructive text-destructive-foreground rounded-full p-1.5 shadow-lg"
                   >
                     {deleting === item.id ? (
                       <Loader2 className="w-3.5 h-3.5 animate-spin" />
