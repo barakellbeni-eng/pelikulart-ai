@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
+import { downloadAndUploadToR2, getR2SignedUrl } from "../_shared/r2.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -119,10 +120,32 @@ serve(async (req) => {
               { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
             );
           }
-          return new Response(
-            JSON.stringify({ status: "COMPLETED", video_url: videoUrl }),
-            { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-          );
+
+          // Upload to R2 and store in DB
+          try {
+            const r2Key = await downloadAndUploadToR2(videoUrl, userId, "mp4");
+            const adminClient = createClient(
+              Deno.env.get("SUPABASE_URL")!,
+              Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+            );
+            await adminClient.from("generations").insert({
+              user_id: userId,
+              prompt: body.prompt?.slice(0, 5000) || "video",
+              image_url: `r2:${r2Key}`,
+              media_type: "video",
+            });
+            const signedUrl = await getR2SignedUrl(r2Key, 3600);
+            return new Response(
+              JSON.stringify({ status: "COMPLETED", video_url: signedUrl, r2_path: `r2:${r2Key}` }),
+              { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+            );
+          } catch (r2Err) {
+            console.error("R2 upload error during poll:", r2Err);
+            return new Response(
+              JSON.stringify({ status: "COMPLETED", video_url: videoUrl }),
+              { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+            );
+          }
         }
 
         if (statusData.status === "FAILED") {
@@ -220,10 +243,27 @@ serve(async (req) => {
 
     const videoUrl = submitData.video?.url;
     if (videoUrl) {
-      return new Response(
-        JSON.stringify({ video_url: videoUrl, new_balance: deductResult }),
-        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      // Upload to R2 immediately
+      try {
+        const r2Key = await downloadAndUploadToR2(videoUrl, userId, "mp4");
+        await adminClient.from("generations").insert({
+          user_id: userId,
+          prompt: prompt.slice(0, 5000),
+          image_url: `r2:${r2Key}`,
+          media_type: "video",
+        });
+        const signedUrl = await getR2SignedUrl(r2Key, 3600);
+        return new Response(
+          JSON.stringify({ video_url: signedUrl, r2_path: `r2:${r2Key}`, new_balance: deductResult }),
+          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      } catch (r2Err) {
+        console.error("R2 upload error:", r2Err);
+        return new Response(
+          JSON.stringify({ video_url: videoUrl, new_balance: deductResult }),
+          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
     }
 
     if (submitData.request_id) {

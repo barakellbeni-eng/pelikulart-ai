@@ -565,8 +565,7 @@ const Dashboard = () => {
         const data = await resp.json();
 
         if (data.video_url) {
-          const storedUrl = await persistMedia(data.video_url, "video", currentPrompt, "mp4", "video/mp4");
-          setGalleryVideos((prev) => [{ url: storedUrl, prompt: currentPrompt, timestamp: Date.now() }, ...prev]);
+          setGalleryVideos((prev) => [{ url: data.video_url, prompt: currentPrompt, timestamp: Date.now() }, ...prev]);
           toast.success("Vidéo générée !");
           refetchCauris();
           completeGeneration();
@@ -587,8 +586,7 @@ const Dashboard = () => {
               const pollData = await pollResp.json();
 
               if (pollData.status === "COMPLETED" && pollData.video_url) {
-                const storedUrl = await persistMedia(pollData.video_url, "video", currentPrompt, "mp4", "video/mp4");
-                setGalleryVideos((prev) => [{ url: storedUrl, prompt: currentPrompt, timestamp: Date.now() }, ...prev]);
+                setGalleryVideos((prev) => [{ url: pollData.video_url, prompt: currentPrompt, timestamp: Date.now() }, ...prev]);
                 toast.success("Vidéo générée !");
                 refetchCauris();
                 completeGeneration();
@@ -670,9 +668,8 @@ const Dashboard = () => {
 
         const data = await resp.json();
         if (data.audio_url) {
-          const storedUrl = await persistMedia(data.audio_url, "audio", currentPrompt, "wav", "audio/wav");
           setGalleryAudios((prev) => [
-            { url: storedUrl, prompt: currentPrompt, timestamp: Date.now(), modelId: currentModel.id },
+            { url: data.audio_url, prompt: currentPrompt, timestamp: Date.now(), modelId: currentModel.id },
             ...prev,
           ]);
           toast.success("Audio généré !");

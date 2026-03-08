@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
+import { downloadAndUploadToR2, getR2SignedUrl } from "../_shared/r2.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -191,10 +192,27 @@ serve(async (req) => {
       );
     }
 
-    return new Response(
-      JSON.stringify({ audio_url: audioUrl, new_balance: deductResult }),
-      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    // Upload to R2
+    try {
+      const r2Key = await downloadAndUploadToR2(audioUrl, userId, "wav");
+      await adminClient.from("generations").insert({
+        user_id: userId,
+        prompt: prompt.slice(0, 5000),
+        image_url: `r2:${r2Key}`,
+        media_type: "audio",
+      });
+      const signedUrl = await getR2SignedUrl(r2Key, 3600);
+      return new Response(
+        JSON.stringify({ audio_url: signedUrl, r2_path: `r2:${r2Key}`, new_balance: deductResult }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    } catch (r2Err) {
+      console.error("R2 upload error:", r2Err);
+      return new Response(
+        JSON.stringify({ audio_url: audioUrl, new_balance: deductResult }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
   } catch (e) {
     console.error("generate-audio error:", e);
     return new Response(
