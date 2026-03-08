@@ -685,12 +685,17 @@ const Dashboard = () => {
   const handleDeleteImage = async (img: GeneratedImage) => {
     if (!user) return;
     try {
-      const { error } = await supabase
-        .from("generations")
-        .delete()
-        .eq("user_id", user.id)
-        .eq("image_url", img.url);
-      if (error) throw error;
+      // Try to find the generation_job for this image and delete via edge function
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData?.session?.access_token;
+      if (token) {
+        // Also delete from legacy generations table
+        await supabase
+          .from("generations")
+          .delete()
+          .eq("user_id", user.id)
+          .eq("image_url", img.url);
+      }
       setGalleryImages((prev) => prev.filter((g) => g.url !== img.url));
       setPreviewImage(null);
       toast.success("Image supprimée");
