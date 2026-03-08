@@ -419,8 +419,8 @@ export default function MediaPickerModal({ open, onClose, onSelect, accept, titl
                               </div>
                             )}
 
-                            {/* Delete button for uploads */}
-                            {item.source === "upload" && (
+                            {/* Delete button */}
+                            {(
                               <button
                                 onClick={(e) => { e.stopPropagation(); handleDelete(item); }}
                                 disabled={deleting === item.id}
