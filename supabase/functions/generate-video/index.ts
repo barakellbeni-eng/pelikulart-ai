@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
-import { downloadAndUploadToR2, getR2SignedUrl } from "../_shared/r2.ts";
+import { downloadAndUpload, getPublicUrl } from "../_shared/storage.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -50,12 +50,11 @@ serve(async (req) => {
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
     if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) throw new Error("Supabase config missing");
 
-    // --- Authentication ---
     const authHeader = req.headers.get("authorization") || "";
     if (!authHeader.startsWith("Bearer ")) {
       return new Response(
         JSON.stringify({ error: "Authentification requise" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
 
@@ -67,7 +66,7 @@ serve(async (req) => {
     if (claimsError || !claimsData?.claims?.sub) {
       return new Response(
         JSON.stringify({ error: "Authentification invalide" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
 
@@ -82,7 +81,7 @@ serve(async (req) => {
       if (!status_url || !response_url) {
         return new Response(
           JSON.stringify({ error: "status_url and response_url required" }),
-          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
         );
       }
 
@@ -93,10 +92,7 @@ serve(async (req) => {
         });
 
         if (!statusResp.ok) {
-          return new Response(
-            JSON.stringify({ status: "IN_PROGRESS" }),
-            { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-          );
+          return new Response(JSON.stringify({ status: "IN_PROGRESS" }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
         }
 
         const statusData = await statusResp.json();
@@ -107,92 +103,59 @@ serve(async (req) => {
             headers: { Authorization: `Key ${FAL_API_KEY}`, Accept: "application/json" },
           });
           if (!resultResp.ok) {
-            return new Response(
-              JSON.stringify({ status: "IN_PROGRESS" }),
-              { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-            );
+            return new Response(JSON.stringify({ status: "IN_PROGRESS" }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
           }
           const result = await resultResp.json();
           const videoUrl = result.video?.url;
           if (!videoUrl) {
-            return new Response(
-              JSON.stringify({ status: "FAILED", error: "Aucune vidéo dans le résultat" }),
-              { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-            );
+            return new Response(JSON.stringify({ status: "FAILED", error: "Aucune vidéo dans le résultat" }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
           }
 
-          // Upload to R2 and store in DB
           try {
-            const r2Key = await downloadAndUploadToR2(videoUrl, userId, "mp4");
-            const adminClient = createClient(
-              Deno.env.get("SUPABASE_URL")!,
-              Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
-            );
-            await adminClient.from("generations").insert({
+            const storageKey = await downloadAndUpload(videoUrl, userId, "mp4");
+            const publicUrl = getPublicUrl(storageKey);
+            const pollAdminClient = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+            await pollAdminClient.from("generations").insert({
               user_id: userId,
               prompt: body.prompt?.slice(0, 5000) || "video",
-              image_url: `r2:${r2Key}`,
+              image_url: publicUrl,
               media_type: "video",
               project_id: body.project_id || null,
             });
-            const signedUrl = await getR2SignedUrl(r2Key, 3600);
             return new Response(
-              JSON.stringify({ status: "COMPLETED", video_url: signedUrl, r2_path: `r2:${r2Key}` }),
-              { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+              JSON.stringify({ status: "COMPLETED", video_url: publicUrl }),
+              { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
             );
-          } catch (r2Err) {
-            console.error("R2 upload error during poll:", r2Err);
-            return new Response(
-              JSON.stringify({ status: "COMPLETED", video_url: videoUrl }),
-              { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-            );
+          } catch (err) {
+            console.error("Storage upload error during poll:", err);
+            return new Response(JSON.stringify({ status: "COMPLETED", video_url: videoUrl }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
           }
         }
 
         if (statusData.status === "FAILED") {
-          return new Response(
-            JSON.stringify({ status: "FAILED", error: "La génération vidéo a échoué" }),
-            { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-          );
+          return new Response(JSON.stringify({ status: "FAILED", error: "La génération vidéo a échoué" }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
         }
 
-        return new Response(
-          JSON.stringify({ status: statusData.status || "IN_PROGRESS" }),
-          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
+        return new Response(JSON.stringify({ status: statusData.status || "IN_PROGRESS" }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
       } catch (pollErr) {
         console.error("Poll exception:", pollErr);
-        return new Response(
-          JSON.stringify({ status: "IN_PROGRESS" }),
-          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
+        return new Response(JSON.stringify({ status: "IN_PROGRESS" }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
     }
 
     // === SUBMIT ACTION ===
     if (!prompt || typeof prompt !== "string") {
-      return new Response(
-        JSON.stringify({ error: "Un prompt est requis" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return new Response(JSON.stringify({ error: "Un prompt est requis" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
-
     if (prompt.length > 5000) {
-      return new Response(
-        JSON.stringify({ error: "Le prompt est trop long (max 5000 caractères)" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return new Response(JSON.stringify({ error: "Le prompt est trop long (max 5000 caractères)" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
     const endpoint = MODEL_ENDPOINTS[model_id];
     if (!endpoint) {
-      return new Response(
-        JSON.stringify({ error: "Modèle vidéo inconnu" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return new Response(JSON.stringify({ error: "Modèle vidéo inconnu" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
-    // Filter settings
     const modelSettings: Record<string, any> = {};
     for (const [key, value] of Object.entries(rawSettings)) {
       if (ALLOWED_SETTINGS.has(key) && value !== "" && value !== null && value !== undefined) {
@@ -201,18 +164,13 @@ serve(async (req) => {
       }
     }
 
-    // --- Server-side credit deduction ---
     const cost = typeof cauris_cost === "number" && cauris_cost > 0 ? cauris_cost : 10;
     const { data: deductResult, error: deductError } = await adminClient.rpc("deduct_cauris", {
-      p_user_id: userId,
-      p_amount: cost,
+      p_user_id: userId, p_amount: cost,
     });
 
     if (deductError || deductResult === -1) {
-      return new Response(
-        JSON.stringify({ error: "Solde insuffisant" }),
-        { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return new Response(JSON.stringify({ error: "Solde insuffisant" }), { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
     const payload: Record<string, any> = { prompt, ...modelSettings };
@@ -222,49 +180,34 @@ serve(async (req) => {
 
     const submitResp = await fetch(endpoint, {
       method: "POST",
-      headers: {
-        Authorization: `Key ${FAL_API_KEY}`,
-        "Content-Type": "application/json",
-      },
+      headers: { Authorization: `Key ${FAL_API_KEY}`, "Content-Type": "application/json" },
       body: JSON.stringify(payload),
     });
 
     if (!submitResp.ok) {
       const errText = await submitResp.text();
       console.error("Fal submit error:", submitResp.status, errText);
-      // Refund on failure
       await adminClient.rpc("add_cauris", { p_user_id: userId, p_amount: cost });
-      return new Response(
-        JSON.stringify({ error: "Erreur du service de génération vidéo. Réessayez." }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return new Response(JSON.stringify({ error: "Erreur du service de génération vidéo. Réessayez." }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
     const submitData = await submitResp.json();
 
     const videoUrl = submitData.video?.url;
     if (videoUrl) {
-      // Upload to R2 immediately
       try {
-        const r2Key = await downloadAndUploadToR2(videoUrl, userId, "mp4");
+        const storageKey = await downloadAndUpload(videoUrl, userId, "mp4");
+        const publicUrl = getPublicUrl(storageKey);
         await adminClient.from("generations").insert({
-          user_id: userId,
-          prompt: prompt.slice(0, 5000),
-          image_url: `r2:${r2Key}`,
-          media_type: "video",
-          project_id: project_id || null,
+          user_id: userId, prompt: prompt.slice(0, 5000), image_url: publicUrl, media_type: "video", project_id: project_id || null,
         });
-        const signedUrl = await getR2SignedUrl(r2Key, 3600);
         return new Response(
-          JSON.stringify({ video_url: signedUrl, r2_path: `r2:${r2Key}`, new_balance: deductResult }),
-          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          JSON.stringify({ video_url: publicUrl, new_balance: deductResult }),
+          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
         );
-      } catch (r2Err) {
-        console.error("R2 upload error:", r2Err);
-        return new Response(
-          JSON.stringify({ video_url: videoUrl, new_balance: deductResult }),
-          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
+      } catch (err) {
+        console.error("Storage upload error:", err);
+        return new Response(JSON.stringify({ video_url: videoUrl, new_balance: deductResult }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
     }
 
@@ -272,28 +215,15 @@ serve(async (req) => {
       const sUrl = submitData.status_url || `${endpoint}/requests/${submitData.request_id}/status`;
       const rUrl = submitData.response_url || `${endpoint}/requests/${submitData.request_id}`;
       return new Response(
-        JSON.stringify({
-          status: "QUEUED",
-          request_id: submitData.request_id,
-          status_url: sUrl,
-          response_url: rUrl,
-          new_balance: deductResult,
-        }),
-        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        JSON.stringify({ status: "QUEUED", request_id: submitData.request_id, status_url: sUrl, response_url: rUrl, new_balance: deductResult }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
 
-    // Refund if nothing returned
     await adminClient.rpc("add_cauris", { p_user_id: userId, p_amount: cost });
-    return new Response(
-      JSON.stringify({ error: "Aucune vidéo générée" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    return new Response(JSON.stringify({ error: "Aucune vidéo générée" }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (e) {
     console.error("generate-video error:", e);
-    return new Response(
-      JSON.stringify({ error: "Une erreur interne est survenue. Réessayez." }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    return new Response(JSON.stringify({ error: "Une erreur interne est survenue. Réessayez." }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   }
 });
