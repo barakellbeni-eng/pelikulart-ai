@@ -91,11 +91,14 @@ export function useGallerySelection(itemIds: string[]) {
   }, [isDragging]);
 
   const handleMouseUp = useCallback(() => {
+    const wasDragging = isDragging;
     dragStart.current = null;
     dragRect.current = null;
+    dragStartedOnCard.current = false;
     setIsDragging(false);
     setDragBox(null);
-  }, []);
+    return wasDragging;
+  }, [isDragging]);
 
   // Global mouseup to end drag even outside container
   useEffect(() => {
