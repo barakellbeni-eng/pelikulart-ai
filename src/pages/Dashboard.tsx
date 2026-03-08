@@ -60,6 +60,7 @@ const afrikaBoostKeywords = [
 
 interface GeneratedImage {
   url: string;
+  jobId?: string;
   width?: number;
   height?: number;
   prompt?: string;
@@ -73,12 +74,14 @@ interface GeneratedImage {
 
 interface GeneratedVideo {
   url: string;
+  jobId?: string;
   prompt?: string;
   timestamp?: number;
 }
 
 interface GeneratedAudio {
   url: string;
+  jobId?: string;
   prompt?: string;
   timestamp?: number;
   modelId?: string;
@@ -221,18 +224,19 @@ const Dashboard = () => {
 
 
 
-  // Load history from DB
+  // Load history from generation_jobs (completed jobs with permanent R2 URLs)
   useEffect(() => {
     if (!user) return;
     const loadHistory = async () => {
       const { data, error } = await supabase
-        .from("generations")
-        .select("*")
+        .from("generation_jobs")
+        .select("id, tool_type, model, prompt, result_url, result_url_temp, result_metadata, params, credits_used, created_at")
+        .eq("status", "completed")
         .order("created_at", { ascending: false })
-        .limit(50);
+        .limit(100);
       if (!error && data) {
-        // Resolve signed URLs for all items
-        const allUrls = (data as any[]).map((g: any) => g.image_url as string);
+        // Resolve signed URLs for R2 items
+        const allUrls = (data as any[]).map((g: any) => (g.result_url || g.result_url_temp || "") as string);
         const signedUrlList = await getSignedUrls(allUrls);
 
         const images: GeneratedImage[] = [];
@@ -240,17 +244,25 @@ const Dashboard = () => {
         const audios: GeneratedAudio[] = [];
         for (let idx = 0; idx < (data as any[]).length; idx++) {
           const g = (data as any[])[idx];
-          const item = {
-            url: signedUrlList[idx],
-            prompt: g.prompt,
-            timestamp: new Date(g.created_at).getTime(),
-          };
-          if (g.media_type === "video") {
-            videos.push(item);
-          } else if (g.media_type === "audio") {
-            audios.push(item);
+          const url = signedUrlList[idx];
+          if (!url) continue;
+          const ts = new Date(g.created_at).getTime();
+          if (g.tool_type === "video") {
+            videos.push({ url, jobId: g.id, prompt: g.prompt, timestamp: ts });
+          } else if (g.tool_type === "audio") {
+            audios.push({ url, jobId: g.id, prompt: g.prompt, timestamp: ts, modelId: g.model });
           } else {
-            images.push({ ...item, resolution: g.resolution });
+            const params = g.params as Record<string, any> | null;
+            images.push({
+              url,
+              jobId: g.id,
+              prompt: g.prompt,
+              resolution: params?.resolution || params?.image_size || "",
+              timestamp: ts,
+              modelId: g.model,
+              modelSettings: params || undefined,
+              caurisCost: g.credits_used,
+            });
           }
         }
         setGalleryImages(images);
