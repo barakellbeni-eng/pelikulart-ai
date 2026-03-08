@@ -32,3 +32,9 @@ verify_jwt = false
 
 [functions.start-generation]
 verify_jwt = false
+
+[functions.upload-media]
+verify_jwt = false
+
+[functions.delete-media]
+verify_jwt = false
