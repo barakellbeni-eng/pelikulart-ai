@@ -392,7 +392,7 @@ const Gallery = () => {
                         </div>
                       ) : item.tool_type === "audio" ? (
                         <div
-                          className={`w-full aspect-square bg-gradient-to-br from-card to-muted/30 flex flex-col items-center justify-center gap-2.5 relative overflow-hidden cursor-pointer ${playingAudioId === item.id ? "audio-playing" : ""}`}
+                          className={`w-full ${cardAspect} bg-gradient-to-br from-card to-muted/30 flex flex-col items-center justify-center gap-2.5 relative overflow-hidden cursor-pointer ${playingAudioId === item.id ? "audio-playing" : ""}`}
                           onClick={(e) => { e.stopPropagation(); toggleAudioPlay(item.id, item.displayUrl || item.result_url); }}
                         >
                           {/* Ripple icon */}
