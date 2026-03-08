@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import { Upload, Loader2, Camera, Download } from "lucide-react";
+import { Upload, Loader2, Camera, Download, Trash2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -393,8 +393,8 @@ const MultiPlan = () => {
           </div>
         </div>
 
-        {/* Sticky generate button */}
-        <div className="p-4 border-t border-border/20">
+        {/* Sticky generate + clear buttons */}
+        <div className="p-4 border-t border-border/20 space-y-2">
           <button
             onClick={handleGenerate}
             disabled={!sourceImage || isGenerating || !user}
@@ -412,6 +412,19 @@ const MultiPlan = () => {
               </>
             )}
           </button>
+
+          {hasResults && (
+            <button
+              onClick={() => {
+                setMainResult(null);
+                setPlanResults({});
+              }}
+              className="w-full py-2 rounded-lg border border-border/30 text-[10px] font-medium text-muted-foreground hover:text-foreground hover:border-destructive/30 hover:text-destructive flex items-center justify-center gap-1.5 transition-all"
+            >
+              <Trash2 className="w-3 h-3" />
+              Nettoyer le tableau
+            </button>
+          )}
         </div>
       </div>
 
