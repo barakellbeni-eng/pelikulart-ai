@@ -1831,13 +1831,21 @@ const Dashboard = () => {
               </button>
             ))}
           </div>
-          <div className="flex items-center gap-1">
-            <ViewModePopover
-              layout={galleryLayout}
-              imageSize={galleryImageSize}
-              onLayoutChange={setGalleryLayout}
-              onImageSizeChange={setGalleryImageSize}
-            />
+          <div className="flex items-center gap-2">
+            {/* Size slider */}
+            <div className="flex items-center gap-1.5 bg-card border border-border rounded-lg px-2.5 h-8">
+              <ZoomOut className="w-3 h-3 text-muted-foreground" />
+              <input
+                type="range"
+                min={1}
+                max={5}
+                step={1}
+                value={gallerySizeLevel}
+                onChange={(e) => handleSizeSliderChange(Number(e.target.value))}
+                className="w-16 h-[3px] accent-primary cursor-pointer"
+              />
+              <ZoomIn className="w-3.5 h-3.5 text-muted-foreground" />
+            </div>
             <FiltersPopover
               typeFilter={galleryFilter}
               onTypeFilterChange={setGalleryFilter}
