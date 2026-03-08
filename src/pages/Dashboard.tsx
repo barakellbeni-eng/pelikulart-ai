@@ -30,6 +30,8 @@ import {
   Film,
   RefreshCw,
   Info,
+  FolderInput,
+  Package,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
@@ -93,7 +95,7 @@ const Dashboard = () => {
   const { user } = useAuth();
   const { balance, deduct, refetch: refetchCauris } = useCauris();
   const { refetch: refetchJobs } = useActiveJobs(user?.id ?? null);
-  const { selectedProjectId, updateCover } = useProjects();
+  const { selectedProjectId, updateCover, projects, selectProject } = useProjects();
   const [activeTab, setActiveTab] = useState<"image" | "video" | "audio">("image");
   const [prompt, setPrompt] = useState("");
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -129,6 +131,7 @@ const Dashboard = () => {
   const [showMediaPicker, setShowMediaPicker] = useState(false);
   const [selectedGalleryItems, setSelectedGalleryItems] = useState<Set<string>>(new Set());
   const [batchDeletingSelection, setBatchDeletingSelection] = useState(false);
+  const [showMoveProjectModal, setShowMoveProjectModal] = useState(false);
 
   const getImageSelectionKey = useCallback((img: GeneratedImage) => `image:${img.id ?? img.url}`, []);
   const getVideoSelectionKey = useCallback((vid: GeneratedVideo) => `video:${vid.id ?? vid.url}`, []);
@@ -823,6 +826,75 @@ const Dashboard = () => {
       setBatchDeletingSelection(false);
     }
   };
+
+  // Batch download as ZIP (fetches all files, bundles manually)
+  const handleBatchDownload = async () => {
+    const urls: { url: string; name: string }[] = [];
+    let idx = 0;
+    for (const key of selectedGalleryItems) {
+      const img = galleryImages.find((g) => getImageSelectionKey(g) === key);
+      if (img) { urls.push({ url: img.url, name: `pelikulart-${idx++}.png` }); continue; }
+      const vid = galleryVideos.find((g) => getVideoSelectionKey(g) === key);
+      if (vid) { urls.push({ url: vid.url, name: `pelikulart-${idx++}.mp4` }); }
+    }
+    if (urls.length === 0) return;
+    toast.info(`Téléchargement de ${urls.length} fichiers…`);
+    for (const { url, name } of urls) {
+      try {
+        const resp = await fetch(url);
+        const blob = await resp.blob();
+        const blobUrl = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = blobUrl;
+        a.download = name;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(blobUrl);
+      } catch { /* skip */ }
+    }
+    toast.success("Téléchargement terminé !");
+  };
+
+  // Send exactly 2 images to video as start + end frames
+  const handleSendToVideoStartEnd = () => {
+    const selectedImages = galleryImages.filter((img) => selectedGalleryItems.has(getImageSelectionKey(img)));
+    if (selectedImages.length !== 2) return;
+    const i2vModels = getModelsByType("video").filter((m) => m.supportsImageInput && (m.maxInputImages || 1) >= 2);
+    const targetModel = i2vModels.length > 0 ? i2vModels[0] : getModelsByType("video").filter((m) => m.supportsImageInput)[0];
+    if (!targetModel) { toast.error("Aucun modèle vidéo disponible"); return; }
+    setActiveTab("video");
+    setSelectedModel(targetModel);
+    setModelSettings(getDefaultSettings(targetModel));
+    setReferenceImages([selectedImages[0].url, selectedImages[1].url]);
+    setReferencePreviews([selectedImages[0].url, selectedImages[1].url]);
+    const combinedPrompt = [selectedImages[0].prompt, selectedImages[1].prompt].filter(Boolean).join(" → ");
+    if (combinedPrompt) setPrompt(combinedPrompt);
+    clearSelection();
+    toast.success("2 images chargées (Start & End) dans le générateur vidéo !");
+  };
+
+  // Move selected items to a project
+  const handleMoveToProject = async (projectId: string) => {
+    const ids: string[] = [];
+    for (const key of selectedGalleryItems) {
+      const img = galleryImages.find((g) => getImageSelectionKey(g) === key);
+      if (img?.id) { ids.push(img.id); continue; }
+      const vid = galleryVideos.find((g) => getVideoSelectionKey(g) === key);
+      if (vid?.id) ids.push(vid.id);
+    }
+    if (ids.length === 0) return;
+    const results = await Promise.allSettled(
+      ids.map((id) =>
+        supabase.from("generations").update({ project_id: projectId }).eq("id", id)
+      )
+    );
+    const ok = results.filter((r) => r.status === "fulfilled").length;
+    toast.success(`${ok} élément(s) déplacé(s)`);
+    clearSelection();
+    setShowMoveProjectModal(false);
+  };
+
 
   const handleImageToVideo = (img: GeneratedImage) => {
     const i2vModels = getModelsByType("video").filter((m) => m.supportsImageInput);
@@ -1522,7 +1594,15 @@ const Dashboard = () => {
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-2 sm:p-4 pb-24 md:pb-4 min-h-0 scrollbar-thin">
+        <div
+          className="flex-1 overflow-y-auto p-2 sm:p-4 pb-24 md:pb-4 min-h-0 scrollbar-thin"
+          onClick={(e) => {
+            // Click on empty space → clear selection
+            if (selectionCount > 0 && !(e.target as HTMLElement).closest("[data-gallery-card], button, a")) {
+              clearSelection();
+            }
+          }}
+        >
           {/* Active Jobs Panel moved to GlobalActiveJobs */}
           {(() => {
             // Build unified gallery items
@@ -1992,24 +2072,91 @@ const Dashboard = () => {
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 80, opacity: 0 }}
             transition={{ type: "spring", damping: 24, stiffness: 280 }}
-            className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[90] flex items-center gap-3 rounded-2xl border border-border bg-card px-4 py-2.5 shadow-2xl"
+            className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[90] flex items-center gap-2 rounded-2xl border border-border bg-card px-4 py-2.5 shadow-2xl"
           >
-            <span className="text-sm font-medium text-foreground">
+            <span className="text-sm font-medium text-foreground whitespace-nowrap">
               {selectionCount} sélectionné{selectionCount > 1 ? "s" : ""}
             </span>
-            <button
-              onClick={clearSelection}
-              className="px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted/50 transition-colors"
-            >
-              Annuler
-            </button>
+
+            <div className="w-px h-5 bg-border" />
+
+            {/* Download */}
+            {selectionCount >= 2 && (
+              <button
+                onClick={handleBatchDownload}
+                className="px-3 py-1.5 text-sm rounded-lg hover:bg-muted/50 transition-colors flex items-center gap-1.5 text-foreground"
+                title="Télécharger tout"
+              >
+                <Download className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Télécharger</span>
+              </button>
+            )}
+
+            {/* Move to project */}
+            <div className="relative">
+              <button
+                onClick={() => setShowMoveProjectModal((p) => !p)}
+                className="px-3 py-1.5 text-sm rounded-lg hover:bg-muted/50 transition-colors flex items-center gap-1.5 text-foreground"
+                title="Déplacer vers un projet"
+              >
+                <FolderInput className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Projet</span>
+              </button>
+              {showMoveProjectModal && (
+                <div className="absolute bottom-full mb-2 left-0 w-48 bg-card border border-border rounded-xl shadow-xl py-1 z-50 animate-in fade-in-0 zoom-in-95">
+                  {projects.map((p) => (
+                    <button
+                      key={p.id}
+                      onClick={() => handleMoveToProject(p.id)}
+                      className="w-full text-left px-3 py-2 text-sm hover:bg-muted/50 transition-colors text-foreground"
+                    >
+                      {p.name}
+                    </button>
+                  ))}
+                  {projects.length === 0 && (
+                    <span className="px-3 py-2 text-sm text-muted-foreground block">Aucun projet</span>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Send to video (exactly 2 images) */}
+            {(() => {
+              const selectedImageKeys = Array.from(selectedGalleryItems).filter((k) => k.startsWith("image:"));
+              const selectedVideoKeys = Array.from(selectedGalleryItems).filter((k) => k.startsWith("video:"));
+              if (selectedImageKeys.length === 2 && selectedVideoKeys.length === 0) {
+                return (
+                  <button
+                    onClick={handleSendToVideoStartEnd}
+                    className="px-3 py-1.5 text-sm rounded-lg hover:bg-muted/50 transition-colors flex items-center gap-1.5 text-foreground"
+                    title="Envoyer vers Vidéo (Start & End)"
+                  >
+                    <Film className="w-3.5 h-3.5" />
+                    <span className="hidden sm:inline">Start & End</span>
+                  </button>
+                );
+              }
+              return null;
+            })()}
+
+            <div className="w-px h-5 bg-border" />
+
+            {/* Delete */}
             <button
               onClick={handleBatchDeleteSelection}
               disabled={batchDeletingSelection}
-              className="px-3 py-1.5 text-sm rounded-lg bg-destructive text-destructive-foreground hover:bg-destructive/90 disabled:opacity-60 transition-colors flex items-center gap-2"
+              className="px-3 py-1.5 text-sm rounded-lg bg-destructive text-destructive-foreground hover:bg-destructive/90 disabled:opacity-60 transition-colors flex items-center gap-1.5"
             >
               {batchDeletingSelection ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
-              Supprimer
+              <span className="hidden sm:inline">Supprimer</span>
+            </button>
+
+            {/* Cancel */}
+            <button
+              onClick={clearSelection}
+              className="px-2 py-1.5 text-sm text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted/50 transition-colors"
+            >
+              <X className="w-4 h-4" />
             </button>
           </motion.div>
         )}
