@@ -1778,10 +1778,12 @@ const Dashboard = () => {
                   )
                 )}
 
-                {/* Unified items */}
                 {allItems.map((item, i) => {
                   if (item.type === "image") {
                     const img = item.data as GeneratedImage;
+                    const imageSelectionKey = getImageSelectionKey(img);
+                    const imageSelected = selectedGalleryItems.has(imageSelectionKey);
+
                     return (
                       <div
                         key={`img-${i}-${item.ts}`}
@@ -1790,15 +1792,40 @@ const Dashboard = () => {
                           e.dataTransfer.setData("text/x-gallery-image", img.url);
                           e.dataTransfer.effectAllowed = "copy";
                         }}
-                        className="aspect-square relative group rounded-xl overflow-hidden cursor-grab active:cursor-grabbing"
+                        className={`aspect-square relative group rounded-xl overflow-hidden cursor-grab active:cursor-grabbing ${
+                          imageSelected ? "ring-2 ring-primary ring-offset-2 ring-offset-background" : ""
+                        }`}
                       >
                         <motion.div
                           initial={{ opacity: 0, scale: 0.95 }}
                           animate={{ opacity: 1, scale: 1 }}
-                          onClick={() => setPreviewImage(img)}
+                          onClick={() => {
+                            if (selectionCount > 0) {
+                              toggleSelection(imageSelectionKey);
+                              return;
+                            }
+                            setPreviewImage(img);
+                          }}
                           className="w-full h-full"
                         >
                           <img src={img.url} alt={img.prompt || "Generated"} className="w-full h-full object-cover rounded-xl pointer-events-none" loading="lazy" />
+
+                          <button
+                            onMouseDown={(e) => e.stopPropagation()}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toggleSelection(imageSelectionKey);
+                            }}
+                            className={`absolute top-1.5 right-1.5 z-20 h-8 w-8 rounded-lg border border-border/60 backdrop-blur-sm flex items-center justify-center transition-all ${
+                              imageSelected
+                                ? "bg-primary text-primary-foreground"
+                                : "bg-card/70 text-muted-foreground hover:bg-card"
+                            }`}
+                            title="Sélectionner"
+                          >
+                            {imageSelected ? <Check className="w-4 h-4" /> : <div className="w-4 h-4 rounded border-2 border-current" />}
+                          </button>
+
                           {/* Type badge */}
                           <div className="absolute top-1.5 left-1.5">
                             <span className="flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-blue-500/80 backdrop-blur-sm text-[9px] font-bold text-white uppercase">
@@ -1807,7 +1834,7 @@ const Dashboard = () => {
                             </span>
                           </div>
                           <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                            <div className="absolute top-1.5 right-1.5 flex items-center gap-1">
+                            <div className="absolute top-1.5 right-11 flex items-center gap-1">
                               <button
                                 onClick={(e) => { e.stopPropagation(); handleImageToVideo(img); }}
                                 className="w-6 h-6 rounded-md bg-white/10 backdrop-blur-sm flex items-center justify-center hover:bg-white/25 transition-colors"
@@ -1848,15 +1875,43 @@ const Dashboard = () => {
 
                   if (item.type === "video") {
                     const vid = item.data as GeneratedVideo;
+                    const videoSelectionKey = getVideoSelectionKey(vid);
+                    const videoSelected = selectedGalleryItems.has(videoSelectionKey);
+
                     return (
                       <motion.div
                         key={`vid-${i}-${item.ts}`}
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        className="aspect-square relative group rounded-xl overflow-hidden cursor-pointer"
-                        onClick={() => setPreviewVideo(vid)}
+                        className={`aspect-square relative group rounded-xl overflow-hidden cursor-pointer ${
+                          videoSelected ? "ring-2 ring-primary ring-offset-2 ring-offset-background" : ""
+                        }`}
+                        onClick={() => {
+                          if (selectionCount > 0) {
+                            toggleSelection(videoSelectionKey);
+                            return;
+                          }
+                          setPreviewVideo(vid);
+                        }}
                       >
                         <video src={vid.url} muted className="w-full h-full object-cover rounded-xl pointer-events-none" />
+
+                        <button
+                          onMouseDown={(e) => e.stopPropagation()}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleSelection(videoSelectionKey);
+                          }}
+                          className={`absolute top-1.5 right-1.5 z-20 h-8 w-8 rounded-lg border border-border/60 backdrop-blur-sm flex items-center justify-center transition-all ${
+                            videoSelected
+                              ? "bg-primary text-primary-foreground"
+                              : "bg-card/70 text-muted-foreground hover:bg-card"
+                          }`}
+                          title="Sélectionner"
+                        >
+                          {videoSelected ? <Check className="w-4 h-4" /> : <div className="w-4 h-4 rounded border-2 border-current" />}
+                        </button>
+
                         {/* Type badge */}
                         <div className="absolute top-1.5 left-1.5 z-10">
                           <span className="flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-purple-500/80 backdrop-blur-sm text-[9px] font-bold text-white uppercase">
@@ -1865,7 +1920,7 @@ const Dashboard = () => {
                           </span>
                         </div>
                         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
-                          <div className="absolute top-1.5 right-1.5 flex items-center gap-1">
+                          <div className="absolute top-1.5 right-11 flex items-center gap-1">
                             <button
                               onClick={(e) => { e.stopPropagation(); handleDownload(vid.url, i); }}
                               className="w-6 h-6 rounded-md bg-white/10 backdrop-blur-sm flex items-center justify-center hover:bg-white/25 transition-colors"
