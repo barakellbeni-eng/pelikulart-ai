@@ -231,68 +231,40 @@ const MultiPlan = () => {
               )}
             </AnimatePresence>
 
-            {/* Plan results grid */}
-            {mainResult && (
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-                {[0, 1, 2, 3].map((idx) => {
-                  const isLoading = loadingPlan === idx;
-                  const result = planResults[idx];
+            {/* Plan results */}
+            {Object.entries(planResults).map(([idx, result]) => (
+              <motion.div
+                key={`plan-${idx}`}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="relative group rounded-lg overflow-hidden bg-black/30"
+              >
+                <img
+                  src={result.url}
+                  alt={`Plan ${Number(idx) + 1}`}
+                  className="w-full max-h-[50vh] object-contain"
+                  draggable
+                  onDragStart={(e) => {
+                    e.dataTransfer.setData("text/x-gallery-image", result.url);
+                    e.dataTransfer.effectAllowed = "copy";
+                  }}
+                />
+                <button
+                  onClick={() => handleDownload(result.url, `plan-${Number(idx) + 1}`)}
+                  className="absolute top-2 right-2 w-7 h-7 rounded bg-background/60 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  <Download className="w-3.5 h-3.5 text-foreground" />
+                </button>
+                <div className="absolute bottom-2 left-2 px-2 py-0.5 rounded bg-background/60 backdrop-blur-sm text-[9px] uppercase tracking-widest text-muted-foreground">
+                  Plan {Number(idx) + 1}
+                </div>
+              </motion.div>
+            ))}
 
-                  return (
-                    <div key={idx} className="space-y-1.5">
-                      <button
-                        onClick={() => handlePlanClick(idx)}
-                        disabled={loadingPlan !== null}
-                        className={`w-full py-2.5 rounded-lg text-[11px] font-medium transition-all border ${
-                          isLoading
-                            ? "border-primary/30 bg-primary/5 text-primary"
-                            : result
-                              ? "border-primary/15 bg-primary/5 text-primary/70 hover:bg-primary/10"
-                              : "border-border/30 text-muted-foreground hover:border-primary/20 hover:text-foreground"
-                        } ${loadingPlan !== null && !isLoading ? "opacity-20 cursor-not-allowed" : ""}`}
-                      >
-                        {isLoading ? (
-                          <Loader2 className="w-3 h-3 animate-spin mx-auto" />
-                        ) : (
-                          `Plan ${idx + 1}`
-                        )}
-                      </button>
-
-                      <AnimatePresence>
-                        {result && (
-                          <motion.div
-                            initial={{ opacity: 0, scale: 0.95 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            className="relative group rounded-lg overflow-hidden bg-black/20"
-                          >
-                            <img
-                              src={result.url}
-                              alt={`Plan ${idx + 1}`}
-                              className="w-full aspect-[3/4] object-cover"
-                              draggable
-                              onDragStart={(e) => {
-                                e.dataTransfer.setData("text/x-gallery-image", result.url);
-                                e.dataTransfer.effectAllowed = "copy";
-                              }}
-                            />
-                            <button
-                              onClick={() => handleDownload(result.url, `plan-${idx + 1}`)}
-                              className="absolute top-1.5 right-1.5 w-6 h-6 rounded bg-background/60 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                            >
-                              <Download className="w-3 h-3 text-foreground" />
-                            </button>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-
-                      {isLoading && (
-                        <div className="w-full aspect-[3/4] rounded-lg bg-muted/5 flex flex-col items-center justify-center border border-border/10 gap-2">
-                          <GenerationProgress estimatedTime="~15s" compact />
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
+            {/* Loading plan placeholder */}
+            {loadingPlan !== null && !planResults[loadingPlan] && (
+              <div className="aspect-video rounded-lg bg-muted/5 flex flex-col items-center justify-center border border-border/20 gap-3">
+                <GenerationProgress estimatedTime="~15s" />
               </div>
             )}
           </div>
@@ -407,6 +379,39 @@ const MultiPlan = () => {
               ))}
             </div>
           </div>
+
+          {/* Plan buttons (only after main result) */}
+          {mainResult && (
+            <div className="space-y-1.5">
+              <label className="text-[10px] text-muted-foreground uppercase tracking-widest">Plans</label>
+              <div className="grid grid-cols-2 gap-1.5">
+                {[0, 1, 2, 3].map((idx) => {
+                  const isLoading = loadingPlan === idx;
+                  const result = planResults[idx];
+                  return (
+                    <button
+                      key={idx}
+                      onClick={() => handlePlanClick(idx)}
+                      disabled={loadingPlan !== null}
+                      className={`py-2 rounded-lg text-[11px] font-medium transition-all border ${
+                        isLoading
+                          ? "border-primary/30 bg-primary/5 text-primary"
+                          : result
+                            ? "border-primary/15 bg-primary/5 text-primary/70 hover:bg-primary/10"
+                            : "border-border/30 text-muted-foreground hover:border-primary/20 hover:text-foreground"
+                      } ${loadingPlan !== null && !isLoading ? "opacity-20 cursor-not-allowed" : ""}`}
+                    >
+                      {isLoading ? (
+                        <Loader2 className="w-3 h-3 animate-spin mx-auto" />
+                      ) : (
+                        `Plan ${idx + 1}`
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Sticky generate + clear buttons */}
