@@ -87,6 +87,8 @@ const Dashboard = () => {
   const { balance, deduct, refetch: refetchCauris } = useCauris();
   const [activeTab, setActiveTab] = useState<"image" | "video" | "audio">("image");
   const [prompt, setPrompt] = useState("");
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [showCreditsModal, setShowCreditsModal] = useState(false);
 
   const imageModels = getModelsByType("image");
   const videoModels = getModelsByType("video");
