@@ -545,47 +545,61 @@ async function processKie(jobId: string, userId: string, body: any) {
     const hasImages = imageList.length > 0;
 
     if (tool_type === "image") {
-      // Auto-switch: kie-nano-banana → google/nano-banana-edit when images provided
-      if (model_id === "kie-nano-banana" && hasImages) {
-        kieModel = "google/nano-banana-edit";
-        console.log(`[KIE] Auto-switched to google/nano-banana-edit (image provided)`);
+      // Auto-switch based on image presence
+      if (hasImages && KIE_AUTO_SWITCH[model_id]) {
+        kieModel = KIE_AUTO_SWITCH[model_id][1]; // switch to I2I/Edit variant
+        console.log(`[KIE] Auto-switched to ${kieModel} (image provided)`);
       }
 
-      // Different models use different param names per KIE API docs
+      // Param routing per model
       if (KIE_ASPECT_RESOLUTION_MODELS.has(kieModel)) {
-        // nano-banana-pro, nano-banana-2 use aspect_ratio + resolution
         if (rawSettings.aspect_ratio) input.aspect_ratio = rawSettings.aspect_ratio;
         if (rawSettings.resolution) input.resolution = rawSettings.resolution;
       } else {
-        // google/nano-banana, google/nano-banana-edit use image_size
+        // google/nano-banana, google/nano-banana-edit, imagen4, etc. use image_size
         if (rawSettings.image_size) input.image_size = rawSettings.image_size;
         else if (rawSettings.aspect_ratio) input.image_size = rawSettings.aspect_ratio;
       }
       if (rawSettings.output_format) input.output_format = rawSettings.output_format;
       if (rawSettings.google_search !== undefined) input.google_search = rawSettings.google_search;
 
-      // Handle image inputs — param name differs per model
+      // Image input param routing
       if (hasImages) {
         if (KIE_IMAGE_INPUT_MODELS.has(kieModel)) {
-          // nano-banana-pro & nano-banana-2 use image_input
           input.image_input = imageList.slice(0, 14);
+        } else if (KIE_INPUT_URLS_MODELS.has(kieModel)) {
+          input.input_urls = imageList.slice(0, 8);
         } else {
-          // google/nano-banana-edit uses image_urls
           input.image_urls = imageList.slice(0, 10);
         }
       }
     } else if (tool_type === "video") {
-      // Video-specific params (Kling 3.0)
+      // Auto-switch video T2V → I2V
+      if (hasImages && KIE_AUTO_SWITCH[model_id]) {
+        kieModel = KIE_AUTO_SWITCH[model_id][1];
+        console.log(`[KIE] Auto-switched to ${kieModel} (image provided)`);
+      }
+
       if (rawSettings.duration) input.duration = String(rawSettings.duration);
       if (rawSettings.aspect_ratio) input.aspect_ratio = rawSettings.aspect_ratio;
+      if (rawSettings.resolution) input.resolution = rawSettings.resolution;
       if (rawSettings.mode) input.mode = rawSettings.mode;
       if (rawSettings.sound !== undefined) input.sound = rawSettings.sound;
-      input.multi_shots = false;
-      if (image_url) input.image_urls = [image_url];
+      if (rawSettings.generate_audio !== undefined) input.generate_audio = rawSettings.generate_audio;
+
+      // Kling 3.0 specific
+      if (kieModel === "kling-3.0") input.multi_shots = false;
+
+      // Image input for video
+      if (hasImages) {
+        if (KIE_INPUT_URLS_MODELS.has(kieModel)) {
+          input.input_urls = imageList.slice(0, 2);
+        } else {
+          input.image_urls = imageList.slice(0, 1);
+        }
+      }
     } else if (tool_type === "audio") {
-      // Audio-specific params (ElevenLabs)
       if (rawSettings.duration) input.duration = rawSettings.duration;
-      // For TTS, use prompt as text
       if (kieModel.includes("text-to-speech")) {
         input.text = prompt;
         delete input.prompt;
