@@ -91,7 +91,8 @@ const KIE_AI_BASE = "https://api.kie.ai";
 // ── KIE AI model IDs mapped to their KIE model names ──
 const KIE_MODELS: Record<string, string> = {
   "kie-nano-banana": "google/nano-banana",
-  "kie-nano-banana-pro": "google/nano-banana-pro",
+  "kie-nano-banana-pro": "nano-banana-pro",
+  "kie-nano-banana-2": "nano-banana-2",
   "kie-nano-banana-edit": "google/nano-banana-edit",
   "kie-imagen4": "google/imagen4",
   "kie-imagen4-fast": "google/imagen4-fast",
@@ -102,6 +103,11 @@ const KIE_MODELS: Record<string, string> = {
   "kie-elevenlabs-sfx": "elevenlabs/sound-effect-v2",
   "kie-elevenlabs-tts": "elevenlabs/text-to-speech-multilingual-v2",
 };
+
+// Models that use `image_input` param (not `image_urls`)
+const KIE_IMAGE_INPUT_MODELS = new Set(["nano-banana-pro", "nano-banana-2"]);
+// Models that use `aspect_ratio` + `resolution` (not `image_size`)
+const KIE_ASPECT_RESOLUTION_MODELS = new Set(["nano-banana-pro", "nano-banana-2"]);
 
 // ──────────────────────── HELPERS ────────────────────────
 
