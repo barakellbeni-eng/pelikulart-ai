@@ -20,6 +20,7 @@ import StudioSplash from "@/components/pelikulart/StudioSplash";
 // Studio pages
 import StudioHome from "./pages/StudioHome";
 import Dashboard from "./pages/Dashboard";
+import MultiPlan from "./pages/MultiPlan";
 import Pricing from "./pages/Pricing";
 import Profile from "./pages/Profile";
 import ResetPassword from "./pages/ResetPassword";
@@ -120,6 +121,7 @@ const AppContent = () => {
         {/* Studio (open to all, generation gated in Dashboard) */}
         <Route path="/studio" element={<AuthenticatedLayout><StudioHome /></AuthenticatedLayout>} />
         <Route path="/studio/create" element={<AuthenticatedLayout><Dashboard /></AuthenticatedLayout>} />
+        <Route path="/studio/multi-plan" element={<AuthenticatedLayout><MultiPlan /></AuthenticatedLayout>} />
         <Route path="/pricing" element={<AuthenticatedLayout><Pricing /></AuthenticatedLayout>} />
         <Route path="/profile" element={<ProtectedRoute><AuthenticatedLayout><Profile /></AuthenticatedLayout></ProtectedRoute>} />
 
