@@ -192,7 +192,7 @@ const MultiPlan = () => {
   };
 
   const handlePlanClick = async (planIndex: number) => {
-    if (!latestMainResult || !user || loadingPlan !== null) return;
+    if (!cadrageSource || !user || loadingPlan !== null) return;
     setLoadingPlan(planIndex);
 
     try {
