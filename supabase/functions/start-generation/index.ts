@@ -879,6 +879,9 @@ async function processSuno(jobId: string, userId: string, body: any) {
       media_type: "audio",
     });
 
+    // Generate thumbnail
+    const thumbnailUrl = await generateAudioThumbnail(prompt, userId);
+
     await updateJob(adminClient, jobId, {
       status: "completed",
       progress: 100,
@@ -893,6 +896,7 @@ async function processSuno(jobId: string, userId: string, body: any) {
         title: trackTitle,
         tags: trackTags,
         duration: trackDuration,
+        ...(thumbnailUrl ? { thumbnail_url: thumbnailUrl } : {}),
       },
       completed_at: new Date().toISOString(),
     });
