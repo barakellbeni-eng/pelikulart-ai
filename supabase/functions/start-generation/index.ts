@@ -250,7 +250,7 @@ async function generateAudioThumbnail(prompt: string, userId: string): Promise<s
     const thumbPrompt = `Album cover art, cinematic, vibrant: ${prompt.slice(0, 500)}`;
     const input = { prompt: thumbPrompt, aspect_ratio: "1:1" };
 
-    const taskId = await kieCreateTask("z-image-turbo", input, KIE_API_KEY);
+    const taskId = await kieCreateTask("z-image", input, KIE_API_KEY);
     const result = await kiePollTask(taskId, KIE_API_KEY, 60);
 
     const resultUrls: string[] = result.resultUrls || [];
