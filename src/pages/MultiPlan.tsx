@@ -78,6 +78,8 @@ const MultiPlan = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [loadingPlan, setLoadingPlan] = useState<number | null>(null);
   const [showMediaPicker, setShowMediaPicker] = useState(false);
+  const [showCadragePicker, setShowCadragePicker] = useState(false);
+  const [cadrageSource, setCadrageSource] = useState<string | null>(null);
   const [previewImage, setPreviewImage] = useState<PersistedItem | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<PersistedItem | null>(null);
   const [deleting, setDeleting] = useState(false);
