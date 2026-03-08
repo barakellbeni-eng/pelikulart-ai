@@ -1396,6 +1396,12 @@ const Dashboard = () => {
         </div>
 
         <div className="flex-1 overflow-y-auto p-2 sm:p-4 pb-24 md:pb-4">
+          {/* Active Jobs Panel */}
+          {user && (activeJobs.length > 0 || recentJobs.length > 0) && (
+            <div className="mb-4">
+              <ActiveJobsPanel activeJobs={activeJobs} recentJobs={recentJobs} onDismiss={dismissJob} />
+            </div>
+          )}
           {(() => {
             // Build unified gallery items
             type UnifiedItem = { type: "image"; data: GeneratedImage; ts: number } | { type: "video"; data: GeneratedVideo; ts: number } | { type: "audio"; data: GeneratedAudio; ts: number };
