@@ -362,7 +362,7 @@ export const FAL_MODELS: FalModel[] = [
     endpoint: "kie", provider: "kie", kieModel: "suno/v5",
     description: "Musique IA de pointe — expression musicale supérieure, génération rapide, jusqu'à 8 min",
     icon: "♫", color: "from-amber-500/20 to-orange-500/10",
-    maxImages: 1, supportsImageInput: false, caurisCost: 9, estimatedTime: "~2-4 min",
+    maxImages: 1, supportsImageInput: false, caurisCost: 8, estimatedTime: "~2-4 min",
     recommended: true,
     settings: [
       { key: "audio_type", label: "Type", type: "select", options: [
