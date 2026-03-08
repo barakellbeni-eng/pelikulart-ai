@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { X, Search, Upload, Image as ImageIcon, Film, Music, Loader2, Trash2, Calendar, Check } from "lucide-react";
+import VideoThumbnail from "@/components/VideoThumbnail";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
