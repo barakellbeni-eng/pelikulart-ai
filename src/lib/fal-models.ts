@@ -222,19 +222,6 @@ export const FAL_MODELS: FalModel[] = [
     settings: [ASPECT_RATIO_FLUX_PRO],
   },
 
-  // ── Z-Image Turbo (KIE) ──
-  {
-    id: "kie-zimage-turbo", type: "image", brand: "Z-Image", name: "Z-Image Turbo",
-    endpoint: "kie", provider: "kie", kieModel: "z-image",
-    description: "Ultra rapide, photoréaliste, très économique", icon: "⚡", color: "from-white/20 to-white/5",
-    maxImages: 4, supportsImageInput: false, caurisCost: 1, estimatedTime: "~3s",
-    settings: [
-      { key: "aspect_ratio", label: "Ratio", type: "select", options: [
-        { value: "1:1", label: "1:1 — Carré" }, { value: "16:9", label: "16:9 — Cinématique" }, { value: "9:16", label: "9:16 — Vertical" },
-        { value: "4:3", label: "4:3 — Photo classique" }, { value: "3:4", label: "3:4 — Portrait" },
-      ], defaultValue: "1:1" },
-    ],
-  },
 
   // ── Seedream 4.5 (KIE) ──
   {
