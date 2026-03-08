@@ -86,6 +86,23 @@ const ALLOWED_AUDIO_SETTINGS = new Set([
 
 const LOVABLE_AI_ENDPOINT = "https://ai.gateway.lovable.dev/v1/chat/completions";
 
+const KIE_AI_BASE = "https://api.kie.ai";
+
+// ── KIE AI model IDs mapped to their KIE model names ──
+const KIE_MODELS: Record<string, string> = {
+  "kie-nano-banana": "google/nano-banana",
+  "kie-nano-banana-pro": "google/nano-banana-pro",
+  "kie-nano-banana-edit": "google/nano-banana-edit",
+  "kie-imagen4": "google/imagen4",
+  "kie-imagen4-fast": "google/imagen4-fast",
+  "kie-imagen4-ultra": "google/imagen4-ultra",
+  "kie-flux2-pro-t2i": "flux-2/pro-text-to-image",
+  "kie-seedream-v45": "seedream-4.5",
+  "kie-kling-30": "kling-3.0/video",
+  "kie-elevenlabs-sfx": "elevenlabs/sound-effect-v2",
+  "kie-elevenlabs-tts": "elevenlabs/text-to-speech-multilingual-v2",
+};
+
 // ──────────────────────── HELPERS ────────────────────────
 
 function getAdminClient() {
@@ -127,6 +144,60 @@ async function pollFalQueue(endpoint: string, requestId: string, apiKey: string,
     if (statusData.status === "FAILED") throw new Error("Generation failed on provider side");
   }
   throw new Error("Generation timed out");
+}
+
+// ──────────────────────── KIE AI HELPERS ────────────────────────
+
+async function kieCreateTask(kieModel: string, input: Record<string, any>, apiKey: string): Promise<string> {
+  const resp = await fetch(`${KIE_AI_BASE}/api/v1/jobs/createTask`, {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ model: kieModel, input }),
+  });
+
+  if (!resp.ok) {
+    const errText = await resp.text();
+    console.error("KIE createTask error:", resp.status, errText);
+    throw new Error(`KIE AI error: ${resp.status} ${errText}`);
+  }
+
+  const data = await resp.json();
+  if (data.code !== 200 || !data.data?.taskId) {
+    throw new Error(`KIE AI error: ${data.msg || "No taskId returned"}`);
+  }
+
+  return data.data.taskId;
+}
+
+async function kiePollTask(taskId: string, apiKey: string, maxAttempts = 150): Promise<any> {
+  for (let i = 0; i < maxAttempts; i++) {
+    await new Promise((r) => setTimeout(r, 3000));
+    const resp = await fetch(`${KIE_AI_BASE}/api/v1/jobs/recordInfo?taskId=${taskId}`, {
+      headers: { "Authorization": `Bearer ${apiKey}` },
+    });
+
+    let data: any;
+    try { data = await resp.json(); } catch { continue; }
+
+    if (data.code !== 200 || !data.data) continue;
+
+    const state = data.data.state;
+    if (state === "success") {
+      let resultJson: any;
+      try { resultJson = JSON.parse(data.data.resultJson); } catch {
+        throw new Error("KIE AI: could not parse resultJson");
+      }
+      return resultJson;
+    }
+    if (state === "fail") {
+      throw new Error(`KIE AI generation failed: ${data.data.failMsg || "unknown"}`);
+    }
+    // waiting, queuing, generating → continue polling
+  }
+  throw new Error("KIE AI generation timed out");
 }
 
 // ──────────────────────── BACKGROUND PROCESSORS ────────────────────────
