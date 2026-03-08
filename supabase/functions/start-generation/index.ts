@@ -133,6 +133,14 @@ const KIE_INPUT_URLS_MODELS = new Set(["flux-2/pro-image-to-image", "bytedance/s
 // Models that use `aspect_ratio` + `resolution` (not `image_size`)
 const KIE_ASPECT_RESOLUTION_MODELS = new Set(["nano-banana-pro", "nano-banana-2", "seedream/4.5-text-to-image", "seedream/4.5-edit"]);
 
+// Suno models use a different API flow (/api/v1/generate + /api/v1/generate/record-info)
+const SUNO_MODELS = new Set(["kie-suno-v5", "kie-suno-v4-5plus", "kie-suno-v4"]);
+const SUNO_MODEL_MAP: Record<string, string> = {
+  "kie-suno-v5": "V5",
+  "kie-suno-v4-5plus": "V4_5PLUS",
+  "kie-suno-v4": "V4",
+};
+
 // ──────────────────────── HELPERS ────────────────────────
 
 function getAdminClient() {
