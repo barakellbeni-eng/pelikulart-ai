@@ -101,16 +101,19 @@ const MultiPlan = () => {
       .order("created_at", { ascending: false });
 
     if (!error && data) {
-      setGallery(
-        data
-          .filter((d) => d.result_url)
-          .map((d) => ({
-            id: d.id,
-            url: d.result_url!,
-            prompt: d.prompt,
-            created_at: d.created_at,
-          }))
-      );
+      const items = data
+        .filter((d) => d.result_url)
+        .map((d) => ({
+          id: d.id,
+          url: d.result_url!,
+          prompt: d.prompt,
+          created_at: d.created_at,
+        }));
+      setGallery(items);
+      // Auto-set latest result as source for cadrages
+      if (items.length > 0 && !latestMainResult) {
+        setLatestMainResult({ url: items[0].url, job_id: items[0].id });
+      }
     }
     setLoadingGallery(false);
   }, [user]);
