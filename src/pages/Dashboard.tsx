@@ -241,9 +241,13 @@ const Dashboard = () => {
   }, [selectedModel, referenceImages, urlToBase64]);
 
   const handleSelectModel = (model: FalModel) => {
+    // Save current model's settings before switching
+    settingsCacheRef.current[selectedModel.id] = { settings: { ...modelSettings }, numImages };
+    // Restore cached settings or use defaults
+    const cached = settingsCacheRef.current[model.id];
     setSelectedModel(model);
-    setModelSettings(getDefaultSettings(model));
-    setNumImages(1);
+    setModelSettings(cached?.settings ?? getDefaultSettings(model));
+    setNumImages(cached?.numImages ?? 1);
     setShowModelDropdown(false);
   };
 
