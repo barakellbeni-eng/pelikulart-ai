@@ -2105,7 +2105,7 @@ const Dashboard = () => {
                               >
                                 <Trash2 className="w-3.5 h-3.5 text-destructive" />
                               </button>
-                            )
+                            )}
                             <button
                               onClick={() => handleDownload(
                                 item.type === "image" ? (item.data as GeneratedImage).url :
