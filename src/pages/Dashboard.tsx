@@ -89,6 +89,7 @@ interface GeneratedVideo {
   url: string;
   prompt?: string;
   timestamp?: number;
+  modelId?: string;
 }
 
 interface GeneratedAudio {
