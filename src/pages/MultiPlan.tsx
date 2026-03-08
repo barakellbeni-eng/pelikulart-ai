@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import { Upload, Loader2, Camera, Download, Trash2, X } from "lucide-react";
+import { Upload, Loader2, Camera, Download, Trash2, X, Scissors } from "lucide-react";
 import GenerationProgress from "@/components/GenerationProgress";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
@@ -76,6 +76,7 @@ const MultiPlan = () => {
   const [selectedRatio, setSelectedRatio] = useState<AspectRatioId>("1:1");
   const [selectedResolution, setSelectedResolution] = useState<ResolutionId>("2K");
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isCuttingAll, setIsCuttingAll] = useState(false);
   const [loadingPlan, setLoadingPlan] = useState<number | null>(null);
   const [showMediaPicker, setShowMediaPicker] = useState(false);
   const [showCadragePicker, setShowCadragePicker] = useState(false);
@@ -203,6 +204,26 @@ const MultiPlan = () => {
       toast.error(e.message);
     } finally {
       setLoadingPlan(null);
+    }
+  };
+
+  const handleCutAll = async () => {
+    if (!cadrageSource || !user || isCuttingAll || loadingPlan !== null) return;
+    setIsCuttingAll(true);
+
+    try {
+      for (let i = 1; i <= 4; i++) {
+        await callGenerate(cadrageSource, selectedPlan, i);
+      }
+      await loadGallery();
+      refreshBalance();
+      toast.success("4 cadrages générés !");
+    } catch (e: any) {
+      toast.error(e.message);
+      await loadGallery();
+      refreshBalance();
+    } finally {
+      setIsCuttingAll(false);
     }
   };
 
@@ -469,28 +490,48 @@ const MultiPlan = () => {
             )}
 
             {cadrageSource && (
-              <div className="grid grid-cols-2 gap-1.5 mt-2">
-                {[0, 1, 2, 3].map((idx) => {
-                  const isLoading = loadingPlan === idx;
-                  return (
-                    <button
-                      key={idx}
-                      onClick={() => handlePlanClick(idx)}
-                      disabled={loadingPlan !== null}
-                      className={`py-2 rounded-lg text-[11px] font-medium transition-all border ${
-                        isLoading
-                          ? "border-primary/30 bg-primary/5 text-primary"
-                          : "border-border/30 text-muted-foreground hover:border-primary/20 hover:text-foreground"
-                      } ${loadingPlan !== null && !isLoading ? "opacity-20 cursor-not-allowed" : ""}`}
-                    >
-                      {isLoading ? (
-                        <Loader2 className="w-3 h-3 animate-spin mx-auto" />
-                      ) : (
-                        `Cadrage ${idx + 1}`
-                      )}
-                    </button>
-                  );
-                })}
+              <div className="space-y-2 mt-2">
+                <button
+                  onClick={handleCutAll}
+                  disabled={isCuttingAll || loadingPlan !== null}
+                  className="w-full py-2.5 rounded-lg bg-primary text-primary-foreground text-xs font-semibold flex items-center justify-center gap-2 disabled:opacity-25 disabled:cursor-not-allowed transition-all hover:brightness-110"
+                >
+                  {isCuttingAll ? (
+                    <>
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      Découpe en cours...
+                    </>
+                  ) : (
+                    <>
+                      <Scissors className="w-3.5 h-3.5" />
+                      Découper tout · 8 cauris
+                    </>
+                  )}
+                </button>
+
+                <div className="grid grid-cols-2 gap-1.5">
+                  {[0, 1, 2, 3].map((idx) => {
+                    const isLoading = loadingPlan === idx;
+                    return (
+                      <button
+                        key={idx}
+                        onClick={() => handlePlanClick(idx)}
+                        disabled={loadingPlan !== null || isCuttingAll}
+                        className={`py-2 rounded-lg text-[11px] font-medium transition-all border ${
+                          isLoading
+                            ? "border-primary/30 bg-primary/5 text-primary"
+                            : "border-border/30 text-muted-foreground hover:border-primary/20 hover:text-foreground"
+                        } ${(loadingPlan !== null && !isLoading) || isCuttingAll ? "opacity-20 cursor-not-allowed" : ""}`}
+                      >
+                        {isLoading ? (
+                          <Loader2 className="w-3 h-3 animate-spin mx-auto" />
+                        ) : (
+                          `Cadrage ${idx + 1}`
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
             )}
           </div>
