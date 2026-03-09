@@ -93,14 +93,6 @@ const costData: Record<TabKey, BrandGroup[]> = {
   ],
 };
 
-const comparison = [
-  { criterion: "Prix Sora 2 (10s)", deepnia: "~400 FCFA", kie: "~250 FCFA", pelikulart: "100 FCFA" },
-  { criterion: "Prix Veo 3.1", deepnia: "~1500 FCFA", kie: "~900 FCFA", pelikulart: "720 FCFA" },
-  { criterion: "Interface en français", deepnia: false, kie: false, pelikulart: true },
-  { criterion: "Paiement Mobile Money", deepnia: false, kie: false, pelikulart: true },
-  { criterion: "Support WhatsApp", deepnia: false, kie: false, pelikulart: true },
-  { criterion: "Galerie sauvegardée", deepnia: true, kie: true, pelikulart: true },
-];
 
 const tabLabels: Record<TabKey, string> = {
   image: "Image",
@@ -309,87 +301,6 @@ const LandingPricing = () => {
           </div>
         </motion.div>
 
-        {/* ═══ COMPARISON TABLE ═══ */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-        >
-          <h3 
-            className="text-2xl sm:text-3xl font-bold text-white text-center mb-10"
-            style={{ fontFamily: "'Syne', sans-serif" }}
-          >
-            Pourquoi Pelikulart.AI ?
-          </h3>
-
-          {/* Desktop table */}
-          <div className="hidden sm:block overflow-x-auto">
-            <table className="w-full" style={{ fontFamily: "'DM Mono', monospace" }}>
-              <thead>
-                <tr className="border-b border-white/[0.06]">
-                  <th className="text-left py-4 text-[10px] text-white/30 uppercase tracking-widest font-normal">Critère</th>
-                  <th className="text-center py-4 text-[10px] text-white/30 uppercase tracking-widest font-normal">Deepnia</th>
-                  <th className="text-center py-4 text-[10px] text-white/30 uppercase tracking-widest font-normal">Kie.ai Direct</th>
-                  <th className="text-center py-4 text-[10px] text-white/40 uppercase tracking-widest font-medium bg-white/[0.02]">Pelikulart.AI</th>
-                </tr>
-              </thead>
-              <tbody>
-                {comparison.map((row, ri) => (
-                  <tr key={row.criterion} className={ri < comparison.length - 1 ? "border-b border-white/[0.03]" : ""}>
-                    <td className="py-3 text-white/50 text-xs">{row.criterion}</td>
-                    <td className="py-3 text-center text-xs">
-                      {typeof row.deepnia === "boolean" 
-                        ? (row.deepnia ? <span className="text-white/40">✓</span> : <span className="text-white/20">✗</span>)
-                        : <span className="text-white/40">{row.deepnia}</span>
-                      }
-                    </td>
-                    <td className="py-3 text-center text-xs">
-                      {typeof row.kie === "boolean"
-                        ? (row.kie ? <span className="text-white/40">✓</span> : <span className="text-white/20">✗</span>)
-                        : <span className="text-white/40">{row.kie}</span>
-                      }
-                    </td>
-                    <td className="py-3 text-center text-xs bg-white/[0.02]">
-                      {typeof row.pelikulart === "boolean"
-                        ? (row.pelikulart ? <span className="text-primary font-bold">✓</span> : <span className="text-white/20">✗</span>)
-                        : <span className="text-white font-semibold">{row.pelikulart}</span>
-                      }
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Mobile cards */}
-          <div className="sm:hidden space-y-3">
-            {comparison.map((row) => (
-              <div key={row.criterion} className="bg-white/[0.02] rounded-xl p-4 border border-white/[0.04]">
-                <p className="text-white/50 text-xs mb-3" style={{ fontFamily: "'DM Mono', monospace" }}>{row.criterion}</p>
-                <div className="grid grid-cols-3 gap-2 text-center text-[10px]" style={{ fontFamily: "'DM Mono', monospace" }}>
-                  <div>
-                    <p className="text-white/20 uppercase tracking-wider mb-1">Deepnia</p>
-                    <p className="text-white/40">
-                      {typeof row.deepnia === "boolean" ? (row.deepnia ? "✓" : "✗") : row.deepnia}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-white/20 uppercase tracking-wider mb-1">Kie.ai</p>
-                    <p className="text-white/40">
-                      {typeof row.kie === "boolean" ? (row.kie ? "✓" : "✗") : row.kie}
-                    </p>
-                  </div>
-                  <div className="bg-primary/5 rounded-lg py-1">
-                    <p className="text-white/30 uppercase tracking-wider mb-1">Pelikulart</p>
-                    <p className={typeof row.pelikulart === "boolean" ? "text-primary font-bold" : "text-white font-semibold"}>
-                      {typeof row.pelikulart === "boolean" ? (row.pelikulart ? "✓" : "✗") : row.pelikulart}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </motion.div>
 
       </div>
     </section>
