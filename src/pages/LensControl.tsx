@@ -516,8 +516,13 @@ const LensControl = () => {
             <div className="flex flex-col items-center justify-center h-full">
               {sourceImage ? (
                 <div className="relative max-w-2xl w-full">
-                  <div className="relative rounded-2xl overflow-hidden border border-border/30 bg-muted/10">
-                    <img src={sourceImage} alt="Preview" className="w-full" />
+                  {/* 16:9 aspect ratio container */}
+                  <div className="relative rounded-2xl overflow-hidden border border-border/30 bg-black aspect-video">
+                    <img 
+                      src={sourceImage} 
+                      alt="Preview" 
+                      className="absolute inset-0 w-full h-full object-cover" 
+                    />
                     {/* Lens effect overlay */}
                     <LensPreviewOverlay
                       lensType={lensType}
@@ -548,9 +553,12 @@ const LensControl = () => {
                   </div>
                 </div>
               ) : (
-                <div className="flex flex-col items-center justify-center text-center gap-3">
-                  <Target className="w-12 h-12 text-muted-foreground/20" />
-                  <p className="text-sm font-bold text-muted-foreground">UPLOADE UNE IMAGE POUR COMMENCER</p>
+                <div className="relative max-w-2xl w-full">
+                  {/* 16:9 placeholder */}
+                  <div className="relative rounded-2xl overflow-hidden border border-border/30 bg-muted/10 aspect-video flex flex-col items-center justify-center">
+                    <Target className="w-12 h-12 text-muted-foreground/20" />
+                    <p className="text-sm font-bold text-muted-foreground mt-3">UPLOADE UNE IMAGE</p>
+                  </div>
                 </div>
               )}
             </div>
