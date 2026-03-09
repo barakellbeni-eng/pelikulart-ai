@@ -514,12 +514,12 @@ const MultiPlan = () => {
                   ) : isAnyJobRunning ? (
                     <>
                       <Lock className="w-3.5 h-3.5" />
-                      Générer · 2 cauris
+                      Générer · 1 cauris
                     </>
                   ) : (
                     <>
                       <Camera className="w-3.5 h-3.5" />
-                      Générer · 2 cauris
+                      Générer · 1 cauris
                     </>
                   )}
                 </button>
