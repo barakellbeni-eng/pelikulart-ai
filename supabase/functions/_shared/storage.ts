@@ -166,4 +166,28 @@ export async function deleteFile(key: string): Promise<void> {
   if (error) throw new Error(`Storage delete failed: ${error.message}`);
 }
 
+/**
+ * Log a cauris ledger entry. Fire-and-forget — errors are logged but don't throw.
+ */
+export async function logCauris(
+  adminClient: ReturnType<typeof createClient>,
+  userId: string,
+  type: "achat" | "generation" | "remboursement",
+  description: string,
+  amount: number,
+  balanceAfter: number,
+): Promise<void> {
+  try {
+    await adminClient.from("cauris_ledger").insert({
+      user_id: userId,
+      type,
+      description,
+      amount,
+      balance_after: balanceAfter,
+    });
+  } catch (e) {
+    console.error("logCauris error:", e);
+  }
+}
+
 export { getPublicUrl };
