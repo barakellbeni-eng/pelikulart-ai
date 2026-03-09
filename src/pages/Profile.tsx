@@ -605,7 +605,7 @@ const Profile = () => {
             <Coins className="w-5 h-5 text-muted-foreground" />
             <span className="flex-1">Plan & recharge</span>
             <span className="text-xs px-2 py-0.5 rounded-full bg-primary/20 text-primary font-semibold">
-              {balance} 🐚
+              {balance} cauris
             </span>
           </button>
 

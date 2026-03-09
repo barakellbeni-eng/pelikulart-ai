@@ -509,7 +509,7 @@ const Gallery = () => {
                 <div className="flex items-center gap-4 text-xs text-muted-foreground">
                   <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />{new Date(selected.created_at).toLocaleDateString("fr-FR")}</span>
                   <span className="flex items-center gap-1"><Cpu className="w-3 h-3" /> {selected.model}</span>
-                  <span className="flex items-center gap-1">🐚 {selected.credits_used}</span>
+                  <span className="flex items-center gap-1">{selected.credits_used} cauris</span>
                 </div>
                 <div className="flex gap-2">
                   <button onClick={() => { navigator.clipboard.writeText(selected.prompt); toast.success("Prompt copié !"); }} className="px-4 py-3 rounded-xl bg-muted/30 text-foreground hover:bg-muted/50 transition-colors text-sm" title="Copier le prompt">

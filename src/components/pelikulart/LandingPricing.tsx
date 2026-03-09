@@ -157,7 +157,7 @@ const LandingPricing = () => {
               <div className="flex items-center justify-between mb-4">
                 <div>
                   <p className="text-white font-semibold text-sm font-display">{pack.name}</p>
-                  <p className="text-lime/70 text-[11px] font-mono mt-0.5">{pack.cauris} Cauris 🐚</p>
+                  <p className="text-lime/70 text-[11px] font-mono mt-0.5">{pack.cauris} Cauris</p>
                 </div>
                 <div className="text-right">
                   <span className="text-2xl font-bold text-white font-mono">{pack.price}</span>

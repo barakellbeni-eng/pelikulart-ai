@@ -459,7 +459,7 @@ const LandingPage = () => {
                 )}
                 <h3 className="font-bold text-lg mb-1">{plan.name}</h3>
                 <p className="text-muted-foreground text-sm mb-4">
-                  {plan.credits} Cauris 🐚
+                  {plan.credits} Cauris
                 </p>
                 <p className="text-3xl font-extrabold mb-1">
                   {plan.price}{" "}

@@ -139,7 +139,7 @@ const TransactionHistory = () => {
                 </div>
                 <div className="text-right flex-shrink-0 ml-2">
                   <p className={`text-sm font-bold ${isPositive ? "text-green-400" : "text-foreground"}`}>
-                    {isPositive ? "+" : ""}{entry.amount} 🐚
+                    {isPositive ? "+" : ""}{entry.amount}
                   </p>
                   <p className="text-[9px] text-muted-foreground">
                     Solde : {entry.balance_after}

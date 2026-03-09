@@ -280,7 +280,7 @@ const Pricing = () => {
 
               <div className="flex items-center gap-2">
                 <span className="text-lg font-bold text-accent">{pack.cauris}</span>
-                <span className="text-xs text-muted-foreground">Cauris 🐚</span>
+                <span className="text-xs text-muted-foreground">Cauris</span>
                 {pack.bonus && (
                   <span className="text-[10px] font-bold text-green-400 bg-green-400/10 px-1.5 py-0.5 rounded-full">
                     {pack.bonus}
