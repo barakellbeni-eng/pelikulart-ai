@@ -478,33 +478,14 @@ const LensControl = () => {
 
       {/* ── RIGHT PANEL ── */}
       <div className="flex-1 flex flex-col h-full overflow-hidden">
-        {/* Tabs */}
+        {/* Header */}
         <div className="flex items-center gap-2 px-6 pt-6 pb-2 border-b border-border/10">
-          <button
-            onClick={() => setActiveTab("results")}
-            className={`px-4 py-2 font-bold text-sm transition-colors border-b-2 ${
-              activeTab === "results"
-                ? "border-primary text-foreground"
-                : "border-transparent text-muted-foreground hover:text-foreground"
-            }`}
-          >
+          <h3 className="px-4 py-2 font-bold text-sm text-foreground border-b-2 border-primary">
             Mes résultats
-          </button>
-          <button
-            onClick={() => setActiveTab("preview")}
-            className={`px-4 py-2 font-bold text-sm transition-colors border-b-2 ${
-              activeTab === "preview"
-                ? "border-primary text-foreground"
-                : "border-transparent text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            <Eye className="w-3.5 h-3.5 inline mr-1.5" />
-            Prévisualisation
-          </button>
+          </h3>
         </div>
 
         <div className="flex-1 overflow-y-auto p-6 pt-4 scrollbar-thin">
-          {activeTab === "results" ? (
             <>
               {/* Loading state during generation */}
               <AnimatePresence>
