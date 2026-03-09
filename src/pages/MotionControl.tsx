@@ -272,7 +272,9 @@ const MotionControl = () => {
 
       const payload = {
         model_id: "kie-kling-25-turbo",
+        tool_type: "video",
         prompt: finalPrompt,
+        cauris_cost: costCauris,
         settings: {
           duration,
           aspect_ratio: aspectRatio,
