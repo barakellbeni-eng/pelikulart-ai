@@ -21,6 +21,7 @@ import StudioSplash from "@/components/pelikulart/StudioSplash";
 import StudioHome from "./pages/StudioHome";
 import Dashboard from "./pages/Dashboard";
 import MultiPlan from "./pages/MultiPlan";
+import MotionControl from "./pages/MotionControl";
 import Pricing from "./pages/Pricing";
 import Profile from "./pages/Profile";
 import ResetPassword from "./pages/ResetPassword";
