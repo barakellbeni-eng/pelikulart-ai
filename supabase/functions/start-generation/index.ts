@@ -681,8 +681,35 @@ async function processKie(jobId: string, userId: string, body: any) {
       }
     }
 
-    console.log(`[KIE] Creating task for ${kieModel}`);
-    const taskId = await kieCreateTask(kieModel, input, KIE_API_KEY);
+    // Use Veo3-specific endpoint or standard createTask
+    let taskId: string;
+    if (VEO3_MODELS.has(model_id)) {
+      console.log(`[KIE] Creating Veo3 task for model=${kieModel}`);
+      const veoPayload: Record<string, any> = {
+        prompt: input.prompt,
+        model: kieModel,
+        ...( input.aspect_ratio ? { aspect_ratio: input.aspect_ratio } : {}),
+        ...( input.imageUrls ? { imageUrls: input.imageUrls } : {}),
+      };
+      const veoResp = await fetch(`${KIE_AI_BASE}/api/v1/veo/generate`, {
+        method: "POST",
+        headers: { "Authorization": `Bearer ${KIE_API_KEY}`, "Content-Type": "application/json" },
+        body: JSON.stringify(veoPayload),
+      });
+      if (!veoResp.ok) {
+        const errText = await veoResp.text();
+        throw new Error(`Veo3 API error: ${veoResp.status} ${errText}`);
+      }
+      const veoData = await veoResp.json();
+      if (veoData.code !== 200 || !veoData.data?.taskId) {
+        throw new Error(`Veo3 error: ${veoData.msg || "No taskId returned"}`);
+      }
+      taskId = veoData.data.taskId;
+    } else {
+      console.log(`[KIE] Creating task for ${kieModel}`);
+      taskId = await kieCreateTask(kieModel, input, KIE_API_KEY);
+    }
+
     await updateJob(adminClient, jobId, { external_job_id: taskId, progress: 10 });
 
     console.log(`[KIE] Polling task ${taskId}`);
