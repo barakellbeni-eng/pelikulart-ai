@@ -1050,7 +1050,8 @@ serve(async (req) => {
       .single();
 
     if (jobError || !jobData) {
-      await adminClient.rpc("add_cauris", { p_user_id: userId, p_amount: cost });
+      const { data: rb } = await adminClient.rpc("add_cauris", { p_user_id: userId, p_amount: cost });
+      await logCauris(adminClient, userId, "remboursement", `Erreur création job — ${model_id}`, cost, rb ?? 0);
       console.error("Job insert error:", jobError);
       return new Response(JSON.stringify({ error: "Erreur lors de la création du job" }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
