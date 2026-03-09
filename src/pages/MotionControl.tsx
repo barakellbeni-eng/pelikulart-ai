@@ -538,7 +538,7 @@ const MotionControl = () => {
       </AnimatePresence>
 
       {/* Delete Confirm Modal */}
-      <DeleteConfirmModal open={!!deleteTarget} onClose={() => setDeleteTarget(null)} onConfirm={handleDelete} loading={deleting} title="Supprimer cette vidéo ?" message="Cette action est irréversible." />
+      <DeleteConfirmModal open={!!deleteTarget} onCancel={() => setDeleteTarget(null)} onConfirm={handleDelete} loading={deleting} />
     </div>
   );
 };
