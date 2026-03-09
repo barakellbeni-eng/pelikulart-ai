@@ -936,7 +936,8 @@ async function processSuno(jobId: string, userId: string, body: any) {
       result_metadata: { error: err.message, provider: "suno" },
       completed_at: new Date().toISOString(),
     });
-    await adminClient.rpc("add_cauris", { p_user_id: userId, p_amount: body.cauris_cost || 6 });
+    const { data: rb } = await adminClient.rpc("add_cauris", { p_user_id: userId, p_amount: body.cauris_cost || 6 });
+    await logCauris(adminClient, userId, "remboursement", `Échec Suno — ${body.model_id}`, body.cauris_cost || 6, rb ?? 0);
   }
 }
 
