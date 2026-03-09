@@ -9,6 +9,7 @@ import logoKling21 from "@/assets/logo-kling-21.png";
 import logoSuno from "@/assets/logo-suno.png";
 import logoElevenLabs from "@/assets/logo-elevenlabs.png";
 import logoIdeogram from "@/assets/logo-ideogram.png";
+import logoSora from "@/assets/logo-sora.png";
 
 const brandLogos: Record<string, string> = {
   Google: logoGoogle,
@@ -19,9 +20,8 @@ const brandLogos: Record<string, string> = {
   Suno: logoSuno,
   ElevenLabs: logoElevenLabs,
   Ideogram: logoIdeogram,
-  Wan: logoKling30,       // placeholder — remplacer quand le vrai logo est dispo
-  Seedance: logoSeedream, // placeholder — remplacer quand le vrai logo est dispo
-  Sora: logoKling30,      // placeholder — remplacer quand le vrai logo est dispo
+  Seedance: logoSeedream,
+  Sora: logoSora,
 };
 
 // Per-model logos (for brands with version-specific icons like Kling)

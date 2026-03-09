@@ -303,19 +303,7 @@ export const FAL_MODELS: FalModel[] = [
     ],
   },
 
-  // ── Wan 2.6 (KIE) ──
-  {
-    id: "kie-wan-26", type: "video", brand: "Wan", name: "Wan 2.6",
-    endpoint: "kie", provider: "kie", kieModel: "wan/2-6-text-to-video",
-    description: "T2V ou I2V auto, jusqu'à 1080p", icon: "◆", color: "from-white/20 to-white/5",
-    maxImages: 1, supportsImageInput: true, caurisCost: 45, caurisCost10s: 90, estimatedTime: "~1min",
-    settings: [
-      DURATION_5_10,
-      { key: "resolution", label: "Résolution", type: "select", options: [
-        { value: "720p", label: "720p" }, { value: "1080p", label: "1080p" },
-      ], defaultValue: "720p" },
-    ],
-  },
+
 
   // ── Veo 3.1 (KIE) ──
   {
