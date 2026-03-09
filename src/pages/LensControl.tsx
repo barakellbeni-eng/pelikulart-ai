@@ -13,7 +13,6 @@ const START_GENERATION_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/
 
 /* ── Lens types ── */
 const LENS_TYPES = [
-  { id: "prime", emoji: "🔵", label: "Prime", sub: "Focale fixe" },
   { id: "anamorphic", emoji: "🎬", label: "Anamorphique", sub: "Cinéma 2.39:1" },
   { id: "macro", emoji: "🔬", label: "Macro", sub: "Détails 1:1" },
   { id: "special", emoji: "🌀", label: "Spéciaux", sub: "Fisheye · Tilt" },
@@ -23,14 +22,6 @@ type LensTypeId = (typeof LENS_TYPES)[number]["id"];
 
 /* ── Focal lengths per type ── */
 const FOCALS: Record<LensTypeId, { value: string; label: string; sub: string }[]> = {
-  prime: [
-    { value: "14", label: "14mm", sub: "Ultra" },
-    { value: "24", label: "24mm", sub: "Grand" },
-    { value: "35", label: "35mm", sub: "Repor." },
-    { value: "50", label: "50mm", sub: "Standard" },
-    { value: "85", label: "85mm", sub: "Portrait" },
-    { value: "135", label: "135mm", sub: "Télé" },
-  ],
   anamorphic: [
     { value: "1.33x", label: "1.33×", sub: "Léger" },
     { value: "1.5x", label: "1.5×", sub: "Flares" },
@@ -58,7 +49,6 @@ const APERTURES = [
 
 /* ── FOV map ── */
 const FOV_MAP: Record<string, number> = {
-  "14": 114, "24": 84, "35": 63, "50": 47, "85": 28, "135": 18,
   "1.33x": 54, "1.5x": 50, "2x": 44,
   "60": 39, "100": 24, "180": 14,
   fisheye: 180, "tilt-shift": 47, lensbaby: 47,
@@ -71,9 +61,7 @@ function buildLensPrompt(type: LensTypeId, focal: string, aperture: string, fov:
 
   const parts = ["Same scene and subject"];
 
-  if (type === "prime") {
-    parts.push(`shot with a ${focalLabel} standard lens`);
-  } else if (type === "anamorphic") {
+  if (type === "anamorphic") {
     parts.push(`shot with a ${focalLabel} anamorphic lens, horizontal lens flares, cinematic 2.39:1 widescreen`);
   } else if (type === "macro") {
     parts.push(`shot with a ${focalLabel} macro lens, extreme close-up detail, shallow depth of field`);
@@ -121,8 +109,8 @@ const LensControl = () => {
   const location = useLocation();
 
   /* Controls */
-  const [lensType, setLensType] = useState<LensTypeId>("prime");
-  const [focal, setFocal] = useState("50");
+  const [lensType, setLensType] = useState<LensTypeId>("anamorphic");
+  const [focal, setFocal] = useState("1.33x");
   const [aperture, setAperture] = useState("auto");
   const [sourceImage, setSourceImage] = useState<string | null>(null);
 
