@@ -251,6 +251,11 @@ serve(async (req) => {
       project_id: project_id || null,
     } as any).select("id").single();
 
+    // Increment project stats
+    if (project_id) {
+      await adminClient.rpc("increment_project_stats", { p_project_id: project_id, p_cauris: cost }).catch((e: any) => console.error("increment_project_stats error:", e));
+    }
+
     return new Response(
       JSON.stringify({ image: { url: displayUrl, originalUrl, job_id: jobData?.id || "" }, new_balance: deductResult }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },

@@ -9,8 +9,8 @@ export interface Project {
   cover_url: string | null;
   created_at: string;
   updated_at: string;
-  /** Client-side count – populated after fetch */
-  generation_count?: number;
+  generation_count: number;
+  cauris_spent: number;
 }
 
 // Persist selected project id across navigation
@@ -44,7 +44,7 @@ export function useProjects() {
 
     const { data, error } = await supabase
       .from("projects")
-      .select("id, name, cover_url, created_at, updated_at")
+      .select("id, name, cover_url, created_at, updated_at, generation_count, cauris_spent")
       .order("updated_at", { ascending: false });
 
     if (error) {
@@ -53,25 +53,10 @@ export function useProjects() {
       return;
     }
 
-    // Get counts from generation_jobs per project (only completed, non-deleted)
-    const { data: counts } = await supabase
-      .from("generation_jobs")
-      .select("project_id")
-      .eq("status", "completed")
-      .is("deleted_at", null)
-      .not("project_id", "is", null);
-
-    const countMap = new Map<string, number>();
-    if (counts) {
-      for (const row of counts) {
-        const pid = (row as any).project_id as string;
-        countMap.set(pid, (countMap.get(pid) || 0) + 1);
-      }
-    }
-
     const enriched: Project[] = (data || []).map((p: any) => ({
       ...p,
-      generation_count: countMap.get(p.id) || 0,
+      generation_count: p.generation_count ?? 0,
+      cauris_spent: p.cauris_spent ?? 0,
     }));
 
     setProjects(enriched);

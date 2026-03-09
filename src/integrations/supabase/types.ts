@@ -236,24 +236,30 @@ export type Database = {
       }
       projects: {
         Row: {
+          cauris_spent: number
           cover_url: string | null
           created_at: string
+          generation_count: number
           id: string
           name: string
           updated_at: string
           user_id: string
         }
         Insert: {
+          cauris_spent?: number
           cover_url?: string | null
           created_at?: string
+          generation_count?: number
           id?: string
           name?: string
           updated_at?: string
           user_id: string
         }
         Update: {
+          cauris_spent?: number
           cover_url?: string | null
           created_at?: string
+          generation_count?: number
           id?: string
           name?: string
           updated_at?: string
@@ -330,6 +336,10 @@ export type Database = {
       deduct_cauris: {
         Args: { p_amount: number; p_user_id: string }
         Returns: number
+      }
+      increment_project_stats: {
+        Args: { p_cauris: number; p_project_id: string }
+        Returns: undefined
       }
     }
     Enums: {

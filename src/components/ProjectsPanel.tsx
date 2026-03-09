@@ -180,12 +180,14 @@ export default function ProjectsPanel() {
                 </div>
               ) : (
                 <>
-                  <span className="truncate flex-1">{p.name}</span>
-                  {p.generation_count !== undefined && p.generation_count > 0 && (
-                    <span className="text-[10px] text-muted-foreground/50 tabular-nums">
-                      {p.generation_count}
+                  <div className="flex-1 min-w-0">
+                    <span className="truncate block">{p.name}</span>
+                    <span className="text-[9px] text-muted-foreground/50 block">
+                      {new Date(p.created_at).toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}
+                      {p.generation_count > 0 && ` · ${p.generation_count} gén.`}
+                      {p.cauris_spent > 0 && ` · ${p.cauris_spent} 🐚`}
                     </span>
-                  )}
+                  </div>
                 </>
               )}
 
