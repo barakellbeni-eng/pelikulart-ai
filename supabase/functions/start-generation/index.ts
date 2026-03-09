@@ -1071,6 +1071,7 @@ serve(async (req) => {
       .insert({
         user_id: userId, provider, tool_type, model: model_id,
         prompt: prompt.slice(0, 5000), params: body, status: "pending", credits_used: cost,
+        project_id: project_id || null,
       })
       .select("id")
       .single();
