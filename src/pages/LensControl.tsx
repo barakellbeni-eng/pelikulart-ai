@@ -583,20 +583,6 @@ const LensControl = () => {
                       aperture={aperture}
                       fov={fov}
                     />
-                    {/* Generation progress overlay */}
-                    <AnimatePresence>
-                      {isGenerating && (
-                        <motion.div
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          exit={{ opacity: 0 }}
-                          className="absolute inset-0 bg-black/60 backdrop-blur-sm flex flex-col items-center justify-center gap-3 z-10"
-                        >
-                          <GenerationProgress estimatedTime="~15s" />
-                          <p className="text-xs text-muted-foreground/80">Application de l'objectif…</p>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
                   </div>
                   {/* Lens info badges */}
                   <div className="flex items-center gap-2 mt-4 justify-center">
