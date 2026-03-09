@@ -334,7 +334,7 @@ const MotionControl = () => {
   };
 
   const canGenerate = sourceImage && selectedMotion && !isGenerating;
-  const costCauris = duration === "10" ? 60 : 30;
+  const costCauris = duration === "10" ? 12 : 6;
 
   return (
     <div className="flex h-full min-h-0 overflow-hidden">
