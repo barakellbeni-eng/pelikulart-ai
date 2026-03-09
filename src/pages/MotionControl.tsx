@@ -8,7 +8,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useCauris } from "@/hooks/useCauris";
 import MediaPickerModal from "@/components/MediaPickerModal";
 import DeleteConfirmModal from "@/components/DeleteConfirmModal";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+
 
 const START_GENERATION_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/start-generation`;
 
