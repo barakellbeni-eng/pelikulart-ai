@@ -247,7 +247,7 @@ const Pricing = () => {
 
         {/* Packs Grid */}
         <div>
-          <h2 className="text-lg font-bold text-foreground mb-1">Recharger en Cauris 🐚</h2>
+          <h2 className="text-lg font-bold text-foreground mb-1">Recharger en Cauris</h2>
           <p className="text-xs text-muted-foreground mb-4">Achetez des Cauris, générez des images et vidéos. Quand c'est fini, rechargez !</p>
         </div>
 
