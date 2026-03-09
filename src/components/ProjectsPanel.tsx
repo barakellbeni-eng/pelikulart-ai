@@ -1,9 +1,11 @@
 import { useState, useRef, useEffect } from "react";
-import { FolderOpen, Plus, Pencil, Check, X, Loader2, ChevronDown, FolderClosed } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { FolderOpen, Plus, Pencil, Check, X, Loader2, ChevronDown, FolderClosed, ExternalLink } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useProjects, type Project } from "@/hooks/useProjects";
 
 export default function ProjectsPanel() {
+  const navigate = useNavigate();
   const {
     projects,
     loading,
@@ -59,6 +61,17 @@ export default function ProjectsPanel() {
     setIsRenaming(false);
   };
 
+  // Navigate to gallery filtered by project
+  const handleOpenGallery = (projectId: string | null) => {
+    selectProject(projectId);
+    if (projectId) {
+      navigate(`/studio/gallery?project=${projectId}`);
+    } else {
+      navigate("/studio/gallery");
+    }
+    setOpen(false);
+  };
+
   if (loading) {
     return (
       <div className="flex items-center gap-2 px-3 py-2.5">
@@ -97,7 +110,7 @@ export default function ProjectsPanel() {
             <div className="max-h-52 overflow-y-auto scrollbar-thin p-1">
               {/* "Toutes les créations" */}
               <button
-                onClick={() => { selectProject(null); setOpen(false); }}
+                onClick={() => handleOpenGallery(null)}
                 className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs transition-colors ${
                   !selectedProjectId
                     ? "bg-primary/15 text-primary font-medium"
@@ -105,13 +118,14 @@ export default function ProjectsPanel() {
                 }`}
               >
                 <FolderOpen className="w-3.5 h-3.5 shrink-0" />
-                <span className="truncate flex-1">Toutes les créations</span>
+                <span className="truncate flex-1 text-left">Toutes les créations</span>
+                <ExternalLink className="w-3 h-3 opacity-50" />
               </button>
 
               {projects.map((p) => (
                 <button
                   key={p.id}
-                  onClick={() => { selectProject(p.id); setOpen(false); }}
+                  onClick={() => handleOpenGallery(p.id)}
                   className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs transition-colors ${
                     selectedProjectId === p.id
                       ? "bg-primary/15 text-primary font-medium"
@@ -125,6 +139,7 @@ export default function ProjectsPanel() {
                       {p.generation_count}
                     </span>
                   )}
+                  <ExternalLink className="w-3 h-3 opacity-50 shrink-0" />
                 </button>
               ))}
             </div>
