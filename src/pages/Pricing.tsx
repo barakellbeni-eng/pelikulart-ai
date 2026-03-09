@@ -211,7 +211,7 @@ const Pricing = () => {
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     className="text-sm font-bold text-green-400"
                   >
-                    +{addedCauris} 🐚
+                    +{addedCauris}
                   </motion.span>
                 )}
               </div>
