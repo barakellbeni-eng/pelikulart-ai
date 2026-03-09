@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Check, ShieldCheck } from "lucide-react";
+import { ShieldCheck } from "lucide-react";
 import kkiapayLogo from "@/assets/kkiapay-logo.png";
 import { Link } from "react-router-dom";
 
@@ -8,117 +8,203 @@ const packs = [
     name: "Découverte",
     price: "2 000",
     cauris: 25,
-    features: [
-      "~25 images HD",
-      "~3 vidéos courtes",
-      "Idéal pour tester",
-    ],
+    tag: null,
+    rows: {
+      "Images HD": "25",
+      "Vidéo 720p": "3",
+      "Vidéo 1080p": "1",
+      "Sora 2": "5",
+      "Sora Pro": "1",
+      "Musique IA": "12",
+    },
   },
   {
     name: "Starter",
     price: "5 000",
     cauris: 70,
-    features: [
-      "~70 images HD",
-      "~8 vidéos",
-      "~35 musiques",
-      "Pour bien démarrer",
-    ],
+    tag: null,
+    rows: {
+      "Images HD": "70",
+      "Vidéo 720p": "9",
+      "Vidéo 1080p": "5",
+      "Sora 2": "14",
+      "Sora Pro": "3",
+      "Musique IA": "35",
+    },
   },
   {
     name: "Créateur",
     price: "10 000",
     cauris: 160,
-    popular: true,
-    features: [
-      "~160 images HD",
-      "~20 vidéos",
-      "~80 musiques",
-      "Tous les modèles IA",
-    ],
+    tag: "Populaire",
+    rows: {
+      "Images HD": "160",
+      "Vidéo 720p": "20",
+      "Vidéo 1080p": "11",
+      "Sora 2": "32",
+      "Sora Pro": "7",
+      "Musique IA": "80",
+    },
   },
   {
     name: "Pro",
     price: "25 000",
     cauris: 450,
-    features: [
-      "~450 images HD",
-      "~56 vidéos",
-      "~225 musiques",
-      "Support prioritaire",
-    ],
+    tag: null,
+    rows: {
+      "Images HD": "450",
+      "Vidéo 720p": "56",
+      "Vidéo 1080p": "32",
+      "Sora 2": "90",
+      "Sora Pro": "20",
+      "Musique IA": "225",
+    },
   },
   {
     name: "Studio",
     price: "50 000",
     cauris: 1000,
-    features: [
-      "~1 000 images HD",
-      "~125 vidéos",
-      "~500 musiques",
-      "Production intensive",
-    ],
+    tag: "Meilleur rapport",
+    rows: {
+      "Images HD": "1 000",
+      "Vidéo 720p": "125",
+      "Vidéo 1080p": "71",
+      "Sora 2": "200",
+      "Sora Pro": "45",
+      "Musique IA": "500",
+    },
   },
 ];
+
+const rowLabels = ["Images HD", "Vidéo 720p", "Vidéo 1080p", "Sora 2", "Sora Pro", "Musique IA"] as const;
 
 const LandingPricing = () => {
   return (
     <section className="py-16 sm:py-24 md:py-32">
       <div className="max-w-5xl mx-auto px-4 sm:px-8">
+        {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="text-center mb-10 sm:mb-16"
+          className="text-center mb-10 sm:mb-14"
         >
           <h2 className="text-2xl sm:text-4xl md:text-5xl font-bold text-white leading-tight font-display">
             Recharge et crée. <span className="text-lime">C'est tout.</span>
           </h2>
-          <p className="text-white/40 mt-3 sm:mt-4 max-w-md mx-auto text-xs sm:text-sm">
+          <p className="text-white/40 mt-3 max-w-md mx-auto text-xs sm:text-sm">
             Pas d'abonnement. Achète des Cauris, utilise-les quand tu veux. Ils n'expirent jamais.
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 sm:gap-6">
+        {/* Pricing table — desktop */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="hidden md:block"
+        >
+          <div className="rounded-2xl border border-white/[0.06] overflow-hidden bg-white/[0.02]">
+            {/* Header row */}
+            <div className="grid grid-cols-6 border-b border-white/[0.06]">
+              <div className="p-4" />
+              {packs.map((pack) => (
+                <div key={pack.name} className="p-4 text-center relative">
+                  {pack.tag && (
+                    <span className="absolute -top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-lime text-white text-[9px] font-mono font-bold px-3 py-0.5 rounded-full uppercase tracking-wider whitespace-nowrap">
+                      {pack.tag}
+                    </span>
+                  )}
+                  <p className="text-white font-semibold text-sm font-display">{pack.name}</p>
+                  <p className="mt-1">
+                    <span className="text-2xl font-bold text-white font-mono">{pack.price}</span>
+                    <span className="text-white/30 text-[10px] ml-1 font-mono">FCFA</span>
+                  </p>
+                  <p className="text-lime text-[11px] font-mono mt-0.5">{pack.cauris} Cauris 🐚</p>
+                </div>
+              ))}
+            </div>
+
+            {/* Data rows */}
+            {rowLabels.map((label, ri) => (
+              <div
+                key={label}
+                className={`grid grid-cols-6 ${ri < rowLabels.length - 1 ? "border-b border-white/[0.04]" : ""}`}
+              >
+                <div className="p-3 pl-5 text-white/50 text-xs font-mono flex items-center">{label}</div>
+                {packs.map((pack) => (
+                  <div key={pack.name} className="p-3 text-center">
+                    <span className="text-white font-semibold text-sm font-mono">
+                      {pack.rows[label]}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            ))}
+
+            {/* CTA row */}
+            <div className="grid grid-cols-6 border-t border-white/[0.06]">
+              <div className="p-4" />
+              {packs.map((pack) => (
+                <div key={pack.name} className="p-4 flex justify-center">
+                  <Link
+                    to="/pricing"
+                    className={`px-5 py-2 rounded-full text-xs font-semibold uppercase tracking-wider transition-all ${
+                      pack.tag === "Populaire"
+                        ? "bg-lime text-white hover:bg-lime/90 glow-accent"
+                        : "bg-white/5 text-white hover:bg-white/10 border border-white/10"
+                    }`}
+                  >
+                    Acheter
+                  </Link>
+                </div>
+              ))}
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Pricing cards — mobile */}
+        <div className="md:hidden grid grid-cols-1 sm:grid-cols-2 gap-4">
           {packs.map((pack, i) => (
             <motion.div
               key={pack.name}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ delay: i * 0.1 }}
-              className={`relative rounded-2xl p-5 sm:p-7 flex flex-col ${
-                pack.popular
-                  ? "bg-white/[0.04] border-2 border-lime/30 ring-1 ring-lime/10"
+              transition={{ delay: i * 0.08 }}
+              className={`relative rounded-2xl p-5 flex flex-col ${
+                pack.tag === "Populaire"
+                  ? "bg-white/[0.04] border-2 border-lime/30"
                   : "bg-white/[0.02] border border-white/5"
               }`}
             >
-              {pack.popular && (
-                <span className="absolute -top-3 sm:-top-3.5 left-1/2 -translate-x-1/2 bg-lime text-white text-[10px] font-mono font-bold px-4 py-1 rounded-full uppercase tracking-wider">
-                  Populaire
+              {pack.tag && (
+                <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-lime text-white text-[9px] font-mono font-bold px-3 py-0.5 rounded-full uppercase tracking-wider">
+                  {pack.tag}
                 </span>
               )}
-
-              <h3 className="text-white font-semibold text-base sm:text-lg font-display">{pack.name}</h3>
-              <div className="mt-3 sm:mt-4 mb-1 sm:mb-2">
-                <span className="text-3xl sm:text-4xl font-bold text-white font-mono">{pack.price}</span>
-                <span className="text-white/30 text-xs sm:text-sm ml-1 font-mono">FCFA</span>
+              <div className="flex items-baseline justify-between mb-3">
+                <h3 className="text-white font-semibold text-base font-display">{pack.name}</h3>
+                <p className="text-lime text-xs font-mono">{pack.cauris} 🐚</p>
               </div>
-              <p className="text-lime text-xs sm:text-sm font-mono mb-4 sm:mb-6">{pack.cauris} Cauris</p>
+              <div className="mb-4">
+                <span className="text-3xl font-bold text-white font-mono">{pack.price}</span>
+                <span className="text-white/30 text-xs ml-1 font-mono">FCFA</span>
+              </div>
 
-              <ul className="space-y-2.5 sm:space-y-3 mb-6 sm:mb-8 flex-1">
-                {pack.features.map((f) => (
-                  <li key={f} className="flex items-center gap-2 sm:gap-2.5 text-xs sm:text-sm text-white/60">
-                    <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-lime flex-shrink-0" />
-                    {f}
-                  </li>
+              <div className="space-y-1.5 mb-5 flex-1">
+                {rowLabels.map((label) => (
+                  <div key={label} className="flex justify-between text-xs">
+                    <span className="text-white/40 font-mono">{label}</span>
+                    <span className="text-white font-semibold font-mono">{pack.rows[label]}</span>
+                  </div>
                 ))}
-              </ul>
+              </div>
 
               <Link
                 to="/pricing"
-                className={`block w-full text-center py-2.5 sm:py-3 rounded-pill text-xs sm:text-sm font-label font-semibold uppercase tracking-wider transition-all ${
-                  pack.popular
+                className={`block w-full text-center py-2.5 rounded-full text-xs font-semibold uppercase tracking-wider transition-all ${
+                  pack.tag === "Populaire"
                     ? "bg-lime text-white hover:bg-lime/90 glow-accent"
                     : "bg-white/5 text-white hover:bg-white/10 border border-white/10"
                 }`}
@@ -129,7 +215,12 @@ const LandingPricing = () => {
           ))}
         </div>
 
-        {/* Sécurité KkiaPay */}
+        {/* Mention */}
+        <p className="text-center text-white/20 text-[10px] font-mono mt-4">
+          Estimations basées sur les coûts par modèle. Usage réel peut varier selon la résolution et les options choisies.
+        </p>
+
+        {/* KkiaPay */}
         <motion.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
