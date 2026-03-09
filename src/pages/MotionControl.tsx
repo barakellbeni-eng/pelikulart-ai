@@ -276,6 +276,7 @@ const MotionControl = () => {
         settings: {
           duration,
           aspect_ratio: aspectRatio,
+          resolution,
         },
         images: [sourceImage],
       };
