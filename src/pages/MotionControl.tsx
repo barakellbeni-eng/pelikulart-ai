@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Upload, Loader2, Play, Download, Trash2, X, RefreshCw, Sparkles } from "lucide-react";
+import { Upload, Loader2, Play, Download, Trash2, X, RefreshCw, Sparkles, ChevronDown, Check } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -158,6 +158,7 @@ const MotionControl = () => {
   const [selectedMotion, setSelectedMotion] = useState<string | null>(null);
   const [duration, setDuration] = useState<string>("5");
   const [aspectRatio, setAspectRatio] = useState<string>("16:9");
+  const [showMotionPicker, setShowMotionPicker] = useState(false);
 
   const [isGenerating, setIsGenerating] = useState(false);
   const [showMediaPicker, setShowMediaPicker] = useState(false);
@@ -167,7 +168,8 @@ const MotionControl = () => {
   const [deleteTarget, setDeleteTarget] = useState<GeneratedVideo | null>(null);
   const [deleting, setDeleting] = useState(false);
 
-  // Load image from state (if navigated from gallery)
+  const selectedMotionData = CAMERA_MOTIONS.find((m) => m.id === selectedMotion);
+
   useEffect(() => {
     const stateImage = (location.state as any)?.sourceImage;
     if (stateImage && typeof stateImage === "string") {
@@ -175,7 +177,6 @@ const MotionControl = () => {
     }
   }, [location.state]);
 
-  // Load Motion Control generations from DB
   const loadGallery = useCallback(async () => {
     if (!user) return;
     const { data, error } = await supabase
@@ -233,8 +234,8 @@ const MotionControl = () => {
   const handleGenerate = async () => {
     if (!sourceImage || !selectedMotion || !user || isGenerating) return;
 
-    const motion = CAMERA_MOTIONS.find((m) => m.id === selectedMotion);
-    if (!motion) return;
+    const motionData = CAMERA_MOTIONS.find((m) => m.id === selectedMotion);
+    if (!motionData) return;
 
     if (!credits || credits < 30) {
       toast.error("Solde insuffisant — 30 cauris requis");
@@ -248,7 +249,7 @@ const MotionControl = () => {
       const token = sessionData?.session?.access_token;
       if (!token) throw new Error("Non authentifié");
 
-      const finalPrompt = `Motion Control: ${motion.label} — ${motion.prompt}`;
+      const finalPrompt = `Motion Control: ${motionData.label} — ${motionData.prompt}`;
 
       const payload = {
         model_id: "kie-kling-25-turbo",
@@ -273,7 +274,7 @@ const MotionControl = () => {
 
       await loadGallery();
       refreshBalance();
-      toast.success(`Génération lancée : ${motion.label}`);
+      toast.success(`Génération lancée : ${motionData.label}`);
     } catch (e: any) {
       toast.error(e.message);
     } finally {
@@ -324,7 +325,7 @@ const MotionControl = () => {
         <div className="p-4 space-y-4 flex-1 overflow-y-auto scrollbar-thin">
           <div className="space-y-2">
             <h2 className="text-lg font-bold text-foreground">Motion Control</h2>
-            <p className="text-xs text-muted-foreground">Ajoute des mouvements de caméra réalistes avec Kling 2.5</p>
+            <p className="text-xs text-muted-foreground">Ajoute des mouvements de caméra cinématiques à tes images</p>
           </div>
 
           {/* Source Image */}
@@ -349,6 +350,76 @@ const MotionControl = () => {
               >
                 <Upload className="w-6 h-6 text-muted-foreground" />
                 <span className="text-xs text-muted-foreground">Déposer ou cliquer</span>
+              </div>
+            )}
+          </div>
+
+          {/* Motion Selector */}
+          <div className="space-y-2">
+            <label className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">Mouvement</label>
+
+            {selectedMotionData && !showMotionPicker ? (
+              /* Selected motion preview */
+              <div className="space-y-2">
+                <div className="relative rounded-xl overflow-hidden border border-primary/30 bg-muted/10">
+                  <div style={{ padding: "56.25% 0 0 0", position: "relative" }}>
+                    <iframe
+                      src={buildEmbedUrl(selectedMotionData.mediaId)}
+                      width="100%"
+                      height="100%"
+                      frameBorder="0"
+                      allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                      referrerPolicy="unsafe-url"
+                      title={selectedMotionData.label}
+                      style={{ position: "absolute", top: 0, left: 0, pointerEvents: "none" }}
+                    />
+                  </div>
+                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2 flex items-center justify-between">
+                    <span className="text-xs font-bold text-white uppercase tracking-wide">{selectedMotionData.label}</span>
+                    <Check className="w-4 h-4 text-primary" />
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowMotionPicker(true)}
+                  className="w-full px-3 py-2 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground bg-muted/20 hover:bg-muted/30 transition-colors flex items-center justify-center gap-1.5"
+                >
+                  <RefreshCw className="w-3 h-3" />
+                  Changer le mouvement
+                </button>
+              </div>
+            ) : (
+              /* Motion picker dropdown */
+              <div className="space-y-1.5 max-h-[320px] overflow-y-auto scrollbar-thin rounded-xl border border-border/50 bg-muted/5 p-1.5">
+                {CAMERA_MOTIONS.map((m) => (
+                  <button
+                    key={m.id}
+                    onClick={() => {
+                      setSelectedMotion(m.id);
+                      setShowMotionPicker(false);
+                    }}
+                    className={`w-full relative rounded-lg overflow-hidden border transition-all ${
+                      selectedMotion === m.id ? "border-primary shadow-sm shadow-primary/20" : "border-border/30 hover:border-primary/40"
+                    }`}
+                  >
+                    <div style={{ padding: "56.25% 0 0 0", position: "relative" }}>
+                      <iframe
+                        src={buildEmbedUrl(m.mediaId)}
+                        width="100%"
+                        height="100%"
+                        frameBorder="0"
+                        allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                        referrerPolicy="unsafe-url"
+                        title={m.label}
+                        style={{ position: "absolute", top: 0, left: 0, pointerEvents: "none" }}
+                      />
+                    </div>
+                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-1.5">
+                      <span className="text-[10px] font-bold text-white uppercase tracking-wide">{m.label}</span>
+                    </div>
+                  </button>
+                ))}
               </div>
             )}
           </div>
@@ -388,16 +459,6 @@ const MotionControl = () => {
               ))}
             </div>
           </div>
-
-          {/* Selected Motion Display */}
-          {selectedMotion && (
-            <div className="p-3 rounded-xl bg-primary/10 border border-primary/20">
-              <div className="flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-primary" />
-                <span className="text-xs font-bold text-primary">{CAMERA_MOTIONS.find((m) => m.id === selectedMotion)?.label}</span>
-              </div>
-            </div>
-          )}
         </div>
 
         {/* Generate button */}
@@ -426,97 +487,55 @@ const MotionControl = () => {
         </div>
       </div>
 
-      {/* Right panel: Motion Grid + Gallery */}
+      {/* Right panel: Gallery only */}
       <div className="flex-1 flex flex-col h-full overflow-hidden">
-        {/* Motion Grid */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-4 scrollbar-thin">
-          <div>
-            <h3 className="text-sm font-bold text-foreground mb-3">Sélectionne un mouvement</h3>
-            <div className="grid grid-cols-3 gap-4">
-              {CAMERA_MOTIONS.map((motion) => (
-                <button
-                  key={motion.id}
-                  onClick={() => setSelectedMotion(motion.id)}
-                  className={`relative rounded-xl overflow-hidden border-2 transition-all group ${
-                    selectedMotion === motion.id ? "border-primary shadow-lg shadow-primary/20" : "border-border/50 hover:border-primary/50"
-                  }`}
-                  title={motion.prompt}
-                >
-                  {/* Videas embed — autoplay, muted, loop */}
-                  <div style={{ padding: "56.25% 0 0 0", position: "relative" }}>
-                    <iframe
-                      src={buildEmbedUrl(motion.mediaId)}
-                      width="100%"
-                      height="100%"
-                      frameBorder="0"
-                      allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
-                      allowFullScreen
-                      referrerPolicy="unsafe-url"
-                      title={motion.label}
-                      style={{ position: "absolute", top: 0, left: 0, pointerEvents: "none" }}
-                    />
+        <div className="flex-1 overflow-y-auto p-6 scrollbar-thin">
+          <h3 className="text-sm font-bold text-foreground mb-4">Mes générations</h3>
+          {loadingGallery ? (
+            <div className="flex items-center justify-center h-60">
+              <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+            </div>
+          ) : gallery.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-60 text-center">
+              <Sparkles className="w-10 h-10 text-muted-foreground/30 mb-3" />
+              <p className="text-sm text-muted-foreground">Aucune génération pour le moment</p>
+              <p className="text-xs text-muted-foreground/60 mt-1">Sélectionne un mouvement et génère ta première vidéo</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 xl:grid-cols-3 gap-4">
+              {gallery.map((video) => (
+                <div key={video.id} className="relative group rounded-xl overflow-hidden aspect-video bg-muted/20 cursor-pointer" onClick={() => setPreviewVideo(video)}>
+                  <video src={video.url} className="w-full h-full object-cover" />
+                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                    <Play className="w-8 h-8 text-white" />
                   </div>
-                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2">
-                    <span className="text-xs font-bold text-white uppercase tracking-wide">{motion.label}</span>
+                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <span className="text-xs font-bold text-white">{video.motion}</span>
                   </div>
-                  {selectedMotion === motion.id && (
-                    <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-primary flex items-center justify-center">
-                      <Play className="w-2.5 h-2.5 text-primary-foreground fill-current" />
-                    </div>
-                  )}
-                </button>
+                  <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDownload(video.originalUrl || video.url, video.motion);
+                      }}
+                      className="w-7 h-7 rounded-lg bg-background/80 backdrop-blur-sm flex items-center justify-center hover:bg-background transition-colors"
+                    >
+                      <Download className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setDeleteTarget(video);
+                      }}
+                      className="w-7 h-7 rounded-lg bg-background/80 backdrop-blur-sm flex items-center justify-center hover:bg-destructive hover:text-destructive-foreground transition-colors"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
               ))}
             </div>
-          </div>
-
-          {/* Gallery */}
-          <div className="border-t border-border pt-4">
-            <h3 className="text-sm font-bold text-foreground mb-3">Générations précédentes</h3>
-            {loadingGallery ? (
-              <div className="flex items-center justify-center h-40">
-                <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
-              </div>
-            ) : gallery.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-40 text-center">
-                <p className="text-sm text-muted-foreground">Aucune génération pour le moment</p>
-                <p className="text-xs text-muted-foreground/60 mt-1">Sélectionne un mouvement et génère ta première vidéo</p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-3 gap-4">
-                {gallery.map((video) => (
-                  <div key={video.id} className="relative group rounded-xl overflow-hidden aspect-video bg-muted/20 cursor-pointer" onClick={() => setPreviewVideo(video)}>
-                    <video src={video.url} className="w-full h-full object-cover" />
-                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                      <Play className="w-8 h-8 text-white" />
-                    </div>
-                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <span className="text-xs font-bold text-white">{video.motion}</span>
-                    </div>
-                    <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDownload(video.originalUrl || video.url, video.motion);
-                        }}
-                        className="w-7 h-7 rounded-lg bg-background/80 backdrop-blur-sm flex items-center justify-center hover:bg-background transition-colors"
-                      >
-                        <Download className="w-3.5 h-3.5" />
-                      </button>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setDeleteTarget(video);
-                        }}
-                        className="w-7 h-7 rounded-lg bg-background/80 backdrop-blur-sm flex items-center justify-center hover:bg-destructive hover:text-destructive-foreground transition-colors"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+          )}
         </div>
       </div>
 
@@ -541,7 +560,6 @@ const MotionControl = () => {
               <video src={previewVideo.url} controls autoPlay className="w-full" />
               <div className="p-4 space-y-2">
                 <h3 className="text-sm font-bold text-foreground">{previewVideo.motion}</h3>
-                <p className="text-xs text-muted-foreground">{previewVideo.prompt}</p>
               </div>
             </motion.div>
           </motion.div>
