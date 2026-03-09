@@ -9,8 +9,8 @@ export interface Project {
   cover_url: string | null;
   created_at: string;
   updated_at: string;
-  /** Client-side count – populated after fetch */
-  generation_count?: number;
+  generation_count: number;
+  cauris_spent: number;
 }
 
 // Persist selected project id across navigation
