@@ -335,37 +335,36 @@ const MotionControl = () => {
 
             {selectedMotionData && !showMotionPicker ? (
               /* Selected motion preview */
-              <div className="space-y-2">
-                <div className="relative rounded-xl overflow-hidden border border-primary/30 bg-muted/10">
-                  <div style={{ padding: "56.25% 0 0 0", position: "relative" }}>
-                    <iframe
-                      src={buildEmbedUrl(selectedMotionData.mediaId)}
-                      width="100%"
-                      height="100%"
-                      frameBorder="0"
-                      allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
-                      allowFullScreen
-                      referrerPolicy="unsafe-url"
-                      title={selectedMotionData.label}
-                      style={{ position: "absolute", top: 0, left: 0, pointerEvents: "none" }}
-                    />
-                  </div>
-                  {/* Large Sora title overlay — centered */}
-                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                    <p
-                      style={{ fontFamily: "'Sora', sans-serif", fontWeight: 700, lineHeight: 1 }}
-                      className="text-2xl text-white uppercase tracking-tight drop-shadow-lg text-center"
-                    >
-                      {selectedMotionData.label}
-                    </p>
-                  </div>
+              <div className="relative rounded-xl overflow-hidden border border-primary/30 bg-muted/10">
+                <div style={{ padding: "56.25% 0 0 0", position: "relative" }}>
+                  <iframe
+                    src={buildEmbedUrl(selectedMotionData.mediaId)}
+                    width="100%"
+                    height="100%"
+                    frameBorder="0"
+                    allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    referrerPolicy="unsafe-url"
+                    title={selectedMotionData.label}
+                    style={{ position: "absolute", top: 0, left: 0, pointerEvents: "none" }}
+                  />
                 </div>
+                {/* Title centered */}
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                  <p
+                    style={{ fontFamily: "'Sora', sans-serif", fontWeight: 700, lineHeight: 1 }}
+                    className="text-2xl text-white uppercase tracking-tight drop-shadow-lg text-center"
+                  >
+                    {selectedMotionData.label}
+                  </p>
+                </div>
+                {/* Change button — top right inside preview */}
                 <button
                   onClick={() => setShowMotionPicker(true)}
-                  className="w-full px-3 py-2 rounded-lg text-xs font-medium text-primary-foreground bg-primary hover:bg-primary/90 transition-colors flex items-center justify-center gap-1.5"
+                  className="absolute top-2 right-2 px-2 py-1 rounded-md text-[10px] font-bold text-white bg-primary hover:bg-primary/90 transition-colors flex items-center gap-1 shadow-md"
                 >
-                  <RefreshCw className="w-3 h-3" />
-                  Changer le mouvement
+                  <RefreshCw className="w-2.5 h-2.5" />
+                  Changer
                 </button>
               </div>
             ) : (
