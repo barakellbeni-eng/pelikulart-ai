@@ -326,7 +326,8 @@ async function processImage(jobId: string, userId: string, body: any) {
     await updateJob(adminClient, jobId, {
       status: "failed", result_metadata: { error: err.message }, completed_at: new Date().toISOString(),
     });
-    await adminClient.rpc("add_cauris", { p_user_id: userId, p_amount: body.cauris_cost || 2 });
+    const { data: rb } = await adminClient.rpc("add_cauris", { p_user_id: userId, p_amount: body.cauris_cost || 2 });
+    await logCauris(adminClient, userId, "remboursement", `Échec image — ${body.model_id}`, body.cauris_cost || 2, rb ?? 0);
   }
 }
 
