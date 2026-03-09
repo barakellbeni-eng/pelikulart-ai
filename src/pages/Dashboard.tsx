@@ -1754,6 +1754,16 @@ const Dashboard = () => {
 
         {/* ===== PINNED BOTTOM BAR ===== */}
         <div className="shrink-0 p-4 space-y-3 bg-card/80 backdrop-blur-sm">
+          {/* Insufficient balance warning */}
+          {user && balance < calculateCaurisCost(selectedModel, modelSettings, numImages) && (
+            <div className="flex items-center justify-between gap-2 px-3 py-2 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-medium">
+              <span>Solde insuffisant — </span>
+              <a href="/pricing" className="underline underline-offset-2 font-bold hover:text-amber-300 transition-colors">
+                Recharger mes cauris
+              </a>
+            </div>
+          )}
+
           {/* Generate Button */}
           <button
             onClick={() => {
@@ -1762,7 +1772,7 @@ const Dashboard = () => {
               else if (activeTab === "audio") handleGenerateAudio();
               else handleGenerate();
             }}
-            disabled={isSubmitting || !prompt.trim()}
+            disabled={isSubmitting || !prompt.trim() || (!!user && balance < calculateCaurisCost(selectedModel, modelSettings, numImages))}
             className="btn-generate w-full flex items-center justify-between text-sm disabled:opacity-50 disabled:animate-none"
           >
             {isSubmitting ? (
@@ -1774,7 +1784,7 @@ const Dashboard = () => {
               <>
                 <span className="flex items-center gap-2">
                   <Wand2 className="w-4 h-4" />
-                  Générer
+                  {user && balance < calculateCaurisCost(selectedModel, modelSettings, numImages) ? "Solde insuffisant" : "Générer"}
                 </span>
                 <span className="bg-black/20 px-2.5 py-1 rounded-lg text-xs font-bold">
                   {calculateCaurisCost(selectedModel, modelSettings, numImages)} cauris

@@ -14,6 +14,7 @@ import PublicNavbar from "@/components/pelikulart/PublicNavbar";
 import PublicFooter from "@/components/pelikulart/PublicFooter";
 import ScrollToTop from "@/components/pelikulart/ScrollToTop";
 import GlobalActiveJobs from "@/components/GlobalActiveJobs";
+import CaurisHeaderBadge from "@/components/CaurisHeaderBadge";
 
 import StudioSplash from "@/components/pelikulart/StudioSplash";
 
@@ -76,6 +77,7 @@ const AuthenticatedLayout = ({ children }: { children: React.ReactNode }) => {
           <header className="shrink-0 sticky top-0 z-50 glass px-4 py-2 flex items-center gap-3">
             <SidebarTrigger />
             <div className="ml-auto flex items-center gap-2">
+              <CaurisHeaderBadge />
               <ThemeToggle />
               <ProfileRing />
             </div>
