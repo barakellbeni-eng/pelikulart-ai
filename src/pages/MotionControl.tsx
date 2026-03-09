@@ -460,6 +460,24 @@ const MotionControl = () => {
               ))}
             </div>
           </div>
+
+          {/* Resolution */}
+          <div className="space-y-1.5">
+            <label className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">Résolution</label>
+            <div className="flex gap-1">
+              {RESOLUTIONS.map((r) => (
+                <button
+                  key={r.value}
+                  onClick={() => setResolution(r.value)}
+                  className={`flex-1 px-2 py-1 rounded-md text-[11px] font-medium transition-all ${
+                    resolution === r.value ? "bg-primary text-primary-foreground" : "glass text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {r.label}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
 
         {/* Generate button */}
