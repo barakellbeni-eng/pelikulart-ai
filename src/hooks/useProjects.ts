@@ -69,10 +69,17 @@ export function useProjects() {
 
   const createProject = useCallback(async (name: string) => {
     if (!user) return null;
+
+    // Enforce 10 project limit
+    if (projects.length >= 10) {
+      toast.error("Limite atteinte : 10 projets maximum par compte");
+      return null;
+    }
+
     const { data, error } = await supabase
       .from("projects")
       .insert({ user_id: user.id, name: name.trim() || "Sans titre" })
-      .select("id, name, cover_url, created_at, updated_at")
+      .select("id, name, cover_url, created_at, updated_at, generation_count, cauris_spent")
       .single();
 
     if (error) {
@@ -80,12 +87,17 @@ export function useProjects() {
       return null;
     }
 
-    const project: Project = { ...(data as any), generation_count: 0 };
+    const project: Project = { ...(data as any), generation_count: data.generation_count ?? 0, cauris_spent: data.cauris_spent ?? 0 };
     setProjects((prev) => [project, ...prev]);
     selectProject(project.id);
     toast.success(`Projet "${project.name}" créé`);
+
+    // Warn when approaching limit
+    if (projects.length === 8) toast.warning("Attention : 8/10 projets utilisés");
+    if (projects.length === 9) toast.warning("Attention : 9/10 projets utilisés");
+
     return project;
-  }, [user, selectProject]);
+  }, [user, selectProject, projects.length]);
 
   const renameProject = useCallback(async (id: string, newName: string) => {
     const { error } = await supabase
