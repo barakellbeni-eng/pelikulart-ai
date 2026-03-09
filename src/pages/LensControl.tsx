@@ -220,9 +220,11 @@ const LensControl = () => {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({
-          model_id: "google-imagen4",
+          tool_type: "image",
+          model_id: "kie-nano-banana",
           prompt: finalPrompt,
           images: [sourceImage],
+          cauris_cost: COST,
           settings: {},
         }),
       });
