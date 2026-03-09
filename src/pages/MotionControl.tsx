@@ -1,3 +1,4 @@
+import "@fontsource/sora/700.css";
 import { useState, useCallback, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Upload, Loader2, Play, Download, Trash2, X, RefreshCw, Sparkles, ChevronDown, Check } from "lucide-react";
