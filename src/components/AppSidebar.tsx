@@ -10,6 +10,7 @@ import {
   Sparkles,
   Clapperboard,
   Aperture,
+  Target,
 } from "lucide-react";
 import pelikulartLogo from "@/assets/pelikulart-logo.png";
 import {

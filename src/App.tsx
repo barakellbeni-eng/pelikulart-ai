@@ -60,7 +60,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
 const AuthenticatedLayout = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
-  const isFullHeightPage = location.pathname === "/studio/create" || location.pathname === "/studio/multi-plan" || location.pathname === "/studio/motion-control";
+  const isFullHeightPage = location.pathname === "/studio/create" || location.pathname === "/studio/multi-plan" || location.pathname === "/studio/motion-control" || location.pathname === "/studio/lens-control";
   const [showSplash, setShowSplash] = useState(true);
   const handleSplashFinish = useCallback(() => setShowSplash(false), []);
 
