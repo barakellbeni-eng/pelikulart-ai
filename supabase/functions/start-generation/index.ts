@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
-import { downloadAndUpload, downloadAndUploadDual, uploadBytes, uploadBytesDual, getPublicUrl } from "../_shared/storage.ts";
+import { downloadAndUpload, downloadAndUploadDual, uploadBytes, uploadBytesDual, getPublicUrl, logCauris } from "../_shared/storage.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
