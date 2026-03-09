@@ -12,113 +12,118 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 
 const START_GENERATION_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/start-generation`;
 
+const VIDEAS_PARAMS = "?title=false&logo=false&thumbnail_duration=false&controls=false&autoplay=true&mute=true&loop=true&info=true&thumbnail=video";
+
+const buildEmbedUrl = (mediaId: string) =>
+  `https://app.videas.fr/embed/media/${mediaId}/${VIDEAS_PARAMS}`;
+
 const CAMERA_MOTIONS = [
   {
     id: "dolly-in",
     label: "Dolly In",
-    videoUrl: "https://app.videas.fr/embed/media/6e924b80-8dbe-4927-9475-ac52a930c61e/",
+    mediaId: "6e924b80-8dbe-4927-9475-ac52a930c61e",
     prompt: "camera slowly moves forward toward subject, smooth dolly in tracking shot, cinematic depth, subject grows larger in frame",
   },
   {
     id: "dolly-out",
     label: "Dolly Out",
-    videoUrl: "https://app.videas.fr/embed/media/3d231347-0855-4b20-8145-5eaff3bb7472/",
+    mediaId: "3d231347-0855-4b20-8145-5eaff3bb7472",
     prompt: "camera slowly pulls back away from subject, smooth dolly out tracking shot, environment gradually revealed, subject shrinks in frame",
   },
   {
     id: "dolly-left",
     label: "Dolly Left",
-    videoUrl: "https://app.videas.fr/embed/media/c6809fb1-1505-4fe0-bfdd-1750984ffa9f/",
+    mediaId: "c6809fb1-1505-4fe0-bfdd-1750984ffa9f",
     prompt: "camera tracks laterally to the left, smooth sideways dolly movement, subject stays centered, strong parallax effect",
   },
   {
     id: "dolly-right",
     label: "Dolly Right",
-    videoUrl: "https://app.videas.fr/embed/media/86d3f249-31ad-4fc3-b26d-3cd7990aedc0/",
+    mediaId: "86d3f249-31ad-4fc3-b26d-3cd7990aedc0",
     prompt: "camera tracks laterally to the right, smooth sideways dolly movement, subject stays centered, strong parallax effect",
   },
   {
     id: "pan-left",
     label: "Pan Left",
-    videoUrl: "https://app.videas.fr/embed/media/6b5bf490-e237-46b3-a85c-2aa2d7d08d46/",
+    mediaId: "6b5bf490-e237-46b3-a85c-2aa2d7d08d46",
     prompt: "camera pivots horizontally to the left from a fixed position, smooth pan movement, scene sweeps right to left",
   },
   {
     id: "pan-right",
     label: "Pan Right",
-    videoUrl: "https://app.videas.fr/embed/media/a9d9f49c-229b-43fb-933c-28aa4ef9233e/",
+    mediaId: "a9d9f49c-229b-43fb-933c-28aa4ef9233e",
     prompt: "camera pivots horizontally to the right from a fixed position, smooth pan movement, scene sweeps left to right",
   },
   {
     id: "tilt-up",
     label: "Tilt Up",
-    videoUrl: "https://app.videas.fr/embed/media/a006b2f6-3774-4236-a4cd-1a3390886c75/",
+    mediaId: "a006b2f6-3774-4236-a4cd-1a3390886c75",
     prompt: "camera tilts upward from a fixed position, smooth vertical pivot, reveals full height from bottom to top",
   },
   {
     id: "tilt-down",
     label: "Tilt Down",
-    videoUrl: "https://app.videas.fr/embed/media/856e93fe-a832-41bc-a9c8-db188efb8331/",
+    mediaId: "856e93fe-a832-41bc-a9c8-db188efb8331",
     prompt: "camera tilts downward from a fixed position, smooth vertical pivot, reveals subject from top to bottom",
   },
   {
     id: "zoom-in",
     label: "Zoom In",
-    videoUrl: "https://app.videas.fr/embed/media/7b069455-674f-4011-9b67-18c3773841ed/",
+    mediaId: "7b069455-674f-4011-9b67-18c3773841ed",
     prompt: "slow optical zoom in, subject magnifies gradually, no camera movement, cinematic",
   },
   {
     id: "zoom-out",
     label: "Zoom Out",
-    videoUrl: "https://app.videas.fr/embed/media/72f14ffb-5592-4b58-9317-db8782ff39ea/",
+    mediaId: "72f14ffb-5592-4b58-9317-db8782ff39ea",
     prompt: "slow optical zoom out, subject shrinks gradually, environment revealed, no camera movement, cinematic",
   },
   {
     id: "crash-zoom-in",
     label: "Crash Zoom In",
-    videoUrl: "https://app.videas.fr/embed/media/36e448f6-15b1-4cd6-87ff-dd36a6a355a9/",
+    mediaId: "36e448f6-15b1-4cd6-87ff-dd36a6a355a9",
     prompt: "extremely fast aggressive zoom in, sudden impact punch effect, subject slams violently into frame",
   },
   {
     id: "crash-zoom-out",
     label: "Crash Zoom Out",
-    videoUrl: "https://app.videas.fr/embed/media/d56a3db1-70c6-4dc9-a9c6-ce2137cc6b4a/",
+    mediaId: "d56a3db1-70c6-4dc9-a9c6-ce2137cc6b4a",
     prompt: "extremely fast aggressive zoom out, sudden shock effect, subject flies away from camera",
   },
   {
     id: "crane-down",
     label: "Crane Down",
-    videoUrl: "https://app.videas.fr/embed/media/8d3cdabc-c45c-41d9-aee1-2284b4e742b2/",
+    mediaId: "8d3cdabc-c45c-41d9-aee1-2284b4e742b2",
     prompt: "camera descends vertically downward on a crane, smooth drop from aerial height, intimate ground reveal",
   },
   {
     id: "jib-up",
     label: "Jib Up",
-    videoUrl: "https://app.videas.fr/embed/media/5f0d04f6-3e72-4fd1-b809-9bfb73979785/",
+    mediaId: "5f0d04f6-3e72-4fd1-b809-9bfb73979785",
     prompt: "camera swings upward on a jib arm, smooth arc from low angle to high angle, sweeping elevation",
   },
   {
     id: "jib-down",
     label: "Jib Down",
-    videoUrl: "https://app.videas.fr/embed/media/2f0beae3-da91-4ce0-b50f-47667c0c31d6/",
+    mediaId: "2f0beae3-da91-4ce0-b50f-47667c0c31d6",
     prompt: "camera swings downward on a jib arm, smooth arc from high angle to low angle, descending reveal",
   },
   {
     id: "handheld",
     label: "Handheld",
-    videoUrl: "https://app.videas.fr/embed/media/6f95455a-ea5a-4ec1-b9d8-a691d509ba86/",
+    mediaId: "6f95455a-ea5a-4ec1-b9d8-a691d509ba86",
     prompt: "handheld camera movement, natural shoulder-mounted micro-vibrations, documentary feel, organic human movement",
   },
   {
     id: "car-chasing",
     label: "Car Chasing",
-    videoUrl: "https://app.videas.fr/embed/media/36cb1fa3-fb2b-4c39-8606-0d2c16530ec6/",
+    mediaId: "36cb1fa3-fb2b-4c39-8606-0d2c16530ec6",
     prompt: "low camera mounted on vehicle, fast tracking movement, ground-level perspective, dynamic chase speed effect",
   },
   {
     id: "lazy-susan",
     label: "Lazy Susan",
-    videoUrl: "https://app.videas.fr/embed/media/fc3d4942-320b-4994-8133-019ee81b386e/",
+    mediaId: "fc3d4942-320b-4994-8133-019ee81b386e",
     prompt: "subject rotates 360 degrees on a turntable, camera stays fixed, full rotation reveal",
   },
 ] as const;
