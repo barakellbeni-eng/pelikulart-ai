@@ -1,4 +1,4 @@
-import { User, Image, Video, LogOut, Shield, Coins, Camera, Settings, HelpCircle, Trash2, KeyRound, Mail, ChevronRight, ExternalLink, X } from "lucide-react";
+import { User, Image, Video, LogOut, Shield, Coins, Camera, Settings, HelpCircle, Trash2, KeyRound, Mail, ChevronRight, ExternalLink, X, FolderOpen, Calendar, Loader2 } from "lucide-react";
 import TransactionHistory from "@/components/TransactionHistory";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/hooks/useAuth";
@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
+import { useProjects } from "@/hooks/useProjects";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -23,6 +24,7 @@ import {
 const MAX_CAURIS = 500;
 
 type ActivePanel = null | "security" | "settings" | "help";
+type ActiveTab = "cauris" | "projects";
 
 const Profile = () => {
   const { user, signOut } = useAuth();
@@ -33,12 +35,20 @@ const Profile = () => {
   const [displayName, setDisplayName] = useState<string>("");
   const [uploading, setUploading] = useState(false);
   const [activePanel, setActivePanel] = useState<ActivePanel>(null);
+  const [activeTab, setActiveTab] = useState<ActiveTab>("cauris");
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [deleteConfirmText, setDeleteConfirmText] = useState("");
   const [editingName, setEditingName] = useState(false);
   const [newDisplayName, setNewDisplayName] = useState("");
   const [changingPassword, setChangingPassword] = useState(false);
+
+  // Project deletion state
+  const [projectToDelete, setProjectToDelete] = useState<any>(null);
+  const [showProjectDeleteDialog, setShowProjectDeleteDialog] = useState(false);
+  const [deletingProject, setDeletingProject] = useState(false);
+
+  const { projects, loading: projectsLoading, deleteProject, selectProject } = useProjects();
 
   useEffect(() => {
     if (!user) return;
@@ -162,6 +172,23 @@ const Profile = () => {
       toast.success("Nom mis à jour !");
     } catch (err: any) {
       toast.error("Erreur : " + err.message);
+    }
+  };
+
+  const handleOpenProjectInStudio = (projectId: string) => {
+    selectProject(projectId);
+    navigate(`/studio/gallery?project=${projectId}`);
+  };
+
+  const handleDeleteProject = async () => {
+    if (!projectToDelete) return;
+    setDeletingProject(true);
+    try {
+      await deleteProject(projectToDelete.id);
+      setShowProjectDeleteDialog(false);
+      setProjectToDelete(null);
+    } finally {
+      setDeletingProject(false);
     }
   };
 
@@ -402,31 +429,162 @@ const Profile = () => {
           </button>
         </motion.div>
 
-        {/* Credit Usage */}
+        {/* Tabs: Mes Cauris | Mes Projets */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.15 }}
-          className="glass-card p-5 space-y-3"
+          transition={{ delay: 0.12 }}
+          className="flex border-b border-white/[0.06]"
         >
-          <div className="flex items-center gap-3">
-            <Coins className="w-5 h-5 text-primary" />
-            <span className="font-semibold text-foreground">Utilisation des Cauris 🐚</span>
-          </div>
-          <div className="flex justify-between text-sm text-muted-foreground">
-            <span>Solde : <span className="text-foreground font-bold">{balance}</span></span>
-          </div>
-          <Progress value={usagePercent} className="h-2" />
+          <button
+            onClick={() => setActiveTab("cauris")}
+            className={`flex-1 py-3 text-sm font-medium border-b-2 transition-colors ${
+              activeTab === "cauris"
+                ? "border-primary text-primary"
+                : "border-transparent text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <Coins className="w-4 h-4 inline-block mr-2" />
+            Mes Cauris
+          </button>
+          <button
+            onClick={() => setActiveTab("projects")}
+            className={`flex-1 py-3 text-sm font-medium border-b-2 transition-colors ${
+              activeTab === "projects"
+                ? "border-primary text-primary"
+                : "border-transparent text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <FolderOpen className="w-4 h-4 inline-block mr-2" />
+            Mes Projets
+            {projects.length > 0 && (
+              <span className="ml-1.5 text-[10px] bg-muted/50 px-1.5 py-0.5 rounded-full tabular-nums">
+                {projects.length}/10
+              </span>
+            )}
+          </button>
         </motion.div>
 
-        {/* Transaction History */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.18 }}
-        >
-          <TransactionHistory />
-        </motion.div>
+        {/* Tab Content */}
+        <AnimatePresence mode="wait">
+          {activeTab === "cauris" && (
+            <motion.div
+              key="cauris"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="space-y-4"
+            >
+              {/* Credit Usage */}
+              <div className="glass-card p-5 space-y-3">
+                <div className="flex items-center gap-3">
+                  <Coins className="w-5 h-5 text-primary" />
+                  <span className="font-semibold text-foreground">Utilisation des Cauris 🐚</span>
+                </div>
+                <div className="flex justify-between text-sm text-muted-foreground">
+                  <span>Solde : <span className="text-foreground font-bold">{balance}</span></span>
+                </div>
+                <Progress value={usagePercent} className="h-2" />
+              </div>
+
+              {/* Transaction History */}
+              <TransactionHistory />
+            </motion.div>
+          )}
+
+          {activeTab === "projects" && (
+            <motion.div
+              key="projects"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="space-y-4"
+            >
+              {projectsLoading ? (
+                <div className="flex justify-center py-12">
+                  <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+                </div>
+              ) : projects.length === 0 ? (
+                <div className="glass-card p-8 text-center">
+                  <FolderOpen className="w-10 h-10 text-muted-foreground/30 mx-auto mb-3" />
+                  <p className="text-sm text-muted-foreground">Aucun projet pour le moment</p>
+                  <p className="text-xs text-muted-foreground/60 mt-1">Créez un projet depuis le Studio</p>
+                </div>
+              ) : (
+                <div className="grid gap-4 sm:grid-cols-2">
+                  {projects.map((project) => (
+                    <motion.div
+                      key={project.id}
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className="glass-card overflow-hidden group"
+                    >
+                      {/* Cover image */}
+                      <div className="aspect-video bg-muted/20 relative overflow-hidden">
+                        {project.cover_url ? (
+                          <img
+                            src={project.cover_url}
+                            alt={project.name}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center">
+                            <FolderOpen className="w-10 h-10 text-muted-foreground/20" />
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Info */}
+                      <div className="p-4 space-y-3">
+                        <h3 className="font-semibold text-foreground truncate">{project.name}</h3>
+                        <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+                          <span className="flex items-center gap-1">
+                            <Calendar className="w-3 h-3" />
+                            {new Date(project.created_at).toLocaleDateString("fr-FR")}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <Image className="w-3 h-3" />
+                            {project.generation_count} gén.
+                          </span>
+                          <span className="flex items-center gap-1">
+                            🐚 {project.cauris_spent}
+                          </span>
+                        </div>
+
+                        {/* Actions */}
+                        <div className="flex gap-2 pt-2">
+                          <button
+                            onClick={() => handleOpenProjectInStudio(project.id)}
+                            className="flex-1 px-3 py-2 bg-primary text-primary-foreground rounded-lg text-xs font-medium hover:bg-primary/90 transition-colors flex items-center justify-center gap-1.5"
+                          >
+                            <ExternalLink className="w-3 h-3" />
+                            Ouvrir
+                          </button>
+                          <button
+                            onClick={() => { setProjectToDelete(project); setShowProjectDeleteDialog(true); }}
+                            className="px-3 py-2 bg-destructive/10 text-destructive rounded-lg text-xs font-medium hover:bg-destructive/20 transition-colors"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </button>
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              )}
+
+              {/* Quota info */}
+              {projects.length >= 8 && (
+                <div className="glass p-3 rounded-xl text-center">
+                  <p className="text-xs text-muted-foreground">
+                    {projects.length}/10 projets utilisés
+                    {projects.length === 10 && " — limite atteinte"}
+                  </p>
+                </div>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Expandable Panels */}
         <AnimatePresence mode="wait">
@@ -532,6 +690,42 @@ const Profile = () => {
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90 disabled:opacity-50"
             >
               {deleting ? "Suppression..." : "Supprimer définitivement"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Delete Project Confirmation Dialog */}
+      <AlertDialog open={showProjectDeleteDialog} onOpenChange={setShowProjectDeleteDialog}>
+        <AlertDialogContent className="glass-card border-destructive/20">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-destructive flex items-center gap-2">
+              <Trash2 className="w-5 h-5" /> Supprimer le projet
+            </AlertDialogTitle>
+            <AlertDialogDescription className="space-y-3">
+              <p>
+                Voulez-vous vraiment supprimer le projet <strong>"{projectToDelete?.name}"</strong> ?
+              </p>
+              <div className="text-xs bg-destructive/10 border border-destructive/20 rounded-lg p-3 space-y-2">
+                <p className="font-medium text-destructive">Cette action est irréversible :</p>
+                <ul className="list-disc list-inside space-y-1 text-muted-foreground">
+                  <li>Le projet sera supprimé</li>
+                  <li>Toutes les générations du projet seront supprimées</li>
+                  <li>Les cauris consommés ne seront PAS remboursés</li>
+                </ul>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="glass" onClick={() => setProjectToDelete(null)}>
+              Annuler
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteProject}
+              disabled={deletingProject}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deletingProject ? "Suppression..." : "Supprimer définitivement"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
