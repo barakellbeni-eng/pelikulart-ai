@@ -127,6 +127,7 @@ const AppContent = () => {
         {/* Studio (open to all, generation gated in Dashboard) */}
         <Route path="/studio" element={<AuthenticatedLayout><StudioHome /></AuthenticatedLayout>} />
         <Route path="/studio/create" element={<AuthenticatedLayout><Dashboard /></AuthenticatedLayout>} />
+        <Route path="/studio/gallery" element={<AuthenticatedLayout><Gallery /></AuthenticatedLayout>} />
         <Route path="/studio/multi-plan" element={<AuthenticatedLayout><MultiPlan /></AuthenticatedLayout>} />
         <Route path="/studio/motion-control" element={<AuthenticatedLayout><MotionControl /></AuthenticatedLayout>} />
         <Route path="/studio/lens-control" element={<AuthenticatedLayout><LensControl /></AuthenticatedLayout>} />
