@@ -570,6 +570,30 @@ const MotionControl = () => {
                 };
                 const span = bentoMap[m.id] || "col-span-1 row-span-1";
 
+                // Cover strategy: Videas embed keeps 16:9 internally.
+                // Some bento cells are very tall (col-span-1 row-span-2) which causes letterboxing.
+                // We overscan differently depending on the cell shape.
+                const isTall = span.includes("col-span-1") && span.includes("row-span-2");
+                const isWide = span.includes("col-span-2") && span.includes("row-span-1");
+
+                const iframeCoverStyle: React.CSSProperties = isTall
+                  ? {
+                      // Tall cell: make iframe much wider (keeps player in 16:9 -> no bars)
+                      width: "260%",
+                      height: "100%",
+                    }
+                  : isWide
+                    ? {
+                        // Wide cell: make iframe much taller
+                        width: "100%",
+                        height: "220%",
+                      }
+                    : {
+                        // Default: modest overscan both ways
+                        width: "177.78%",
+                        height: "177.78%",
+                      };
+
                 return (
                   <button
                     key={m.id}
@@ -578,10 +602,12 @@ const MotionControl = () => {
                       setActiveTab("generations");
                     }}
                     className={`${span} relative rounded-xl overflow-hidden border transition-all ${
-                      selectedMotion === m.id ? "border-primary ring-2 ring-primary shadow-sm shadow-primary/20" : "border-border/30 hover:border-primary/40"
+                      selectedMotion === m.id
+                        ? "border-primary ring-2 ring-primary shadow-sm shadow-primary/20"
+                        : "border-border/30 hover:border-primary/40"
                     }`}
                   >
-                    {/* Iframe scaled to fill like object-fit: cover — no black bars */}
+                    {/* Iframe cropped/overscanned to behave like object-fit: cover (no black borders) */}
                     <div className="absolute inset-0 overflow-hidden">
                       <iframe
                         src={buildEmbedUrl(m.mediaId)}
@@ -595,11 +621,10 @@ const MotionControl = () => {
                           position: "absolute",
                           top: "50%",
                           left: "50%",
-                          width: "177.78%",   /* 16/9 ratio upscale */
-                          height: "177.78%",
                           transform: "translate(-50%, -50%)",
                           minWidth: "100%",
                           minHeight: "100%",
+                          ...iframeCoverStyle,
                         }}
                       />
                     </div>
