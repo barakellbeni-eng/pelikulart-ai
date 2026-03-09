@@ -514,8 +514,8 @@ const MotionControl = () => {
         <MediaPickerModal
           open={showMediaPicker}
           onClose={() => setShowMediaPicker(false)}
-          onSelect={handleMediaSelect}
-          filterType="image"
+          onSelect={(url) => handleMediaSelect(url)}
+          accept={["image"]}
         />
       )}
 
