@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import { Upload, Loader2, Download, Trash2, X, Sparkles, Target, Eye } from "lucide-react";
+import { Upload, Loader2, Download, Trash2, X, Sparkles, Target } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -9,7 +9,7 @@ import { useCauris } from "@/hooks/useCauris";
 import MediaPickerModal from "@/components/MediaPickerModal";
 import DeleteConfirmModal from "@/components/DeleteConfirmModal";
 import { LENS_TYPE_ICONS, FOCAL_ICONS } from "@/components/LensIcons";
-import LensPreviewOverlay from "@/components/LensPreviewOverlay";
+
 import GenerationProgress from "@/components/GenerationProgress";
 
 const START_GENERATION_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/start-generation`;
@@ -130,7 +130,7 @@ const LensControl = () => {
   const [sourceImage, setSourceImage] = useState<string | null>(null);
 
   /* UI state */
-  const [activeTab, setActiveTab] = useState<"results" | "preview">("preview");
+  const [activeTab] = useState<"results">("results");
   const [isGenerating, setIsGenerating] = useState(false);
   const [showMediaPicker, setShowMediaPicker] = useState(false);
   const [gallery, setGallery] = useState<GalleryItem[]>([]);
@@ -211,7 +211,7 @@ const LensControl = () => {
     }
 
     setIsGenerating(true);
-    setActiveTab("results");
+    
     try {
       const { data: sessionData } = await supabase.auth.getSession();
       const token = sessionData?.session?.access_token;
@@ -255,7 +255,7 @@ const LensControl = () => {
           if (jobRow?.status === "completed") {
             await loadGallery();
             refreshBalance();
-            setActiveTab("results");
+            
             toast.success("Image générée !");
             setIsGenerating(false);
             return;
@@ -270,7 +270,7 @@ const LensControl = () => {
 
       await loadGallery();
       refreshBalance();
-      setActiveTab("results");
+      
       toast.success("Génération terminée !");
     } catch (e: any) {
       toast.error(e.message);
@@ -478,33 +478,14 @@ const LensControl = () => {
 
       {/* ── RIGHT PANEL ── */}
       <div className="flex-1 flex flex-col h-full overflow-hidden">
-        {/* Tabs */}
+        {/* Header */}
         <div className="flex items-center gap-2 px-6 pt-6 pb-2 border-b border-border/10">
-          <button
-            onClick={() => setActiveTab("results")}
-            className={`px-4 py-2 font-bold text-sm transition-colors border-b-2 ${
-              activeTab === "results"
-                ? "border-primary text-foreground"
-                : "border-transparent text-muted-foreground hover:text-foreground"
-            }`}
-          >
+          <h3 className="px-4 py-2 font-bold text-sm text-foreground border-b-2 border-primary">
             Mes résultats
-          </button>
-          <button
-            onClick={() => setActiveTab("preview")}
-            className={`px-4 py-2 font-bold text-sm transition-colors border-b-2 ${
-              activeTab === "preview"
-                ? "border-primary text-foreground"
-                : "border-transparent text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            <Eye className="w-3.5 h-3.5 inline mr-1.5" />
-            Prévisualisation
-          </button>
+          </h3>
         </div>
 
         <div className="flex-1 overflow-y-auto p-6 pt-4 scrollbar-thin">
-          {activeTab === "results" ? (
             <>
               {/* Loading state during generation */}
               <AnimatePresence>
@@ -564,58 +545,6 @@ const LensControl = () => {
                 </div>
               )}
             </>
-          ) : (
-            /* Preview tab */
-            <div className="flex flex-col items-center justify-center h-full">
-              {sourceImage ? (
-                <div className="relative max-w-2xl w-full">
-                  {/* 16:9 aspect ratio container */}
-                  <div className="relative rounded-2xl overflow-hidden border border-border/30 bg-black aspect-video">
-                    <img 
-                      src={sourceImage} 
-                      alt="Preview" 
-                      className="absolute inset-0 w-full h-full object-cover" 
-                    />
-                    {/* Lens effect overlay */}
-                    <LensPreviewOverlay
-                      lensType={lensType}
-                      focal={focal}
-                      aperture={aperture}
-                      fov={fov}
-                    />
-                  </div>
-                  {/* Lens info badges */}
-                  <div className="flex items-center gap-2 mt-4 justify-center">
-                    <span className="px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold">
-                      {LENS_TYPES.find((t) => t.id === lensType)?.label}
-                    </span>
-                    <span className="px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold">
-                      {focalLabel}
-                    </span>
-                    <span className="px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold">
-                      {aperture === "auto" ? "Auto" : aperture}
-                    </span>
-                  </div>
-                  <div className="text-center mt-3">
-                    <p className="text-sm font-bold text-foreground">{focalLabel} {LENS_TYPES.find((t) => t.id === lensType)?.label}</p>
-                    <p className="text-xs text-muted-foreground mt-0.5">{fovDescription(fov)}</p>
-                  </div>
-                  <div className="flex items-center gap-4 justify-center mt-2 text-xs text-muted-foreground">
-                    <span>FOV {fov}°</span>
-                    <span>{aperture === "auto" ? "Auto" : aperture}</span>
-                  </div>
-                </div>
-              ) : (
-                <div className="relative max-w-2xl w-full">
-                  {/* 16:9 placeholder */}
-                  <div className="relative rounded-2xl overflow-hidden border border-border/30 bg-muted/10 aspect-video flex flex-col items-center justify-center">
-                    <Target className="w-12 h-12 text-muted-foreground/20" />
-                    <p className="text-sm font-bold text-muted-foreground mt-3">UPLOADE UNE IMAGE</p>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
         </div>
       </div>
 
