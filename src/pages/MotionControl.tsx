@@ -233,13 +233,25 @@ const MotionControl = () => {
   }, []);
 
   const handleGenerate = async () => {
-    if (!sourceImage || !selectedMotion || !user || isGenerating) return;
+    if (!sourceImage || !selectedMotion || isGenerating) return;
 
     const motionData = CAMERA_MOTIONS.find((m) => m.id === selectedMotion);
     if (!motionData) return;
 
-    if (!credits || credits < 30) {
-      toast.error("Solde insuffisant — 30 cauris requis");
+    if (!user) {
+      toast.error("Connectez-vous pour générer");
+      return;
+    }
+
+    const { data: profileData } = await supabase
+      .from("profiles")
+      .select("credits")
+      .eq("user_id", user.id)
+      .single();
+
+    const currentBalance = profileData?.credits ?? 0;
+    if (currentBalance < costCauris) {
+      toast.error(`Solde insuffisant — ${costCauris} cauris requis`);
       return;
     }
 
