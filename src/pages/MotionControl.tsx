@@ -333,7 +333,7 @@ const MotionControl = () => {
           <div className="space-y-2">
             <label className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">Mouvement</label>
 
-            {selectedMotionData && !showMotionPicker ? (
+            {selectedMotionData ? (
               /* Selected motion preview */
               <div className="relative rounded-xl overflow-hidden border border-primary/30 bg-muted/10">
                 <div style={{ padding: "56.25% 0 0 0", position: "relative" }}>
@@ -360,7 +360,7 @@ const MotionControl = () => {
                 </div>
                 {/* Change button — top right inside preview */}
                 <button
-                  onClick={() => setShowMotionPicker(true)}
+                  onClick={() => setActiveTab("motions")}
                   className="absolute top-2 right-2 px-2 py-1 rounded-md text-[10px] font-bold text-white bg-primary hover:bg-primary/90 transition-colors flex items-center gap-1 shadow-md"
                 >
                   <RefreshCw className="w-2.5 h-2.5" />
@@ -368,45 +368,15 @@ const MotionControl = () => {
                 </button>
               </div>
             ) : (
-              /* Motion picker list */
-              <div className="space-y-1.5 max-h-[320px] overflow-y-auto scrollbar-thin rounded-xl border border-border/50 bg-muted/5 p-1.5">
-                {CAMERA_MOTIONS.map((m) => (
-                  <button
-                    key={m.id}
-                    onClick={() => {
-                      setSelectedMotion(m.id);
-                      setShowMotionPicker(false);
-                    }}
-                    className={`w-full relative rounded-lg overflow-hidden border transition-all ${
-                      selectedMotion === m.id ? "border-primary shadow-sm shadow-primary/20" : "border-border/30 hover:border-primary/40"
-                    }`}
-                  >
-                    <div style={{ padding: "56.25% 0 0 0", position: "relative" }}>
-                      <iframe
-                        src={buildEmbedUrl(m.mediaId)}
-                        width="100%"
-                        height="100%"
-                        frameBorder="0"
-                        allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
-                        allowFullScreen
-                        referrerPolicy="unsafe-url"
-                        title={m.label}
-                        style={{ position: "absolute", top: 0, left: 0, pointerEvents: "none" }}
-                      />
-                    </div>
-                    <div className="absolute inset-0 flex flex-col justify-end pointer-events-none">
-                      <div className="bg-gradient-to-t from-black/85 via-black/20 to-transparent p-2 pt-8">
-                        <p
-                          style={{ fontFamily: "'Sora', sans-serif", fontWeight: 700, lineHeight: 1 }}
-                          className="text-base text-white uppercase tracking-tight drop-shadow-md"
-                        >
-                          {m.label}
-                        </p>
-                      </div>
-                    </div>
-                  </button>
-                ))}
-              </div>
+              <button
+                onClick={() => setActiveTab("motions")}
+                className="w-full h-32 rounded-xl border-2 border-dashed border-border/50 bg-muted/10 hover:border-primary/40 transition-colors flex flex-col items-center justify-center gap-2"
+              >
+                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                  <Play className="w-4 h-4 text-primary ml-0.5" />
+                </div>
+                <span className="text-xs font-bold text-muted-foreground">Sélectionner un mouvement</span>
+              </button>
             )}
           </div>
 
