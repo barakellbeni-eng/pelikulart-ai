@@ -54,7 +54,7 @@ const StudioHome = () => {
     const load = async () => {
       const { data } = await supabase
         .from("generations")
-        .select("id, image_url, prompt, created_at")
+        .select("id, image_url, prompt, created_at, media_type")
         .eq("user_id", user.id)
         .order("created_at", { ascending: false })
         .limit(10);
