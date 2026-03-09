@@ -791,7 +791,9 @@ async function processKie(jobId: string, userId: string, body: any) {
       status: "failed", result_metadata: { error: err.message, provider: "kie" }, completed_at: new Date().toISOString(),
     });
     const defaultCost = tool_type === "video" ? 10 : tool_type === "audio" ? 5 : 2;
-    await adminClient.rpc("add_cauris", { p_user_id: userId, p_amount: body.cauris_cost || defaultCost });
+    const refundAmount = body.cauris_cost || defaultCost;
+    const { data: rb } = await adminClient.rpc("add_cauris", { p_user_id: userId, p_amount: refundAmount });
+    await logCauris(adminClient, userId, "remboursement", `Échec KIE — ${body.model_id}`, refundAmount, rb ?? 0);
   }
 }
 
