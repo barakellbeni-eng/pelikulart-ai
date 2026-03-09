@@ -148,6 +148,9 @@ serve(async (req) => {
       );
     }
 
+    const planLabel2 = plan_index ? `Multi-Plan #${plan_index}` : "Multi-Plan";
+    await logCauris(adminClient, userId, "generation", `${planLabel2} — ${plan_type}`, -cost, deductResult);
+
     // Resolution validation
     const validResolutions = ["1K", "2K", "4K"];
     const safeResolution = validResolutions.includes(resolution) ? resolution : "2K";
