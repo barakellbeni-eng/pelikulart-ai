@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
-import { downloadAndUploadDual, getPublicUrl } from "../_shared/storage.ts";
+import { downloadAndUploadDual, getPublicUrl, logCauris } from "../_shared/storage.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -148,6 +148,9 @@ serve(async (req) => {
       );
     }
 
+    const planLabel2 = plan_index ? `Multi-Plan #${plan_index}` : "Multi-Plan";
+    await logCauris(adminClient, userId, "generation", `${planLabel2} — ${plan_type}`, -cost, deductResult);
+
     // Resolution validation
     const validResolutions = ["1K", "2K", "4K"];
     const safeResolution = validResolutions.includes(resolution) ? resolution : "2K";
@@ -212,7 +215,8 @@ serve(async (req) => {
     }
 
     if (!imageResult) {
-      await adminClient.rpc("add_cauris", { p_user_id: userId, p_amount: cost });
+      const { data: rb } = await adminClient.rpc("add_cauris", { p_user_id: userId, p_amount: cost });
+      await logCauris(adminClient, userId, "remboursement", `Échec Multi-Plan — ${plan_type}`, cost, rb ?? 0);
       return new Response(
         JSON.stringify({ error: "Aucune image générée. Les deux providers ont échoué." }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },

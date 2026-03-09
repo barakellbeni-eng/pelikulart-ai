@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
-import { downloadAndUpload, downloadAndUploadDual, uploadBytes, uploadBytesDual, getPublicUrl } from "../_shared/storage.ts";
+import { downloadAndUpload, downloadAndUploadDual, uploadBytes, uploadBytesDual, getPublicUrl, logCauris } from "../_shared/storage.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -326,7 +326,8 @@ async function processImage(jobId: string, userId: string, body: any) {
     await updateJob(adminClient, jobId, {
       status: "failed", result_metadata: { error: err.message }, completed_at: new Date().toISOString(),
     });
-    await adminClient.rpc("add_cauris", { p_user_id: userId, p_amount: body.cauris_cost || 2 });
+    const { data: rb } = await adminClient.rpc("add_cauris", { p_user_id: userId, p_amount: body.cauris_cost || 2 });
+    await logCauris(adminClient, userId, "remboursement", `Échec image — ${body.model_id}`, body.cauris_cost || 2, rb ?? 0);
   }
 }
 
@@ -427,7 +428,8 @@ async function processImageGoogle(jobId: string, userId: string, body: any) {
     await updateJob(adminClient, jobId, {
       status: "failed", result_metadata: { error: err.message }, completed_at: new Date().toISOString(),
     });
-    await adminClient.rpc("add_cauris", { p_user_id: userId, p_amount: body.cauris_cost || 2 });
+    const { data: rb } = await adminClient.rpc("add_cauris", { p_user_id: userId, p_amount: body.cauris_cost || 2 });
+    await logCauris(adminClient, userId, "remboursement", `Échec image Google — ${body.model_id}`, body.cauris_cost || 2, rb ?? 0);
   }
 }
 
@@ -482,7 +484,8 @@ async function processVideo(jobId: string, userId: string, body: any) {
     await updateJob(adminClient, jobId, {
       status: "failed", result_metadata: { error: err.message }, completed_at: new Date().toISOString(),
     });
-    await adminClient.rpc("add_cauris", { p_user_id: userId, p_amount: body.cauris_cost || 10 });
+    const { data: rb } = await adminClient.rpc("add_cauris", { p_user_id: userId, p_amount: body.cauris_cost || 10 });
+    await logCauris(adminClient, userId, "remboursement", `Échec vidéo — ${body.model_id}`, body.cauris_cost || 10, rb ?? 0);
   }
 }
 
@@ -556,7 +559,8 @@ async function processAudio(jobId: string, userId: string, body: any) {
     await updateJob(adminClient, jobId, {
       status: "failed", result_metadata: { error: err.message }, completed_at: new Date().toISOString(),
     });
-    await adminClient.rpc("add_cauris", { p_user_id: userId, p_amount: body.cauris_cost || 5 });
+    const { data: rb } = await adminClient.rpc("add_cauris", { p_user_id: userId, p_amount: body.cauris_cost || 5 });
+    await logCauris(adminClient, userId, "remboursement", `Échec audio — ${body.model_id}`, body.cauris_cost || 5, rb ?? 0);
   }
 }
 
@@ -787,7 +791,9 @@ async function processKie(jobId: string, userId: string, body: any) {
       status: "failed", result_metadata: { error: err.message, provider: "kie" }, completed_at: new Date().toISOString(),
     });
     const defaultCost = tool_type === "video" ? 10 : tool_type === "audio" ? 5 : 2;
-    await adminClient.rpc("add_cauris", { p_user_id: userId, p_amount: body.cauris_cost || defaultCost });
+    const refundAmount = body.cauris_cost || defaultCost;
+    const { data: rb } = await adminClient.rpc("add_cauris", { p_user_id: userId, p_amount: refundAmount });
+    await logCauris(adminClient, userId, "remboursement", `Échec KIE — ${body.model_id}`, refundAmount, rb ?? 0);
   }
 }
 
@@ -930,7 +936,8 @@ async function processSuno(jobId: string, userId: string, body: any) {
       result_metadata: { error: err.message, provider: "suno" },
       completed_at: new Date().toISOString(),
     });
-    await adminClient.rpc("add_cauris", { p_user_id: userId, p_amount: body.cauris_cost || 6 });
+    const { data: rb } = await adminClient.rpc("add_cauris", { p_user_id: userId, p_amount: body.cauris_cost || 6 });
+    await logCauris(adminClient, userId, "remboursement", `Échec Suno — ${body.model_id}`, body.cauris_cost || 6, rb ?? 0);
   }
 }
 
@@ -1038,6 +1045,8 @@ serve(async (req) => {
       return new Response(JSON.stringify({ error: "Solde insuffisant" }), { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
+    await logCauris(adminClient, userId, "generation", `${tool_type} — ${model_id}`, -cost, deductResult);
+
     const { data: jobData, error: jobError } = await adminClient
       .from("generation_jobs")
       .insert({
@@ -1048,7 +1057,8 @@ serve(async (req) => {
       .single();
 
     if (jobError || !jobData) {
-      await adminClient.rpc("add_cauris", { p_user_id: userId, p_amount: cost });
+      const { data: rb } = await adminClient.rpc("add_cauris", { p_user_id: userId, p_amount: cost });
+      await logCauris(adminClient, userId, "remboursement", `Erreur création job — ${model_id}`, cost, rb ?? 0);
       console.error("Job insert error:", jobError);
       return new Response(JSON.stringify({ error: "Erreur lors de la création du job" }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }

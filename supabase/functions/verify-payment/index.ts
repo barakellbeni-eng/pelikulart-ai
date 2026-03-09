@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
+import { logCauris } from "../_shared/storage.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -193,6 +194,8 @@ serve(async (req) => {
     }
 
     console.log(`Payment verified: user=${userId}, amount=${requestedAmount}, cauris=${caurisAmount}, tx=${transaction_id}`);
+
+    await logCauris(adminClient, userId, "achat", `Pack ${requestedAmount.toLocaleString("fr-FR")} FCFA`, caurisAmount, newBalance ?? 0);
 
     return new Response(
       JSON.stringify({ success: true, new_balance: newBalance, cauris_added: caurisAmount }),

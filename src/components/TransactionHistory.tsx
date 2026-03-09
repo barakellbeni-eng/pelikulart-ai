@@ -2,42 +2,49 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { motion, AnimatePresence } from "framer-motion";
-import { Receipt, ChevronDown, ChevronUp, Coins, RefreshCw } from "lucide-react";
+import { Receipt, ChevronDown, ChevronUp, Coins, RefreshCw, ShoppingCart, Sparkles, RotateCcw } from "lucide-react";
 
-interface Transaction {
+interface LedgerEntry {
   id: string;
-  transaction_id: string;
+  type: string;
+  description: string;
   amount: number;
-  cauris_added: number;
-  processed_at: string;
+  balance_after: number;
+  created_at: string;
 }
+
+const TYPE_CONFIG: Record<string, { label: string; icon: typeof Coins; color: string }> = {
+  achat: { label: "Achat", icon: ShoppingCart, color: "text-green-400" },
+  generation: { label: "Génération", icon: Sparkles, color: "text-orange-400" },
+  remboursement: { label: "Remboursement", icon: RotateCcw, color: "text-blue-400" },
+};
 
 const TransactionHistory = () => {
   const { user } = useAuth();
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [entries, setEntries] = useState<LedgerEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [expanded, setExpanded] = useState(false);
 
-  const fetchTransactions = async () => {
+  const fetchEntries = async () => {
     if (!user) return;
     const { data, error } = await supabase
-      .from("payment_transactions")
+      .from("cauris_ledger" as any)
       .select("*")
       .eq("user_id", user.id)
-      .order("processed_at", { ascending: false })
-      .limit(20);
-    if (!error && data) setTransactions(data);
+      .order("created_at", { ascending: false })
+      .limit(50);
+    if (!error && data) setEntries(data as unknown as LedgerEntry[]);
   };
 
   useEffect(() => {
     if (!user) return;
-    fetchTransactions().finally(() => setLoading(false));
+    fetchEntries().finally(() => setLoading(false));
   }, [user]);
 
   const handleRefresh = async () => {
     setRefreshing(true);
-    await fetchTransactions();
+    await fetchEntries();
     setRefreshing(false);
   };
 
@@ -50,33 +57,33 @@ const TransactionHistory = () => {
     );
   }
 
-  if (transactions.length === 0) {
+  if (entries.length === 0) {
     return (
       <div className="glass-card p-5 text-center space-y-2">
-        <Receipt className="w-8 h-8 text-muted-foreground mx-auto" />
-        <p className="text-sm text-muted-foreground">Aucune transaction pour le moment</p>
+        <Coins className="w-8 h-8 text-muted-foreground mx-auto" />
+        <p className="text-sm text-muted-foreground">Aucun mouvement de Cauris pour le moment</p>
       </div>
     );
   }
 
-  const visible = expanded ? transactions : transactions.slice(0, 3);
+  const visible = expanded ? entries : entries.slice(0, 5);
 
-  const formatDate = (iso: string) => {
+  const formatDateTime = (iso: string) => {
     const d = new Date(iso);
-    return d.toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" });
-  };
-
-  const formatTime = (iso: string) => {
-    const d = new Date(iso);
-    return d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+    return {
+      date: d.toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" }),
+      time: d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" }),
+    };
   };
 
   return (
     <div className="glass-card p-5 space-y-3">
       <div className="flex items-center gap-3">
-        <Receipt className="w-5 h-5 text-primary" />
-        <span className="font-semibold text-foreground">Historique des transactions</span>
-        <span className="text-[10px] text-muted-foreground ml-auto">{transactions.length} transaction{transactions.length > 1 ? "s" : ""}</span>
+        <Coins className="w-5 h-5 text-primary" />
+        <span className="font-semibold text-foreground">Mes Cauris 🐚</span>
+        <span className="text-[10px] text-muted-foreground ml-auto">
+          {entries.length} mouvement{entries.length > 1 ? "s" : ""}
+        </span>
         <button
           onClick={handleRefresh}
           disabled={refreshing}
@@ -89,40 +96,62 @@ const TransactionHistory = () => {
 
       <div className="space-y-2">
         <AnimatePresence initial={false}>
-          {visible.map((tx, i) => (
-            <motion.div
-              key={tx.id}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ delay: i * 0.05 }}
-              className="flex items-center justify-between p-3 rounded-xl bg-muted/10 border border-border/30"
-            >
-              <div className="flex items-center gap-3 min-w-0">
-                <div className="w-8 h-8 rounded-full bg-primary/15 flex items-center justify-center flex-shrink-0">
-                  <Coins className="w-4 h-4 text-primary" />
+          {visible.map((entry, i) => {
+            const config = TYPE_CONFIG[entry.type] || TYPE_CONFIG.generation;
+            const Icon = config.icon;
+            const { date, time } = formatDateTime(entry.created_at);
+            const isPositive = entry.amount > 0;
+
+            return (
+              <motion.div
+                key={entry.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ delay: i * 0.03 }}
+                className="flex items-center justify-between p-3 rounded-xl bg-muted/10 border border-border/30"
+              >
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
+                    isPositive ? "bg-green-500/15" : "bg-orange-500/15"
+                  }`}>
+                    <Icon className={`w-4 h-4 ${config.color}`} />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${
+                        entry.type === "achat" ? "bg-green-500/15 text-green-400" :
+                        entry.type === "remboursement" ? "bg-blue-500/15 text-blue-400" :
+                        "bg-orange-500/15 text-orange-400"
+                      }`}>
+                        {config.label}
+                      </span>
+                      {entry.description && (
+                        <span className="text-[10px] text-muted-foreground truncate max-w-[120px]">
+                          {entry.description}
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-[10px] text-muted-foreground mt-0.5">
+                      {date} à {time}
+                    </p>
+                  </div>
                 </div>
-                <div className="min-w-0">
-                  <p className="text-sm font-medium text-foreground truncate">
-                    +{tx.cauris_added} Cauris 🐚
+                <div className="text-right flex-shrink-0 ml-2">
+                  <p className={`text-sm font-bold ${isPositive ? "text-green-400" : "text-foreground"}`}>
+                    {isPositive ? "+" : ""}{entry.amount} 🐚
                   </p>
-                  <p className="text-[10px] text-muted-foreground">
-                    {formatDate(tx.processed_at)} à {formatTime(tx.processed_at)}
+                  <p className="text-[9px] text-muted-foreground">
+                    Solde : {entry.balance_after}
                   </p>
                 </div>
-              </div>
-              <div className="text-right flex-shrink-0 ml-2">
-                <p className="text-sm font-bold text-foreground">
-                  {tx.amount.toLocaleString("fr-FR")} <span className="text-[10px] text-muted-foreground">FCFA</span>
-                </p>
-                <p className="text-[9px] text-green-400 font-medium">Confirmé ✓</p>
-              </div>
-            </motion.div>
-          ))}
+              </motion.div>
+            );
+          })}
         </AnimatePresence>
       </div>
 
-      {transactions.length > 3 && (
+      {entries.length > 5 && (
         <button
           onClick={() => setExpanded(!expanded)}
           className="w-full flex items-center justify-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors pt-1"
@@ -130,7 +159,7 @@ const TransactionHistory = () => {
           {expanded ? (
             <>Voir moins <ChevronUp className="w-3 h-3" /></>
           ) : (
-            <>Voir tout ({transactions.length}) <ChevronDown className="w-3 h-3" /></>
+            <>Voir tout ({entries.length}) <ChevronDown className="w-3 h-3" /></>
           )}
         </button>
       )}
