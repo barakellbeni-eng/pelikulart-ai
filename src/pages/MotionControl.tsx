@@ -362,7 +362,7 @@ const MotionControl = () => {
                 </div>
                 <button
                   onClick={() => setShowMotionPicker(true)}
-                  className="w-full px-3 py-2 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground bg-muted/20 hover:bg-muted/30 transition-colors flex items-center justify-center gap-1.5"
+                  className="w-full px-3 py-2 rounded-lg text-xs font-medium text-primary-foreground bg-primary hover:bg-primary/90 transition-colors flex items-center justify-center gap-1.5"
                 >
                   <RefreshCw className="w-3 h-3" />
                   Changer le mouvement
