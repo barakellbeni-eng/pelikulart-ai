@@ -226,7 +226,7 @@ const LensControl = () => {
           tool_type: "image",
           model_id: "kie-nano-banana",
           prompt: finalPrompt,
-          images: [sourceImage],
+          image_urls: [sourceImage],
           cauris_cost: COST,
           settings: {},
         }),
