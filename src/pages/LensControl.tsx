@@ -13,7 +13,6 @@ const START_GENERATION_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/
 
 /* ── Lens types ── */
 const LENS_TYPES = [
-  { id: "prime", emoji: "🔵", label: "Prime", sub: "Focale fixe" },
   { id: "anamorphic", emoji: "🎬", label: "Anamorphique", sub: "Cinéma 2.39:1" },
   { id: "macro", emoji: "🔬", label: "Macro", sub: "Détails 1:1" },
   { id: "special", emoji: "🌀", label: "Spéciaux", sub: "Fisheye · Tilt" },
