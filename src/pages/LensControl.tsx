@@ -10,6 +10,7 @@ import MediaPickerModal from "@/components/MediaPickerModal";
 import DeleteConfirmModal from "@/components/DeleteConfirmModal";
 import { LENS_TYPE_ICONS, FOCAL_ICONS } from "@/components/LensIcons";
 import LensPreviewOverlay from "@/components/LensPreviewOverlay";
+import GenerationProgress from "@/components/GenerationProgress";
 
 const START_GENERATION_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/start-generation`;
 
@@ -210,6 +211,7 @@ const LensControl = () => {
     }
 
     setIsGenerating(true);
+    setActiveTab("preview");
     try {
       const { data: sessionData } = await supabase.auth.getSession();
       const token = sessionData?.session?.access_token;
@@ -235,10 +237,41 @@ const LensControl = () => {
         throw new Error(err.error || "Erreur lors de la génération");
       }
 
+      const kieData = await resp.json();
+      if (kieData.new_balance !== undefined) refreshBalance();
+
+      // Poll for completion
+      const jobId = kieData.job_id;
+      if (jobId) {
+        const maxPolls = 200;
+        for (let i = 0; i < maxPolls; i++) {
+          await new Promise((r) => setTimeout(r, 3000));
+          const { data: jobRow } = await supabase
+            .from("generation_jobs")
+            .select("status, result_url, result_metadata")
+            .eq("id", jobId)
+            .single();
+
+          if (jobRow?.status === "completed") {
+            await loadGallery();
+            refreshBalance();
+            setActiveTab("results");
+            toast.success("Image générée !");
+            setIsGenerating(false);
+            return;
+          }
+          if (jobRow?.status === "failed") {
+            const errMsg = (jobRow.result_metadata as any)?.error || "La génération a échoué";
+            throw new Error(errMsg);
+          }
+        }
+        throw new Error("La génération a pris trop de temps (timeout)");
+      }
+
       await loadGallery();
       refreshBalance();
       setActiveTab("results");
-      toast.success("Génération lancée !");
+      toast.success("Génération terminée !");
     } catch (e: any) {
       toast.error(e.message);
     } finally {
@@ -530,6 +563,20 @@ const LensControl = () => {
                       aperture={aperture}
                       fov={fov}
                     />
+                    {/* Generation progress overlay */}
+                    <AnimatePresence>
+                      {isGenerating && (
+                        <motion.div
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                          className="absolute inset-0 bg-black/60 backdrop-blur-sm flex flex-col items-center justify-center gap-3 z-10"
+                        >
+                          <GenerationProgress estimatedTime="~15s" />
+                          <p className="text-xs text-muted-foreground/80">Application de l'objectif…</p>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </div>
                   {/* Lens info badges */}
                   <div className="flex items-center gap-2 mt-4 justify-center">
