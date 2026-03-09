@@ -305,7 +305,7 @@ const Gallery = () => {
               </h1>
               {activeProject && (
                 <p className="text-[11px] text-muted-foreground">
-                  {activeProject.generation_count} gén. · {activeProject.cauris_spent} 🐚
+                  {activeProject.generation_count} gén. · {activeProject.cauris_spent} cauris
                 </p>
               )}
             </div>
