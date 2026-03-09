@@ -545,58 +545,6 @@ const LensControl = () => {
                 </div>
               )}
             </>
-          ) : (
-            /* Preview tab */
-            <div className="flex flex-col items-center justify-center h-full">
-              {sourceImage ? (
-                <div className="relative max-w-2xl w-full">
-                  {/* 16:9 aspect ratio container */}
-                  <div className="relative rounded-2xl overflow-hidden border border-border/30 bg-black aspect-video">
-                    <img 
-                      src={sourceImage} 
-                      alt="Preview" 
-                      className="absolute inset-0 w-full h-full object-cover" 
-                    />
-                    {/* Lens effect overlay */}
-                    <LensPreviewOverlay
-                      lensType={lensType}
-                      focal={focal}
-                      aperture={aperture}
-                      fov={fov}
-                    />
-                  </div>
-                  {/* Lens info badges */}
-                  <div className="flex items-center gap-2 mt-4 justify-center">
-                    <span className="px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold">
-                      {LENS_TYPES.find((t) => t.id === lensType)?.label}
-                    </span>
-                    <span className="px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold">
-                      {focalLabel}
-                    </span>
-                    <span className="px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold">
-                      {aperture === "auto" ? "Auto" : aperture}
-                    </span>
-                  </div>
-                  <div className="text-center mt-3">
-                    <p className="text-sm font-bold text-foreground">{focalLabel} {LENS_TYPES.find((t) => t.id === lensType)?.label}</p>
-                    <p className="text-xs text-muted-foreground mt-0.5">{fovDescription(fov)}</p>
-                  </div>
-                  <div className="flex items-center gap-4 justify-center mt-2 text-xs text-muted-foreground">
-                    <span>FOV {fov}°</span>
-                    <span>{aperture === "auto" ? "Auto" : aperture}</span>
-                  </div>
-                </div>
-              ) : (
-                <div className="relative max-w-2xl w-full">
-                  {/* 16:9 placeholder */}
-                  <div className="relative rounded-2xl overflow-hidden border border-border/30 bg-muted/10 aspect-video flex flex-col items-center justify-center">
-                    <Target className="w-12 h-12 text-muted-foreground/20" />
-                    <p className="text-sm font-bold text-muted-foreground mt-3">UPLOADE UNE IMAGE</p>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
         </div>
       </div>
 
