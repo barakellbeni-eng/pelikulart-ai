@@ -9,11 +9,11 @@ const corsHeaders = {
 
 // Valid packs with their cauris amounts
 const VALID_PACKS: Record<number, number> = {
-  1000: 100,
-  2500: 300,
-  5000: 650,
-  10000: 1500,
-  25000: 4000,
+  2000: 25,
+  5000: 70,
+  10000: 160,
+  25000: 450,
+  50000: 1000,
 };
 
 serve(async (req) => {
