@@ -479,7 +479,7 @@ const Profile = () => {
               <div className="glass-card p-5 space-y-3">
                 <div className="flex items-center gap-3">
                   <Coins className="w-5 h-5 text-primary" />
-                  <span className="font-semibold text-foreground">Utilisation des Cauris 🐚</span>
+                  <span className="font-semibold text-foreground">Utilisation des Cauris</span>
                 </div>
                 <div className="flex justify-between text-sm text-muted-foreground">
                   <span>Solde : <span className="text-foreground font-bold">{balance}</span></span>
