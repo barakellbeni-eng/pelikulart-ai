@@ -5,15 +5,15 @@ import { Link } from "react-router-dom";
 
 const packs = [
   { name: "Découverte", price: "2 000", cauris: 25, tag: null,
-    rows: { "🖼 Images HD": "25", "🎬 Vidéo 720p": "3", "🎬 Vidéo 1080p": "1", "✦ Sora 2": "5", "◈ Sora Pro": "1", "🎵 Musique": "12" } },
+    rows: { "Images HD": "25", "Vidéo 720p": "3", "Vidéo 1080p": "1", "Sora 2": "5", "Sora Pro": "1", "Musique": "12" } },
   { name: "Starter", price: "5 000", cauris: 70, tag: null,
-    rows: { "🖼 Images HD": "70", "🎬 Vidéo 720p": "9", "🎬 Vidéo 1080p": "5", "✦ Sora 2": "14", "◈ Sora Pro": "3", "🎵 Musique": "35" } },
+    rows: { "Images HD": "70", "Vidéo 720p": "9", "Vidéo 1080p": "5", "Sora 2": "14", "Sora Pro": "3", "Musique": "35" } },
   { name: "Créateur", price: "10 000", cauris: 160, tag: "Populaire",
-    rows: { "🖼 Images HD": "160", "🎬 Vidéo 720p": "20", "🎬 Vidéo 1080p": "11", "✦ Sora 2": "32", "◈ Sora Pro": "7", "🎵 Musique": "80" } },
+    rows: { "Images HD": "160", "Vidéo 720p": "20", "Vidéo 1080p": "11", "Sora 2": "32", "Sora Pro": "7", "Musique": "80" } },
   { name: "Pro", price: "25 000", cauris: 450, tag: null,
-    rows: { "🖼 Images HD": "450", "🎬 Vidéo 720p": "56", "🎬 Vidéo 1080p": "32", "✦ Sora 2": "90", "◈ Sora Pro": "20", "🎵 Musique": "225" } },
+    rows: { "Images HD": "450", "Vidéo 720p": "56", "Vidéo 1080p": "32", "Sora 2": "90", "Sora Pro": "20", "Musique": "225" } },
   { name: "Studio", price: "50 000", cauris: 1000, tag: "Best value",
-    rows: { "🖼 Images HD": "1 000", "🎬 Vidéo 720p": "125", "🎬 Vidéo 1080p": "71", "✦ Sora 2": "200", "◈ Sora Pro": "45", "🎵 Musique": "500" } },
+    rows: { "Images HD": "1 000", "Vidéo 720p": "125", "Vidéo 1080p": "71", "Sora 2": "200", "Sora Pro": "45", "Musique": "500" } },
 ];
 
 const rowLabels = Object.keys(packs[0].rows) as (keyof typeof packs[0]["rows"])[];
