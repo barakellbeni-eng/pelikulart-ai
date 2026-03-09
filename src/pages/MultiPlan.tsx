@@ -219,7 +219,25 @@ const MultiPlan = () => {
   };
 
   const handlePlanClick = async (planIndex: number) => {
-    if (!cadrageSource || !user || loadingPlan !== null) return;
+    if (!cadrageSource || loadingPlan !== null) return;
+
+    if (!user) {
+      toast.error("Connectez-vous pour générer");
+      return;
+    }
+
+    const { data: profileData } = await supabase
+      .from("profiles")
+      .select("credits")
+      .eq("user_id", user.id)
+      .single();
+
+    const currentBalance = profileData?.credits ?? 0;
+    if (currentBalance < 2) {
+      toast.error("Solde insuffisant — 2 cauris requis");
+      return;
+    }
+
     setLoadingPlan(planIndex);
 
     try {
