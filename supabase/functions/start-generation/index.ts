@@ -107,6 +107,12 @@ const KIE_MODELS: Record<string, string> = {
   "kie-kling-21": "kling/v2-1-master-text-to-video", // auto → kling/v2-1-master-image-to-video with image
   "kie-wan-26": "wan/2-6-text-to-video",          // auto → wan/2-6-image-to-video with image
   "kie-seedance-15-pro": "bytedance/seedance-1.5-pro",
+  // Veo 3.1 (uses /api/v1/veo/generate endpoint)
+  "kie-veo31": "veo3",
+  "kie-veo31-fast": "veo3_fast",
+  // Sora 2 (uses standard createTask)
+  "kie-sora2": "sora-2-text-to-video",
+  "kie-sora2-pro": "sora-2-pro-text-to-video",
   // Audio
   "kie-elevenlabs-sfx": "elevenlabs/sound-effect-v2",
   "kie-elevenlabs-tts": "elevenlabs/text-to-speech-multilingual-v2",
