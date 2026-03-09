@@ -322,6 +322,7 @@ async function processImage(jobId: string, userId: string, body: any) {
         aspect_ratio: modelSettings.aspect_ratio || null,
         resolution: modelSettings.resolution || modelSettings.image_size || null,
         output_format,
+        project_id: body.project_id || null,
       });
     }
 
@@ -425,6 +426,7 @@ async function processImageGoogle(jobId: string, userId: string, body: any) {
         await adminClient.from("generations").insert({
           user_id: userId, prompt: prompt.slice(0, 5000), image_url: dUrl,
           aspect_ratio: modelSettings.aspect_ratio || null, resolution: modelSettings.resolution || null, output_format: "png",
+          project_id: body.project_id || null,
         });
 
         if (storageKeys.length === 1) {
@@ -491,6 +493,7 @@ async function processVideo(jobId: string, userId: string, body: any) {
 
     await adminClient.from("generations").insert({
       user_id: userId, prompt: prompt.slice(0, 5000), image_url: publicUrl, media_type: "video",
+      project_id: body.project_id || null,
     });
 
     await updateJob(adminClient, jobId, {
@@ -566,6 +569,7 @@ async function processAudio(jobId: string, userId: string, body: any) {
 
     await adminClient.from("generations").insert({
       user_id: userId, prompt: prompt.slice(0, 5000), image_url: publicUrl, media_type: "audio",
+      project_id: body.project_id || null,
     });
 
     await updateJob(adminClient, jobId, {
@@ -774,6 +778,7 @@ async function processKie(jobId: string, userId: string, body: any) {
           await adminClient.from("generations").insert({
             user_id: userId, prompt: prompt.slice(0, 5000), image_url: dUrl,
             media_type: mediaType, aspect_ratio: rawSettings.aspect_ratio || rawSettings.image_size || null,
+            project_id: body.project_id || null,
           });
         } else {
           const storageKey = await downloadAndUpload(url, userId, format);
@@ -783,6 +788,7 @@ async function processKie(jobId: string, userId: string, body: any) {
           await adminClient.from("generations").insert({
             user_id: userId, prompt: prompt.slice(0, 5000), image_url: publicUrl,
             media_type: mediaType, aspect_ratio: rawSettings.aspect_ratio || rawSettings.image_size || null,
+            project_id: body.project_id || null,
           });
         }
       } catch (dlErr) {
@@ -929,6 +935,7 @@ async function processSuno(jobId: string, userId: string, body: any) {
       prompt: prompt.slice(0, 5000),
       image_url: publicUrl,
       media_type: "audio",
+      project_id: body.project_id || null,
     });
 
     await updateJob(adminClient, jobId, {
@@ -990,7 +997,7 @@ serve(async (req) => {
     const adminClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
     const body = await req.json();
-    const { tool_type, model_id, prompt, cauris_cost = 0 } = body;
+    const { tool_type, model_id, prompt, cauris_cost = 0, project_id } = body;
 
     if (!prompt || typeof prompt !== "string") {
       return new Response(JSON.stringify({ error: "Un prompt est requis" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
@@ -1071,6 +1078,7 @@ serve(async (req) => {
       .insert({
         user_id: userId, provider, tool_type, model: model_id,
         prompt: prompt.slice(0, 5000), params: body, status: "pending", credits_used: cost,
+        project_id: project_id || null,
       })
       .select("id")
       .single();
