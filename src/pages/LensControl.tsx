@@ -61,9 +61,7 @@ function buildLensPrompt(type: LensTypeId, focal: string, aperture: string, fov:
 
   const parts = ["Same scene and subject"];
 
-  if (type === "prime") {
-    parts.push(`shot with a ${focalLabel} standard lens`);
-  } else if (type === "anamorphic") {
+  if (type === "anamorphic") {
     parts.push(`shot with a ${focalLabel} anamorphic lens, horizontal lens flares, cinematic 2.39:1 widescreen`);
   } else if (type === "macro") {
     parts.push(`shot with a ${focalLabel} macro lens, extreme close-up detail, shallow depth of field`);
