@@ -21,6 +21,7 @@ const brandLogos: Record<string, string> = {
   Ideogram: logoIdeogram,
   Wan: logoKling30,       // placeholder — remplacer quand le vrai logo est dispo
   Seedance: logoSeedream, // placeholder — remplacer quand le vrai logo est dispo
+  Sora: logoKling30,      // placeholder — remplacer quand le vrai logo est dispo
 };
 
 // Per-model logos (for brands with version-specific icons like Kling)

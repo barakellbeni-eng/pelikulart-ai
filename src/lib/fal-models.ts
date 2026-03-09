@@ -317,6 +317,66 @@ export const FAL_MODELS: FalModel[] = [
     ],
   },
 
+  // ── Veo 3.1 (KIE) ──
+  {
+    id: "kie-veo31", type: "video", brand: "Google", name: "Veo 3.1",
+    endpoint: "kie", provider: "kie", kieModel: "veo3",
+    description: "Vidéo cinématique avec audio synchronisé, T2V ou I2V", icon: "◆", color: "from-white/20 to-white/5",
+    maxImages: 2, supportsImageInput: true, caurisCost: 80, estimatedTime: "~2min", recommended: true,
+    settings: [
+      { key: "aspect_ratio", label: "Ratio", type: "select", options: [
+        { value: "16:9", label: "16:9 — Paysage" }, { value: "9:16", label: "9:16 — Vertical" },
+      ], defaultValue: "16:9" },
+    ],
+  },
+  {
+    id: "kie-veo31-fast", type: "video", brand: "Google", name: "Veo 3.1 Fast",
+    endpoint: "kie", provider: "kie", kieModel: "veo3_fast",
+    description: "Génération rapide, bon rapport qualité/prix", icon: "▸", color: "from-white/20 to-white/5",
+    maxImages: 2, supportsImageInput: true, caurisCost: 50, estimatedTime: "~1min",
+    settings: [
+      { key: "aspect_ratio", label: "Ratio", type: "select", options: [
+        { value: "16:9", label: "16:9 — Paysage" }, { value: "9:16", label: "9:16 — Vertical" },
+      ], defaultValue: "16:9" },
+    ],
+  },
+
+  // ── Sora 2 (KIE) ──
+  {
+    id: "kie-sora2", type: "video", brand: "Sora", name: "Sora 2",
+    endpoint: "kie", provider: "kie", kieModel: "sora-2-text-to-video",
+    description: "T2V ou I2V auto, physique réaliste, rapide", icon: "◆", color: "from-white/20 to-white/5",
+    maxImages: 1, supportsImageInput: true, caurisCost: 50, estimatedTime: "~1min", recommended: true,
+    settings: [
+      { key: "aspect_ratio", label: "Format", type: "select", options: [
+        { value: "landscape", label: "Paysage (16:9)" }, { value: "portrait", label: "Portrait (9:16)" },
+      ], defaultValue: "landscape" },
+      { key: "n_frames", label: "Durée", type: "select", options: [
+        { value: "10", label: "~5s (10 frames)" }, { value: "15", label: "~8s (15 frames)" },
+      ], defaultValue: "10" },
+      { key: "size", label: "Qualité", type: "select", options: [
+        { value: "standard", label: "Standard (720p)" }, { value: "high", label: "HD (1080p)" },
+      ], defaultValue: "high" },
+    ],
+  },
+  {
+    id: "kie-sora2-pro", type: "video", brand: "Sora", name: "Sora 2 Pro",
+    endpoint: "kie", provider: "kie", kieModel: "sora-2-pro-text-to-video",
+    description: "Qualité maximale, T2V ou I2V auto", icon: "◈", color: "from-white/20 to-white/5",
+    maxImages: 1, supportsImageInput: true, caurisCost: 100, estimatedTime: "~2min",
+    settings: [
+      { key: "aspect_ratio", label: "Format", type: "select", options: [
+        { value: "landscape", label: "Paysage (16:9)" }, { value: "portrait", label: "Portrait (9:16)" },
+      ], defaultValue: "landscape" },
+      { key: "n_frames", label: "Durée", type: "select", options: [
+        { value: "10", label: "~5s (10 frames)" }, { value: "15", label: "~8s (15 frames)" },
+      ], defaultValue: "10" },
+      { key: "size", label: "Qualité", type: "select", options: [
+        { value: "standard", label: "Standard (720p)" }, { value: "high", label: "HD (1080p)" },
+      ], defaultValue: "high" },
+    ],
+  },
+
   // ── Seedance 1.5 Pro (KIE) ──
   {
     id: "kie-seedance-15-pro", type: "video", brand: "Seedance", name: "Seedance 1.5 Pro",

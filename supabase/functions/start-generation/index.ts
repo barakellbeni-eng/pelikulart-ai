@@ -107,6 +107,12 @@ const KIE_MODELS: Record<string, string> = {
   "kie-kling-21": "kling/v2-1-master-text-to-video", // auto → kling/v2-1-master-image-to-video with image
   "kie-wan-26": "wan/2-6-text-to-video",          // auto → wan/2-6-image-to-video with image
   "kie-seedance-15-pro": "bytedance/seedance-1.5-pro",
+  // Veo 3.1 (uses /api/v1/veo/generate endpoint)
+  "kie-veo31": "veo3",
+  "kie-veo31-fast": "veo3_fast",
+  // Sora 2 (uses standard createTask)
+  "kie-sora2": "sora-2-text-to-video",
+  "kie-sora2-pro": "sora-2-pro-text-to-video",
   // Audio
   "kie-elevenlabs-sfx": "elevenlabs/sound-effect-v2",
   "kie-elevenlabs-tts": "elevenlabs/text-to-speech-multilingual-v2",
@@ -125,6 +131,8 @@ const KIE_AUTO_SWITCH: Record<string, [string, string]> = {
   "kie-kling-25-turbo": ["kling/v2-5-turbo-text-to-video-pro", "kling/v2-5-turbo-image-to-video-pro"],
   "kie-kling-21": ["kling/v2-1-master-text-to-video", "kling/v2-1-master-image-to-video"],
   "kie-wan-26": ["wan/2-6-text-to-video", "wan/2-6-image-to-video"],
+  "kie-sora2": ["sora-2-text-to-video", "sora-2-image-to-video"],
+  "kie-sora2-pro": ["sora-2-pro-text-to-video", "sora-2-pro-image-to-video"],
 };
 
 // Models that use `image_input` param
@@ -134,7 +142,11 @@ const KIE_INPUT_URLS_MODELS = new Set(["flux-2/pro-image-to-image", "bytedance/s
 // Models that use `aspect_ratio` + `resolution` (not `image_size`)
 const KIE_ASPECT_RESOLUTION_MODELS = new Set(["nano-banana-pro", "nano-banana-2", "seedream/4.5-text-to-image", "seedream/4.5-edit"]);
 
-// Suno models use a different API flow (/api/v1/generate + /api/v1/generate/record-info)
+// Veo 3.1 models use a separate /api/v1/veo/generate endpoint
+const VEO3_MODELS = new Set(["kie-veo31", "kie-veo31-fast"]);
+// Sora 2 models
+const SORA2_MODELS = new Set(["kie-sora2", "kie-sora2-pro"]);
+
 const SUNO_MODELS = new Set(["kie-suno-v5", "kie-suno-v4-5plus", "kie-suno-v4"]);
 const SUNO_MODEL_MAP: Record<string, string> = {
   "kie-suno-v5": "V5",
@@ -606,39 +618,58 @@ async function processKie(jobId: string, userId: string, body: any) {
         console.log(`[KIE] Auto-switched to ${kieModel} (image provided)`);
       }
 
-      if (rawSettings.duration) input.duration = String(rawSettings.duration);
-      if (rawSettings.resolution) input.resolution = rawSettings.resolution;
-      if (rawSettings.generate_audio !== undefined) input.generate_audio = rawSettings.generate_audio;
-      if (rawSettings.negative_prompt) input.negative_prompt = rawSettings.negative_prompt;
-      if (rawSettings.cfg_scale !== undefined) input.cfg_scale = rawSettings.cfg_scale;
-
-      // Kling 2.6 I2V does NOT support aspect_ratio, only T2V does
-      const isKling26I2V = kieModel === "kling-2.6/image-to-video";
-      if (rawSettings.aspect_ratio && !isKling26I2V) input.aspect_ratio = rawSettings.aspect_ratio;
-
-      // Sound param (Kling 2.6 & 3.0)
-      if (rawSettings.sound !== undefined) input.sound = rawSettings.sound;
-
-      // Kling 3.0 specific (unified model, accepts image_urls optionally)
-      if (kieModel === "kling-3.0/video") {
-        input.multi_shots = rawSettings.multi_shots === true;
-        if (rawSettings.mode) input.mode = rawSettings.mode;
-      }
-
-      // Image input for video
-      if (hasImages) {
-        // V2.5 Turbo I2V and V2.1 Master I2V use singular `image_url`
-        const singularImageUrlModels = new Set([
-          "kling/v2-5-turbo-image-to-video-pro",
-          "kling/v2-1-master-image-to-video",
-        ]);
-
-        if (KIE_INPUT_URLS_MODELS.has(kieModel)) {
-          input.input_urls = imageList.slice(0, 2);
-        } else if (singularImageUrlModels.has(kieModel)) {
-          input.image_url = imageList[0];
-        } else {
+      // ── Sora 2 specific params ──
+      if (SORA2_MODELS.has(model_id)) {
+        if (rawSettings.aspect_ratio) input.aspect_ratio = rawSettings.aspect_ratio; // "landscape" or "portrait"
+        if (rawSettings.n_frames) input.n_frames = String(rawSettings.n_frames);
+        if (rawSettings.size) input.size = rawSettings.size;
+        if (hasImages) {
           input.image_urls = imageList.slice(0, 1);
+        }
+      }
+      // ── Veo 3.1 specific params ──
+      else if (VEO3_MODELS.has(model_id)) {
+        if (rawSettings.aspect_ratio) input.aspect_ratio = rawSettings.aspect_ratio; // "16:9" or "9:16"
+        // Veo3 uses `imageUrls` (camelCase) for I2V
+        if (hasImages) {
+          input.imageUrls = imageList.slice(0, 2);
+        }
+      }
+      // ── Standard KIE video params ──
+      else {
+        if (rawSettings.duration) input.duration = String(rawSettings.duration);
+        if (rawSettings.resolution) input.resolution = rawSettings.resolution;
+        if (rawSettings.generate_audio !== undefined) input.generate_audio = rawSettings.generate_audio;
+        if (rawSettings.negative_prompt) input.negative_prompt = rawSettings.negative_prompt;
+        if (rawSettings.cfg_scale !== undefined) input.cfg_scale = rawSettings.cfg_scale;
+
+        // Kling 2.6 I2V does NOT support aspect_ratio, only T2V does
+        const isKling26I2V = kieModel === "kling-2.6/image-to-video";
+        if (rawSettings.aspect_ratio && !isKling26I2V) input.aspect_ratio = rawSettings.aspect_ratio;
+
+        // Sound param (Kling 2.6 & 3.0)
+        if (rawSettings.sound !== undefined) input.sound = rawSettings.sound;
+
+        // Kling 3.0 specific (unified model, accepts image_urls optionally)
+        if (kieModel === "kling-3.0/video") {
+          input.multi_shots = rawSettings.multi_shots === true;
+          if (rawSettings.mode) input.mode = rawSettings.mode;
+        }
+
+        // Image input for video
+        if (hasImages) {
+          const singularImageUrlModels = new Set([
+            "kling/v2-5-turbo-image-to-video-pro",
+            "kling/v2-1-master-image-to-video",
+          ]);
+
+          if (KIE_INPUT_URLS_MODELS.has(kieModel)) {
+            input.input_urls = imageList.slice(0, 2);
+          } else if (singularImageUrlModels.has(kieModel)) {
+            input.image_url = imageList[0];
+          } else {
+            input.image_urls = imageList.slice(0, 1);
+          }
         }
       }
     } else if (tool_type === "audio") {
@@ -650,8 +681,35 @@ async function processKie(jobId: string, userId: string, body: any) {
       }
     }
 
-    console.log(`[KIE] Creating task for ${kieModel}`);
-    const taskId = await kieCreateTask(kieModel, input, KIE_API_KEY);
+    // Use Veo3-specific endpoint or standard createTask
+    let taskId: string;
+    if (VEO3_MODELS.has(model_id)) {
+      console.log(`[KIE] Creating Veo3 task for model=${kieModel}`);
+      const veoPayload: Record<string, any> = {
+        prompt: input.prompt,
+        model: kieModel,
+        ...( input.aspect_ratio ? { aspect_ratio: input.aspect_ratio } : {}),
+        ...( input.imageUrls ? { imageUrls: input.imageUrls } : {}),
+      };
+      const veoResp = await fetch(`${KIE_AI_BASE}/api/v1/veo/generate`, {
+        method: "POST",
+        headers: { "Authorization": `Bearer ${KIE_API_KEY}`, "Content-Type": "application/json" },
+        body: JSON.stringify(veoPayload),
+      });
+      if (!veoResp.ok) {
+        const errText = await veoResp.text();
+        throw new Error(`Veo3 API error: ${veoResp.status} ${errText}`);
+      }
+      const veoData = await veoResp.json();
+      if (veoData.code !== 200 || !veoData.data?.taskId) {
+        throw new Error(`Veo3 error: ${veoData.msg || "No taskId returned"}`);
+      }
+      taskId = veoData.data.taskId;
+    } else {
+      console.log(`[KIE] Creating task for ${kieModel}`);
+      taskId = await kieCreateTask(kieModel, input, KIE_API_KEY);
+    }
+
     await updateJob(adminClient, jobId, { external_job_id: taskId, progress: 10 });
 
     console.log(`[KIE] Polling task ${taskId}`);
