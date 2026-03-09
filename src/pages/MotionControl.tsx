@@ -578,18 +578,15 @@ const MotionControl = () => {
 
                 const iframeCoverStyle: React.CSSProperties = isTall
                   ? {
-                      // Tall cell: make iframe much wider (keeps player in 16:9 -> no bars)
-                      width: "260%",
+                      width: "380%",
                       height: "100%",
                     }
                   : isWide
                     ? {
-                        // Wide cell: make iframe much taller
                         width: "100%",
                         height: "220%",
                       }
                     : {
-                        // Default: modest overscan both ways
                         width: "177.78%",
                         height: "177.78%",
                       };
