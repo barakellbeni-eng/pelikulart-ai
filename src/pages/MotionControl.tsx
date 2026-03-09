@@ -164,6 +164,7 @@ const MotionControl = () => {
   const [selectedMotion, setSelectedMotion] = useState<string | null>(null);
   const [duration, setDuration] = useState<string>("5");
   const [aspectRatio, setAspectRatio] = useState<string>("16:9");
+  const [resolution, setResolution] = useState<string>("720p");
   const [activeTab, setActiveTab] = useState<"generations" | "motions">("generations");
 
   const [isGenerating, setIsGenerating] = useState(false);
