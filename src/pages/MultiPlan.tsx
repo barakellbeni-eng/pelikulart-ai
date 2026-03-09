@@ -197,8 +197,8 @@ const MultiPlan = () => {
       .single();
 
     const currentBalance = profileData?.credits ?? 0;
-    if (currentBalance < 2) {
-      toast.error("Solde insuffisant — 2 cauris requis");
+    if (currentBalance < 1) {
+      toast.error("Solde insuffisant — 1 cauris requis");
       return;
     }
 
