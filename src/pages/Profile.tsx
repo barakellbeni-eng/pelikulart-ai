@@ -547,7 +547,7 @@ const Profile = () => {
                             {project.generation_count} gén.
                           </span>
                           <span className="flex items-center gap-1">
-                            🐚 {project.cauris_spent}
+                            {project.cauris_spent} cauris
                           </span>
                         </div>
 
