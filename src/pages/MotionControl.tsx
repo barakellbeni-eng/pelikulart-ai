@@ -434,31 +434,37 @@ const MotionControl = () => {
             <h3 className="text-sm font-bold text-foreground mb-3">Sélectionne un mouvement</h3>
             <div className="grid grid-cols-3 gap-4">
               {CAMERA_MOTIONS.map((motion) => (
-                <TooltipProvider key={motion.id}>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <button
-                        onClick={() => setSelectedMotion(motion.id)}
-                        className={`relative rounded-xl overflow-hidden aspect-video border-2 transition-all group ${
-                          selectedMotion === motion.id ? "border-primary shadow-lg shadow-primary/20" : "border-border/50 hover:border-primary/50"
-                        }`}
-                      >
-                        <iframe src={motion.videoUrl} className="w-full h-full" frameBorder="0" allow="autoplay" title={motion.label} />
-                        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2">
-                          <span className="text-xs font-bold text-white">{motion.label}</span>
-                        </div>
-                        {selectedMotion === motion.id && (
-                          <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-primary flex items-center justify-center">
-                            <Play className="w-3 h-3 text-primary-foreground" />
-                          </div>
-                        )}
-                      </button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p className="text-xs max-w-xs">{motion.prompt}</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
+                <button
+                  key={motion.id}
+                  onClick={() => setSelectedMotion(motion.id)}
+                  className={`relative rounded-xl overflow-hidden border-2 transition-all group ${
+                    selectedMotion === motion.id ? "border-primary shadow-lg shadow-primary/20" : "border-border/50 hover:border-primary/50"
+                  }`}
+                  title={motion.prompt}
+                >
+                  {/* Videas embed — autoplay, muted, loop */}
+                  <div style={{ padding: "56.25% 0 0 0", position: "relative" }}>
+                    <iframe
+                      src={buildEmbedUrl(motion.mediaId)}
+                      width="100%"
+                      height="100%"
+                      frameBorder="0"
+                      allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                      referrerPolicy="unsafe-url"
+                      title={motion.label}
+                      style={{ position: "absolute", top: 0, left: 0, pointerEvents: "none" }}
+                    />
+                  </div>
+                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2">
+                    <span className="text-xs font-bold text-white uppercase tracking-wide">{motion.label}</span>
+                  </div>
+                  {selectedMotion === motion.id && (
+                    <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-primary flex items-center justify-center">
+                      <Play className="w-2.5 h-2.5 text-primary-foreground fill-current" />
+                    </div>
+                  )}
+                </button>
               ))}
             </div>
           </div>
