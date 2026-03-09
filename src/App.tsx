@@ -21,6 +21,8 @@ import StudioSplash from "@/components/pelikulart/StudioSplash";
 // Studio pages
 import StudioHome from "./pages/StudioHome";
 import Dashboard from "./pages/Dashboard";
+import Gallery from "./pages/Gallery";
+import Dashboard from "./pages/Dashboard";
 import MultiPlan from "./pages/MultiPlan";
 import MotionControl from "./pages/MotionControl";
 import LensControl from "./pages/LensControl";
