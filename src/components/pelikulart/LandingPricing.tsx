@@ -69,7 +69,7 @@ const LandingPricing = () => {
                     </span>
                     <span className="text-white/20 text-[10px] ml-1">FCFA</span>
                   </p>
-                  <p className="text-lime/80 text-[11px] font-mono mt-1">{pack.cauris} 🐚</p>
+                  <p className="text-lime/80 text-[11px] font-mono mt-1">{pack.cauris} Cauris</p>
                 </div>
               ))}
             </div>
