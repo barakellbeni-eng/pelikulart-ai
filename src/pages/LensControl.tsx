@@ -270,7 +270,7 @@ const LensControl = () => {
 
       await loadGallery();
       refreshBalance();
-      setActiveTab("results");
+      
       toast.success("Génération terminée !");
     } catch (e: any) {
       toast.error(e.message);
