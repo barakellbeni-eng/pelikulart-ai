@@ -93,14 +93,6 @@ const costData: Record<TabKey, BrandGroup[]> = {
   ],
 };
 
-const comparison = [
-  { criterion: "Prix Sora 2 (10s)", deepnia: "~400 FCFA", kie: "~250 FCFA", pelikulart: "100 FCFA" },
-  { criterion: "Prix Veo 3.1", deepnia: "~1500 FCFA", kie: "~900 FCFA", pelikulart: "720 FCFA" },
-  { criterion: "Interface en français", deepnia: false, kie: false, pelikulart: true },
-  { criterion: "Paiement Mobile Money", deepnia: false, kie: false, pelikulart: true },
-  { criterion: "Support WhatsApp", deepnia: false, kie: false, pelikulart: true },
-  { criterion: "Galerie sauvegardée", deepnia: true, kie: true, pelikulart: true },
-];
 
 const tabLabels: Record<TabKey, string> = {
   image: "Image",
