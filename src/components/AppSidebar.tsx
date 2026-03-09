@@ -130,7 +130,6 @@ const AppSidebar = () => {
 
       <SidebarFooter className="px-4 py-3" />
     </Sidebar>
-    </Sidebar>
   );
 };
 
