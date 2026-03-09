@@ -211,7 +211,7 @@ const Pricing = () => {
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     className="text-sm font-bold text-green-400"
                   >
-                    +{addedCauris} 🐚
+                    +{addedCauris}
                   </motion.span>
                 )}
               </div>
@@ -247,7 +247,7 @@ const Pricing = () => {
 
         {/* Packs Grid */}
         <div>
-          <h2 className="text-lg font-bold text-foreground mb-1">Recharger en Cauris 🐚</h2>
+          <h2 className="text-lg font-bold text-foreground mb-1">Recharger en Cauris</h2>
           <p className="text-xs text-muted-foreground mb-4">Achetez des Cauris, générez des images et vidéos. Quand c'est fini, rechargez !</p>
         </div>
 
@@ -280,7 +280,7 @@ const Pricing = () => {
 
               <div className="flex items-center gap-2">
                 <span className="text-lg font-bold text-accent">{pack.cauris}</span>
-                <span className="text-xs text-muted-foreground">Cauris 🐚</span>
+                <span className="text-xs text-muted-foreground">Cauris</span>
                 {pack.bonus && (
                   <span className="text-[10px] font-bold text-green-400 bg-green-400/10 px-1.5 py-0.5 rounded-full">
                     {pack.bonus}

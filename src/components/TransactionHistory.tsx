@@ -80,7 +80,7 @@ const TransactionHistory = () => {
     <div className="glass-card p-5 space-y-3">
       <div className="flex items-center gap-3">
         <Coins className="w-5 h-5 text-primary" />
-        <span className="font-semibold text-foreground">Mes Cauris 🐚</span>
+        <span className="font-semibold text-foreground">Mes Cauris</span>
         <span className="text-[10px] text-muted-foreground ml-auto">
           {entries.length} mouvement{entries.length > 1 ? "s" : ""}
         </span>
@@ -139,7 +139,7 @@ const TransactionHistory = () => {
                 </div>
                 <div className="text-right flex-shrink-0 ml-2">
                   <p className={`text-sm font-bold ${isPositive ? "text-green-400" : "text-foreground"}`}>
-                    {isPositive ? "+" : ""}{entry.amount} 🐚
+                    {isPositive ? "+" : ""}{entry.amount}
                   </p>
                   <p className="text-[9px] text-muted-foreground">
                     Solde : {entry.balance_after}

@@ -338,14 +338,14 @@ const Profile = () => {
 
             <div className="space-y-3">
               <div className="glass p-4 rounded-xl space-y-2">
-                <h4 className="text-sm font-medium text-foreground">🐚 Comment fonctionnent les Cauris ?</h4>
+                <h4 className="text-sm font-medium text-foreground">Comment fonctionnent les Cauris ?</h4>
                 <p className="text-xs text-muted-foreground">
                   Les Cauris sont votre monnaie de création. Chaque génération d'image ou vidéo consomme des Cauris selon la complexité. Rechargez depuis la page Tarifs.
                 </p>
               </div>
 
               <div className="glass p-4 rounded-xl space-y-2">
-                <h4 className="text-sm font-medium text-foreground">🖼️ Mes générations disparaissent ?</h4>
+                <h4 className="text-sm font-medium text-foreground">Mes générations disparaissent ?</h4>
                 <p className="text-xs text-muted-foreground">
                   Non ! Toutes vos créations sont sauvegardées de manière permanente dans votre galerie personnelle.
                 </p>
@@ -479,7 +479,7 @@ const Profile = () => {
               <div className="glass-card p-5 space-y-3">
                 <div className="flex items-center gap-3">
                   <Coins className="w-5 h-5 text-primary" />
-                  <span className="font-semibold text-foreground">Utilisation des Cauris 🐚</span>
+                  <span className="font-semibold text-foreground">Utilisation des Cauris</span>
                 </div>
                 <div className="flex justify-between text-sm text-muted-foreground">
                   <span>Solde : <span className="text-foreground font-bold">{balance}</span></span>
@@ -547,7 +547,7 @@ const Profile = () => {
                             {project.generation_count} gén.
                           </span>
                           <span className="flex items-center gap-1">
-                            🐚 {project.cauris_spent}
+                            {project.cauris_spent} cauris
                           </span>
                         </div>
 
@@ -605,7 +605,7 @@ const Profile = () => {
             <Coins className="w-5 h-5 text-muted-foreground" />
             <span className="flex-1">Plan & recharge</span>
             <span className="text-xs px-2 py-0.5 rounded-full bg-primary/20 text-primary font-semibold">
-              {balance} 🐚
+              {balance} cauris
             </span>
           </button>
 
