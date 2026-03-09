@@ -581,16 +581,28 @@ const MotionControl = () => {
                       selectedMotion === m.id ? "border-primary ring-2 ring-primary shadow-sm shadow-primary/20" : "border-border/30 hover:border-primary/40"
                     }`}
                   >
-                    <iframe
-                      src={buildEmbedUrl(m.mediaId)}
-                      className="absolute inset-0 w-full h-full object-cover"
-                      frameBorder="0"
-                      allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
-                      allowFullScreen
-                      referrerPolicy="unsafe-url"
-                      title={m.label}
-                      style={{ pointerEvents: "none" }}
-                    />
+                    {/* Iframe scaled to fill like object-fit: cover — no black bars */}
+                    <div className="absolute inset-0 overflow-hidden">
+                      <iframe
+                        src={buildEmbedUrl(m.mediaId)}
+                        frameBorder="0"
+                        allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                        referrerPolicy="unsafe-url"
+                        title={m.label}
+                        style={{
+                          pointerEvents: "none",
+                          position: "absolute",
+                          top: "50%",
+                          left: "50%",
+                          width: "177.78%",   /* 16/9 ratio upscale */
+                          height: "177.78%",
+                          transform: "translate(-50%, -50%)",
+                          minWidth: "100%",
+                          minHeight: "100%",
+                        }}
+                      />
+                    </div>
                     <div className="absolute inset-0 flex flex-col justify-end pointer-events-none">
                       <div className="bg-gradient-to-t from-black/85 via-black/20 to-transparent p-3 pt-10">
                         <p
