@@ -14,6 +14,7 @@ import PublicNavbar from "@/components/pelikulart/PublicNavbar";
 import PublicFooter from "@/components/pelikulart/PublicFooter";
 import ScrollToTop from "@/components/pelikulart/ScrollToTop";
 import GlobalActiveJobs from "@/components/GlobalActiveJobs";
+import CaurisHeaderBadge from "@/components/CaurisHeaderBadge";
 
 import StudioSplash from "@/components/pelikulart/StudioSplash";
 
