@@ -109,8 +109,8 @@ const LensControl = () => {
   const location = useLocation();
 
   /* Controls */
-  const [lensType, setLensType] = useState<LensTypeId>("prime");
-  const [focal, setFocal] = useState("50");
+  const [lensType, setLensType] = useState<LensTypeId>("anamorphic");
+  const [focal, setFocal] = useState("1.33x");
   const [aperture, setAperture] = useState("auto");
   const [sourceImage, setSourceImage] = useState<string | null>(null);
 
