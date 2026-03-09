@@ -1,211 +1,396 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
-import { ShieldCheck } from "lucide-react";
-import kkiapayLogo from "@/assets/kkiapay-logo.png";
 import { Link } from "react-router-dom";
+import payWave from "@/assets/pay-wave.png";
+import payMtn from "@/assets/pay-mtn.png";
+import payMoov from "@/assets/pay-moov.png";
+import payVisa from "@/assets/pay-visa.png";
+import payMastercard from "@/assets/pay-mastercard.png";
+
+// ═══════════════════════════════════════════════════════════════
+// DATA
+// ═══════════════════════════════════════════════════════════════
 
 const packs = [
-  { name: "Découverte", price: "2 000", cauris: 25, tag: null,
-    rows: { "Images HD": "25", "Vidéo 720p": "3", "Vidéo 1080p": "1", "Sora 2": "5", "Sora Pro": "1", "Musique": "12" } },
-  { name: "Starter", price: "5 000", cauris: 70, tag: null,
-    rows: { "Images HD": "70", "Vidéo 720p": "9", "Vidéo 1080p": "5", "Sora 2": "14", "Sora Pro": "3", "Musique": "35" } },
-  { name: "Créateur", price: "10 000", cauris: 160, tag: "Populaire",
-    rows: { "Images HD": "160", "Vidéo 720p": "20", "Vidéo 1080p": "11", "Sora 2": "32", "Sora Pro": "7", "Musique": "80" } },
-  { name: "Pro", price: "25 000", cauris: 450, tag: null,
-    rows: { "Images HD": "450", "Vidéo 720p": "56", "Vidéo 1080p": "32", "Sora 2": "90", "Sora Pro": "20", "Musique": "225" } },
-  { name: "Studio", price: "50 000", cauris: 1000, tag: "Best value",
-    rows: { "Images HD": "1 000", "Vidéo 720p": "125", "Vidéo 1080p": "71", "Sora 2": "200", "Sora Pro": "45", "Musique": "500" } },
+  { name: "Découverte", cauris: 25, price: 2000, images: 25, videos: 3, music: 12 },
+  { name: "Starter", cauris: 70, price: 5000, images: 70, videos: 9, music: 35 },
+  { name: "Créateur", cauris: 160, price: 10000, images: 160, videos: 20, music: 80, popular: true },
+  { name: "Pro", cauris: 450, price: 25000, images: 450, videos: 56, music: 225, bestValue: true },
+  { name: "Studio", cauris: 1000, price: 50000, images: 1000, videos: 125, music: 500 },
 ];
 
-const rowLabels = Object.keys(packs[0].rows) as (keyof typeof packs[0]["rows"])[];
+type TabKey = "image" | "video" | "audio" | "studio";
+
+interface ModelRow {
+  name: string;
+  detail: string;
+  cauris: number;
+}
+
+interface BrandGroup {
+  brand: string;
+  models: ModelRow[];
+}
+
+const costData: Record<TabKey, BrandGroup[]> = {
+  image: [
+    { brand: "GOOGLE", models: [
+      { name: "Nano Banana 2", detail: "1K / 2K / 4K", cauris: 1 },
+      { name: "Imagen 4 Fast", detail: "Rapide", cauris: 2 },
+      { name: "Imagen 4", detail: "Haute qualité", cauris: 3 },
+      { name: "Imagen 4 Ultra", detail: "Max détails", cauris: 4 },
+    ]},
+    { brand: "FLUX", models: [
+      { name: "Flux 2 Pro", detail: "Ultra-réaliste", cauris: 3 },
+    ]},
+    { brand: "SEEDREAM", models: [
+      { name: "Seedream 5.0 Lite", detail: "Rapide", cauris: 1 },
+      { name: "Seedream 4.5", detail: "Ultra-réaliste", cauris: 2 },
+    ]},
+  ],
+  video: [
+    { brand: "KLING", models: [
+      { name: "Kling V2.1 Standard", detail: "5s", cauris: 4 },
+      { name: "Kling V2.1 Pro", detail: "5s", cauris: 8 },
+      { name: "Kling V2.1 Master", detail: "5s", cauris: 23 },
+      { name: "Kling 2.5 Turbo", detail: "5s", cauris: 6 },
+      { name: "Kling 2.6", detail: "5s", cauris: 8 },
+      { name: "Kling 3.0 720p", detail: "5s", cauris: 14 },
+      { name: "Kling 3.0 1080p", detail: "5s", cauris: 19 },
+    ]},
+    { brand: "GOOGLE", models: [
+      { name: "Veo 3.1 Fast", detail: "Rapide", cauris: 9 },
+      { name: "Veo 3.1", detail: "Cinématique 4K", cauris: 36 },
+    ]},
+    { brand: "SORA", models: [
+      { name: "Sora 2", detail: "10s", cauris: 5 },
+      { name: "Sora 2 Pro", detail: "10s Standard", cauris: 22 },
+      { name: "Sora 2 Pro High", detail: "10s Qualité max", cauris: 47 },
+    ]},
+  ],
+  audio: [
+    { brand: "ELEVENLABS", models: [
+      { name: "Sound Effects v2", detail: "Effets sonores", cauris: 1 },
+      { name: "Audio Isolation", detail: "Séparer voix/musique", cauris: 1 },
+      { name: "Speech to Text", detail: "Transcription", cauris: 1 },
+      { name: "TTS Turbo 2.5", detail: "Voix rapide", cauris: 2 },
+      { name: "TTS Multilingual v2", detail: "Voix haute qualité", cauris: 3 },
+    ]},
+    { brand: "SUNO", models: [
+      { name: "Generate Lyrics", detail: "Paroles IA", cauris: 1 },
+      { name: "Vocal Separation", detail: "Séparer stems", cauris: 3 },
+      { name: "Multi-Stem Separation", detail: "Tous les stems", cauris: 10 },
+    ]},
+  ],
+  studio: [
+    { brand: "MULTI-PLAN", models: [
+      { name: "Vidéo multi-shot", detail: "Automatisé", cauris: 50 },
+    ]},
+    { brand: "LIP SYNC", models: [
+      { name: "Kling Avatar 720p", detail: "Lip sync basique", cauris: 17 },
+      { name: "Kling Avatar 1080p", detail: "Lip sync HD", cauris: 34 },
+    ]},
+  ],
+};
+
+const comparison = [
+  { criterion: "Prix Sora 2 (10s)", deepnia: "~400 FCFA", kie: "~250 FCFA", pelikulart: "100 FCFA" },
+  { criterion: "Prix Veo 3.1", deepnia: "~1500 FCFA", kie: "~900 FCFA", pelikulart: "720 FCFA" },
+  { criterion: "Interface en français", deepnia: false, kie: false, pelikulart: true },
+  { criterion: "Paiement Mobile Money", deepnia: false, kie: false, pelikulart: true },
+  { criterion: "Support WhatsApp", deepnia: false, kie: false, pelikulart: true },
+  { criterion: "Galerie sauvegardée", deepnia: true, kie: true, pelikulart: true },
+];
+
+const tabLabels: Record<TabKey, string> = {
+  image: "Image",
+  video: "Vidéo",
+  audio: "Audio",
+  studio: "Studio",
+};
+
+const paymentLogos = [
+  { src: payWave, alt: "Wave" },
+  { src: payMtn, alt: "MTN MoMo" },
+  { src: payMoov, alt: "Orange Money" },
+  { src: payVisa, alt: "Visa" },
+  { src: payMastercard, alt: "Mastercard" },
+];
+
+// ═══════════════════════════════════════════════════════════════
+// COMPONENT
+// ═══════════════════════════════════════════════════════════════
 
 const LandingPricing = () => {
+  const [activeTab, setActiveTab] = useState<TabKey>("image");
+
   return (
-    <section className="py-16 sm:py-24 md:py-32">
-      <div className="max-w-6xl mx-auto px-4 sm:px-8">
-        {/* Header */}
+    <section className="py-20 sm:py-28 md:py-36" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+      <div className="max-w-[1100px] mx-auto px-4 sm:px-6">
+        
+        {/* ═══ HEADER ═══ */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="text-center mb-12 sm:mb-16"
+          className="text-center mb-10"
         >
-          <h2 className="text-2xl sm:text-4xl md:text-5xl font-bold text-white leading-tight font-display">
-            Recharge et crée. <span className="text-lime">C'est tout.</span>
+          <h2 
+            className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white leading-tight tracking-tight"
+            style={{ fontFamily: "'Syne', sans-serif" }}
+          >
+            Tarifs
           </h2>
-          <p className="text-white/35 mt-3 max-w-sm mx-auto text-xs sm:text-sm leading-relaxed">
-            Pas d'abonnement. Achète des Cauris, utilise-les quand tu veux.
+          <p className="text-white/40 mt-4 max-w-lg mx-auto text-sm leading-relaxed">
+            Achetez des cauris, utilisez-les quand vous voulez. Jamais d'abonnement. Jamais d'expiration.
           </p>
         </motion.div>
 
-        {/* ═══ Desktop table ═══ */}
+        {/* ═══ PAYMENT BADGES ═══ */}
+        <div className="flex flex-wrap justify-center gap-4 mb-14">
+          {paymentLogos.map((logo) => (
+            <div
+              key={logo.alt}
+              className="h-8 px-3 flex items-center gap-2 rounded-full bg-white/[0.03] border border-white/[0.06]"
+            >
+              <img src={logo.src} alt={logo.alt} className="h-5 w-auto" />
+              <span className="text-[10px] text-white/50 font-medium" style={{ fontFamily: "'DM Mono', monospace" }}>
+                {logo.alt}
+              </span>
+            </div>
+          ))}
+        </div>
+
+        {/* ═══ PACKS GRID ═══ */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="hidden lg:block"
+          className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 mb-3"
         >
-          <div className="rounded-3xl border border-white/[0.06] overflow-hidden backdrop-blur-sm">
-            {/* Pack headers */}
-            <div className="grid grid-cols-[1.4fr_repeat(5,1fr)]">
-              <div className="p-5" />
-              {packs.map((pack) => (
-                <div
-                  key={pack.name}
-                  className={`p-5 text-center relative ${
-                    pack.tag === "Populaire" ? "bg-lime/[0.04]" : ""
-                  }`}
-                >
-                  {pack.tag && (
-                    <span className="absolute top-2 left-1/2 -translate-x-1/2 bg-lime/90 text-black text-[8px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-widest">
-                      {pack.tag}
-                    </span>
-                  )}
-                  <p className="text-white/60 text-[11px] font-mono uppercase tracking-widest mt-3">
-                    {pack.name}
-                  </p>
-                  <p className="mt-2">
-                    <span className="text-2xl font-bold text-white font-mono tracking-tight">
-                      {pack.price}
-                    </span>
-                    <span className="text-white/20 text-[10px] ml-1">FCFA</span>
-                  </p>
-                  <p className="text-lime/80 text-[11px] font-mono mt-1">{pack.cauris} Cauris</p>
-                </div>
-              ))}
-            </div>
-
-            {/* Separator */}
-            <div className="h-px bg-gradient-to-r from-transparent via-white/[0.08] to-transparent" />
-
-            {/* Rows */}
-            {rowLabels.map((label, ri) => (
-              <div
-                key={label}
-                className={`grid grid-cols-[1.4fr_repeat(5,1fr)] transition-colors hover:bg-white/[0.015] ${
-                  ri < rowLabels.length - 1 ? "border-b border-white/[0.03]" : ""
-                }`}
-              >
-                <div className="py-3.5 px-5 text-white/40 text-[11px] font-mono tracking-wide flex items-center">
-                  {label}
-                </div>
-                {packs.map((pack) => (
-                  <div
-                    key={pack.name}
-                    className={`py-3.5 text-center ${
-                      pack.tag === "Populaire" ? "bg-lime/[0.04]" : ""
-                    }`}
-                  >
-                    <span className="text-white/90 text-sm font-mono font-medium">
-                      {pack.rows[label]}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            ))}
-
-            {/* Separator */}
-            <div className="h-px bg-gradient-to-r from-transparent via-white/[0.08] to-transparent" />
-
-            {/* CTA row */}
-            <div className="grid grid-cols-[1.4fr_repeat(5,1fr)]">
-              <div className="p-4" />
-              {packs.map((pack) => (
-                <div
-                  key={pack.name}
-                  className={`p-4 flex justify-center ${
-                    pack.tag === "Populaire" ? "bg-lime/[0.04]" : ""
-                  }`}
-                >
-                  <Link
-                    to="/pricing"
-                    className={`px-6 py-2 rounded-full text-[10px] font-bold uppercase tracking-widest transition-all duration-300 ${
-                      pack.tag === "Populaire"
-                        ? "bg-lime text-black hover:bg-lime/90 shadow-[0_0_20px_hsl(82_85%_55%/0.25)]"
-                        : "bg-white/[0.04] text-white/70 hover:bg-white/[0.08] border border-white/[0.08] hover:border-white/[0.15]"
-                    }`}
-                  >
-                    Acheter
-                  </Link>
-                </div>
-              ))}
-            </div>
-          </div>
-        </motion.div>
-
-        {/* ═══ Mobile cards ═══ */}
-        <div className="lg:hidden space-y-3">
           {packs.map((pack, i) => (
-            <motion.div
+            <div
               key={pack.name}
-              initial={{ opacity: 0, y: 16 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.06 }}
-              className={`rounded-2xl p-5 relative ${
-                pack.tag === "Populaire"
-                  ? "bg-white/[0.04] border border-lime/20"
-                  : "bg-white/[0.02] border border-white/[0.05]"
+              className={`relative rounded-2xl p-5 flex flex-col items-center text-center transition-transform ${
+                pack.popular ? "lg:-mt-3 lg:mb-3 bg-white/[0.04] border border-white/[0.08]" : "bg-white/[0.02] border border-white/[0.04]"
               }`}
             >
-              {pack.tag && (
-                <span className="absolute -top-2 right-4 bg-lime/90 text-black text-[8px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-widest">
-                  {pack.tag}
-                </span>
+              {pack.popular && (
+                <p className="text-[9px] text-white/50 uppercase tracking-widest mb-2" style={{ fontFamily: "'DM Mono', monospace" }}>
+                  Le plus populaire
+                </p>
+              )}
+              {pack.bestValue && (
+                <p className="text-[9px] text-white/30 uppercase tracking-widest mb-2" style={{ fontFamily: "'DM Mono', monospace" }}>
+                  Meilleure valeur
+                </p>
               )}
 
-              {/* Top: name + price inline */}
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <p className="text-white font-semibold text-sm font-display">{pack.name}</p>
-                  <p className="text-lime/70 text-[11px] font-mono mt-0.5">{pack.cauris} Cauris</p>
-                </div>
-                <div className="text-right">
-                  <span className="text-2xl font-bold text-white font-mono">{pack.price}</span>
-                  <span className="text-white/20 text-[10px] ml-1">FCFA</span>
-                </div>
-              </div>
+              <p className="text-white/50 text-xs uppercase tracking-widest mb-1" style={{ fontFamily: "'DM Mono', monospace" }}>
+                {pack.name}
+              </p>
 
-              {/* Compact grid of capabilities */}
-              <div className="grid grid-cols-3 gap-x-3 gap-y-2 mb-4">
-                {rowLabels.map((label) => (
-                  <div key={label} className="text-center">
-                    <p className="text-white font-bold text-sm font-mono">{pack.rows[label]}</p>
-                    <p className="text-white/30 text-[9px] font-mono leading-tight mt-0.5">{label}</p>
-                  </div>
-                ))}
+              <p 
+                className="text-4xl sm:text-5xl font-bold text-white my-2"
+                style={{ fontFamily: "'DM Mono', monospace" }}
+              >
+                {pack.cauris}
+              </p>
+              <p className="text-white/30 text-[10px] uppercase tracking-wider mb-4" style={{ fontFamily: "'DM Mono', monospace" }}>
+                Cauris
+              </p>
+
+              <p className="text-white text-sm font-semibold mb-4" style={{ fontFamily: "'DM Mono', monospace" }}>
+                {pack.price.toLocaleString("fr-FR")} <span className="text-white/30 text-xs">FCFA</span>
+              </p>
+
+              <div className="text-[10px] text-white/40 space-y-1 mb-5" style={{ fontFamily: "'DM Mono', monospace" }}>
+                <p>→ {pack.images} images</p>
+                <p>→ {pack.videos} vidéos</p>
+                <p>→ {pack.music} musiques</p>
               </div>
 
               <Link
                 to="/pricing"
-                className={`block w-full text-center py-2.5 rounded-full text-[10px] font-bold uppercase tracking-widest transition-all ${
-                  pack.tag === "Populaire"
-                    ? "bg-lime text-black hover:bg-lime/90"
+                className={`w-full py-2.5 rounded-full text-[10px] font-bold uppercase tracking-widest transition-all text-center ${
+                  pack.popular
+                    ? "bg-primary text-primary-foreground hover:bg-primary/90"
                     : "bg-white/[0.04] text-white/60 hover:bg-white/[0.08] border border-white/[0.06]"
                 }`}
               >
                 Acheter
               </Link>
-            </motion.div>
+            </div>
           ))}
+        </motion.div>
+
+        {/* ═══ BAND ═══ */}
+        <div className="text-center py-3 mb-20 border-t border-b border-white/[0.04]">
+          <p className="text-[10px] text-white/25 tracking-widest uppercase" style={{ fontFamily: "'DM Mono', monospace" }}>
+            Vos cauris n'expirent jamais — utilisez-les à votre rythme
+          </p>
         </div>
 
-        {/* Disclaimer */}
-        <p className="text-center text-white/15 text-[9px] font-mono mt-6 tracking-wide">
-          Estimations basées sur les coûts par modèle · Usage réel varie selon les options
-        </p>
-
-        {/* KkiaPay badge */}
+        {/* ═══ COST PER GENERATION ═══ */}
         <motion.div
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ delay: 0.3 }}
-          className="flex items-center justify-center gap-2 mt-8 sm:mt-10"
+          className="mb-24"
         >
-          <ShieldCheck className="w-3.5 h-3.5 text-white/25" />
-          <span className="text-[10px] text-white/25 font-mono">Sécurisé par</span>
-          <img src={kkiapayLogo} alt="KkiaPay" className="h-6 opacity-50" />
+          <h3 
+            className="text-2xl sm:text-3xl font-bold text-white text-center mb-2"
+            style={{ fontFamily: "'Syne', sans-serif" }}
+          >
+            Coût par génération
+          </h3>
+          <p className="text-white/30 text-xs text-center mb-8" style={{ fontFamily: "'DM Mono', monospace" }}>
+            Calculé dynamiquement selon le modèle, la résolution et la durée
+          </p>
+
+          {/* Tabs */}
+          <div className="flex justify-center gap-6 mb-8 border-t border-white/[0.06] pt-4">
+            {(Object.keys(tabLabels) as TabKey[]).map((key) => (
+              <button
+                key={key}
+                onClick={() => setActiveTab(key)}
+                className={`text-xs uppercase tracking-widest pb-2 transition-all relative ${
+                  activeTab === key ? "text-white" : "text-white/30 hover:text-white/50"
+                }`}
+                style={{ fontFamily: "'DM Mono', monospace" }}
+              >
+                {tabLabels[key]}
+                {activeTab === key && (
+                  <span className="absolute -top-4 left-0 right-0 h-0.5 bg-primary" />
+                )}
+              </button>
+            ))}
+          </div>
+
+          {/* Table */}
+          <div className="space-y-6">
+            {costData[activeTab].map((group) => (
+              <div key={group.brand}>
+                <p 
+                  className="text-[9px] text-white/20 uppercase tracking-[0.2em] mb-3 pl-1"
+                  style={{ fontFamily: "'DM Mono', monospace" }}
+                >
+                  {group.brand}
+                </p>
+                <div className="space-y-0">
+                  {group.models.map((model, mi) => (
+                    <div
+                      key={model.name}
+                      className={`flex items-center justify-between py-3 px-4 ${
+                        mi < group.models.length - 1 ? "border-b border-white/[0.03]" : ""
+                      }`}
+                    >
+                      <div className="flex-1">
+                        <p className="text-white text-sm" style={{ fontFamily: "'DM Mono', monospace" }}>
+                          {model.name}
+                        </p>
+                        <p className="text-white/25 text-[10px] mt-0.5" style={{ fontFamily: "'DM Mono', monospace" }}>
+                          {model.detail}
+                        </p>
+                      </div>
+                      <div className="text-right flex items-center gap-6">
+                        <span className="text-white/40 text-xs" style={{ fontFamily: "'DM Mono', monospace" }}>
+                          {(model.cauris * 20).toLocaleString("fr-FR")} FCFA
+                        </span>
+                        <span className="text-white font-bold text-sm min-w-[3rem] text-right" style={{ fontFamily: "'DM Mono', monospace" }}>
+                          {model.cauris}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
         </motion.div>
+
+        {/* ═══ COMPARISON TABLE ═══ */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+        >
+          <h3 
+            className="text-2xl sm:text-3xl font-bold text-white text-center mb-10"
+            style={{ fontFamily: "'Syne', sans-serif" }}
+          >
+            Pourquoi Pelikulart.AI ?
+          </h3>
+
+          {/* Desktop table */}
+          <div className="hidden sm:block overflow-x-auto">
+            <table className="w-full" style={{ fontFamily: "'DM Mono', monospace" }}>
+              <thead>
+                <tr className="border-b border-white/[0.06]">
+                  <th className="text-left py-4 text-[10px] text-white/30 uppercase tracking-widest font-normal">Critère</th>
+                  <th className="text-center py-4 text-[10px] text-white/30 uppercase tracking-widest font-normal">Deepnia</th>
+                  <th className="text-center py-4 text-[10px] text-white/30 uppercase tracking-widest font-normal">Kie.ai Direct</th>
+                  <th className="text-center py-4 text-[10px] text-white/40 uppercase tracking-widest font-medium bg-white/[0.02]">Pelikulart.AI</th>
+                </tr>
+              </thead>
+              <tbody>
+                {comparison.map((row, ri) => (
+                  <tr key={row.criterion} className={ri < comparison.length - 1 ? "border-b border-white/[0.03]" : ""}>
+                    <td className="py-3 text-white/50 text-xs">{row.criterion}</td>
+                    <td className="py-3 text-center text-xs">
+                      {typeof row.deepnia === "boolean" 
+                        ? (row.deepnia ? <span className="text-white/40">✓</span> : <span className="text-white/20">✗</span>)
+                        : <span className="text-white/40">{row.deepnia}</span>
+                      }
+                    </td>
+                    <td className="py-3 text-center text-xs">
+                      {typeof row.kie === "boolean"
+                        ? (row.kie ? <span className="text-white/40">✓</span> : <span className="text-white/20">✗</span>)
+                        : <span className="text-white/40">{row.kie}</span>
+                      }
+                    </td>
+                    <td className="py-3 text-center text-xs bg-white/[0.02]">
+                      {typeof row.pelikulart === "boolean"
+                        ? (row.pelikulart ? <span className="text-primary font-bold">✓</span> : <span className="text-white/20">✗</span>)
+                        : <span className="text-white font-semibold">{row.pelikulart}</span>
+                      }
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Mobile cards */}
+          <div className="sm:hidden space-y-3">
+            {comparison.map((row) => (
+              <div key={row.criterion} className="bg-white/[0.02] rounded-xl p-4 border border-white/[0.04]">
+                <p className="text-white/50 text-xs mb-3" style={{ fontFamily: "'DM Mono', monospace" }}>{row.criterion}</p>
+                <div className="grid grid-cols-3 gap-2 text-center text-[10px]" style={{ fontFamily: "'DM Mono', monospace" }}>
+                  <div>
+                    <p className="text-white/20 uppercase tracking-wider mb-1">Deepnia</p>
+                    <p className="text-white/40">
+                      {typeof row.deepnia === "boolean" ? (row.deepnia ? "✓" : "✗") : row.deepnia}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-white/20 uppercase tracking-wider mb-1">Kie.ai</p>
+                    <p className="text-white/40">
+                      {typeof row.kie === "boolean" ? (row.kie ? "✓" : "✗") : row.kie}
+                    </p>
+                  </div>
+                  <div className="bg-primary/5 rounded-lg py-1">
+                    <p className="text-white/30 uppercase tracking-wider mb-1">Pelikulart</p>
+                    <p className={typeof row.pelikulart === "boolean" ? "text-primary font-bold" : "text-white font-semibold"}>
+                      {typeof row.pelikulart === "boolean" ? (row.pelikulart ? "✓" : "✗") : row.pelikulart}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </motion.div>
+
       </div>
     </section>
   );
