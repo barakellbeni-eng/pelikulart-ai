@@ -251,7 +251,7 @@ const Pricing = () => {
           <p className="text-xs text-muted-foreground mb-4">Achetez des Cauris, générez des images et vidéos. Quand c'est fini, rechargez !</p>
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
           {packs.map((pack, i) => (
             <motion.div
               key={pack.id}
