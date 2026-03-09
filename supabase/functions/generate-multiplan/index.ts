@@ -215,7 +215,8 @@ serve(async (req) => {
     }
 
     if (!imageResult) {
-      await adminClient.rpc("add_cauris", { p_user_id: userId, p_amount: cost });
+      const { data: rb } = await adminClient.rpc("add_cauris", { p_user_id: userId, p_amount: cost });
+      await logCauris(adminClient, userId, "remboursement", `Échec Multi-Plan — ${plan_type}`, cost, rb ?? 0);
       return new Response(
         JSON.stringify({ error: "Aucune image générée. Les deux providers ont échoué." }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
