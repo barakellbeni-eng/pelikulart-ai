@@ -22,6 +22,7 @@ import StudioHome from "./pages/StudioHome";
 import Dashboard from "./pages/Dashboard";
 import MultiPlan from "./pages/MultiPlan";
 import MotionControl from "./pages/MotionControl";
+import LensControl from "./pages/LensControl";
 import Pricing from "./pages/Pricing";
 import Profile from "./pages/Profile";
 import ResetPassword from "./pages/ResetPassword";
@@ -59,7 +60,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
 const AuthenticatedLayout = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
-  const isFullHeightPage = location.pathname === "/studio/create" || location.pathname === "/studio/multi-plan" || location.pathname === "/studio/motion-control";
+  const isFullHeightPage = location.pathname === "/studio/create" || location.pathname === "/studio/multi-plan" || location.pathname === "/studio/motion-control" || location.pathname === "/studio/lens-control";
   const [showSplash, setShowSplash] = useState(true);
   const handleSplashFinish = useCallback(() => setShowSplash(false), []);
 
@@ -124,6 +125,7 @@ const AppContent = () => {
         <Route path="/studio/create" element={<AuthenticatedLayout><Dashboard /></AuthenticatedLayout>} />
         <Route path="/studio/multi-plan" element={<AuthenticatedLayout><MultiPlan /></AuthenticatedLayout>} />
         <Route path="/studio/motion-control" element={<AuthenticatedLayout><MotionControl /></AuthenticatedLayout>} />
+        <Route path="/studio/lens-control" element={<AuthenticatedLayout><LensControl /></AuthenticatedLayout>} />
         <Route path="/pricing" element={<AuthenticatedLayout><Pricing /></AuthenticatedLayout>} />
         <Route path="/profile" element={<ProtectedRoute><AuthenticatedLayout><Profile /></AuthenticatedLayout></ProtectedRoute>} />
 
