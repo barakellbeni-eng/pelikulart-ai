@@ -69,10 +69,17 @@ export function useProjects() {
 
   const createProject = useCallback(async (name: string) => {
     if (!user) return null;
+
+    // Enforce 10 project limit
+    if (projects.length >= 10) {
+      toast.error("Limite atteinte : 10 projets maximum par compte");
+      return null;
+    }
+
     const { data, error } = await supabase
       .from("projects")
       .insert({ user_id: user.id, name: name.trim() || "Sans titre" })
-      .select("id, name, cover_url, created_at, updated_at")
+      .select("id, name, cover_url, created_at, updated_at, generation_count, cauris_spent")
       .single();
 
     if (error) {
@@ -80,12 +87,17 @@ export function useProjects() {
       return null;
     }
 
-    const project: Project = { ...(data as any), generation_count: 0 };
+    const project: Project = { ...(data as any), generation_count: data.generation_count ?? 0, cauris_spent: data.cauris_spent ?? 0 };
     setProjects((prev) => [project, ...prev]);
     selectProject(project.id);
     toast.success(`Projet "${project.name}" créé`);
+
+    // Warn when approaching limit
+    if (projects.length === 8) toast.warning("Attention : 8/10 projets utilisés");
+    if (projects.length === 9) toast.warning("Attention : 9/10 projets utilisés");
+
     return project;
-  }, [user, selectProject]);
+  }, [user, selectProject, projects.length]);
 
   const renameProject = useCallback(async (id: string, newName: string) => {
     const { error } = await supabase
@@ -107,14 +119,14 @@ export function useProjects() {
     if (!user) return;
 
     try {
-      // Unlink generations first (set project_id to null)
-      const [unlinkJobs, unlinkGen] = await Promise.all([
-        supabase.from("generation_jobs").update({ project_id: null }).eq("project_id", id),
-        supabase.from("generations").update({ project_id: null }).eq("project_id", id),
+      // DELETE generations linked to this project (not just unlink)
+      const [deleteJobs, deleteGen] = await Promise.all([
+        supabase.from("generation_jobs").delete().eq("project_id", id),
+        supabase.from("generations").delete().eq("project_id", id),
       ]);
 
-      if (unlinkJobs.error) console.error("Unlink jobs error:", unlinkJobs.error);
-      if (unlinkGen.error) console.error("Unlink generations error:", unlinkGen.error);
+      if (deleteJobs.error) console.error("Delete jobs error:", deleteJobs.error);
+      if (deleteGen.error) console.error("Delete generations error:", deleteGen.error);
 
       const { error } = await supabase.from("projects").delete().eq("id", id);
       if (error) {
@@ -125,7 +137,7 @@ export function useProjects() {
 
       setProjects((prev) => prev.filter((p) => p.id !== id));
       if (selectedProjectId === id) selectProject(null);
-      toast.success("Projet supprimé");
+      toast.success("Projet et générations supprimés (cauris non remboursés)");
     } catch (e) {
       console.error("deleteProject error:", e);
       toast.error("Erreur lors de la suppression");
@@ -143,6 +155,35 @@ export function useProjects() {
     );
   }, []);
 
+  const duplicateProject = useCallback(async (projectId: string) => {
+    if (!user) return null;
+
+    // Enforce 10 project limit
+    if (projects.length >= 10) {
+      toast.error("Limite atteinte : 10 projets maximum par compte");
+      return null;
+    }
+
+    const original = projects.find((p) => p.id === projectId);
+    if (!original) return null;
+
+    const { data, error } = await supabase
+      .from("projects")
+      .insert({ user_id: user.id, name: `${original.name} (copie)` })
+      .select("id, name, cover_url, created_at, updated_at, generation_count, cauris_spent")
+      .single();
+
+    if (error) {
+      toast.error("Impossible de dupliquer le projet");
+      return null;
+    }
+
+    const project: Project = { ...(data as any), generation_count: data.generation_count ?? 0, cauris_spent: data.cauris_spent ?? 0 };
+    setProjects((prev) => [project, ...prev]);
+    toast.success(`Projet dupliqué : "${project.name}"`);
+    return project;
+  }, [user, projects]);
+
   return {
     projects,
     loading,
@@ -151,6 +192,7 @@ export function useProjects() {
     createProject,
     renameProject,
     deleteProject,
+    duplicateProject,
     updateCover,
     refetch: fetchProjects,
   };
