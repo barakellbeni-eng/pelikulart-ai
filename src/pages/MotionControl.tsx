@@ -545,46 +545,70 @@ const MotionControl = () => {
               )}
             </>
           ) : (
-            <div className="grid grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4">
-              {CAMERA_MOTIONS.map((m) => (
-                <button
-                  key={m.id}
-                  onClick={() => {
-                    setSelectedMotion(m.id);
-                    setActiveTab("generations");
-                  }}
-                  className={`w-full relative rounded-xl overflow-hidden border transition-all aspect-video ${
-                    selectedMotion === m.id ? "border-primary ring-2 ring-primary shadow-sm shadow-primary/20" : "border-border/30 hover:border-primary/40"
-                  }`}
-                >
-                  <iframe
-                    src={buildEmbedUrl(m.mediaId)}
-                    width="100%"
-                    height="100%"
-                    frameBorder="0"
-                    allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                    referrerPolicy="unsafe-url"
-                    title={m.label}
-                    style={{ position: "absolute", top: 0, left: 0, pointerEvents: "none" }}
-                  />
-                  <div className="absolute inset-0 flex flex-col justify-end pointer-events-none">
-                    <div className="bg-gradient-to-t from-black/85 via-black/20 to-transparent p-2 pt-8">
-                      <p
-                        style={{ fontFamily: "'Sora', sans-serif", fontWeight: 700, lineHeight: 1 }}
-                        className="text-base text-white uppercase tracking-tight drop-shadow-md text-center"
-                      >
-                        {m.label}
-                      </p>
+            <div className="grid grid-cols-4 auto-rows-[140px] gap-3">
+              {CAMERA_MOTIONS.map((m) => {
+                // Bento sizes: assign col/row spans for variety
+                const bentoMap: Record<string, string> = {
+                  "dolly-in": "col-span-2 row-span-2",
+                  "dolly-out": "col-span-1 row-span-2",
+                  "dolly-left": "col-span-1 row-span-1",
+                  "dolly-right": "col-span-2 row-span-1",
+                  "pan-left": "col-span-1 row-span-1",
+                  "pan-right": "col-span-1 row-span-2",
+                  "tilt-up": "col-span-1 row-span-1",
+                  "tilt-down": "col-span-1 row-span-1",
+                  "zoom-in": "col-span-2 row-span-2",
+                  "zoom-out": "col-span-1 row-span-1",
+                  "crash-zoom-in": "col-span-1 row-span-2",
+                  "crash-zoom-out": "col-span-1 row-span-1",
+                  "crane-down": "col-span-2 row-span-1",
+                  "jib-up": "col-span-1 row-span-2",
+                  "jib-down": "col-span-1 row-span-1",
+                  "handheld": "col-span-2 row-span-2",
+                  "car-chasing": "col-span-1 row-span-1",
+                  "lazy-susan": "col-span-1 row-span-2",
+                };
+                const span = bentoMap[m.id] || "col-span-1 row-span-1";
+
+                return (
+                  <button
+                    key={m.id}
+                    onClick={() => {
+                      setSelectedMotion(m.id);
+                      setActiveTab("generations");
+                    }}
+                    className={`${span} relative rounded-xl overflow-hidden border transition-all ${
+                      selectedMotion === m.id ? "border-primary ring-2 ring-primary shadow-sm shadow-primary/20" : "border-border/30 hover:border-primary/40"
+                    }`}
+                  >
+                    <iframe
+                      src={buildEmbedUrl(m.mediaId)}
+                      className="absolute inset-0 w-full h-full object-cover"
+                      frameBorder="0"
+                      allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                      referrerPolicy="unsafe-url"
+                      title={m.label}
+                      style={{ pointerEvents: "none" }}
+                    />
+                    <div className="absolute inset-0 flex flex-col justify-end pointer-events-none">
+                      <div className="bg-gradient-to-t from-black/85 via-black/20 to-transparent p-3 pt-10">
+                        <p
+                          style={{ fontFamily: "'Sora', sans-serif", fontWeight: 700, lineHeight: 1 }}
+                          className="text-sm text-white uppercase tracking-tight drop-shadow-md"
+                        >
+                          {m.label}
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                  {selectedMotion === m.id && (
-                    <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-primary flex items-center justify-center text-black shadow-md">
-                      <Check className="w-3.5 h-3.5" />
-                    </div>
-                  )}
-                </button>
-              ))}
+                    {selectedMotion === m.id && (
+                      <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-primary flex items-center justify-center text-black shadow-md">
+                        <Check className="w-3.5 h-3.5" />
+                      </div>
+                    )}
+                  </button>
+                );
+              })}
             </div>
           )}
         </div>
