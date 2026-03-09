@@ -155,6 +155,35 @@ export function useProjects() {
     );
   }, []);
 
+  const duplicateProject = useCallback(async (projectId: string) => {
+    if (!user) return null;
+
+    // Enforce 10 project limit
+    if (projects.length >= 10) {
+      toast.error("Limite atteinte : 10 projets maximum par compte");
+      return null;
+    }
+
+    const original = projects.find((p) => p.id === projectId);
+    if (!original) return null;
+
+    const { data, error } = await supabase
+      .from("projects")
+      .insert({ user_id: user.id, name: `${original.name} (copie)` })
+      .select("id, name, cover_url, created_at, updated_at, generation_count, cauris_spent")
+      .single();
+
+    if (error) {
+      toast.error("Impossible de dupliquer le projet");
+      return null;
+    }
+
+    const project: Project = { ...(data as any), generation_count: data.generation_count ?? 0, cauris_spent: data.cauris_spent ?? 0 };
+    setProjects((prev) => [project, ...prev]);
+    toast.success(`Projet dupliqué : "${project.name}"`);
+    return project;
+  }, [user, projects]);
+
   return {
     projects,
     loading,
@@ -163,6 +192,7 @@ export function useProjects() {
     createProject,
     renameProject,
     deleteProject,
+    duplicateProject,
     updateCover,
     refetch: fetchProjects,
   };
