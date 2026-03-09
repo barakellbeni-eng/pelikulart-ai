@@ -211,6 +211,7 @@ const LensControl = () => {
     }
 
     setIsGenerating(true);
+    setActiveTab("preview");
     try {
       const { data: sessionData } = await supabase.auth.getSession();
       const token = sessionData?.session?.access_token;
@@ -236,10 +237,41 @@ const LensControl = () => {
         throw new Error(err.error || "Erreur lors de la génération");
       }
 
+      const kieData = await resp.json();
+      if (kieData.new_balance !== undefined) refreshBalance();
+
+      // Poll for completion
+      const jobId = kieData.job_id;
+      if (jobId) {
+        const maxPolls = 200;
+        for (let i = 0; i < maxPolls; i++) {
+          await new Promise((r) => setTimeout(r, 3000));
+          const { data: jobRow } = await supabase
+            .from("generation_jobs")
+            .select("status, result_url, result_metadata")
+            .eq("id", jobId)
+            .single();
+
+          if (jobRow?.status === "completed") {
+            await loadGallery();
+            refreshBalance();
+            setActiveTab("results");
+            toast.success("Image générée !");
+            setIsGenerating(false);
+            return;
+          }
+          if (jobRow?.status === "failed") {
+            const errMsg = (jobRow.result_metadata as any)?.error || "La génération a échoué";
+            throw new Error(errMsg);
+          }
+        }
+        throw new Error("La génération a pris trop de temps (timeout)");
+      }
+
       await loadGallery();
       refreshBalance();
       setActiveTab("results");
-      toast.success("Génération lancée !");
+      toast.success("Génération terminée !");
     } catch (e: any) {
       toast.error(e.message);
     } finally {
