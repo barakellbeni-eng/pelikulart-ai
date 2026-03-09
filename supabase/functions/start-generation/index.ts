@@ -990,7 +990,7 @@ serve(async (req) => {
     const adminClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
     const body = await req.json();
-    const { tool_type, model_id, prompt, cauris_cost = 0 } = body;
+    const { tool_type, model_id, prompt, cauris_cost = 0, project_id } = body;
 
     if (!prompt || typeof prompt !== "string") {
       return new Response(JSON.stringify({ error: "Un prompt est requis" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
