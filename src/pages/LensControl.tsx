@@ -13,10 +13,10 @@ const START_GENERATION_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/
 
 /* ── Lens types ── */
 const LENS_TYPES = [
-  { id: "prime", emoji: "🔵", label: "Prime", sub: "Focale fixe" },
-  { id: "anamorphic", emoji: "🎬", label: "Anamorphique", sub: "Cinéma 2.39:1" },
-  { id: "macro", emoji: "🔬", label: "Macro", sub: "Détails 1:1" },
-  { id: "special", emoji: "🌀", label: "Spéciaux", sub: "Fisheye · Tilt" },
+  { id: "prime", label: "Prime", sub: "Focale fixe" },
+  { id: "anamorphic", label: "Anamorphique", sub: "Cinéma 2.39:1" },
+  { id: "macro", label: "Macro", sub: "Détails 1:1" },
+  { id: "special", label: "Spéciaux", sub: "Fisheye · Tilt" },
 ] as const;
 
 type LensTypeId = (typeof LENS_TYPES)[number]["id"];
@@ -336,7 +336,6 @@ const LensControl = () => {
                       : "bg-muted/20 text-muted-foreground hover:bg-muted/40"
                   }`}
                 >
-                  <span className="text-base">{t.emoji}</span>
                   <div>
                     <div className="font-bold leading-tight">{t.label}</div>
                     <div className="text-[9px] opacity-70">{t.sub}</div>
