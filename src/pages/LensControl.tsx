@@ -49,7 +49,6 @@ const APERTURES = [
 
 /* ── FOV map ── */
 const FOV_MAP: Record<string, number> = {
-  "14": 114, "24": 84, "35": 63, "50": 47, "85": 28, "135": 18,
   "1.33x": 54, "1.5x": 50, "2x": 44,
   "60": 39, "100": 24, "180": 14,
   fisheye: 180, "tilt-shift": 47, lensbaby: 47,
