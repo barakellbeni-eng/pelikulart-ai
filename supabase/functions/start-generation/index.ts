@@ -131,6 +131,8 @@ const KIE_AUTO_SWITCH: Record<string, [string, string]> = {
   "kie-kling-25-turbo": ["kling/v2-5-turbo-text-to-video-pro", "kling/v2-5-turbo-image-to-video-pro"],
   "kie-kling-21": ["kling/v2-1-master-text-to-video", "kling/v2-1-master-image-to-video"],
   "kie-wan-26": ["wan/2-6-text-to-video", "wan/2-6-image-to-video"],
+  "kie-sora2": ["sora-2-text-to-video", "sora-2-image-to-video"],
+  "kie-sora2-pro": ["sora-2-pro-text-to-video", "sora-2-pro-image-to-video"],
 };
 
 // Models that use `image_input` param
