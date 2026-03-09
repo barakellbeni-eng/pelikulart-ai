@@ -176,6 +176,25 @@ function filterSettings(raw: Record<string, any>, allowed: Set<string>): Record<
 
 async function updateJob(adminClient: any, jobId: string, updates: Record<string, any>) {
   await adminClient.from("generation_jobs").update(updates).eq("id", jobId);
+
+  // When a job completes, increment project stats
+  if (updates.status === "completed") {
+    try {
+      const { data: job } = await adminClient
+        .from("generation_jobs")
+        .select("project_id, credits_used")
+        .eq("id", jobId)
+        .single();
+      if (job?.project_id) {
+        await adminClient.rpc("increment_project_stats", {
+          p_project_id: job.project_id,
+          p_cauris: job.credits_used || 0,
+        });
+      }
+    } catch (e) {
+      console.error("increment_project_stats error:", e);
+    }
+  }
 }
 
 async function pollFalQueue(endpoint: string, requestId: string, apiKey: string, maxAttempts = 120): Promise<any> {
