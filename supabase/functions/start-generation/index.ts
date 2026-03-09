@@ -1038,6 +1038,8 @@ serve(async (req) => {
       return new Response(JSON.stringify({ error: "Solde insuffisant" }), { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
+    await logCauris(adminClient, userId, "generation", `${tool_type} — ${model_id}`, -cost, deductResult);
+
     const { data: jobData, error: jobError } = await adminClient
       .from("generation_jobs")
       .insert({
