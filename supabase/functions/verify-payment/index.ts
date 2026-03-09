@@ -195,6 +195,8 @@ serve(async (req) => {
 
     console.log(`Payment verified: user=${userId}, amount=${requestedAmount}, cauris=${caurisAmount}, tx=${transaction_id}`);
 
+    await logCauris(adminClient, userId, "achat", `Pack ${requestedAmount.toLocaleString("fr-FR")} FCFA`, caurisAmount, newBalance ?? 0);
+
     return new Response(
       JSON.stringify({ success: true, new_balance: newBalance, cauris_added: caurisAmount }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
