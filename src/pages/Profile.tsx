@@ -345,7 +345,7 @@ const Profile = () => {
               </div>
 
               <div className="glass p-4 rounded-xl space-y-2">
-                <h4 className="text-sm font-medium text-foreground">🖼️ Mes générations disparaissent ?</h4>
+                <h4 className="text-sm font-medium text-foreground">Mes générations disparaissent ?</h4>
                 <p className="text-xs text-muted-foreground">
                   Non ! Toutes vos créations sont sauvegardées de manière permanente dans votre galerie personnelle.
                 </p>
