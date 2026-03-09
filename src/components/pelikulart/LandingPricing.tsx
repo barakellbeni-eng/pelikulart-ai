@@ -6,38 +6,57 @@ import { Link } from "react-router-dom";
 const packs = [
   {
     name: "Découverte",
-    price: "5 000",
-    cauris: 500,
+    price: "2 000",
+    cauris: 25,
     features: [
-      "~250 images HD",
-      "~10 vidéos courtes",
-      "Tous les modèles standards",
+      "~25 images HD",
+      "~3 vidéos courtes",
       "Idéal pour tester",
     ],
   },
   {
-    name: "Réalisateur",
-    price: "15 000",
-    cauris: 2200,
+    name: "Starter",
+    price: "5 000",
+    cauris: 70,
+    features: [
+      "~70 images HD",
+      "~8 vidéos",
+      "~35 musiques",
+      "Pour bien démarrer",
+    ],
+  },
+  {
+    name: "Créateur",
+    price: "10 000",
+    cauris: 160,
     popular: true,
     features: [
-      "2 000 + 200 offerts",
-      "~1 000 images HD",
-      "~50 vidéos 5s",
+      "~160 images HD",
+      "~20 vidéos",
+      "~80 musiques",
       "Tous les modèles IA",
+    ],
+  },
+  {
+    name: "Pro",
+    price: "25 000",
+    cauris: 450,
+    features: [
+      "~450 images HD",
+      "~56 vidéos",
+      "~225 musiques",
       "Support prioritaire",
     ],
   },
   {
-    name: "Masterclass",
-    price: "45 000",
-    cauris: 5000,
+    name: "Studio",
+    price: "50 000",
+    cauris: 1000,
     features: [
-      "~2 500 images HD",
-      "~120 vidéos 5s",
-      "Formation 'Ultime Clip IA' incluse",
-      "Modèles premium",
-      "Account manager dédié",
+      "~1 000 images HD",
+      "~125 vidéos",
+      "~500 musiques",
+      "Production intensive",
     ],
   },
 ];
@@ -60,7 +79,7 @@ const LandingPricing = () => {
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 sm:gap-6">
           {packs.map((pack, i) => (
             <motion.div
               key={pack.name}
