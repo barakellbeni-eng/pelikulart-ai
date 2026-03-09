@@ -33,7 +33,7 @@ import NotFound from "./pages/NotFound";
 
 // Pelikulart public pages
 import HomePage from "./pages/pelikulart/HomePage";
-import ComingSoon from "./pages/ComingSoon";
+
 import CreationsPage from "./pages/pelikulart/CreationsPage";
 import TrainingPage from "./pages/pelikulart/TrainingPage";
 // DevisPage removed
