@@ -211,7 +211,7 @@ const LensControl = () => {
     }
 
     setIsGenerating(true);
-    setActiveTab("preview");
+    setActiveTab("results");
     try {
       const { data: sessionData } = await supabase.auth.getSession();
       const token = sessionData?.session?.access_token;
@@ -226,7 +226,7 @@ const LensControl = () => {
           tool_type: "image",
           model_id: "kie-nano-banana",
           prompt: finalPrompt,
-          images: [sourceImage],
+          image_urls: [sourceImage],
           cauris_cost: COST,
           settings: {},
         }),
@@ -506,11 +506,31 @@ const LensControl = () => {
         <div className="flex-1 overflow-y-auto p-6 pt-4 scrollbar-thin">
           {activeTab === "results" ? (
             <>
+              {/* Loading state during generation */}
+              <AnimatePresence>
+                {isGenerating && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    className="mb-4"
+                  >
+                    <div className="relative rounded-xl overflow-hidden aspect-video bg-black border border-border/30">
+                      <img src={sourceImage || ""} alt="" className="absolute inset-0 w-full h-full object-cover opacity-40" />
+                      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm flex flex-col items-center justify-center gap-3">
+                        <GenerationProgress estimatedTime="~15s" />
+                        <p className="text-xs text-muted-foreground/80">Application de l'objectif…</p>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
               {loadingGallery ? (
                 <div className="flex items-center justify-center h-60">
                   <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
                 </div>
-              ) : gallery.length === 0 ? (
+              ) : gallery.length === 0 && !isGenerating ? (
                 <div className="flex flex-col items-center justify-center h-60 text-center">
                   <Sparkles className="w-10 h-10 text-muted-foreground/30 mb-3" />
                   <p className="text-sm text-muted-foreground">Aucun résultat pour le moment</p>
@@ -563,20 +583,6 @@ const LensControl = () => {
                       aperture={aperture}
                       fov={fov}
                     />
-                    {/* Generation progress overlay */}
-                    <AnimatePresence>
-                      {isGenerating && (
-                        <motion.div
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          exit={{ opacity: 0 }}
-                          className="absolute inset-0 bg-black/60 backdrop-blur-sm flex flex-col items-center justify-center gap-3 z-10"
-                        >
-                          <GenerationProgress estimatedTime="~15s" />
-                          <p className="text-xs text-muted-foreground/80">Application de l'objectif…</p>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
                   </div>
                   {/* Lens info badges */}
                   <div className="flex items-center gap-2 mt-4 justify-center">
