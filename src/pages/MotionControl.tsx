@@ -350,21 +350,19 @@ const MotionControl = () => {
                       style={{ position: "absolute", top: 0, left: 0, pointerEvents: "none" }}
                     />
                   </div>
-                  {/* Large Sora title overlay */}
-                  <div className="absolute inset-0 flex flex-col justify-end pointer-events-none">
-                    <div className="bg-gradient-to-t from-black/90 via-black/30 to-transparent p-3 pt-10">
-                      <p
-                        style={{ fontFamily: "'Sora', sans-serif", fontWeight: 700, lineHeight: 1 }}
-                        className="text-2xl text-white uppercase tracking-tight drop-shadow-lg"
-                      >
-                        {selectedMotionData.label}
-                      </p>
-                    </div>
+                  {/* Large Sora title overlay — centered */}
+                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                    <p
+                      style={{ fontFamily: "'Sora', sans-serif", fontWeight: 700, lineHeight: 1 }}
+                      className="text-2xl text-white uppercase tracking-tight drop-shadow-lg text-center"
+                    >
+                      {selectedMotionData.label}
+                    </p>
                   </div>
                 </div>
                 <button
                   onClick={() => setShowMotionPicker(true)}
-                  className="w-full px-3 py-2 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground bg-muted/20 hover:bg-muted/30 transition-colors flex items-center justify-center gap-1.5"
+                  className="w-full px-3 py-2 rounded-lg text-xs font-medium text-primary-foreground bg-primary hover:bg-primary/90 transition-colors flex items-center justify-center gap-1.5"
                 >
                   <RefreshCw className="w-3 h-3" />
                   Changer le mouvement
