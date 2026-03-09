@@ -130,7 +130,7 @@ const LensControl = () => {
   const [sourceImage, setSourceImage] = useState<string | null>(null);
 
   /* UI state */
-  const [activeTab, setActiveTab] = useState<"results" | "preview">("preview");
+  const [activeTab] = useState<"results">("results");
   const [isGenerating, setIsGenerating] = useState(false);
   const [showMediaPicker, setShowMediaPicker] = useState(false);
   const [gallery, setGallery] = useState<GalleryItem[]>([]);
