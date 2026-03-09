@@ -9,6 +9,7 @@ import { useCauris } from "@/hooks/useCauris";
 import MediaPickerModal from "@/components/MediaPickerModal";
 import DeleteConfirmModal from "@/components/DeleteConfirmModal";
 import { LENS_TYPE_ICONS, FOCAL_ICONS } from "@/components/LensIcons";
+import LensPreviewOverlay from "@/components/LensPreviewOverlay";
 
 const START_GENERATION_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/start-generation`;
 
