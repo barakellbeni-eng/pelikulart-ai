@@ -224,7 +224,7 @@ const LensControl = () => {
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({
           tool_type: "image",
-          model_id: "kie-nano-banana",
+          model_id: "kie-nano-banana-2",
           prompt: finalPrompt,
           image_urls: [sourceImage],
           cauris_cost: COST,
