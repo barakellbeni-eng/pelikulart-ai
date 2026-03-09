@@ -76,6 +76,7 @@ const AuthenticatedLayout = ({ children }: { children: React.ReactNode }) => {
           <header className="shrink-0 sticky top-0 z-50 glass px-4 py-2 flex items-center gap-3">
             <SidebarTrigger />
             <div className="ml-auto flex items-center gap-2">
+              <CaurisHeaderBadge />
               <ThemeToggle />
               <ProfileRing />
             </div>
