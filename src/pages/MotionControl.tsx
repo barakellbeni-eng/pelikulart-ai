@@ -145,7 +145,7 @@ interface GeneratedVideo {
 
 const MotionControl = () => {
   const { user } = useAuth();
-  const { credits, refetch: refreshBalance } = useCauris();
+  const { balance: credits, refetch: refreshBalance } = useCauris();
   const navigate = useNavigate();
   const location = useLocation();
 
