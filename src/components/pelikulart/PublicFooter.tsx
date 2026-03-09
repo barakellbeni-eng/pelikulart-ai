@@ -78,7 +78,7 @@ const PublicFooter = () => {
             <Link to="/politique-cookies" className="hover:underline">Cookies</Link>
             <Link to="/conditions-utilisation" className="hover:underline">CGU</Link>
           </div>
-          <p className="text-[10px] sm:text-[11px] font-medium opacity-50 text-center">© 2026 Pelikulart.AI — Forme-toi, crée, gagne du temps.</p>
+          <p className="text-[10px] sm:text-[11px] font-medium opacity-50 text-center">© 2025 Pelikulart.AI — Tous droits réservés</p>
         </div>
       </div>
     </footer>
