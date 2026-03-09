@@ -22,14 +22,6 @@ type LensTypeId = (typeof LENS_TYPES)[number]["id"];
 
 /* ── Focal lengths per type ── */
 const FOCALS: Record<LensTypeId, { value: string; label: string; sub: string }[]> = {
-  prime: [
-    { value: "14", label: "14mm", sub: "Ultra" },
-    { value: "24", label: "24mm", sub: "Grand" },
-    { value: "35", label: "35mm", sub: "Repor." },
-    { value: "50", label: "50mm", sub: "Standard" },
-    { value: "85", label: "85mm", sub: "Portrait" },
-    { value: "135", label: "135mm", sub: "Télé" },
-  ],
   anamorphic: [
     { value: "1.33x", label: "1.33×", sub: "Léger" },
     { value: "1.5x", label: "1.5×", sub: "Flares" },
