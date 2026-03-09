@@ -398,24 +398,6 @@ export const FAL_MODELS: FalModel[] = [
     ],
   },
 
-  // ── Seedance 1.5 Pro (KIE) ──
-  {
-    id: "kie-seedance-15-pro", type: "video", brand: "Seedance", name: "Seedance 1.5 Pro",
-    endpoint: "kie", provider: "kie", kieModel: "bytedance/seedance-1.5-pro",
-    description: "T2V ou I2V auto + audio optionnel", icon: "◈", color: "from-white/20 to-white/5",
-    maxImages: 1, supportsImageInput: true, caurisCost: 70, caurisCost10s: 140, estimatedTime: "~1min30",
-    settings: [
-      DURATION_5_10,
-      { key: "aspect_ratio", label: "Ratio", type: "select", options: [
-        { value: "1:1", label: "1:1" }, { value: "16:9", label: "16:9" }, { value: "9:16", label: "9:16" },
-        { value: "4:3", label: "4:3" }, { value: "3:4", label: "3:4" }, { value: "21:9", label: "21:9" },
-      ], defaultValue: "16:9" },
-      { key: "resolution", label: "Résolution", type: "select", options: [
-        { value: "480p", label: "480p" }, { value: "720p", label: "720p" }, { value: "1080p", label: "1080p" },
-      ], defaultValue: "720p" },
-      { key: "generate_audio", label: "Générer l'audio", type: "toggle", defaultValue: false },
-    ],
-  },
 
   // ════════════════════════════════════════
   //  AUDIO MODELS
