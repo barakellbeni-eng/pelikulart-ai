@@ -322,6 +322,7 @@ async function processImage(jobId: string, userId: string, body: any) {
         aspect_ratio: modelSettings.aspect_ratio || null,
         resolution: modelSettings.resolution || modelSettings.image_size || null,
         output_format,
+        project_id: body.project_id || null,
       });
     }
 
