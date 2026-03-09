@@ -255,7 +255,7 @@ const LensControl = () => {
           if (jobRow?.status === "completed") {
             await loadGallery();
             refreshBalance();
-            setActiveTab("results");
+            
             toast.success("Image générée !");
             setIsGenerating(false);
             return;
