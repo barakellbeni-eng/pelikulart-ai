@@ -140,6 +140,11 @@ const ASPECT_RATIOS = [
   { value: "1:1", label: "1:1" },
 ];
 
+const RESOLUTIONS = [
+  { value: "720p", label: "720p" },
+  { value: "1080p", label: "1080p" },
+];
+
 interface GeneratedVideo {
   id: string;
   url: string;
