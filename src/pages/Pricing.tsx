@@ -37,33 +37,53 @@ const packs = [
   {
     id: "decouverte",
     name: "Découverte",
-    price: "5 000",
-    priceNum: 5000,
-    cauris: 500,
+    price: "2 000",
+    priceNum: 2000,
+    cauris: 25,
     bonus: null,
     description: "Idéal pour tester",
-    examples: ["~250 images", "~10 vidéos", "~50 musiques"],
+    examples: ["~25 images", "~3 vidéos", "~12 musiques"],
   },
   {
-    id: "realisateur",
-    name: "Réalisateur",
-    price: "15 000",
-    priceNum: 15000,
-    cauris: 2200,
-    bonus: "+200 offerts",
+    id: "starter",
+    name: "Starter",
+    price: "5 000",
+    priceNum: 5000,
+    cauris: 70,
+    bonus: null,
+    description: "Pour bien démarrer",
+    examples: ["~70 images", "~8 vidéos", "~35 musiques"],
+  },
+  {
+    id: "createur",
+    name: "Créateur",
+    price: "10 000",
+    priceNum: 10000,
+    cauris: 160,
+    bonus: null,
     popular: true,
     description: "Le plus populaire",
-    examples: ["~1 000 images", "~50 vidéos", "~200 musiques"],
+    examples: ["~160 images", "~20 vidéos", "~80 musiques"],
   },
   {
-    id: "masterclass",
-    name: "Masterclass",
-    price: "45 000",
-    priceNum: 45000,
-    cauris: 5000,
-    bonus: "Formation incluse",
+    id: "pro",
+    name: "Pro",
+    price: "25 000",
+    priceNum: 25000,
+    cauris: 450,
+    bonus: null,
+    description: "Pour les créateurs réguliers",
+    examples: ["~450 images", "~56 vidéos", "~225 musiques"],
+  },
+  {
+    id: "studio",
+    name: "Studio",
+    price: "50 000",
+    priceNum: 50000,
+    cauris: 1000,
+    bonus: null,
     description: "Production intensive",
-    examples: ["~2 500 images", "~120 vidéos", "~500 musiques", "Formation 'Ultime Clip IA'"],
+    examples: ["~1 000 images", "~125 vidéos", "~500 musiques"],
   },
 ];
 
@@ -231,7 +251,7 @@ const Pricing = () => {
           <p className="text-xs text-muted-foreground mb-4">Achetez des Cauris, générez des images et vidéos. Quand c'est fini, rechargez !</p>
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
           {packs.map((pack, i) => (
             <motion.div
               key={pack.id}
