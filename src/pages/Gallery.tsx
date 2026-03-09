@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
-import { X, Download, Calendar, Cpu, Trash2, Loader2, Image as ImageIcon, Film, Music, Check, ClipboardCopy, Play, Pause, RotateCcw } from "lucide-react";
+import { useSearchParams } from "react-router-dom";
+import { X, Download, Calendar, Cpu, Trash2, Loader2, Image as ImageIcon, Film, Music, Check, ClipboardCopy, Play, Pause, RotateCcw, FolderOpen, ZoomIn, ZoomOut } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -8,10 +9,8 @@ import { toast } from "sonner";
 import { useProjects } from "@/hooks/useProjects";
 import VideoThumbnail from "@/components/VideoThumbnail";
 import DeleteConfirmModal from "@/components/DeleteConfirmModal";
-import GalleryCardMenu from "@/components/GalleryCardMenu";
 import { useGallerySelection } from "@/hooks/useGallerySelection";
 import { useGalleryPreferences } from "@/hooks/useGalleryPreferences";
-import GalleryToolbar from "@/components/GalleryToolbar";
 
 interface GalleryItem {
   id: string;
@@ -28,13 +27,20 @@ interface GalleryItem {
 }
 
 const DELETE_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/delete-generation`;
-
-// Audio player state for gallery cards
 const audioRefs: Record<string, HTMLAudioElement> = {};
+
+// Zoom level config
+const ZOOM_LABELS = ["Mini", "Petit", "Moyen", "2×16:9", "1×16:9"] as const;
 
 const Gallery = () => {
   const { user } = useAuth();
-  const { selectedProjectId, projects } = useProjects();
+  const { projects } = useProjects();
+  const [searchParams] = useSearchParams();
+
+  // Read project & type from URL
+  const urlProjectId = searchParams.get("project") || null;
+  const urlType = searchParams.get("type") as "image" | "video" | "audio" | null;
+
   const [items, setItems] = useState<GalleryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<GalleryItem | null>(null);
@@ -43,16 +49,19 @@ const Gallery = () => {
   const [removingIds, setRemovingIds] = useState<Set<string>>(new Set());
   const [batchDeleting, setBatchDeleting] = useState(false);
   const [playingAudioId, setPlayingAudioId] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<"all" | "image" | "video" | "audio">(urlType || "all");
 
   const { prefs, update } = useGalleryPreferences();
+
+  const activeProject = urlProjectId ? projects.find((p) => p.id === urlProjectId) : null;
 
   // --- Filtering & Sorting ---
   const filtered = useMemo(() => {
     let list = [...items];
 
-    // Type filter
-    if (prefs.typeFilter !== "all") {
-      list = list.filter((i) => i.tool_type === prefs.typeFilter);
+    // Tab filter (takes priority over URL type)
+    if (activeTab !== "all") {
+      list = list.filter((i) => i.tool_type === activeTab);
     }
 
     // Source filter (multi-plan vs standard)
@@ -72,14 +81,11 @@ const Gallery = () => {
       list = list.filter((i) => new Date(i.created_at) >= start);
     }
 
-    // Sort
-    if (prefs.sortBy === "newest") list.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-    else if (prefs.sortBy === "oldest") list.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
-    else if (prefs.sortBy === "type") list.sort((a, b) => a.tool_type.localeCompare(b.tool_type));
-    else if (prefs.sortBy === "model") list.sort((a, b) => a.model.localeCompare(b.model));
+    // Sort — default: newest
+    list.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
     return list;
-  }, [items, prefs.typeFilter, prefs.sourceFilter, prefs.dateFilter, prefs.sortBy]);
+  }, [items, activeTab, prefs.sourceFilter, prefs.dateFilter]);
 
   const {
     selectedIds,
@@ -96,6 +102,7 @@ const Gallery = () => {
 
   const fetchGallery = useCallback(async () => {
     if (!user) { setItems([]); setLoading(false); return; }
+    setLoading(true);
 
     let query = supabase
       .from("generation_jobs")
@@ -103,9 +110,9 @@ const Gallery = () => {
       .eq("status", "completed")
       .is("deleted_at", null)
       .order("created_at", { ascending: false })
-      .limit(100);
+      .limit(200);
 
-    if (selectedProjectId) query = query.eq("project_id", selectedProjectId);
+    if (urlProjectId) query = query.eq("project_id", urlProjectId);
 
     const { data, error } = await query;
     if (error || !data) { setLoading(false); return; }
@@ -129,11 +136,23 @@ const Gallery = () => {
 
     setItems(validItems.map((item, i) => ({ ...item, displayUrl: signedUrls[i] })));
     setLoading(false);
-  }, [user, selectedProjectId]);
+  }, [user, urlProjectId]);
 
   useEffect(() => { fetchGallery(); }, [fetchGallery]);
 
-  // --- Delete handlers (unchanged logic) ---
+  // Sync tab from URL on mount
+  useEffect(() => {
+    if (urlType) setActiveTab(urlType);
+  }, [urlType]);
+
+  // Count per type
+  const counts = useMemo(() => ({
+    all: items.length,
+    image: items.filter((i) => i.tool_type === "image").length,
+    video: items.filter((i) => i.tool_type === "video").length,
+    audio: items.filter((i) => i.tool_type === "audio").length,
+  }), [items]);
+
   const handleDelete = async (item: GalleryItem) => {
     if (deleting) return;
     setDeleting(item.id);
@@ -212,10 +231,7 @@ const Gallery = () => {
       setPlayingAudioId(null);
       return;
     }
-    // Stop any other playing audio
-    if (playingAudioId && audioRefs[playingAudioId]) {
-      audioRefs[playingAudioId].pause();
-    }
+    if (playingAudioId && audioRefs[playingAudioId]) audioRefs[playingAudioId].pause();
     if (!audioRefs[itemId]) {
       audioRefs[itemId] = new Audio(url);
       audioRefs[itemId].onended = () => setPlayingAudioId(null);
@@ -223,12 +239,6 @@ const Gallery = () => {
     audioRefs[itemId].play();
     setPlayingAudioId(itemId);
   }, [playingAudioId]);
-
-  const typeIcon = (type: string) => {
-    if (type === "video") return <Film className="w-3 h-3" />;
-    if (type === "audio") return <Music className="w-3 h-3" />;
-    return <ImageIcon className="w-3 h-3" />;
-  };
 
   const typeTag = (type: string) => {
     if (type === "video") return <span className="text-[9px] px-1.5 py-0.5 rounded bg-orange-500/10 text-orange-400 font-medium">Vidéo</span>;
@@ -248,17 +258,12 @@ const Gallery = () => {
   };
 
   const wasDraggingRef = useRef(false);
-
   const handleContainerMouseUp = useCallback(() => {
     wasDraggingRef.current = handleMouseUp();
   }, [handleMouseUp]);
 
   const handleCardClick = (item: GalleryItem, e: React.MouseEvent) => {
-    // Ignore click if we just finished a drag-select
-    if (wasDraggingRef.current) {
-      wasDraggingRef.current = false;
-      return;
-    }
+    if (wasDraggingRef.current) { wasDraggingRef.current = false; return; }
     if (e.ctrlKey || e.metaKey || selectionCount > 0) {
       toggleSelect(item.id, e.ctrlKey || e.metaKey);
     } else {
@@ -266,43 +271,86 @@ const Gallery = () => {
     }
   };
 
-  // --- Grid style based on zoom (5 levels) ---
+  // --- 5 zoom levels ---
+  // 1=Mini, 2=Petit, 3=Moyen, 4=2×16:9, 5=1×16:9
   const gridStyle = useMemo(() => {
     const val = prefs.zoom;
-    const sizes = [80, 130, 180, 240, 0]; // 0 = full width
-    const size = sizes[val - 1];
     if (val === 5) return { gridTemplateColumns: "1fr" };
     if (val === 4) return { gridTemplateColumns: "repeat(2, 1fr)" };
+    const sizes = [72, 120, 200];
+    const size = sizes[val - 1];
     return { gridTemplateColumns: `repeat(auto-fill, minmax(${size}px, 1fr))` };
   }, [prefs.zoom]);
 
   const cardAspect = prefs.zoom >= 4 ? "aspect-video" : "aspect-square";
 
+  const TABS = [
+    { key: "all" as const, label: "Tout", count: counts.all },
+    { key: "image" as const, label: "Images", count: counts.image, icon: <ImageIcon className="w-3 h-3" /> },
+    { key: "video" as const, label: "Vidéos", count: counts.video, icon: <Film className="w-3 h-3" /> },
+    { key: "audio" as const, label: "Audios", count: counts.audio, icon: <Music className="w-3 h-3" /> },
+  ];
+
   return (
-    <div className="min-h-screen pb-24 md:pb-8">
+    <div className="h-full flex flex-col overflow-hidden">
       {/* Header */}
-      <header className="sticky top-0 z-50 glass border-b border-white/[0.06] px-4 py-3">
-        <div className="max-w-5xl mx-auto flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-bold">
-              <span className="text-gradient-gold">Mes Générations</span>
-            </h1>
-            <p className="text-xs text-muted-foreground mt-0.5">{filtered.length} créations</p>
+      <header className="shrink-0 glass border-b border-white/[0.06] px-5 pt-4 pb-0">
+        {/* Title row */}
+        <div className="flex items-start justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <FolderOpen className="w-5 h-5 text-primary" />
+            <div>
+              <h1 className="text-lg font-bold text-foreground leading-tight">
+                {activeProject ? activeProject.name : "Toutes les créations"}
+              </h1>
+              {activeProject && (
+                <p className="text-[11px] text-muted-foreground">
+                  {activeProject.generation_count} gén. · {activeProject.cauris_spent} 🐚
+                </p>
+              )}
+            </div>
           </div>
+
+          {/* Zoom control */}
+          <div className="flex items-center gap-2 pb-1">
+            <button onClick={() => update("zoom", Math.max(1, prefs.zoom - 1))} className="p-1 rounded hover:bg-muted/50 text-muted-foreground hover:text-foreground transition-colors">
+              <ZoomOut className="w-3.5 h-3.5" />
+            </button>
+            <span className="text-[11px] text-muted-foreground w-14 text-center font-medium">{ZOOM_LABELS[prefs.zoom - 1]}</span>
+            <button onClick={() => update("zoom", Math.min(5, prefs.zoom + 1))} className="p-1 rounded hover:bg-muted/50 text-muted-foreground hover:text-foreground transition-colors">
+              <ZoomIn className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </div>
+
+        {/* Tabs */}
+        <div className="flex items-center gap-0">
+          {TABS.map((tab) => (
+            <button
+              key={tab.key}
+              onClick={() => setActiveTab(tab.key)}
+              className={`flex items-center gap-1.5 px-4 py-2 text-xs font-medium border-b-2 transition-colors relative ${
+                activeTab === tab.key
+                  ? "border-primary text-primary"
+                  : "border-transparent text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {tab.icon}
+              {tab.label}
+              <span className={`text-[10px] px-1.5 py-0.5 rounded-full tabular-nums ${
+                activeTab === tab.key ? "bg-primary/15 text-primary" : "bg-muted/50 text-muted-foreground"
+              }`}>
+                {tab.count}
+              </span>
+            </button>
+          ))}
         </div>
       </header>
 
-      {/* Toolbar */}
-      <div className="sticky top-[57px] z-40">
-        <div className="max-w-5xl mx-auto">
-          <GalleryToolbar prefs={prefs} update={update} />
-        </div>
-      </div>
-
-      {/* Main content */}
+      {/* Scrollable grid */}
       <main
         ref={containerRef}
-        className="max-w-5xl mx-auto px-4 pt-6 relative select-none"
+        className="flex-1 overflow-y-auto px-4 pt-4 pb-24 relative select-none"
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleContainerMouseUp}
@@ -323,151 +371,88 @@ const Gallery = () => {
             <p className="text-sm">Aucune génération pour le moment</p>
           </div>
         ) : (
-          <div className="grid gap-3" style={gridStyle}>
+          <div className="grid gap-2" style={gridStyle}>
             <AnimatePresence mode="popLayout">
               {filtered.map((item, i) => {
                 const removing = removingIds.has(item.id);
                 const removingIndex = removing ? Array.from(removingIds).indexOf(item.id) : 0;
-
                 return (
                   <motion.div
                     key={item.id}
                     data-gallery-card={item.id}
                     layout
-                    initial={{ opacity: 0, y: 20 }}
+                    initial={{ opacity: 0, y: 16 }}
                     animate={
                       removing
-                        ? { opacity: 0, scale: 0.85, transition: { delay: removingIndex * 0.05, duration: 0.3, ease: "easeOut" } }
+                        ? { opacity: 0, scale: 0.85, transition: { delay: removingIndex * 0.05, duration: 0.3 } }
                         : { opacity: 1, y: 0, scale: 1 }
                     }
-                    exit={{ opacity: 0, scale: 0.85, transition: { duration: 0.3, ease: "easeOut" } }}
-                    transition={{ delay: i * 0.03, layout: { duration: 0.4, ease: "easeInOut" } }}
+                    exit={{ opacity: 0, scale: 0.85, transition: { duration: 0.3 } }}
+                    transition={{ delay: i * 0.02, layout: { duration: 0.3 } }}
                     className={`glass-card overflow-hidden cursor-pointer group relative transition-all duration-200 ${isSelected(item.id) ? "ring-2 ring-primary ring-offset-2 ring-offset-background" : ""}`}
                     onClick={(e) => handleCardClick(item, e)}
                   >
-                    {/* Selection checkbox — visible on hover OR when any selection exists */}
-                    <div
-                      className={`absolute top-2 left-2 z-20 transition-opacity duration-150 ${
-                        selectionCount > 0 || isSelected(item.id) ? "opacity-100" : "opacity-0 group-hover:opacity-100"
-                      }`}
-                    >
+                    {/* Selection checkbox */}
+                    <div className={`absolute top-2 left-2 z-20 transition-opacity duration-150 ${selectionCount > 0 || isSelected(item.id) ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`}>
                       <button
                         onClick={(e) => { e.stopPropagation(); toggleSelect(item.id, true); }}
-                        className={`w-7 h-7 rounded-lg flex items-center justify-center backdrop-blur-sm shadow-lg transition-all duration-150 ${
-                          isSelected(item.id)
-                            ? "bg-primary text-primary-foreground scale-110"
-                            : "bg-background/60 text-muted-foreground hover:bg-background/80 hover:text-foreground"
-                        }`}
+                        className={`w-6 h-6 rounded-md flex items-center justify-center backdrop-blur-sm shadow-lg transition-all duration-150 ${isSelected(item.id) ? "bg-primary text-primary-foreground scale-110" : "bg-background/60 text-muted-foreground hover:bg-background/80"}`}
                       >
-                        {isSelected(item.id) ? (
-                          <Check className="w-4 h-4" />
-                        ) : (
-                          <div className="w-4 h-4 rounded border-2 border-current" />
-                        )}
+                        {isSelected(item.id) ? <Check className="w-3.5 h-3.5" /> : <div className="w-3.5 h-3.5 rounded border-2 border-current" />}
                       </button>
                     </div>
 
                     {/* Media */}
                     <div className="relative">
                       {item.tool_type === "image" ? (
-                        <img
-                          src={item.displayUrl}
-                          alt={item.prompt}
-                          className={`w-full ${cardAspect} object-cover`}
-                          loading="lazy"
-                        />
+                        <img src={item.displayUrl} alt={item.prompt} className={`w-full ${cardAspect} object-cover`} loading="lazy" />
                       ) : item.tool_type === "video" ? (
                         <div className={`relative ${cardAspect} bg-card flex items-center justify-center overflow-hidden`}>
                           <VideoThumbnail src={item.displayUrl || ""} />
                           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                            <div className="w-9 h-9 rounded-full bg-primary/15 border border-primary/30 flex items-center justify-center">
+                            <div className="w-8 h-8 rounded-full bg-primary/15 border border-primary/30 flex items-center justify-center">
                               <Play className="w-3 h-3 text-primary ml-0.5" fill="currentColor" />
                             </div>
                           </div>
-                          {item.result_metadata?.duration && (
-                            <span className="absolute bottom-2 right-2 text-[10px] text-muted-foreground">
-                              {Math.floor(item.result_metadata.duration / 60)}:{Math.floor(item.result_metadata.duration % 60).toString().padStart(2, "0")}
-                            </span>
-                          )}
                         </div>
                       ) : item.tool_type === "audio" ? (
                         <div
-                          className={`w-full ${cardAspect} bg-gradient-to-br from-card to-muted/30 flex flex-col items-center justify-center gap-2.5 relative overflow-hidden cursor-pointer ${playingAudioId === item.id ? "audio-playing" : ""}`}
+                          className={`w-full ${cardAspect} bg-gradient-to-br from-card to-muted/30 flex flex-col items-center justify-center gap-2 relative overflow-hidden cursor-pointer`}
                           onClick={(e) => { e.stopPropagation(); toggleAudioPlay(item.id, item.displayUrl || item.result_url); }}
                         >
-                          {/* Ripple icon */}
-                          <div className="relative w-12 h-12 flex items-center justify-center">
-                            <Music className="w-6 h-6 text-primary relative z-10" />
-                            {playingAudioId === item.id && (
-                              <>
-                                <div className="ripple-ring absolute inset-0 rounded-full border-[1.5px] border-primary/30" />
-                                <div className="ripple-ring-delayed absolute -inset-2 rounded-full border-[1.5px] border-primary/30" />
-                              </>
-                            )}
-                          </div>
-
-                          {/* Waveform bars */}
-                          <div className="flex items-center gap-[3px] h-5">
+                          <Music className="w-5 h-5 text-primary relative z-10" />
+                          <div className="flex items-center gap-[2px] h-4">
                             {[6, 14, 10, 18, 8, 16, 12, 6].map((h, idx) => (
-                              <div
-                                key={idx}
-                                className="wave-bar w-[3px] rounded-sm bg-primary/20"
-                                style={{ height: `${h}px`, animationDelay: `${idx * 0.1}s` }}
-                              />
+                              <div key={idx} className="wave-bar w-[3px] rounded-sm bg-primary/20" style={{ height: `${h}px`, animationDelay: `${idx * 0.1}s` }} />
                             ))}
                           </div>
-
-                          {/* Play button */}
-                          <button
-                            className="absolute bottom-2 left-2 w-6 h-6 rounded-full bg-primary flex items-center justify-center transition-transform hover:scale-110"
-                            onClick={(e) => { e.stopPropagation(); toggleAudioPlay(item.id, item.displayUrl || item.result_url); }}
-                          >
-                            {playingAudioId === item.id ? (
-                              <Pause className="w-2.5 h-2.5 text-primary-foreground" fill="currentColor" />
-                            ) : (
-                              <Play className="w-2.5 h-2.5 text-primary-foreground ml-0.5" fill="currentColor" />
-                            )}
+                          <button className="absolute bottom-2 left-2 w-5 h-5 rounded-full bg-primary flex items-center justify-center">
+                            {playingAudioId === item.id ? <Pause className="w-2 h-2 text-primary-foreground" fill="currentColor" /> : <Play className="w-2 h-2 text-primary-foreground ml-0.5" fill="currentColor" />}
                           </button>
-
-                          {item.result_metadata?.duration && (
-                            <span className="absolute bottom-2.5 right-2.5 text-[10px] text-muted-foreground">
-                              {Math.floor(item.result_metadata.duration / 60)}:{Math.floor(item.result_metadata.duration % 60).toString().padStart(2, "0")}
-                            </span>
-                          )}
                         </div>
                       ) : null}
 
-                      {/* Hover actions: Download, Recreate, Delete */}
+                      {/* Hover actions */}
                       <div className="absolute top-2 right-2 z-30 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button
-                          onClick={(e) => { e.stopPropagation(); handleDownload(item); }}
-                          className="w-[26px] h-[26px] rounded-md flex items-center justify-center bg-background/80 backdrop-blur-sm border border-border hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all text-foreground shadow-sm"
-                          title="Télécharger"
-                        >
-                          <Download className="w-3 h-3" />
+                        <button onClick={(e) => { e.stopPropagation(); handleDownload(item); }} className="w-[24px] h-[24px] rounded-md flex items-center justify-center bg-background/80 backdrop-blur-sm border border-border hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all text-foreground shadow-sm" title="Télécharger">
+                          <Download className="w-2.5 h-2.5" />
                         </button>
-                        <button
-                          onClick={(e) => { e.stopPropagation(); navigator.clipboard.writeText(item.prompt); toast.success("Prompt copié pour recréer !"); }}
-                          className="w-[26px] h-[26px] rounded-md flex items-center justify-center bg-background/80 backdrop-blur-sm border border-border hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all text-foreground shadow-sm"
-                          title="Recréer"
-                        >
-                          <RotateCcw className="w-3 h-3" />
+                        <button onClick={(e) => { e.stopPropagation(); navigator.clipboard.writeText(item.prompt); toast.success("Prompt copié !"); }} className="w-[24px] h-[24px] rounded-md flex items-center justify-center bg-background/80 backdrop-blur-sm border border-border hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all text-foreground shadow-sm" title="Copier le prompt">
+                          <RotateCcw className="w-2.5 h-2.5" />
                         </button>
-                        <button
-                          onClick={(e) => { e.stopPropagation(); setDeleteTarget(item); }}
-                          className="w-[26px] h-[26px] rounded-md flex items-center justify-center bg-background/80 backdrop-blur-sm border border-border hover:bg-destructive hover:text-destructive-foreground hover:border-destructive transition-all text-foreground shadow-sm"
-                          title="Supprimer"
-                        >
-                          <X className="w-3 h-3" />
+                        <button onClick={(e) => { e.stopPropagation(); setDeleteTarget(item); }} className="w-[24px] h-[24px] rounded-md flex items-center justify-center bg-background/80 backdrop-blur-sm border border-border hover:bg-destructive hover:text-destructive-foreground hover:border-destructive transition-all text-foreground shadow-sm" title="Supprimer">
+                          <X className="w-2.5 h-2.5" />
                         </button>
                       </div>
                     </div>
 
                     {/* Bottom info bar */}
-                    <div className="px-2.5 py-2 flex items-center justify-between border-t border-border/50">
-                      <span className="text-[10px] text-muted-foreground">{timeAgo(item.created_at)}</span>
-                      {typeTag(item.tool_type)}
-                    </div>
+                    {prefs.zoom <= 3 && (
+                      <div className="px-2 py-1.5 flex items-center justify-between border-t border-border/50">
+                        <span className="text-[9px] text-muted-foreground">{timeAgo(item.created_at)}</span>
+                        {typeTag(item.tool_type)}
+                      </div>
+                    )}
                   </motion.div>
                 );
               })}
@@ -486,20 +471,12 @@ const Gallery = () => {
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
             className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[90] flex items-center gap-3 bg-card border border-border rounded-2xl px-5 py-3 shadow-2xl backdrop-blur-xl"
           >
-            <span className="text-sm font-medium text-foreground">
-              {selectionCount} élément{selectionCount > 1 ? "s" : ""} sélectionné{selectionCount > 1 ? "s" : ""}
-            </span>
+            <span className="text-sm font-medium text-foreground">{selectionCount} sélectionné{selectionCount > 1 ? "s" : ""}</span>
             <div className="w-px h-5 bg-border" />
-            <button onClick={clearSelection} className="px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted/50 transition-colors">
-              Annuler
-            </button>
-            <button
-              onClick={handleBatchDelete}
-              disabled={batchDeleting}
-              className="px-4 py-1.5 text-sm bg-destructive text-destructive-foreground rounded-lg hover:bg-destructive/90 transition-colors font-medium flex items-center gap-2"
-            >
+            <button onClick={clearSelection} className="px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted/50 transition-colors">Annuler</button>
+            <button onClick={handleBatchDelete} disabled={batchDeleting} className="px-4 py-1.5 text-sm bg-destructive text-destructive-foreground rounded-lg hover:bg-destructive/90 transition-colors font-medium flex items-center gap-2">
               {batchDeleting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
-              Supprimer la sélection
+              Supprimer
             </button>
           </motion.div>
         )}
@@ -508,25 +485,11 @@ const Gallery = () => {
       {/* Detail Modal */}
       <AnimatePresence>
         {selected && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] bg-background/80 backdrop-blur-xl flex items-center justify-center p-4"
-            onClick={() => setSelected(null)}
-          >
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              onClick={(e) => e.stopPropagation()}
-              className="glass-card max-w-lg w-full p-5 space-y-4 max-h-[90vh] overflow-y-auto"
-            >
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[100] bg-background/80 backdrop-blur-xl flex items-center justify-center p-4" onClick={() => setSelected(null)}>
+            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} onClick={(e) => e.stopPropagation()} className="glass-card max-w-lg w-full p-5 space-y-4 max-h-[90vh] overflow-y-auto">
               <div className="flex items-center justify-between">
                 <h2 className="font-semibold text-foreground">Détails</h2>
-                <button onClick={() => setSelected(null)} className="text-muted-foreground hover:text-foreground transition-colors">
-                  <X className="w-5 h-5" />
-                </button>
+                <button onClick={() => setSelected(null)} className="text-muted-foreground hover:text-foreground transition-colors"><X className="w-5 h-5" /></button>
               </div>
               {selected.tool_type === "image" ? (
                 <img src={selected.displayUrl} alt={selected.prompt} className="w-full rounded-xl" />
@@ -537,11 +500,6 @@ const Gallery = () => {
                   <div className="w-full aspect-square bg-muted/20 rounded-xl flex flex-col items-center justify-center relative overflow-hidden">
                     <Music className="w-16 h-16 text-primary/30 mb-3" />
                     <p className="text-xs text-muted-foreground text-center px-6 line-clamp-3">{selected.prompt}</p>
-                    {selected.result_metadata?.duration && (
-                      <span className="absolute bottom-3 left-3 text-[10px] text-muted-foreground bg-muted/40 rounded-full px-2.5 py-1">
-                        {Math.floor(selected.result_metadata.duration / 60).toString().padStart(2, "0")}:{Math.floor(selected.result_metadata.duration % 60).toString().padStart(2, "0")}
-                      </span>
-                    )}
                   </div>
                   <audio src={selected.displayUrl} controls className="w-full" />
                 </div>
