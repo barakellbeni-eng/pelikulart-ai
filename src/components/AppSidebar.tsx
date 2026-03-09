@@ -68,6 +68,11 @@ const AppSidebar = () => {
         </NavLink>
       </SidebarHeader>
 
+      {/* Project selector — always visible at top */}
+      <div className="px-1 pb-1">
+        <ProjectsPanel />
+      </div>
+
       <SidebarSeparator />
 
       <SidebarContent>
@@ -121,19 +126,10 @@ const AppSidebar = () => {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
-
-        <SidebarSeparator />
-
-        {/* Projects panel */}
-        <SidebarGroup className="flex-1 min-h-0">
-          <SidebarGroupContent className="h-full">
-            <ProjectsPanel />
-          </SidebarGroupContent>
-        </SidebarGroup>
       </SidebarContent>
 
-      {/* Footer avec crédits */}
       <SidebarFooter className="px-4 py-3" />
+    </Sidebar>
     </Sidebar>
   );
 };
