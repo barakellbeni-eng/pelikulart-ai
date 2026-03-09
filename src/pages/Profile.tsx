@@ -338,7 +338,7 @@ const Profile = () => {
 
             <div className="space-y-3">
               <div className="glass p-4 rounded-xl space-y-2">
-                <h4 className="text-sm font-medium text-foreground">🐚 Comment fonctionnent les Cauris ?</h4>
+                <h4 className="text-sm font-medium text-foreground">Comment fonctionnent les Cauris ?</h4>
                 <p className="text-xs text-muted-foreground">
                   Les Cauris sont votre monnaie de création. Chaque génération d'image ou vidéo consomme des Cauris selon la complexité. Rechargez depuis la page Tarifs.
                 </p>
