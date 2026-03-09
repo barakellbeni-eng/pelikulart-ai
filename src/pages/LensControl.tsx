@@ -336,7 +336,6 @@ const LensControl = () => {
                       : "bg-muted/20 text-muted-foreground hover:bg-muted/40"
                   }`}
                 >
-                  <span className="text-base">{t.emoji}</span>
                   <div>
                     <div className="font-bold leading-tight">{t.label}</div>
                     <div className="text-[9px] opacity-70">{t.sub}</div>
