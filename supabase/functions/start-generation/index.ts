@@ -426,6 +426,7 @@ async function processImageGoogle(jobId: string, userId: string, body: any) {
         await adminClient.from("generations").insert({
           user_id: userId, prompt: prompt.slice(0, 5000), image_url: dUrl,
           aspect_ratio: modelSettings.aspect_ratio || null, resolution: modelSettings.resolution || null, output_format: "png",
+          project_id: body.project_id || null,
         });
 
         if (storageKeys.length === 1) {
