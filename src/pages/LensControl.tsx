@@ -9,6 +9,7 @@ import { useCauris } from "@/hooks/useCauris";
 import MediaPickerModal from "@/components/MediaPickerModal";
 import DeleteConfirmModal from "@/components/DeleteConfirmModal";
 import { LENS_TYPE_ICONS, FOCAL_ICONS } from "@/components/LensIcons";
+import LensPreviewOverlay from "@/components/LensPreviewOverlay";
 
 const START_GENERATION_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/start-generation`;
 
@@ -515,8 +516,15 @@ const LensControl = () => {
             <div className="flex flex-col items-center justify-center h-full">
               {sourceImage ? (
                 <div className="relative max-w-2xl w-full">
-                  <div className="rounded-2xl overflow-hidden border border-border/30 bg-muted/10">
+                  <div className="relative rounded-2xl overflow-hidden border border-border/30 bg-muted/10">
                     <img src={sourceImage} alt="Preview" className="w-full" />
+                    {/* Lens effect overlay */}
+                    <LensPreviewOverlay
+                      lensType={lensType}
+                      focal={focal}
+                      aperture={aperture}
+                      fov={fov}
+                    />
                   </div>
                   {/* Lens info badges */}
                   <div className="flex items-center gap-2 mt-4 justify-center">
