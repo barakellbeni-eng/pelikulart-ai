@@ -618,39 +618,58 @@ async function processKie(jobId: string, userId: string, body: any) {
         console.log(`[KIE] Auto-switched to ${kieModel} (image provided)`);
       }
 
-      if (rawSettings.duration) input.duration = String(rawSettings.duration);
-      if (rawSettings.resolution) input.resolution = rawSettings.resolution;
-      if (rawSettings.generate_audio !== undefined) input.generate_audio = rawSettings.generate_audio;
-      if (rawSettings.negative_prompt) input.negative_prompt = rawSettings.negative_prompt;
-      if (rawSettings.cfg_scale !== undefined) input.cfg_scale = rawSettings.cfg_scale;
-
-      // Kling 2.6 I2V does NOT support aspect_ratio, only T2V does
-      const isKling26I2V = kieModel === "kling-2.6/image-to-video";
-      if (rawSettings.aspect_ratio && !isKling26I2V) input.aspect_ratio = rawSettings.aspect_ratio;
-
-      // Sound param (Kling 2.6 & 3.0)
-      if (rawSettings.sound !== undefined) input.sound = rawSettings.sound;
-
-      // Kling 3.0 specific (unified model, accepts image_urls optionally)
-      if (kieModel === "kling-3.0/video") {
-        input.multi_shots = rawSettings.multi_shots === true;
-        if (rawSettings.mode) input.mode = rawSettings.mode;
-      }
-
-      // Image input for video
-      if (hasImages) {
-        // V2.5 Turbo I2V and V2.1 Master I2V use singular `image_url`
-        const singularImageUrlModels = new Set([
-          "kling/v2-5-turbo-image-to-video-pro",
-          "kling/v2-1-master-image-to-video",
-        ]);
-
-        if (KIE_INPUT_URLS_MODELS.has(kieModel)) {
-          input.input_urls = imageList.slice(0, 2);
-        } else if (singularImageUrlModels.has(kieModel)) {
-          input.image_url = imageList[0];
-        } else {
+      // ── Sora 2 specific params ──
+      if (SORA2_MODELS.has(model_id)) {
+        if (rawSettings.aspect_ratio) input.aspect_ratio = rawSettings.aspect_ratio; // "landscape" or "portrait"
+        if (rawSettings.n_frames) input.n_frames = String(rawSettings.n_frames);
+        if (rawSettings.size) input.size = rawSettings.size;
+        if (hasImages) {
           input.image_urls = imageList.slice(0, 1);
+        }
+      }
+      // ── Veo 3.1 specific params ──
+      else if (VEO3_MODELS.has(model_id)) {
+        if (rawSettings.aspect_ratio) input.aspect_ratio = rawSettings.aspect_ratio; // "16:9" or "9:16"
+        // Veo3 uses `imageUrls` (camelCase) for I2V
+        if (hasImages) {
+          input.imageUrls = imageList.slice(0, 2);
+        }
+      }
+      // ── Standard KIE video params ──
+      else {
+        if (rawSettings.duration) input.duration = String(rawSettings.duration);
+        if (rawSettings.resolution) input.resolution = rawSettings.resolution;
+        if (rawSettings.generate_audio !== undefined) input.generate_audio = rawSettings.generate_audio;
+        if (rawSettings.negative_prompt) input.negative_prompt = rawSettings.negative_prompt;
+        if (rawSettings.cfg_scale !== undefined) input.cfg_scale = rawSettings.cfg_scale;
+
+        // Kling 2.6 I2V does NOT support aspect_ratio, only T2V does
+        const isKling26I2V = kieModel === "kling-2.6/image-to-video";
+        if (rawSettings.aspect_ratio && !isKling26I2V) input.aspect_ratio = rawSettings.aspect_ratio;
+
+        // Sound param (Kling 2.6 & 3.0)
+        if (rawSettings.sound !== undefined) input.sound = rawSettings.sound;
+
+        // Kling 3.0 specific (unified model, accepts image_urls optionally)
+        if (kieModel === "kling-3.0/video") {
+          input.multi_shots = rawSettings.multi_shots === true;
+          if (rawSettings.mode) input.mode = rawSettings.mode;
+        }
+
+        // Image input for video
+        if (hasImages) {
+          const singularImageUrlModels = new Set([
+            "kling/v2-5-turbo-image-to-video-pro",
+            "kling/v2-1-master-image-to-video",
+          ]);
+
+          if (KIE_INPUT_URLS_MODELS.has(kieModel)) {
+            input.input_urls = imageList.slice(0, 2);
+          } else if (singularImageUrlModels.has(kieModel)) {
+            input.image_url = imageList[0];
+          } else {
+            input.image_urls = imageList.slice(0, 1);
+          }
         }
       }
     } else if (tool_type === "audio") {
