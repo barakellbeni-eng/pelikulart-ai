@@ -199,12 +199,34 @@ const StudioHome = () => {
                   className="group relative"
                 >
                   <div className="aspect-square rounded-xl overflow-hidden glass-card">
-                    <img
-                      src={creation.image_url}
-                      alt={creation.prompt}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      loading="lazy"
-                    />
+                    {creation.media_type === "video" ? (
+                      <>
+                        <video
+                          src={creation.image_url}
+                          muted
+                          playsInline
+                          preload="metadata"
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                          <div className="w-10 h-10 rounded-full bg-background/70 flex items-center justify-center">
+                            <Play className="w-5 h-5 text-foreground fill-foreground" />
+                          </div>
+                        </div>
+                      </>
+                    ) : creation.media_type === "audio" ? (
+                      <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-green-500/20 to-emerald-600/10 p-3">
+                        <Music className="w-10 h-10 text-green-400 mb-2" />
+                        <p className="text-[10px] text-foreground/70 line-clamp-2 text-center">{creation.prompt}</p>
+                      </div>
+                    ) : (
+                      <img
+                        src={creation.image_url}
+                        alt={creation.prompt}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        loading="lazy"
+                      />
+                    )}
                     <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                     <div className="absolute bottom-0 left-0 right-0 p-2 opacity-0 group-hover:opacity-100 transition-opacity">
                       <p className="text-[11px] text-foreground/80 line-clamp-2">{creation.prompt}</p>
