@@ -123,6 +123,7 @@ const AppContent = () => {
         <Route path="/studio" element={<AuthenticatedLayout><StudioHome /></AuthenticatedLayout>} />
         <Route path="/studio/create" element={<AuthenticatedLayout><Dashboard /></AuthenticatedLayout>} />
         <Route path="/studio/multi-plan" element={<AuthenticatedLayout><MultiPlan /></AuthenticatedLayout>} />
+        <Route path="/studio/motion-control" element={<AuthenticatedLayout><MotionControl /></AuthenticatedLayout>} />
         <Route path="/pricing" element={<AuthenticatedLayout><Pricing /></AuthenticatedLayout>} />
         <Route path="/profile" element={<ProtectedRoute><AuthenticatedLayout><Profile /></AuthenticatedLayout></ProtectedRoute>} />
 
