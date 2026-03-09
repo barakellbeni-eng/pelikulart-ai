@@ -136,7 +136,7 @@ serve(async (req) => {
       );
     }
 
-    const cost = 2;
+    const cost = 1;
     const { data: deductResult, error: deductError } = await adminClient.rpc("deduct_cauris", {
       p_user_id: userId, p_amount: cost,
     });

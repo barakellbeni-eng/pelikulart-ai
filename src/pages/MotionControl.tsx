@@ -140,6 +140,11 @@ const ASPECT_RATIOS = [
   { value: "1:1", label: "1:1" },
 ];
 
+const RESOLUTIONS = [
+  { value: "720p", label: "720p" },
+  { value: "1080p", label: "1080p" },
+];
+
 interface GeneratedVideo {
   id: string;
   url: string;
@@ -159,6 +164,7 @@ const MotionControl = () => {
   const [selectedMotion, setSelectedMotion] = useState<string | null>(null);
   const [duration, setDuration] = useState<string>("5");
   const [aspectRatio, setAspectRatio] = useState<string>("16:9");
+  const [resolution, setResolution] = useState<string>("720p");
   const [activeTab, setActiveTab] = useState<"generations" | "motions">("generations");
 
   const [isGenerating, setIsGenerating] = useState(false);
@@ -266,10 +272,13 @@ const MotionControl = () => {
 
       const payload = {
         model_id: "kie-kling-25-turbo",
+        tool_type: "video",
         prompt: finalPrompt,
+        cauris_cost: costCauris,
         settings: {
           duration,
           aspect_ratio: aspectRatio,
+          resolution,
         },
         images: [sourceImage],
       };
@@ -329,7 +338,7 @@ const MotionControl = () => {
   };
 
   const canGenerate = sourceImage && selectedMotion && !isGenerating;
-  const costCauris = duration === "10" ? 60 : 30;
+  const costCauris = duration === "10" ? 12 : 6;
 
   return (
     <div className="flex h-full min-h-0 overflow-hidden">
@@ -446,6 +455,24 @@ const MotionControl = () => {
                   onClick={() => setAspectRatio(r.value)}
                   className={`flex-1 px-2 py-1 rounded-md text-[11px] font-medium transition-all ${
                     aspectRatio === r.value ? "bg-primary text-primary-foreground" : "glass text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {r.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Resolution */}
+          <div className="space-y-1.5">
+            <label className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">Résolution</label>
+            <div className="flex gap-1">
+              {RESOLUTIONS.map((r) => (
+                <button
+                  key={r.value}
+                  onClick={() => setResolution(r.value)}
+                  className={`flex-1 px-2 py-1 rounded-md text-[11px] font-medium transition-all ${
+                    resolution === r.value ? "bg-primary text-primary-foreground" : "glass text-muted-foreground hover:text-foreground"
                   }`}
                 >
                   {r.label}

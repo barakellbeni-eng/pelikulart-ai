@@ -197,8 +197,8 @@ const MultiPlan = () => {
       .single();
 
     const currentBalance = profileData?.credits ?? 0;
-    if (currentBalance < 2) {
-      toast.error("Solde insuffisant — 2 cauris requis");
+    if (currentBalance < 1) {
+      toast.error("Solde insuffisant — 1 cauris requis");
       return;
     }
 
@@ -233,8 +233,8 @@ const MultiPlan = () => {
       .single();
 
     const currentBalance = profileData?.credits ?? 0;
-    if (currentBalance < 2) {
-      toast.error("Solde insuffisant — 2 cauris requis");
+    if (currentBalance < 1) {
+      toast.error("Solde insuffisant — 1 cauris requis");
       return;
     }
 
@@ -266,8 +266,8 @@ const MultiPlan = () => {
       .single();
 
     const currentBalance = profileData?.credits ?? 0;
-    if (currentBalance < 8) {
-      toast.error("Solde insuffisant — 8 cauris requis (4 × 2)");
+    if (currentBalance < 4) {
+      toast.error("Solde insuffisant — 4 cauris requis (4 × 1)");
       return;
     }
 
@@ -514,12 +514,12 @@ const MultiPlan = () => {
                   ) : isAnyJobRunning ? (
                     <>
                       <Lock className="w-3.5 h-3.5" />
-                      Générer · 2 cauris
+                      Générer · 1 cauris
                     </>
                   ) : (
                     <>
                       <Camera className="w-3.5 h-3.5" />
-                      Générer · 2 cauris
+                      Générer · 1 cauris
                     </>
                   )}
                 </button>
@@ -650,7 +650,7 @@ const MultiPlan = () => {
                   ) : (
                     <>
                       <Scissors className="w-3.5 h-3.5" />
-                      Découper tout · 8 cauris
+                      Découper tout · 4 cauris
                     </>
                   )}
                 </button>

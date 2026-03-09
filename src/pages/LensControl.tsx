@@ -116,7 +116,7 @@ interface GalleryItem {
   created_at: string;
 }
 
-const COST = 2;
+const COST = 1;
 
 const LensControl = () => {
   const { user } = useAuth();
