@@ -183,14 +183,31 @@ const MultiPlan = () => {
   }, []);
 
   const handleGenerate = async () => {
-    if (!sourceImage || !user || isGenerating) return;
+    if (!sourceImage || isGenerating) return;
+
+    if (!user) {
+      toast.error("Connectez-vous pour générer");
+      return;
+    }
+
+    const { data: profileData } = await supabase
+      .from("profiles")
+      .select("credits")
+      .eq("user_id", user.id)
+      .single();
+
+    const currentBalance = profileData?.credits ?? 0;
+    if (currentBalance < 2) {
+      toast.error("Solde insuffisant — 2 cauris requis");
+      return;
+    }
+
     setIsGenerating(true);
     setLatestMainResult(null);
 
     try {
       const result = await callGenerate(sourceImage, selectedPlan);
       setLatestMainResult(result);
-      // Reload gallery to include new result
       await loadGallery();
       refreshBalance();
       toast.success("Image générée !");
