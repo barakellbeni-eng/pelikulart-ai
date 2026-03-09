@@ -33,7 +33,7 @@ import NotFound from "./pages/NotFound";
 
 // Pelikulart public pages
 import HomePage from "./pages/pelikulart/HomePage";
-import ComingSoon from "./pages/ComingSoon";
+
 import CreationsPage from "./pages/pelikulart/CreationsPage";
 import TrainingPage from "./pages/pelikulart/TrainingPage";
 // DevisPage removed
@@ -108,8 +108,7 @@ const AppContent = () => {
       <ScrollToTop />
       <Routes>
         {/* Public Pelikulart pages */}
-        <Route path="/" element={<ComingSoon />} />
-        <Route path="/previewbarakellsecret" element={<PublicLayout><HomePage /></PublicLayout>} />
+        <Route path="/" element={<PublicLayout><HomePage /></PublicLayout>} />
         <Route path="/creations" element={<PublicLayout><CreationsPage /></PublicLayout>} />
         <Route path="/training" element={<PublicLayout><TrainingPage /></PublicLayout>} />
         {/* Devis removed */}
