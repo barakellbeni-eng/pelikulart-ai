@@ -8,309 +8,187 @@ interface LensPreviewOverlayProps {
 }
 
 /**
- * Simulates lens effects as CSS overlays for preview
- * - Depth of field (blur based on aperture)
- * - Vignette (based on lens type)
- * - Distortion (for wide/fisheye)
- * - Anamorphic flares
- * - Tilt-shift selective focus
+ * Visual preview with black bars and zoom effects
  */
 export default function LensPreviewOverlay({ lensType, focal, aperture, fov }: LensPreviewOverlayProps) {
-  // Calculate blur intensity based on aperture
-  const getBlurIntensity = () => {
-    switch (aperture) {
-      case "f/1.4": return 12;
-      case "f/2.8": return 6;
-      case "f/8": return 0;
-      default: return 4; // auto
+  // Calculate zoom level based on focal length (50mm = 1x reference)
+  const getZoomLevel = () => {
+    if (lensType === "anamorphic") return 1;
+    if (lensType === "special") {
+      if (focal === "fisheye") return 0.7;
+      if (focal === "tilt-shift") return 1;
+      if (focal === "lensbaby") return 1.1;
     }
+    const focalNum = parseInt(focal) || 50;
+    return Math.max(0.6, Math.min(2, focalNum / 50));
   };
 
-  // Calculate vignette intensity based on focal length
-  const getVignetteIntensity = () => {
-    if (lensType === "macro") return 0.7;
-    if (lensType === "special" && focal === "fisheye") return 0.8;
-    if (fov >= 100) return 0.5; // ultra wide
-    if (fov >= 70) return 0.3; // wide
-    if (fov <= 25) return 0.4; // telephoto
-    return 0.2; // normal
-  };
-
-  // Calculate focus area size (smaller = more bokeh visible)
-  const getFocusSize = () => {
-    if (lensType === "macro") return 25;
-    switch (aperture) {
-      case "f/1.4": return 35;
-      case "f/2.8": return 50;
-      case "f/8": return 100;
-      default: return 45;
+  // Calculate black bar sizes based on aspect ratio / lens type
+  const getBars = () => {
+    // Anamorphic: 2.39:1 cinematic
+    if (lensType === "anamorphic") {
+      return { top: "12%", bottom: "12%", left: "0%", right: "0%" };
     }
+    // Fisheye: circular crop
+    if (lensType === "special" && focal === "fisheye") {
+      return { top: "8%", bottom: "8%", left: "8%", right: "8%" };
+    }
+    // Ultra wide: slight top/bottom bars
+    if (fov >= 100) {
+      return { top: "6%", bottom: "6%", left: "0%", right: "0%" };
+    }
+    // Wide: minimal bars
+    if (fov >= 70) {
+      return { top: "4%", bottom: "4%", left: "0%", right: "0%" };
+    }
+    // Telephoto: pillarbox effect (sides)
+    if (fov <= 15) {
+      return { top: "0%", bottom: "0%", left: "15%", right: "15%" };
+    }
+    if (fov <= 25) {
+      return { top: "0%", bottom: "0%", left: "8%", right: "8%" };
+    }
+    // Normal: no bars
+    return { top: "0%", bottom: "0%", left: "0%", right: "0%" };
   };
 
-  const blurIntensity = getBlurIntensity();
-  const vignetteIntensity = getVignetteIntensity();
-  const focusSize = getFocusSize();
+  const zoom = getZoomLevel();
+  const bars = getBars();
+  const hasTopBottomBars = bars.top !== "0%" || bars.bottom !== "0%";
+  const hasSideBars = bars.left !== "0%" || bars.right !== "0%";
 
-  // Fisheye barrel distortion simulation
-  if (lensType === "special" && focal === "fisheye") {
-    return (
-      <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-xl">
-        {/* Barrel distortion effect */}
+  // Get aperture indicator
+  const getApertureLabel = () => {
+    if (aperture === "auto") return "";
+    return aperture;
+  };
+
+  return (
+    <motion.div 
+      className="absolute inset-0 pointer-events-none overflow-hidden rounded-xl"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.3 }}
+    >
+      {/* Zoom effect container */}
+      <motion.div
+        className="absolute inset-0 flex items-center justify-center"
+        animate={{ scale: zoom }}
+        transition={{ duration: 0.4, ease: "easeOut" }}
+      >
+        {/* This creates the zoom preview effect */}
+        <div className="absolute inset-0 bg-transparent" />
+      </motion.div>
+
+      {/* Top black bar */}
+      <motion.div
+        className="absolute inset-x-0 top-0 bg-black"
+        initial={{ height: "0%" }}
+        animate={{ height: bars.top }}
+        transition={{ duration: 0.3 }}
+      />
+
+      {/* Bottom black bar */}
+      <motion.div
+        className="absolute inset-x-0 bottom-0 bg-black"
+        initial={{ height: "0%" }}
+        animate={{ height: bars.bottom }}
+        transition={{ duration: 0.3 }}
+      />
+
+      {/* Left black bar */}
+      <motion.div
+        className="absolute inset-y-0 left-0 bg-black"
+        initial={{ width: "0%" }}
+        animate={{ width: bars.left }}
+        transition={{ duration: 0.3 }}
+      />
+
+      {/* Right black bar */}
+      <motion.div
+        className="absolute inset-y-0 right-0 bg-black"
+        initial={{ width: "0%" }}
+        animate={{ width: bars.right }}
+        transition={{ duration: 0.3 }}
+      />
+
+      {/* Fisheye circular mask */}
+      {lensType === "special" && focal === "fisheye" && (
         <div 
           className="absolute inset-0"
           style={{
             background: `radial-gradient(circle at 50% 50%, 
               transparent 0%, 
-              transparent 40%, 
-              rgba(0,0,0,0.3) 70%, 
-              rgba(0,0,0,0.8) 100%)`,
+              transparent 45%, 
+              black 50%, 
+              black 100%)`,
           }}
         />
-        {/* Edge blur */}
-        <div 
-          className="absolute inset-0"
-          style={{
-            backdropFilter: `blur(${blurIntensity * 0.5}px)`,
-            mask: `radial-gradient(circle at 50% 50%, transparent 50%, black 100%)`,
-            WebkitMask: `radial-gradient(circle at 50% 50%, transparent 50%, black 100%)`,
-          }}
-        />
-        {/* 180° FOV indicator */}
-        <div className="absolute inset-4 border-2 border-dashed border-primary/30 rounded-full" />
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-[10px] font-mono text-primary/60 bg-background/80 px-2 py-0.5 rounded">
-          180° FISHEYE
-        </div>
-      </div>
-    );
-  }
+      )}
 
-  // Tilt-shift miniature effect
-  if (lensType === "special" && focal === "tilt-shift") {
-    return (
-      <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-xl">
-        {/* Top blur zone */}
-        <div 
-          className="absolute inset-x-0 top-0 h-[35%]"
-          style={{
-            backdropFilter: `blur(${blurIntensity}px)`,
-            background: `linear-gradient(to bottom, rgba(0,0,0,0.2) 0%, transparent 100%)`,
-          }}
-        />
-        {/* Bottom blur zone */}
-        <div 
-          className="absolute inset-x-0 bottom-0 h-[35%]"
-          style={{
-            backdropFilter: `blur(${blurIntensity}px)`,
-            background: `linear-gradient(to top, rgba(0,0,0,0.2) 0%, transparent 100%)`,
-          }}
-        />
-        {/* Focus band indicator */}
-        <div 
-          className="absolute inset-x-0 top-[35%] h-[30%] border-y border-dashed border-primary/30"
-        />
-        {/* Guide lines */}
-        <svg className="absolute inset-0 w-full h-full opacity-30">
-          <line x1="0" y1="35%" x2="100%" y2="35%" stroke="currentColor" strokeWidth="1" strokeDasharray="4 4" className="text-primary" />
-          <line x1="0" y1="65%" x2="100%" y2="65%" stroke="currentColor" strokeWidth="1" strokeDasharray="4 4" className="text-primary" />
-        </svg>
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[10px] font-mono text-primary/60 bg-background/80 px-2 py-0.5 rounded">
-          TILT-SHIFT
-        </div>
-      </div>
-    );
-  }
-
-  // Lensbaby swirl/selective focus
-  if (lensType === "special" && focal === "lensbaby") {
-    return (
-      <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-xl">
-        {/* Off-center focus spot */}
-        <div 
-          className="absolute inset-0"
-          style={{
-            backdropFilter: `blur(${blurIntensity}px)`,
-            mask: `radial-gradient(ellipse 30% 35% at 35% 40%, transparent 0%, black 70%)`,
-            WebkitMask: `radial-gradient(ellipse 30% 35% at 35% 40%, transparent 0%, black 70%)`,
-          }}
-        />
-        {/* Swirl vignette */}
-        <div 
-          className="absolute inset-0"
-          style={{
-            background: `radial-gradient(ellipse 80% 90% at 35% 40%, 
-              transparent 0%, 
-              rgba(0,0,0,0.3) 50%, 
-              rgba(0,0,0,0.5) 100%)`,
-          }}
-        />
-        {/* Focus point indicator */}
-        <div className="absolute top-[35%] left-[30%] w-8 h-8 border-2 border-dashed border-primary/40 rounded-full" />
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-[10px] font-mono text-primary/60 bg-background/80 px-2 py-0.5 rounded">
-          LENSBABY
-        </div>
-      </div>
-    );
-  }
-
-  // Anamorphic lens effects
-  if (lensType === "anamorphic") {
-    const squeezeMultiplier = focal === "2x" ? 2 : focal === "1.5x" ? 1.5 : 1.33;
-    const flareOpacity = focal === "2x" ? 0.25 : focal === "1.5x" ? 0.18 : 0.12;
-    
-    return (
-      <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-xl">
-        {/* 2.39:1 aspect letterbox */}
-        <div className="absolute inset-x-0 top-0 h-[12%] bg-black/90" />
-        <div className="absolute inset-x-0 bottom-0 h-[12%] bg-black/90" />
-        
-        {/* Horizontal lens flare */}
+      {/* Anamorphic horizontal flare hint */}
+      {lensType === "anamorphic" && (
         <motion.div 
-          className="absolute top-1/2 left-0 right-0 h-[2px]"
-          style={{
-            background: `linear-gradient(90deg, 
-              transparent 0%, 
-              rgba(100,180,255,${flareOpacity}) 20%,
-              rgba(100,180,255,${flareOpacity * 1.5}) 50%,
-              rgba(100,180,255,${flareOpacity}) 80%,
-              transparent 100%)`,
+          className="absolute left-0 right-0 h-[1px]"
+          style={{ top: "50%" }}
+          initial={{ opacity: 0 }}
+          animate={{ 
+            opacity: [0.2, 0.4, 0.2],
+            background: `linear-gradient(90deg, transparent 5%, hsl(var(--primary) / 0.3) 50%, transparent 95%)`
           }}
-          animate={{
-            opacity: [0.6, 1, 0.6],
-            scaleX: [0.95, 1.02, 0.95],
-          }}
-          transition={{
-            duration: 3,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
+          transition={{ duration: 2, repeat: Infinity }}
         />
-        
-        {/* Secondary flare streaks */}
-        <div 
-          className="absolute top-[45%] left-0 right-0 h-[1px]"
-          style={{
-            background: `linear-gradient(90deg, transparent 10%, rgba(180,100,255,${flareOpacity * 0.5}) 50%, transparent 90%)`,
-          }}
-        />
-        <div 
-          className="absolute top-[55%] left-0 right-0 h-[1px]"
-          style={{
-            background: `linear-gradient(90deg, transparent 15%, rgba(255,180,100,${flareOpacity * 0.5}) 50%, transparent 85%)`,
-          }}
-        />
-        
-        {/* Edge softness / oval bokeh vignette */}
-        <div 
-          className="absolute inset-0"
-          style={{
-            background: `radial-gradient(ellipse ${100 / squeezeMultiplier}% 100% at 50% 50%, 
-              transparent 40%, 
-              rgba(0,0,0,0.15) 70%, 
-              rgba(0,0,0,0.35) 100%)`,
-          }}
-        />
-        
-        {/* Squeeze indicator */}
-        <div className="absolute top-14 left-1/2 -translate-x-1/2 text-[10px] font-mono text-primary/60 bg-background/80 px-2 py-0.5 rounded flex items-center gap-2">
-          <span>ANAMORPHIC {focal}</span>
-          <span className="opacity-60">2.39:1</span>
-        </div>
-      </div>
-    );
-  }
+      )}
 
-  // Macro extreme shallow DOF
-  if (lensType === "macro") {
-    return (
-      <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-xl">
-        {/* Extreme radial blur */}
-        <div 
-          className="absolute inset-0"
-          style={{
-            backdropFilter: `blur(${blurIntensity * 1.5}px)`,
-            mask: `radial-gradient(circle at 50% 50%, transparent ${focusSize * 0.6}%, black ${focusSize * 1.2}%)`,
-            WebkitMask: `radial-gradient(circle at 50% 50%, transparent ${focusSize * 0.6}%, black ${focusSize * 1.2}%)`,
-          }}
-        />
-        {/* Strong vignette */}
-        <div 
-          className="absolute inset-0"
-          style={{
-            background: `radial-gradient(circle at 50% 50%, 
-              transparent 20%, 
-              rgba(0,0,0,${vignetteIntensity * 0.5}) 60%, 
-              rgba(0,0,0,${vignetteIntensity}) 100%)`,
-          }}
-        />
-        {/* Focus ring indicator */}
-        <div 
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 border-2 border-dashed border-primary/30 rounded-full"
-          style={{ width: `${focusSize * 1.5}%`, height: `${focusSize * 1.5}%` }}
-        />
-        {/* 1:1 indicator for 100mm */}
-        {focal === "100" && (
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-[10px] font-mono text-primary/60 bg-background/80 px-2 py-0.5 rounded">
-            MACRO 1:1
-          </div>
+      {/* Info badge */}
+      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2">
+        {/* Zoom indicator */}
+        {zoom !== 1 && (
+          <motion.div 
+            className="text-[10px] font-mono text-primary bg-background/90 px-2 py-1 rounded border border-border"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            {zoom > 1 ? `ZOOM ${zoom.toFixed(1)}×` : `WIDE ${(1/zoom).toFixed(1)}×`}
+          </motion.div>
+        )}
+
+        {/* Aspect ratio indicator */}
+        {(hasTopBottomBars || hasSideBars) && (
+          <motion.div 
+            className="text-[10px] font-mono text-muted-foreground bg-background/90 px-2 py-1 rounded border border-border"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            {lensType === "anamorphic" ? "2.39:1" : 
+             hasSideBars ? "CROP" : 
+             fov >= 100 ? "ULTRA WIDE" : "WIDE"}
+          </motion.div>
+        )}
+
+        {/* Aperture */}
+        {getApertureLabel() && (
+          <motion.div 
+            className="text-[10px] font-mono text-muted-foreground bg-background/90 px-2 py-1 rounded border border-border"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            {getApertureLabel()}
+          </motion.div>
         )}
       </div>
-    );
-  }
 
-  // Standard prime lenses (depth of field + vignette)
-  return (
-    <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-xl">
-      {/* Depth of field blur (edges) */}
-      {blurIntensity > 0 && (
-        <div 
-          className="absolute inset-0"
-          style={{
-            backdropFilter: `blur(${blurIntensity}px)`,
-            mask: `radial-gradient(circle at 50% 50%, transparent ${focusSize}%, black ${focusSize + 30}%)`,
-            WebkitMask: `radial-gradient(circle at 50% 50%, transparent ${focusSize}%, black ${focusSize + 30}%)`,
+      {/* Center focus indicator for macro/shallow DOF */}
+      {(lensType === "macro" || aperture === "f/1.4") && (
+        <motion.div 
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 border border-dashed border-primary/40 rounded-full"
+          animate={{ 
+            scale: [1, 1.05, 1],
+            opacity: [0.4, 0.6, 0.4]
           }}
+          transition={{ duration: 2, repeat: Infinity }}
         />
       )}
-      
-      {/* Vignette */}
-      <div 
-        className="absolute inset-0"
-        style={{
-          background: `radial-gradient(circle at 50% 50%, 
-            transparent 50%, 
-            rgba(0,0,0,${vignetteIntensity * 0.5}) 80%, 
-            rgba(0,0,0,${vignetteIntensity}) 100%)`,
-        }}
-      />
-      
-      {/* Wide angle distortion indicator for 14mm/24mm */}
-      {fov >= 70 && (
-        <>
-          {/* Grid lines showing barrel distortion */}
-          <svg className="absolute inset-0 w-full h-full opacity-10">
-            <path d="M 0,50% Q 25%,48% 50%,50% Q 75%,52% 100%,50%" fill="none" stroke="currentColor" strokeWidth="1" className="text-foreground" />
-            <path d="M 50%,0 Q 48%,25% 50%,50% Q 52%,75% 50%,100%" fill="none" stroke="currentColor" strokeWidth="1" className="text-foreground" />
-          </svg>
-          <div className="absolute top-4 left-1/2 -translate-x-1/2 text-[10px] font-mono text-muted-foreground/60 bg-background/80 px-2 py-0.5 rounded">
-            {fov}° WIDE
-          </div>
-        </>
-      )}
-      
-      {/* Telephoto compression indicator */}
-      {fov <= 25 && (
-        <div className="absolute top-4 left-1/2 -translate-x-1/2 text-[10px] font-mono text-muted-foreground/60 bg-background/80 px-2 py-0.5 rounded">
-          {fov}° TELEPHOTO
-        </div>
-      )}
-      
-      {/* Focus area indicator */}
-      {aperture === "f/1.4" && (
-        <div 
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 border border-dashed border-primary/20 rounded-full"
-          style={{ width: `${focusSize * 2}%`, height: `${focusSize * 2}%` }}
-        />
-      )}
-    </div>
+    </motion.div>
   );
 }
