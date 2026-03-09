@@ -778,6 +778,7 @@ async function processKie(jobId: string, userId: string, body: any) {
           await adminClient.from("generations").insert({
             user_id: userId, prompt: prompt.slice(0, 5000), image_url: dUrl,
             media_type: mediaType, aspect_ratio: rawSettings.aspect_ratio || rawSettings.image_size || null,
+            project_id: body.project_id || null,
           });
         } else {
           const storageKey = await downloadAndUpload(url, userId, format);
