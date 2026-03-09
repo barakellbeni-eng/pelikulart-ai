@@ -329,33 +329,7 @@ const MotionControl = () => {
             <p className="text-xs text-muted-foreground">Ajoute des mouvements de caméra cinématiques à tes images</p>
           </div>
 
-          {/* Source Image */}
-          <div className="space-y-2">
-            <label className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">Image source</label>
-            {sourceImage ? (
-              <div className="relative rounded-xl overflow-hidden bg-muted/20 aspect-video group">
-                <img src={sourceImage} alt="Source" className="w-full h-full object-cover" />
-                <button
-                  onClick={() => setSourceImage(null)}
-                  className="absolute top-2 right-2 w-7 h-7 rounded-lg bg-background/80 backdrop-blur-sm flex items-center justify-center hover:bg-background transition-colors opacity-0 group-hover:opacity-100"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-            ) : (
-              <div
-                onDrop={handleDrop}
-                onDragOver={(e) => e.preventDefault()}
-                className="h-40 rounded-xl border-2 border-dashed border-border/50 hover:border-primary/30 bg-muted/10 flex flex-col items-center justify-center gap-2 transition-colors cursor-pointer"
-                onClick={() => setShowMediaPicker(true)}
-              >
-                <Upload className="w-6 h-6 text-muted-foreground" />
-                <span className="text-xs text-muted-foreground">Déposer ou cliquer</span>
-              </div>
-            )}
-          </div>
-
-          {/* Motion Selector */}
+          {/* Motion Selector — ABOVE image source */}
           <div className="space-y-2">
             <label className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">Mouvement</label>
 
@@ -376,9 +350,16 @@ const MotionControl = () => {
                       style={{ position: "absolute", top: 0, left: 0, pointerEvents: "none" }}
                     />
                   </div>
-                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2 flex items-center justify-between">
-                    <span className="text-xs font-bold text-white uppercase tracking-wide">{selectedMotionData.label}</span>
-                    <Check className="w-4 h-4 text-primary" />
+                  {/* Large Sora title overlay */}
+                  <div className="absolute inset-0 flex flex-col justify-end pointer-events-none">
+                    <div className="bg-gradient-to-t from-black/90 via-black/30 to-transparent p-3 pt-10">
+                      <p
+                        style={{ fontFamily: "'Sora', sans-serif", fontWeight: 700, lineHeight: 1 }}
+                        className="text-2xl text-white uppercase tracking-tight drop-shadow-lg"
+                      >
+                        {selectedMotionData.label}
+                      </p>
+                    </div>
                   </div>
                 </div>
                 <button
@@ -390,7 +371,7 @@ const MotionControl = () => {
                 </button>
               </div>
             ) : (
-              /* Motion picker dropdown */
+              /* Motion picker list */
               <div className="space-y-1.5 max-h-[320px] overflow-y-auto scrollbar-thin rounded-xl border border-border/50 bg-muted/5 p-1.5">
                 {CAMERA_MOTIONS.map((m) => (
                   <button
@@ -416,11 +397,44 @@ const MotionControl = () => {
                         style={{ position: "absolute", top: 0, left: 0, pointerEvents: "none" }}
                       />
                     </div>
-                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-1.5">
-                      <span className="text-[10px] font-bold text-white uppercase tracking-wide">{m.label}</span>
+                    <div className="absolute inset-0 flex flex-col justify-end pointer-events-none">
+                      <div className="bg-gradient-to-t from-black/85 via-black/20 to-transparent p-2 pt-8">
+                        <p
+                          style={{ fontFamily: "'Sora', sans-serif", fontWeight: 700, lineHeight: 1 }}
+                          className="text-base text-white uppercase tracking-tight drop-shadow-md"
+                        >
+                          {m.label}
+                        </p>
+                      </div>
                     </div>
                   </button>
                 ))}
+              </div>
+            )}
+          </div>
+
+          {/* Source Image */}
+          <div className="space-y-2">
+            <label className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">Image source</label>
+            {sourceImage ? (
+              <div className="relative rounded-xl overflow-hidden bg-muted/20 aspect-video group">
+                <img src={sourceImage} alt="Source" className="w-full h-full object-cover" />
+                <button
+                  onClick={() => setSourceImage(null)}
+                  className="absolute top-2 right-2 w-7 h-7 rounded-lg bg-background/80 backdrop-blur-sm flex items-center justify-center hover:bg-background transition-colors opacity-0 group-hover:opacity-100"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            ) : (
+              <div
+                onDrop={handleDrop}
+                onDragOver={(e) => e.preventDefault()}
+                className="h-40 rounded-xl border-2 border-dashed border-border/50 hover:border-primary/30 bg-muted/10 flex flex-col items-center justify-center gap-2 transition-colors cursor-pointer"
+                onClick={() => setShowMediaPicker(true)}
+              >
+                <Upload className="w-6 h-6 text-muted-foreground" />
+                <span className="text-xs text-muted-foreground">Déposer ou cliquer</span>
               </div>
             )}
           </div>
