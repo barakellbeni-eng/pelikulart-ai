@@ -183,14 +183,31 @@ const MultiPlan = () => {
   }, []);
 
   const handleGenerate = async () => {
-    if (!sourceImage || !user || isGenerating) return;
+    if (!sourceImage || isGenerating) return;
+
+    if (!user) {
+      toast.error("Connectez-vous pour générer");
+      return;
+    }
+
+    const { data: profileData } = await supabase
+      .from("profiles")
+      .select("credits")
+      .eq("user_id", user.id)
+      .single();
+
+    const currentBalance = profileData?.credits ?? 0;
+    if (currentBalance < 2) {
+      toast.error("Solde insuffisant — 2 cauris requis");
+      return;
+    }
+
     setIsGenerating(true);
     setLatestMainResult(null);
 
     try {
       const result = await callGenerate(sourceImage, selectedPlan);
       setLatestMainResult(result);
-      // Reload gallery to include new result
       await loadGallery();
       refreshBalance();
       toast.success("Image générée !");
@@ -202,7 +219,25 @@ const MultiPlan = () => {
   };
 
   const handlePlanClick = async (planIndex: number) => {
-    if (!cadrageSource || !user || loadingPlan !== null) return;
+    if (!cadrageSource || loadingPlan !== null) return;
+
+    if (!user) {
+      toast.error("Connectez-vous pour générer");
+      return;
+    }
+
+    const { data: profileData } = await supabase
+      .from("profiles")
+      .select("credits")
+      .eq("user_id", user.id)
+      .single();
+
+    const currentBalance = profileData?.credits ?? 0;
+    if (currentBalance < 2) {
+      toast.error("Solde insuffisant — 2 cauris requis");
+      return;
+    }
+
     setLoadingPlan(planIndex);
 
     try {
@@ -217,7 +252,25 @@ const MultiPlan = () => {
   };
 
   const handleCutAll = async () => {
-    if (!cadrageSource || !user || isCuttingAll || loadingPlan !== null) return;
+    if (!cadrageSource || isCuttingAll || loadingPlan !== null) return;
+
+    if (!user) {
+      toast.error("Connectez-vous pour générer");
+      return;
+    }
+
+    const { data: profileData } = await supabase
+      .from("profiles")
+      .select("credits")
+      .eq("user_id", user.id)
+      .single();
+
+    const currentBalance = profileData?.credits ?? 0;
+    if (currentBalance < 8) {
+      toast.error("Solde insuffisant — 8 cauris requis (4 × 2)");
+      return;
+    }
+
     setIsCuttingAll(true);
     setQueueStatus({ 1: 'waiting', 2: 'waiting', 3: 'waiting', 4: 'waiting' });
 
@@ -236,7 +289,6 @@ const MultiPlan = () => {
       refreshBalance();
     } finally {
       setIsCuttingAll(false);
-      // Reset queue after a short delay so user sees the "done" state
       setTimeout(() => setQueueStatus({ 1: 'idle', 2: 'idle', 3: 'idle', 4: 'idle' }), 3000);
     }
   };

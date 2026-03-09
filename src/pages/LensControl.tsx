@@ -204,7 +204,13 @@ const LensControl = () => {
   }, []);
 
   const handleGenerate = async () => {
-    if (!sourceImage || !user || isGenerating) return;
+    if (!sourceImage || isGenerating) return;
+
+    if (!user) {
+      toast.error("Connectez-vous pour générer");
+      return;
+    }
+
     if (!credits || credits < COST) {
       toast.error(`Solde insuffisant — ${COST} cauris requis`);
       return;
