@@ -650,7 +650,7 @@ const MultiPlan = () => {
                   ) : (
                     <>
                       <Scissors className="w-3.5 h-3.5" />
-                      Découper tout · 8 cauris
+                      Découper tout · 4 cauris
                     </>
                   )}
                 </button>
