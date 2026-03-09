@@ -39,6 +39,7 @@ interface RecentCreation {
   image_url: string;
   prompt: string;
   created_at: string;
+  media_type: string;
 }
 
 const StudioHome = () => {
