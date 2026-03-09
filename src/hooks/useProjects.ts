@@ -119,14 +119,14 @@ export function useProjects() {
     if (!user) return;
 
     try {
-      // Unlink generations first (set project_id to null)
-      const [unlinkJobs, unlinkGen] = await Promise.all([
-        supabase.from("generation_jobs").update({ project_id: null }).eq("project_id", id),
-        supabase.from("generations").update({ project_id: null }).eq("project_id", id),
+      // DELETE generations linked to this project (not just unlink)
+      const [deleteJobs, deleteGen] = await Promise.all([
+        supabase.from("generation_jobs").delete().eq("project_id", id),
+        supabase.from("generations").delete().eq("project_id", id),
       ]);
 
-      if (unlinkJobs.error) console.error("Unlink jobs error:", unlinkJobs.error);
-      if (unlinkGen.error) console.error("Unlink generations error:", unlinkGen.error);
+      if (deleteJobs.error) console.error("Delete jobs error:", deleteJobs.error);
+      if (deleteGen.error) console.error("Delete generations error:", deleteGen.error);
 
       const { error } = await supabase.from("projects").delete().eq("id", id);
       if (error) {
@@ -137,7 +137,7 @@ export function useProjects() {
 
       setProjects((prev) => prev.filter((p) => p.id !== id));
       if (selectedProjectId === id) selectProject(null);
-      toast.success("Projet supprimé");
+      toast.success("Projet et générations supprimés (cauris non remboursés)");
     } catch (e) {
       console.error("deleteProject error:", e);
       toast.error("Erreur lors de la suppression");
